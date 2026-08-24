@@ -119,7 +119,17 @@ Misskey-art リポジトリで開発された以下の機能を misskey-juice �
   - お知らせリアクション / 画像バグ修正 / reset-db ガードの移植本体
 - **PR #2**: https://github.com/Zel9278/misskey-juice/pull/2 (マージ済 2026-08-24)
   - `Release: 2026.7.0-juice+1.0` — バージョン bump と CHANGELOG 追記
-- **ブランチ**: juice/dev → juice/main
+- **PR #3**: https://github.com/Zel9278/misskey-juice/pull/3 (マージ済 2026-08-24)
+  - 1.0 リリース前の安定化 (diagnostics シナリオ / MkCustomEmoji の inject 警告)
+- **PR #4**: https://github.com/Zel9278/misskey-juice/pull/4 (マージ済 2026-08-24)
+  - devcontainer のポートを host に公開
+- **ブランチ**: juice/dev → juice/main (現在どちらも `1dfd6fd7f4`)
+
+### リリース
+
+- **タグ**: `v2026.7.0-juice+1.0` (annotated, `1dfd6fd7f4` を指す / origin に push 済)
+- **Release**: https://github.com/Zel9278/misskey-juice/releases/tag/v2026.7.0-juice%2B1.0
+  - 正式リリース (prerelease ではない) / リリースノート記載済
 
 ### CI チェック状態
 
@@ -158,11 +168,17 @@ art/main と juice/main で、リアクション機能・blurhash 修正・reset
 
 1. ✅ CI チェックの完了
 2. ✅ PR #1 / PR #2 のマージ
-3. ⏳ juice/main に `v2026.7.0-juice+1.0` タグを作成
-4. ⏳ GitHub Release を作成
-5. ⏳ リリースノートを記載
+3. ✅ juice/main に `v2026.7.0-juice+1.0` タグを作成
+4. ✅ GitHub Release を作成
+5. ✅ リリースノートを記載
 
-タグ / Release は、下記「1.0 前に固める項目」を消化してから作成する。
+**1.0 のリリース作業は完了。** 以降は下記「1.1 以降の候補」を参照。
+
+## 1.1 以降の候補
+
+- upstream (misskey-dev) の 2026.8.x 系への追従
+- art 側の後続コミット (art/main が juice の分岐後に進んだ分) の取り込み判断
+- Federation test の 250ms 固定待ちフレーク — upstream 側の問題なので追従待ち
 
 ## 1.0 前に固める項目
 
@@ -212,3 +228,6 @@ art/main と juice/main で、リアクション機能・blurhash 修正・reset
 - 2026-08-24 11:10: art の diagnostics 安定化コミット 4 件を cherry-pick
 - 2026-08-24 11:15: MkCustomEmoji の inject 警告を修正
 - 2026-08-24 11:40: devcontainer のポートを明示公開、Storybook workflow を無効化
+- 2026-08-24 11:31: `v2026.7.0-juice+1.0` タグを作成し origin に push
+- 2026-08-24 11:31: GitHub Release を公開 (リリースノート記載済) → 1.0 リリース完了
+- 2026-08-24 (追記): CHANGELOG の juice+1.0 セクションに MkCustomEmoji の inject 警告修正を追記
