@@ -168,11 +168,11 @@ art/main と juice/main で、リアクション機能・blurhash 修正・reset
 
 - ✅ diagnostics シナリオの安定化 (art の 4 コミットを cherry-pick)
 - ✅ `MkCustomEmoji.vue` の `injection "Symbol()" not found` 警告を解消
-- ⏳ Storybook workflow の無効化 (art は `disabled_manually`、juice は `active` のまま)
+- ✅ Storybook workflow を `disabled_manually` に変更 (art と同じ状態)
   - `.github/workflows/storybook.yml` の job は `if: github.repository == 'misskey-dev/misskey'`
     で upstream 限定のため、フォークでは常に skipped になる
-- 🔺 `.devcontainer/compose.yml` のポート設定 — art は host 3001 → container 3000 だが
-  juice の運用に合うか要判断のため保留
+  - workflow ファイルではなくリポジトリ設定側の操作なので workflow scope 制限を受けない
+- ✅ `.devcontainer/compose.yml` に ports を明示 (3000:3000 / 5173 / 5174、art と一致)
 - 🔺 Federation test の 250ms 固定待ちによるフレーク — upstream 側の問題
 
 ## 参考情報
@@ -211,3 +211,4 @@ art/main と juice/main で、リアクション機能・blurhash 修正・reset
 - 2026-08-24 10:55: バージョンを 2026.7.0-juice+1.0 に bump (PR #2) → マージ
 - 2026-08-24 11:10: art の diagnostics 安定化コミット 4 件を cherry-pick
 - 2026-08-24 11:15: MkCustomEmoji の inject 警告を修正
+- 2026-08-24 11:40: devcontainer のポートを明示公開、Storybook workflow を無効化
