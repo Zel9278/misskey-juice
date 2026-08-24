@@ -10,15 +10,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 		v-bind="disableImageLink ? {
 			title: image.name,
 			class: $style.imageContainer,
+			'data-marker': marker,
 		} : {
 			title: image.name,
 			class: $style.imageContainer,
+			'data-marker': marker,
 			href: image.url,
 			style: 'cursor: zoom-in;'
 		}"
 	>
 		<MkImgWithBlurhash
-			v-if="prefer.s.enableHighQualityImagePlaceholders"
+			v-if="hide || prefer.s.enableHighQualityImagePlaceholders"
 			:hash="image.blurhash"
 			:src="(prefer.s.dataSaver.media && hide) ? null : url"
 			:forceBlurhash="hide"
@@ -29,12 +31,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 			:height="image.properties.height"
 			:style="hide ? 'filter: brightness(0.7);' : null"
 			:class="$style.image"
-			:marker="marker"
 		/>
 		<div
-			v-else-if="prefer.s.dataSaver.media || hide"
+			v-else-if="prefer.s.dataSaver.media"
 			:title="image.comment || image.name"
-			:style="hide ? 'background: #888;' : null"
 			:class="$style.image"
 		></div>
 		<img
@@ -43,7 +43,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 			:alt="image.comment || image.name"
 			:title="image.comment || image.name"
 			:class="$style.image"
-			:data-marker="marker"
 		/>
 	</component>
 	<template v-if="hide">
