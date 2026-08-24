@@ -115,18 +115,28 @@ Misskey-art リポジトリで開発された以下の機能を misskey-juice �
 
 ### PR 状態
 
-- **PR #1**: https://github.com/Zel9278/misskey-juice/pull/1
+- **PR #1**: https://github.com/Zel9278/misskey-juice/pull/1 (マージ済 2026-08-24)
+  - お知らせリアクション / 画像バグ修正 / reset-db ガードの移植本体
+- **PR #2**: https://github.com/Zel9278/misskey-juice/pull/2 (マージ済 2026-08-24)
+  - `Release: 2026.7.0-juice+1.0` — バージョン bump と CHANGELOG 追記
 - **ブランチ**: juice/dev → juice/main
-- **ステータス**: CI 実行中（SPDX チェック修正済み）
 
 ### CI チェック状態
 
-最新コミット `8b1f375fb9` の CI が実行中。以下を修正:
+PR #2 時点で全チェック green。過程で以下を修正した:
 
-1. ✅ check-spdx.mjs を追加
-2. ✅ scripts/lib/git.mjs を追加
-3. ⏳ SPDX チェック再実行中
-4. ⏳ API report 再実行中
+1. ✅ `scripts/check-spdx.mjs` を追加
+2. ✅ `scripts/lib/git.mjs` を追加
+3. ✅ `packages/misskey-js/etc/misskey-js.api.md` を再生成 (`report` ジョブの失敗を解消)
+
+Federation test が一度失敗したが、`test-federation/` は未変更であり
+250ms 固定待ちに起因するフレークだったため再実行で解消した。
+
+### 移植内容の検証
+
+art/main と juice/main で、リアクション機能・blurhash 修正・reset-db ガードの
+関連ファイルがバイト一致していることを確認済み。art の後続修正
+(PR #71 / #74 / #75 / #76) も最終状態から取り込まれている。
 
 ## 移植しなかった変更
 
@@ -146,11 +156,24 @@ Misskey-art リポジトリで開発された以下の機能を misskey-juice �
 
 ## 次のステップ
 
-1. ✅ CI チェックの完了を待つ
-2. GitHub UI で PR #1 をマージ
-3. juice/main に `v2026.7.0-juice+1.0` タグを作成
-4. GitHub Release を作成
-5. リリースノートを記載
+1. ✅ CI チェックの完了
+2. ✅ PR #1 / PR #2 のマージ
+3. ⏳ juice/main に `v2026.7.0-juice+1.0` タグを作成
+4. ⏳ GitHub Release を作成
+5. ⏳ リリースノートを記載
+
+タグ / Release は、下記「1.0 前に固める項目」を消化してから作成する。
+
+## 1.0 前に固める項目
+
+- ✅ diagnostics シナリオの安定化 (art の 4 コミットを cherry-pick)
+- ✅ `MkCustomEmoji.vue` の `injection "Symbol()" not found` 警告を解消
+- ⏳ Storybook workflow の無効化 (art は `disabled_manually`、juice は `active` のまま)
+  - `.github/workflows/storybook.yml` の job は `if: github.repository == 'misskey-dev/misskey'`
+    で upstream 限定のため、フォークでは常に skipped になる
+- 🔺 `.devcontainer/compose.yml` のポート設定 — art は host 3001 → container 3000 だが
+  juice の運用に合うか要判断のため保留
+- 🔺 Federation test の 250ms 固定待ちによるフレーク — upstream 側の問題
 
 ## 参考情報
 
@@ -183,3 +206,8 @@ Misskey-art リポジトリで開発された以下の機能を misskey-juice �
 - 2026-08-24 08:44: PR #1 作成
 - 2026-08-24 09:11: CI 修正（check-spdx.mjs 追加）
 - 2026-08-24 09:13: scripts/lib/git.mjs 追加
+- 2026-08-24 09:23: PORTING_STATUS.md を作成
+- 2026-08-24 10:26: misskey-js の API report を再生成し PR #1 の CI を green 化 → マージ
+- 2026-08-24 10:55: バージョンを 2026.7.0-juice+1.0 に bump (PR #2) → マージ
+- 2026-08-24 11:10: art の diagnostics 安定化コミット 4 件を cherry-pick
+- 2026-08-24 11:15: MkCustomEmoji の inject 警告を修正
