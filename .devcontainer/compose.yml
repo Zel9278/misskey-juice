@@ -51,6 +51,21 @@ services:
       interval: 5s
       retries: 20
 
+  # ローカルでメール送信を確認するためのSMTPキャッチャー。実際には配送せず、
+  # 送信されたメールをWeb UI (http://localhost:8026) で確認できる。
+  mailpit:
+    restart: unless-stopped
+    image: axllent/mailpit:latest
+    networks:
+      - internal_network
+      - external_network
+    ports:
+      - "8026:8025"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8025/readyz"]
+      interval: 5s
+      retries: 20
+
 volumes:
   postgres-data:
   redis-data:
