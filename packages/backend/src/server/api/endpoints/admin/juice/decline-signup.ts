@@ -5,12 +5,11 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { UserProfilesRepository, UsersRepository } from '@/models/_.js';
+import type { UsedUsernamesRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { EmailService } from '@/core/EmailService.js';
-import { DeleteAccountService } from '@/core/DeleteAccountService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -52,9 +51,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
+		@Inject(DI.usedUsernamesRepository)
+		private usedUsernamesRepository: UsedUsernamesRepository,
+
 		private moderationLogService: ModerationLogService,
 		private emailService: EmailService,
-		private deleteAccountService: DeleteAccountService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({ id: ps.userId });
@@ -78,7 +79,21 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				userHost: user.host,
 			});
 
-			await this.deleteAccountService.deleteAccount(user);
+			// 承認前(approved: false)のアカウントは、サインインもAPI利用も全面的にブロックされているため
+			// ノート・ファイル等の実データを一切持ち得ない。そのため DeleteAccountService の非同期キュー経由の
+			// 削除(ノート/ファイル削除 → soft delete → 後日キューワーカーが物理削除)は使わず、この場で
+			// 直接物理削除する。DeleteAccountService 経由だと、実際の usersRepository.delete() は非同期
+			// キュージョブが処理するまで発生しないため、却下直後に同じユーザー名で再登録しようとすると
+			// (used_username からは削除済みでも) user テーブルの重複チェックで弾かれてしまう。
+			// user_profile / user_keypair / role_assignment 等は外部キーの ON DELETE CASCADE で連鎖削除される。
+			await this.usersRepository.delete(user.id);
+
+			// 却下されたアカウントは一度も承認されておらず実質的に使われていないため、
+			// 通常のアカウント削除(used_usernameを残してユーザー名の再利用を防ぐ)とは異なり、
+			// 却下後は同じユーザー名で再度登録申請できるようにする。
+			// usernameLower は select: false のため findOneBy では取得できておらず、
+			// SignupService と同じ username.toLowerCase() で代用する
+			await this.usedUsernamesRepository.delete({ username: user.username.toLowerCase() });
 		});
 	}
 }

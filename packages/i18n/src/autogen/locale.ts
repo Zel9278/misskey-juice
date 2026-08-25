@@ -8500,6 +8500,10 @@ export interface Locale extends ILocale {
          * 登録ありがとうございます。運営による承認をお待ちください。承認結果はメールでお知らせします。
          */
         "pendingApproval": string;
+        /**
+         * 登録ありがとうございます。運営による承認をお待ちください。承認されるとサインインできるようになります。
+         */
+        "pendingApprovalNoEmail": string;
     };
     "_accountDelete": {
         /**

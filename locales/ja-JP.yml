@@ -2209,6 +2209,7 @@ _signup:
   reason: "登録理由"
   reasonCaption: "運営が登録を承認するために確認します。他のユーザーには公開されません。(最大{max}文字)"
   pendingApproval: "登録ありがとうございます。運営による承認をお待ちください。承認結果はメールでお知らせします。"
+  pendingApprovalNoEmail: "登録ありがとうございます。運営による承認をお待ちください。承認されるとサインインできるようになります。"
 
 _accountDelete:
   accountDelete: "アカウントの削除"

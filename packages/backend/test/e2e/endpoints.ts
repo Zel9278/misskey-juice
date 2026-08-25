@@ -1470,8 +1470,29 @@ describe('Endpoints', () => {
 			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
 			assert.strictEqual(declineRes.status, 204);
 
+			// 却下は承認前アカウントの物理削除(user行が即座に消える)なので、
+			// サインイン試行は「未承認だから拒否」(403)ではなく「そもそも存在しない」(404)になる
 			const signinRes = await api('signin-flow', { username, password: 'test' });
-			assert.strictEqual(signinRes.status, 403);
+			assert.strictEqual(signinRes.status, 404);
+		});
+
+		test('却下されたユーザー名は再度登録申請できる', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'test' });
+			assert.strictEqual(signupRes.status, 200);
+
+			const list = await api('admin/juice/pending-signups', {}, alice);
+			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
+			assert.ok(target);
+
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
+			assert.strictEqual(declineRes.status, 204);
+
+			// 却下された時点で一度も承認されていないため、通常のアカウント削除と異なり
+			// used_username に残らず、同じユーザー名で再度登録申請できる
+			const retryRes = await api('signup', { username, password: 'test', reason: 'test again' });
+			assert.strictEqual(retryRes.status, 200);
+			assert.deepStrictEqual(retryRes.body, { pendingApproval: true });
 		});
 
 		test('juice/public-settings は無認証で現在の設定を反映する', async () => {

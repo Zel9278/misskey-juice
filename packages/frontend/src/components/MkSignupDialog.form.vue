@@ -334,10 +334,13 @@ async function onSubmit(): Promise<void> {
 			if (_DEV_) console.log(resJson);
 
 			if ('pendingApproval' in resJson) {
+				// この分岐に来る時点で instance.emailRequiredForSignup は必ず false
+				// (true の場合は上の if で email 確認フローに分岐済み)なので、
+				// メールアドレスは収集していない。承認結果をメールで知らせる旨は案内しない。
 				os.alert({
 					type: 'success',
 					title: i18n.ts._signup.almostThere,
-					text: i18n.ts._signup.pendingApproval,
+					text: i18n.ts._signup.pendingApprovalNoEmail,
 				});
 				emit('signupPendingApproval');
 			} else {
