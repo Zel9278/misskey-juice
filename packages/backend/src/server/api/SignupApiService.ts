@@ -14,6 +14,8 @@ import { IdService } from '@/core/IdService.js';
 import { SignupService } from '@/core/SignupService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { EmailService } from '@/core/EmailService.js';
+import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { resolveSignupApprovalSettings } from '@/models/JuiceSettings.js';
 import { MiLocalUser } from '@/models/User.js';
 import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
 import { bindThis } from '@/decorators.js';
@@ -51,6 +53,7 @@ export class SignupApiService {
 		private signupService: SignupService,
 		private signinService: SigninService,
 		private emailService: EmailService,
+		private juiceSettingsService: JuiceSettingsService,
 	) {
 	}
 
@@ -63,6 +66,7 @@ export class SignupApiService {
 				host?: string;
 				invitationCode?: string;
 				emailAddress?: string;
+				reason?: string;
 				'hcaptcha-response'?: string;
 				'g-recaptcha-response'?: string;
 				'turnstile-response'?: string;
@@ -113,6 +117,10 @@ export class SignupApiService {
 		const host: string | null = process.env.NODE_ENV === 'test' ? (body['host'] ?? null) : null;
 		const invitationCode = body['invitationCode'];
 		const emailAddress = body['emailAddress'];
+		const reason = typeof body['reason'] === 'string' ? body['reason'] : undefined;
+
+		const { approvalRequiredForSignup, signupReasonRequired, signupReasonMaxLength } =
+			resolveSignupApprovalSettings(await this.juiceSettingsService.fetch());
 
 		if (this.meta.emailRequiredForSignup) {
 			if (emailAddress == null || typeof emailAddress !== 'string') {
@@ -129,43 +137,63 @@ export class SignupApiService {
 
 		let ticket: MiRegistrationTicket | null = null;
 
+		// 承認式登録が有効な場合、招待コードは任意にする(コード無しなら理由入力での申請に回す。
+		// コードがあれば従来通り検証し、有効なら承認をバイパスする)
+		const invitationCodeOptional = approvalRequiredForSignup;
+		const hasInvitationCode = typeof invitationCode === 'string' && invitationCode !== '';
+
 		// テスト時はこの機構は障害となるため無効にする
 		if (process.env.NODE_ENV !== 'test' && this.meta.disableRegistration) {
-			if (invitationCode == null || typeof invitationCode !== 'string') {
+			if (!invitationCodeOptional && !hasInvitationCode) {
 				reply.code(400);
 				return;
 			}
 
-			ticket = await this.registrationTicketsRepository.findOneBy({
-				code: invitationCode,
-			});
+			if (hasInvitationCode) {
+				ticket = await this.registrationTicketsRepository.findOneBy({
+					code: invitationCode,
+				});
 
-			if (ticket == null || ticket.usedById != null) {
-				reply.code(400);
-				return;
-			}
-
-			if (ticket.expiresAt && ticket.expiresAt < new Date()) {
-				reply.code(400);
-				return;
-			}
-
-			// メアド認証が有効の場合
-			if (this.meta.emailRequiredForSignup) {
-				// メアド認証済みならエラー
-				if (ticket.usedBy) {
+				if (ticket == null || ticket.usedById != null) {
 					reply.code(400);
 					return;
 				}
 
-				// 認証しておらず、メール送信から30分以内ならエラー
-				if (ticket.usedAt && ticket.usedAt.getTime() + (1000 * 60 * 30) > Date.now()) {
+				if (ticket.expiresAt && ticket.expiresAt < new Date()) {
 					reply.code(400);
 					return;
 				}
-			} else if (ticket.usedAt) {
-				reply.code(400);
-				return;
+
+				// メアド認証が有効の場合
+				if (this.meta.emailRequiredForSignup) {
+					// メアド認証済みならエラー
+					if (ticket.usedBy) {
+						reply.code(400);
+						return;
+					}
+
+					// 認証しておらず、メール送信から30分以内ならエラー
+					if (ticket.usedAt && ticket.usedAt.getTime() + (1000 * 60 * 30) > Date.now()) {
+						reply.code(400);
+						return;
+					}
+				} else if (ticket.usedAt) {
+					reply.code(400);
+					return;
+				}
+			}
+		}
+
+		// 招待コードで登録した場合は承認式登録をバイパスする(招待した時点でモデレーターの信任があるため)
+		const approvalRequiredForThisSignup = approvalRequiredForSignup && ticket == null;
+
+		if (approvalRequiredForThisSignup) {
+			if (signupReasonRequired && (reason == null || reason.trim() === '')) {
+				throw new FastifyReplyError(400, 'REASON_REQUIRED');
+			}
+
+			if (reason != null && reason.length > signupReasonMaxLength) {
+				throw new FastifyReplyError(400, 'REASON_TOO_LONG');
 			}
 		}
 
@@ -196,6 +224,7 @@ export class SignupApiService {
 				email: emailAddress!,
 				username: username,
 				password: hash,
+				reason: approvalRequiredForThisSignup ? (reason ?? null) : null,
 			});
 
 			const link = `${this.config.url}/signup-complete/${code}`;
@@ -217,11 +246,8 @@ export class SignupApiService {
 			try {
 				const { account, secret } = await this.signupService.signup({
 					username, password, host,
-				});
-
-				const res = await this.userEntityService.pack(account, account, {
-					schema: 'MeDetailed',
-					includeSecrets: true,
+					approved: !approvalRequiredForThisSignup,
+					signupReason: approvalRequiredForThisSignup ? (reason ?? null) : undefined,
 				});
 
 				if (ticket) {
@@ -231,6 +257,15 @@ export class SignupApiService {
 						usedById: account.id,
 					});
 				}
+
+				if (approvalRequiredForThisSignup) {
+					return { pendingApproval: true } as const;
+				}
+
+				const res = await this.userEntityService.pack(account, account, {
+					schema: 'MeDetailed',
+					includeSecrets: true,
+				});
 
 				return {
 					...res,
@@ -255,9 +290,17 @@ export class SignupApiService {
 				throw new FastifyReplyError(400, 'EXPIRED');
 			}
 
+			const { approvalRequiredForSignup } = resolveSignupApprovalSettings(await this.juiceSettingsService.fetch());
+
+			// 招待コードで登録した場合は承認式登録をバイパスする(招待した時点でモデレーターの信任があるため)
+			const ticket = await this.registrationTicketsRepository.findOneBy({ pendingUserId: pendingUser.id });
+			const approvalRequiredForThisSignup = approvalRequiredForSignup && ticket == null;
+
 			const { account } = await this.signupService.signup({
 				username: pendingUser.username,
 				passwordHash: pendingUser.password,
+				approved: !approvalRequiredForThisSignup,
+				signupReason: approvalRequiredForThisSignup ? pendingUser.reason : undefined,
 			});
 
 			this.userPendingsRepository.delete({
@@ -272,13 +315,20 @@ export class SignupApiService {
 				emailVerifyCode: null,
 			});
 
-			const ticket = await this.registrationTicketsRepository.findOneBy({ pendingUserId: pendingUser.id });
 			if (ticket) {
 				await this.registrationTicketsRepository.update(ticket.id, {
 					usedBy: account,
 					usedById: account.id,
 					pendingUserId: null,
 				});
+			}
+
+			if (approvalRequiredForThisSignup) {
+				this.emailService.sendEmail(pendingUser.email, 'Signup pending approval / 登録の承認待ちです',
+					'Thank you for signing up. An administrator needs to review your application before you can sign in. We will email you again once a decision has been made.<br><br>ご登録ありがとうございます。管理者の承認が完了するまでサインインできません。審査結果は追ってメールでお知らせします。',
+					'Thank you for signing up. An administrator needs to review your application before you can sign in. We will email you again once a decision has been made.\n\nご登録ありがとうございます。管理者の承認が完了するまでサインインできません。審査結果は追ってメールでお知らせします。');
+
+				return { pendingApproval: true } as const;
 			}
 
 			return this.signinService.signin(request, reply, account as MiLocalUser);

@@ -4965,6 +4965,10 @@ export interface Locale extends ILocale {
      */
     "externalServices": string;
     /**
+     * JUICE
+     */
+    "juice": string;
+    /**
      * ソースコード
      */
     "sourceCode": string;
@@ -8484,6 +8488,18 @@ export interface Locale extends ILocale {
          * 入力されたメールアドレス({email})宛に確認のメールが送信されました。メールに記載されたリンクにアクセスすると、アカウントの作成が完了します。メールに記載されているリンクの有効期限は30分です。
          */
         "emailSent": ParameterizedString<"email">;
+        /**
+         * 登録理由
+         */
+        "reason": string;
+        /**
+         * 運営が登録を承認するために確認します。他のユーザーには公開されません。(最大{max}文字)
+         */
+        "reasonCaption": ParameterizedString<"max">;
+        /**
+         * 登録ありがとうございます。運営による承認をお待ちください。承認結果はメールでお知らせします。
+         */
+        "pendingApproval": string;
     };
     "_accountDelete": {
         /**
@@ -9638,6 +9654,26 @@ export interface Locale extends ILocale {
          * インスタンスのメタデータを操作する
          */
         "write:admin:meta": string;
+        /**
+         * JUICE独自機能の設定を見る
+         */
+        "read:admin:juice-settings": string;
+        /**
+         * JUICE独自機能の設定を操作する
+         */
+        "write:admin:juice-settings": string;
+        /**
+         * 承認待ちユーザーの一覧を見る
+         */
+        "read:admin:juice-pending-signups": string;
+        /**
+         * ユーザーの登録を承認する
+         */
+        "write:admin:juice-approve-signup": string;
+        /**
+         * ユーザーの登録を却下する
+         */
+        "write:admin:juice-decline-signup": string;
         /**
          * モデレーションノートを操作する
          */
@@ -11492,6 +11528,18 @@ export interface Locale extends ILocale {
          * サーバー設定更新
          */
         "updateServerSettings": string;
+        /**
+         * JUICE独自機能の設定更新
+         */
+        "updateJuiceSettings": string;
+        /**
+         * ユーザー登録を承認
+         */
+        "approveSignup": string;
+        /**
+         * ユーザー登録を却下
+         */
+        "declineSignup": string;
         /**
          * ユーザーのモデレーションノート更新
          */
@@ -13369,5 +13417,73 @@ export interface Locale extends ILocale {
          * MFM
          */
         "mfm": string;
+    };
+    "_juice": {
+        /**
+         * 承認式新規登録
+         */
+        "approvalSignup": string;
+        /**
+         * 新規登録に承認を必須にする
+         */
+        "approvalRequiredForSignup": string;
+        /**
+         * 登録理由の入力を必須にする
+         */
+        "signupReasonRequired": string;
+        /**
+         * 登録理由の最大文字数
+         */
+        "signupReasonMaxLength": string;
+        /**
+         * 参加を申請する
+         */
+        "applyToJoin": string;
+        /**
+         * 参加申請
+         */
+        "applicationTitle": string;
+        /**
+         * 申請する
+         */
+        "apply": string;
+        /**
+         * 招待コードで登録
+         */
+        "registerWithInvitation": string;
+        /**
+         * このサーバーは承認式の新規登録です。登録後、モデレーターまたは管理者が承認するまでサインインできません。
+         */
+        "approvalSignupNotice": string;
+    };
+    "_juiceApprovals": {
+        /**
+         * 承認待ちユーザー
+         */
+        "title": string;
+        /**
+         * 承認待ちのユーザーはいません。
+         */
+        "noPendingSignups": string;
+        /**
+         * 登録理由
+         */
+        "reason": string;
+        /**
+         * 承認
+         */
+        "approve": string;
+        /**
+         * 却下
+         */
+        "decline": string;
+        /**
+         * @{username} の登録を承認しますか？
+         */
+        "approveConfirm": ParameterizedString<"username">;
+        /**
+         * @{username} の登録を却下しますか？アカウントは削除されます。この操作は取り消せません。
+         */
+        "declineConfirm": ParameterizedString<"username">;
     };
 }

@@ -10,8 +10,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<div class="_spacer" style="--MI_SPACER-min: 20px; --MI_SPACER-max: 28px;">
 		<div class="_gaps_m">
-			<div v-if="instance.disableRegistration || instance.federation !== 'all'" class="_gaps_s">
-				<MkInfo v-if="instance.disableRegistration" warn>{{ i18n.ts.invitationRequiredToRegister }}</MkInfo>
+			<div v-if="showInvitationWarning || showApprovalNotice || instance.federation !== 'all'" class="_gaps_s">
+				<MkInfo v-if="showInvitationWarning" warn>{{ i18n.ts.invitationRequiredToRegister }}</MkInfo>
+				<MkInfo v-if="showApprovalNotice" warn>{{ i18n.ts._juice.approvalSignupNotice }}</MkInfo>
 				<MkInfo v-if="instance.federation === 'specified'" warn>{{ i18n.ts.federationSpecified }}</MkInfo>
 				<MkInfo v-else-if="instance.federation === 'none'" warn>{{ i18n.ts.federationDisabled }}</MkInfo>
 			</div>
@@ -65,6 +66,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
+import * as Misskey from 'misskey-js';
 import { instance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 import MkButton from '@/components/MkButton.vue';
@@ -73,9 +75,32 @@ import MkSwitch from '@/components/MkSwitch.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import * as os from '@/os.js';
 
+const props = withDefaults(defineProps<{
+	mode?: 'invitation' | 'application';
+	juicePublicSettings?: Misskey.entities.JuicePublicSettingsResponse;
+}>(), {
+	mode: undefined,
+	juicePublicSettings: () => ({
+		approvalRequiredForSignup: false,
+		signupReasonRequired: true,
+		signupReasonMaxLength: 4096,
+	}),
+});
+
 const availableServerRules = instance.serverRules.length > 0;
 const availableTos = instance.tosUrl != null && instance.tosUrl !== '';
 const availablePrivacyPolicy = instance.privacyPolicyUrl != null && instance.privacyPolicyUrl !== '';
+
+// 招待コードが必要なフローか(mode="invitation" は明示的に招待コード登録を選んでいるため常に必要、
+// mode="application" は招待コードを使わないフローのため常に不要、mode 未指定時は従来通り disableRegistration に従う)
+const showInvitationWarning = computed((): boolean => {
+	if (props.mode === 'application') return false;
+	if (props.mode === 'invitation') return true;
+	return instance.disableRegistration;
+});
+
+// mode="invitation" は招待した時点でモデレーターの信任があるため承認をバイパスするので案内不要
+const showApprovalNotice = computed((): boolean => props.mode !== 'invitation' && props.juicePublicSettings.approvalRequiredForSignup);
 
 const agreeServerRules = ref(false);
 const agreeTosAndPrivacyPolicy = ref(false);

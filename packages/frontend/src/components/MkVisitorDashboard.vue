@@ -18,13 +18,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<!-- eslint-disable-next-line vue/no-v-html -->
 				<div v-html="instance.description || i18n.ts.headlineMisskey"></div>
 			</div>
-			<div v-if="instance.disableRegistration || instance.federation !== 'all'" :class="$style.mainWarn" class="_gaps_s">
-				<MkInfo v-if="instance.disableRegistration" warn>{{ i18n.ts.invitationRequiredToRegister }}</MkInfo>
+			<div v-if="instance.disableRegistration || juicePublicSettings.approvalRequiredForSignup || instance.federation !== 'all'" :class="$style.mainWarn" class="_gaps_s">
+				<MkInfo v-if="instance.disableRegistration && !juicePublicSettings.approvalRequiredForSignup" warn>{{ i18n.ts.invitationRequiredToRegister }}</MkInfo>
+				<MkInfo v-if="juicePublicSettings.approvalRequiredForSignup" warn>{{ i18n.ts._juice.approvalSignupNotice }}</MkInfo>
 				<MkInfo v-if="instance.federation === 'specified'" warn>{{ i18n.ts.federationSpecified }}</MkInfo>
 				<MkInfo v-else-if="instance.federation === 'none'" warn>{{ i18n.ts.federationDisabled }}</MkInfo>
 			</div>
 			<div class="_gaps_s" :class="$style.mainActions">
-				<MkButton :class="$style.mainAction" full rounded gradate data-testid="signup" style="margin-right: 12px;" @click="signup()">{{ i18n.ts.joinThisServer }}</MkButton>
+				<template v-if="instance.disableRegistration && juicePublicSettings.approvalRequiredForSignup">
+					<MkButton :class="$style.mainAction" full rounded gradate data-testid="signup-invitation" style="margin-right: 12px;" @click="signup('invitation')">{{ i18n.ts._juice.registerWithInvitation }}</MkButton>
+					<MkButton :class="$style.mainAction" full rounded gradate data-testid="signup-application" style="margin-right: 12px;" @click="signup('application')">{{ i18n.ts._juice.applyToJoin }}</MkButton>
+				</template>
+				<MkButton v-else :class="$style.mainAction" full rounded gradate data-testid="signup" style="margin-right: 12px;" @click="signup()">{{ juicePublicSettings.approvalRequiredForSignup ? i18n.ts._juice.applyToJoin : i18n.ts.joinThisServer }}</MkButton>
 				<MkButton :class="$style.mainAction" full rounded type="a" target="_blank" rel="noopener" href="https://misskey-hub.net/servers/">{{ i18n.ts.exploreOtherServers }}</MkButton>
 				<MkButton :class="$style.mainAction" full rounded data-testid="signin" @click="signin()">{{ i18n.ts.login }}</MkButton>
 			</div>
@@ -78,6 +83,15 @@ if (instance.clientOptions.showActivitiesForVisitor !== false) {
 	});
 }
 
+const juicePublicSettings = ref<Misskey.entities.JuicePublicSettingsResponse>({
+	approvalRequiredForSignup: false,
+	signupReasonRequired: true,
+	signupReasonMaxLength: 4096,
+});
+misskeyApi('juice/public-settings').then(res => {
+	juicePublicSettings.value = res;
+});
+
 function signin() {
 	const { dispose } = os.popup(XSigninDialog, {
 		autoSet: true,
@@ -86,9 +100,10 @@ function signin() {
 	});
 }
 
-function signup() {
+function signup(mode?: 'invitation' | 'application') {
 	const { dispose } = os.popup(XSignupDialog, {
 		autoSet: true,
+		mode,
 	}, {
 		closed: () => dispose(),
 	});

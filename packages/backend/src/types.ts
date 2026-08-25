@@ -135,6 +135,9 @@ export const moderationLogTypes = [
 	'deleteGalleryPost',
 	'deleteChatRoom',
 	'updateProxyAccountDescription',
+	'updateJuiceSettings',
+	'approveSignup',
+	'declineSignup',
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -401,6 +404,20 @@ export type ModerationLogPayloads = {
 	updateProxyAccountDescription: {
 		before: string | null;
 		after: string | null;
+	};
+	updateJuiceSettings: {
+		before: any | null;
+		after: any | null;
+	};
+	approveSignup: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+	};
+	declineSignup: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
 	};
 };
 

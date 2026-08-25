@@ -21,6 +21,7 @@ import type { MiPage } from '@/models/Page.js';
 import type { MiWebhook } from '@/models/Webhook.js';
 import type { MiSystemWebhook } from '@/models/SystemWebhook.js';
 import type { MiMeta } from '@/models/Meta.js';
+import type { MiJuiceSettings } from '@/models/JuiceSettings.js';
 import { MiAvatarDecoration, MiChatMessage, MiChatRoom, MiReversiGame, MiRole, MiRoleAssignment } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { DI } from '@/di-symbols.js';
@@ -263,6 +264,7 @@ export interface InternalEventTypes {
 	avatarDecorationDeleted: MiAvatarDecoration;
 	avatarDecorationUpdated: MiAvatarDecoration;
 	metaUpdated: { before?: MiMeta; after: MiMeta; };
+	juiceSettingsUpdated: { before: MiJuiceSettings['settings']; after: MiJuiceSettings['settings']; };
 	followChannel: { userId: MiUser['id']; channelId: MiChannel['id']; };
 	unfollowChannel: { userId: MiUser['id']; channelId: MiChannel['id']; };
 	muteChannel: { userId: MiUser['id']; channelId: MiChannel['id']; };

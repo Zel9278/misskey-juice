@@ -55,6 +55,8 @@ export class SignupService {
 		passwordHash?: MiUserProfile['password'] | null;
 		host?: string | null;
 		ignorePreservedUsernames?: boolean;
+		approved?: boolean;
+		signupReason?: string | null;
 	}) {
 		const { username, password, passwordHash, host } = opts;
 		let hash = passwordHash;
@@ -134,6 +136,8 @@ export class SignupService {
 				usernameLower: username.toLowerCase(),
 				host: this.utilityService.toPunyNullable(host),
 				token: secret,
+				approved: opts.approved ?? true,
+				signupReason: opts.signupReason ?? null,
 			}));
 
 			await transactionalEntityManager.save(new MiUserKeypair({

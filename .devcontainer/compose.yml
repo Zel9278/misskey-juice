@@ -5,9 +5,12 @@ services:
       dockerfile: Dockerfile
 
     ports:
-      - "3000:3000"
-      - "5173:5173"
-      - "5174:5174"
+      - "3001:3000"
+      - "5183:5173"
+      - "5184:5174"
+
+    environment:
+      VITE_HMR_CLIENT_PORT: "5183"
 
     volumes:
       - ../:/workspace:cached

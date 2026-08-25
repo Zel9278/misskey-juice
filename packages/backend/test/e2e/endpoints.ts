@@ -6,28 +6,28 @@
 process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
-import { describe, beforeAll, test, expect, vi } from 'vitest';
+import { describe, beforeAll, afterAll, test, expect, vi } from 'vitest';
 // node-fetch only supports it's own Blob yet
 // https://github.com/node-fetch/node-fetch/pull/1664
 import { Blob } from 'node-fetch';
-import { api, castAsError, initTestDb, post, role, signup, simpleGet, uploadFile } from '../utils.js';
+import { api, castAsError, initTestDb, post, randomString, role, signup, simpleGet, uploadFile } from '../utils.js';
 import type * as misskey from 'misskey-js';
 import { MiUser } from '@/models/_.js';
 
 const waitForPushToTlOptions = { timeout: 3000, interval: 25 };
 
 describe('Endpoints', () => {
-	let alice: misskey.entities.SignupResponse;
-	let bob: misskey.entities.SignupResponse;
-	let carol: misskey.entities.SignupResponse;
-	let dave: misskey.entities.SignupResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
+	let bob: misskey.entities.SignupSuccessResponse;
+	let carol: misskey.entities.SignupSuccessResponse;
+	let dave: misskey.entities.SignupSuccessResponse;
 
 	beforeAll(async () => {
 		alice = await signup({ username: 'alice' });
 		bob = await signup({ username: 'bob' });
 		carol = await signup({ username: 'carol' });
 		dave = await signup({ username: 'dave' });
-		await api('admin/update-meta', { federation: 'all' }, alice as misskey.entities.SignupResponse);
+		await api('admin/update-meta', { federation: 'all' }, alice as misskey.entities.SignupSuccessResponse);
 	}, 1000 * 60 * 2);
 
 	describe('signup', () => {
@@ -57,6 +57,7 @@ describe('Endpoints', () => {
 
 			assert.strictEqual(res.status, 200);
 			assert.strictEqual(typeof res.body === 'object' && !Array.isArray(res.body), true);
+			assert.ok(res.body && !('pendingApproval' in res.body));
 			assert.strictEqual(res.body.username, me.username);
 		});
 
@@ -651,7 +652,7 @@ describe('Endpoints', () => {
 		for (const type of ['webp', 'avif']) {
 			const mediaType = `image/${type}`;
 
-			const getWebpublicType = async (user: misskey.entities.SignupResponse, fileId: string): Promise<string> => {
+			const getWebpublicType = async (user: misskey.entities.SignupSuccessResponse, fileId: string): Promise<string> => {
 				// drive/files/create does not expose webpublicType directly, so get it by posting it
 				const res = await post(user, {
 					text: mediaType,
@@ -1249,5 +1250,293 @@ describe('Endpoints', () => {
 			assert.strictEqual((resAlice.body as unknown as { memo: string }).memo, memoAliceToBob);
 			assert.strictEqual((resCarol.body as unknown as { memo: string }).memo, memoCarolToBob);
 		});
+	});
+
+	describe('お知らせリアクション', () => {
+		let userAnnouncementId: string;
+
+		beforeAll(async () => {
+			const res = await api('admin/announcements/create', {
+				title: 'user announcement',
+				text: 'for bob only',
+				imageUrl: null,
+				userId: bob.id,
+			}, alice);
+			userAnnouncementId = res.body.id;
+		});
+
+		test('宛先本人でもユーザー宛てお知らせにはリアクションできない', async () => {
+			const res = await api('announcements/reactions/create', {
+				announcementId: userAnnouncementId,
+				reaction: '❤',
+			}, bob);
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'REACTION_NOT_ALLOWED');
+		});
+
+		test('宛先本人でもユーザー宛てお知らせのリアクションは削除できない', async () => {
+			const res = await api('announcements/reactions/delete', {
+				announcementId: userAnnouncementId,
+				reaction: '❤',
+			}, bob);
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'REACTION_NOT_ALLOWED');
+		});
+
+		test('無関係な第三者はユーザー宛てお知らせにリアクションできない', async () => {
+			const res = await api('announcements/reactions/create', {
+				announcementId: userAnnouncementId,
+				reaction: '❤',
+			}, carol);
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_ANNOUNCEMENT');
+		});
+
+		test('無関係な第三者はユーザー宛てお知らせのリアクションを削除できない', async () => {
+			const res = await api('announcements/reactions/delete', {
+				announcementId: userAnnouncementId,
+				reaction: '❤',
+			}, carol);
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_ANNOUNCEMENT');
+		});
+
+		test('宛先本人・無関係な第三者・未認証ユーザーいずれもユーザー宛てお知らせのリアクション一覧を取得できない', async () => {
+			const byBob = await api('announcements/reactions', {
+				announcementId: userAnnouncementId,
+			}, bob);
+			assert.strictEqual(byBob.status, 400);
+			assert.strictEqual(castAsError(byBob.body as any).error.code, 'NO_SUCH_ANNOUNCEMENT');
+
+			const byCarol = await api('announcements/reactions', {
+				announcementId: userAnnouncementId,
+			}, carol);
+			assert.strictEqual(byCarol.status, 400);
+			assert.strictEqual(castAsError(byCarol.body as any).error.code, 'NO_SUCH_ANNOUNCEMENT');
+
+			const anonymous = await api('announcements/reactions', {
+				announcementId: userAnnouncementId,
+			});
+			assert.strictEqual(anonymous.status, 400);
+			assert.strictEqual(castAsError(anonymous.body as any).error.code, 'NO_SUCH_ANNOUNCEMENT');
+		});
+	});
+
+	describe('admin/juice', () => {
+		test('管理者は設定を取得できる', async () => {
+			const res = await api('admin/juice/settings', {}, alice);
+			assert.strictEqual(res.status, 200);
+			assert.deepStrictEqual(res.body, {
+				approvalRequiredForSignup: false,
+				signupReasonRequired: true,
+				signupReasonMaxLength: 4096,
+			});
+		});
+
+		test('管理者は設定を更新でき、値が往復する', async () => {
+			const res = await api('admin/juice/update-settings', {
+				signupReasonMaxLength: 1000,
+			}, alice);
+			assert.strictEqual(res.status, 204);
+
+			const after = await api('admin/juice/settings', {}, alice);
+			assert.strictEqual(after.status, 200);
+			assert.strictEqual(after.body.signupReasonMaxLength, 1000);
+
+			// 他のテストに影響しないよう元に戻す
+			const reset = await api('admin/juice/update-settings', {
+				approvalRequiredForSignup: false,
+				signupReasonRequired: true,
+				signupReasonMaxLength: 4096,
+			}, alice);
+			assert.strictEqual(reset.status, 204);
+		});
+
+		test('管理者以外は設定を取得できない', async () => {
+			const res = await api('admin/juice/settings', {}, bob);
+			assert.strictEqual(res.status, 403);
+		});
+
+		test('管理者以外は設定を更新できない', async () => {
+			const res = await api('admin/juice/update-settings', {}, bob);
+			assert.strictEqual(res.status, 403);
+		});
+
+		test('未認証では設定を取得できない', async () => {
+			const res = await api('admin/juice/settings', {});
+			assert.strictEqual(res.status, 401);
+		});
+
+		test('未認証では設定を更新できない', async () => {
+			const res = await api('admin/juice/update-settings', {});
+			assert.strictEqual(res.status, 401);
+		});
+	});
+
+	describe('承認式新規登録', () => {
+		beforeAll(async () => {
+			const res = await api('admin/juice/update-settings', {
+				approvalRequiredForSignup: true,
+				signupReasonRequired: true,
+				signupReasonMaxLength: 4096,
+			}, alice);
+			assert.strictEqual(res.status, 204);
+		});
+
+		afterAll(async () => {
+			const res = await api('admin/juice/update-settings', {
+				approvalRequiredForSignup: false,
+				signupReasonRequired: true,
+				signupReasonMaxLength: 4096,
+			}, alice);
+			assert.strictEqual(res.status, 204);
+		});
+
+		test('理由なしでは登録できない', async () => {
+			const res = await api('signup', {
+				username: randomString(),
+				password: 'test',
+			});
+			assert.strictEqual(res.status, 400);
+		});
+
+		test('理由ありなら未承認ユーザーが作成され、セッションは返らない', async () => {
+			const res = await api('signup', {
+				username: randomString(),
+				password: 'test',
+				reason: 'よろしくお願いします',
+			});
+			assert.strictEqual(res.status, 200);
+			assert.deepStrictEqual(res.body, { pendingApproval: true });
+		});
+
+		test('未承認ユーザーはサインインできない', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'test' });
+			assert.strictEqual(signupRes.status, 200);
+
+			const res = await api('signin-flow', { username, password: 'test' });
+			assert.strictEqual(res.status, 403);
+		});
+
+		test('Moderator以外は承認待ち一覧を取得できない', async () => {
+			const res = await api('admin/juice/pending-signups', {}, bob);
+			assert.strictEqual(res.status, 403);
+		});
+
+		test('Moderator以外は承認・却下できない', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'test' });
+			assert.strictEqual(signupRes.status, 200);
+
+			const list = await api('admin/juice/pending-signups', {}, alice);
+			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
+			assert.ok(target);
+
+			const approveRes = await api('admin/juice/approve-signup', { userId: target.id }, bob);
+			assert.strictEqual(approveRes.status, 403);
+
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, bob);
+			assert.strictEqual(declineRes.status, 403);
+		});
+
+		test('Moderatorが承認すると一覧に理由が表示され、承認後サインインできる', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: '審査してください' });
+			assert.strictEqual(signupRes.status, 200);
+
+			const list = await api('admin/juice/pending-signups', {}, alice);
+			assert.strictEqual(list.status, 200);
+			const target = (list.body as Array<{ id: string, username: string, signupReason: string | null }>).find(u => u.username === username);
+			assert.ok(target);
+			assert.strictEqual(target.signupReason, '審査してください');
+
+			const approveRes = await api('admin/juice/approve-signup', { userId: target.id }, alice);
+			assert.strictEqual(approveRes.status, 204);
+
+			const signinRes = await api('signin-flow', { username, password: 'test' });
+			assert.strictEqual(signinRes.status, 200);
+		});
+
+		test('Moderatorが却下するとアカウントが削除され、サインインできない', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'test' });
+			assert.strictEqual(signupRes.status, 200);
+
+			const list = await api('admin/juice/pending-signups', {}, alice);
+			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
+			assert.ok(target);
+
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
+			assert.strictEqual(declineRes.status, 204);
+
+			const signinRes = await api('signin-flow', { username, password: 'test' });
+			assert.strictEqual(signinRes.status, 403);
+		});
+
+		test('juice/public-settings は無認証で現在の設定を反映する', async () => {
+			const res = await api('juice/public-settings', {});
+			assert.strictEqual(res.status, 200);
+			assert.deepStrictEqual(res.body, {
+				approvalRequiredForSignup: true,
+				signupReasonRequired: true,
+				signupReasonMaxLength: 4096,
+			});
+		});
+
+		test('存在しないユーザーは承認できない', async () => {
+			const res = await api('admin/juice/approve-signup', { userId: '000000000000000000000000' }, alice);
+			assert.strictEqual(res.status, 404);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_USER');
+		});
+
+		test('存在しないユーザーは却下できない', async () => {
+			const res = await api('admin/juice/decline-signup', { userId: '000000000000000000000000' }, alice);
+			assert.strictEqual(res.status, 404);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_USER');
+		});
+
+		test('既に承認済みのユーザーを再度承認できない', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'test' });
+			assert.strictEqual(signupRes.status, 200);
+
+			const list = await api('admin/juice/pending-signups', {}, alice);
+			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
+			assert.ok(target);
+
+			const approveRes = await api('admin/juice/approve-signup', { userId: target.id }, alice);
+			assert.strictEqual(approveRes.status, 204);
+
+			const reapproveRes = await api('admin/juice/approve-signup', { userId: target.id }, alice);
+			assert.strictEqual(reapproveRes.status, 400);
+			assert.strictEqual(castAsError(reapproveRes.body as any).error.code, 'ALREADY_APPROVED');
+		});
+
+		test('既に承認済みのユーザーを却下できない', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'test' });
+			assert.strictEqual(signupRes.status, 200);
+
+			const list = await api('admin/juice/pending-signups', {}, alice);
+			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
+			assert.ok(target);
+
+			const approveRes = await api('admin/juice/approve-signup', { userId: target.id }, alice);
+			assert.strictEqual(approveRes.status, 204);
+
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
+			assert.strictEqual(declineRes.status, 400);
+			assert.strictEqual(castAsError(declineRes.body as any).error.code, 'ALREADY_APPROVED');
+		});
+
+		// 招待コードによる承認バイパスの e2e テストは意図的に置いていない:
+		// SignupApiService.signup() の招待コード検証ブロックは
+		// `process.env.NODE_ENV !== 'test'` の場合のみ実行される既存の仕様
+		// (テスト実行を妨げないための既存の仕組み)のため、テスト環境では
+		// 招待コード(ticket)が常に null のままになり、バイパス分岐
+		// (`approvalRequiredForThisSignup = approvalRequiredForSignup && ticket == null`)
+		// を e2e で意味のある形では再現できない。devcontainer 上の実サーバーで
+		// 手動確認済み(実際の招待コード作成 → 理由なし即時登録 → 即サインイン)。
 	});
 });

@@ -177,6 +177,18 @@ export class MiUser {
 	public isLocked: boolean;
 
 	@Column('boolean', {
+		default: true,
+		comment: 'Whether the User is approved (used when approval-required signup is enabled).',
+	})
+	public approved: boolean;
+
+	@Column('text', {
+		nullable: true, select: false,
+		comment: 'The reason the User gave at signup, when approval-required signup was enabled. Moderator/admin only.',
+	})
+	public signupReason: string | null;
+
+	@Column('boolean', {
 		default: false,
 		comment: 'Whether the User is a bot.',
 	})

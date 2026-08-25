@@ -16,6 +16,8 @@ import { prefer } from '@/preferences.js';
 import { store } from '@/store.js';
 import { $i } from '@/i.js';
 import { signout } from '@/signout.js';
+import { instance } from '@/instance.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
 
 type AccountWithToken = Misskey.entities.MeDetailed & { token: string };
 
@@ -301,6 +303,17 @@ export async function getAccountMenu(opts: {
 
 		menuItems.push(...accountItems);
 
+		const createAccountAction = (mode?: 'invitation' | 'application') => () => {
+			getAccountWithSignupDialog(mode).then(res => {
+				if (res != null) {
+					switchAccount(host, res.id);
+				}
+			});
+		};
+
+		const juicePublicSettings = await misskeyApi('juice/public-settings').catch(() => null);
+		const showSplitCreateAccountItems = instance.disableRegistration && (juicePublicSettings?.approvalRequiredForSignup ?? false);
+
 		menuItems.push({
 			type: 'parent',
 			icon: 'ti ti-plus',
@@ -314,16 +327,16 @@ export async function getAccountMenu(opts: {
 						}
 					});
 				},
+			}, ...(showSplitCreateAccountItems ? [{
+				text: i18n.ts._juice.registerWithInvitation,
+				action: createAccountAction('invitation'),
 			}, {
+				text: i18n.ts._juice.applyToJoin,
+				action: createAccountAction('application'),
+			}] : [{
 				text: i18n.ts.createAccount,
-				action: () => {
-					getAccountWithSignupDialog().then(res => {
-						if (res != null) {
-							switchAccount(host, res.id);
-						}
-					});
-				},
-			}],
+				action: createAccountAction(),
+			}])],
 		}, {
 			type: 'link',
 			icon: 'ti ti-users',
@@ -359,10 +372,10 @@ export function getAccountWithSigninDialog(): Promise<{ id: string, token: strin
 	});
 }
 
-export function getAccountWithSignupDialog(): Promise<{ id: string, token: string } | null> {
+export function getAccountWithSignupDialog(mode?: 'invitation' | 'application'): Promise<{ id: string, token: string } | null> {
 	return new Promise((resolve) => {
-		const { dispose } = popup(defineAsyncComponent(() => import('@/components/MkSignupDialog.vue')), {}, {
-			done: async (res: Misskey.entities.SignupResponse) => {
+		const { dispose } = popup(defineAsyncComponent(() => import('@/components/MkSignupDialog.vue')), { mode }, {
+			done: async (res: Misskey.entities.SignupSuccessResponse) => {
 				const user = JSON.parse(JSON.stringify(res));
 				delete user.token;
 				await addAccount(host, user, res.token);

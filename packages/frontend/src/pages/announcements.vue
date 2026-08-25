@@ -33,7 +33,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 						</MkA>
 					</div>
-					<div :class="$style.reactions">
+					<div v-if="!announcement.forYou" :class="$style.reactions">
 						<MkAnnouncementReactions
 							:announcementId="announcement.id"
 							:reactions="announcement.reactions"

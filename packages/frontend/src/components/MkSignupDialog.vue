@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	@close="onClose"
 	@closed="emit('closed')"
 >
-	<template #header>{{ i18n.ts.signup }}</template>
+	<template #header>{{ headerText }}</template>
 
 	<div style="overflow-x: clip;">
 		<Transition
@@ -22,10 +22,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 			:leaveToClass="$style.transition_x_leaveTo"
 		>
 			<template v-if="!isAcceptedServerRule">
-				<XServerRules @done="isAcceptedServerRule = true" @cancel="onClose"/>
+				<XServerRules :mode="mode" :juicePublicSettings="juicePublicSettings" @done="isAcceptedServerRule = true" @cancel="onClose"/>
 			</template>
 			<template v-else>
-				<XSignup :autoSet="autoSet" @signup="onSignup" @signupEmailPending="onSignupEmailPending"/>
+				<XSignup :autoSet="autoSet" :mode="mode" :juicePublicSettings="juicePublicSettings" @signup="onSignup" @signupEmailPending="onSignupEmailPending" @signupPendingApproval="onSignupPendingApproval"/>
 			</template>
 		</Transition>
 	</div>
@@ -33,21 +33,39 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { useTemplateRef, ref } from 'vue';
+import { useTemplateRef, ref, computed } from 'vue';
 import * as Misskey from 'misskey-js';
 import XSignup from '@/components/MkSignupDialog.form.vue';
 import XServerRules from '@/components/MkSignupDialog.rules.vue';
 import MkModalWindow from '@/components/MkModalWindow.vue';
+import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
+
+const juicePublicSettings = ref<Misskey.entities.JuicePublicSettingsResponse>({
+	approvalRequiredForSignup: false,
+	signupReasonRequired: true,
+	signupReasonMaxLength: 4096,
+});
+misskeyApi('juice/public-settings').then(res => {
+	juicePublicSettings.value = res;
+});
 
 const props = withDefaults(defineProps<{
 	autoSet?: boolean;
+	mode?: 'invitation' | 'application';
 }>(), {
 	autoSet: false,
+	mode: undefined,
+});
+
+const headerText = computed(() => {
+	if (props.mode === 'application') return i18n.ts._juice.applicationTitle;
+	if (props.mode === 'invitation') return i18n.ts.signup;
+	return juicePublicSettings.value.approvalRequiredForSignup ? i18n.ts._juice.applicationTitle : i18n.ts.signup;
 });
 
 const emit = defineEmits<{
-	(ev: 'done', res: Misskey.entities.SignupResponse): void;
+	(ev: 'done', res: Misskey.entities.SignupSuccessResponse): void;
 	(ev: 'cancelled'): void;
 	(ev: 'closed'): void;
 }>();
@@ -61,12 +79,18 @@ function onClose() {
 	dialog.value?.close();
 }
 
-function onSignup(res: Misskey.entities.SignupResponse) {
+function onSignup(res: Misskey.entities.SignupSuccessResponse) {
 	emit('done', res);
 	dialog.value?.close();
 }
 
 function onSignupEmailPending() {
+	emit('cancelled');
+	dialog.value?.close();
+}
+
+function onSignupPendingApproval() {
+	emit('cancelled');
 	dialog.value?.close();
 }
 </script>

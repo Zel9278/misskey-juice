@@ -31,4 +31,9 @@ export class MiUserPending {
 		length: 128,
 	})
 	public password: string;
+
+	@Column('text', {
+		nullable: true,
+	})
+	public reason: string | null;
 }

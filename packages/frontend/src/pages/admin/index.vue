@@ -231,6 +231,19 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		active: currentPage.value?.route.name === 'performance',
 	}],
 }, {
+	title: i18n.ts.juice,
+	items: [{
+		icon: 'ti ti-droplet',
+		text: i18n.ts.juice,
+		to: '/admin/juice',
+		active: currentPage.value?.route.name === 'juice',
+	}, {
+		icon: 'ti ti-user-question',
+		text: i18n.ts._juiceApprovals.title,
+		to: '/admin/juice-approvals',
+		active: currentPage.value?.route.name === 'juice-approvals',
+	}],
+}, {
 	title: i18n.ts.info,
 	items: [{
 		icon: 'ti ti-database',

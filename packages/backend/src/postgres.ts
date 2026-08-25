@@ -38,6 +38,7 @@ import { MiGalleryLike } from '@/models/GalleryLike.js';
 import { MiGalleryPost } from '@/models/GalleryPost.js';
 import { MiHashtag } from '@/models/Hashtag.js';
 import { MiInstance } from '@/models/Instance.js';
+import { MiJuiceSettings } from '@/models/JuiceSettings.js';
 import { MiMeta } from '@/models/Meta.js';
 import { MiModerationLog } from '@/models/ModerationLog.js';
 import { MiMuting } from '@/models/Muting.js';
@@ -183,6 +184,7 @@ export const entities = [
 	MiAnnouncementRead,
 	MiAnnouncementReaction,
 	MiMeta,
+	MiJuiceSettings,
 	MiInstance,
 	MiApp,
 	MiAvatarDecoration,

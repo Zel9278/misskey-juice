@@ -141,6 +141,12 @@ export class SigninApiService {
 			});
 		}
 
+		if (!user.approved) {
+			return error(403, {
+				id: '9f2f084b-af33-4f06-93cf-8a7fe04c6786',
+			});
+		}
+
 		const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 		const securityKeysAvailable = await this.userSecurityKeysRepository.countBy({ userId: user.id }).then(result => result >= 1);
 
