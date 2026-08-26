@@ -107,6 +107,16 @@ function fetchAccount(token: string, id?: string, forceShowDialog?: boolean): Pr
 								text: i18n.ts.tokenRevokedDescription,
 							});
 						}
+					} else if (res.error.id === '3c25f403-6ed7-4b14-ba24-be9bb72a29e4') {
+						// YOUR_ACCOUNT_NOT_APPROVED (JUICE)
+						// 承認式新規登録が有効なサーバーで、まだ承認されていない
+						if (forceShowDialog || $i && (token === $i.token || id === $i.id)) {
+							await alert({
+								type: 'error',
+								title: i18n.ts.accountNotApproved,
+								text: i18n.ts.accountNotApprovedDescription,
+							});
+						}
 					} else {
 						await alert({
 							type: 'error',

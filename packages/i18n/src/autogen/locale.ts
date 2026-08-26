@@ -2561,6 +2561,14 @@ export interface Locale extends ILocale {
      */
     "accountDeletedDescription": string;
     /**
+     * アカウントが未承認です
+     */
+    "accountNotApproved": string;
+    /**
+     * このアカウントはまだ運営による承認を受けていません。承認されるまでサインインできません。
+     */
+    "accountNotApprovedDescription": string;
+    /**
      * メニュー
      */
     "menu": string;
