@@ -671,6 +671,10 @@ export const packedMeDetailedOnlySchema = {
 			type: 'boolean',
 			nullable: true, optional: true,
 		},
+		emailLang: {
+			type: 'string',
+			nullable: true, optional: true,
+		},
 		securityKeysList: {
 			type: 'array',
 			nullable: false, optional: true,

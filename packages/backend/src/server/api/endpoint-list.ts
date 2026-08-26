@@ -283,6 +283,7 @@ export * as 'i/import-blocking' from './endpoints/i/import-blocking.js';
 export * as 'i/import-following' from './endpoints/i/import-following.js';
 export * as 'i/import-muting' from './endpoints/i/import-muting.js';
 export * as 'i/import-user-lists' from './endpoints/i/import-user-lists.js';
+export * as 'i/juice/update-email-lang' from './endpoints/i/juice/update-email-lang.js';
 export * as 'i/move' from './endpoints/i/move.js';
 export * as 'i/notifications' from './endpoints/i/notifications.js';
 export * as 'i/notifications-grouped' from './endpoints/i/notifications-grouped.js';

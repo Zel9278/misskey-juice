@@ -109,6 +109,10 @@ export const ROUTE_DEF = [{
 		name: 'email',
 		component: page(() => import('@/pages/settings/email.vue')),
 	}, {
+		path: '/juice',
+		name: 'juice',
+		component: page(() => import('@/pages/settings/juice.vue')),
+	}, {
 		path: '/security',
 		name: 'security',
 		component: page(() => import('@/pages/settings/security.vue')),

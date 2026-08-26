@@ -2724,6 +2724,15 @@ export type paths = {
          */
         post: operations['i___import-user-lists'];
     };
+    '/i/juice/update-email-lang': {
+        /**
+         * i/juice/update-email-lang
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:account*
+         */
+        post: operations['i___juice___update-email-lang'];
+    };
     '/i/move': {
         /**
          * i/move
@@ -4442,6 +4451,7 @@ export type components = {
             securityKeys: boolean;
             email?: string | null;
             emailVerified?: boolean | null;
+            emailLang?: string | null;
             securityKeysList?: {
                 /**
                  * Format: id
@@ -27136,6 +27146,69 @@ export interface operations {
             };
             /** @description Too many requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'i___juice___update-email-lang': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** @enum {string|null} */
+                    emailLang: null | 'ar-SA' | 'ca-ES' | 'cs-CZ' | 'da-DK' | 'de-DE' | 'en-US' | 'es-ES' | 'fr-FR' | 'id-ID' | 'it-IT' | 'ja-JP' | 'ja-KS' | 'kab-KAB' | 'kn-IN' | 'ko-KR' | 'nl-NL' | 'no-NO' | 'pl-PL' | 'pt-PT' | 'ru-RU' | 'sk-SK' | 'th-TH' | 'tr-TR' | 'ug-CN' | 'uk-UA' | 'vi-VN' | 'zh-CN' | 'zh-TW';
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
                 headers: {
                     [name: string]: unknown;
                 };

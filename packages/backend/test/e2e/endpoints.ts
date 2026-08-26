@@ -1390,6 +1390,45 @@ describe('Endpoints', () => {
 		});
 	});
 
+	describe('i/juice/update-email-lang', () => {
+		afterAll(async () => {
+			// 他のテストに影響しないよう元に戻す
+			const reset = await api('i/juice/update-email-lang', { emailLang: null }, alice);
+			assert.strictEqual(reset.status, 204);
+		});
+
+		test('メールの言語を変更でき、値が i に反映される', async () => {
+			const res = await api('i/juice/update-email-lang', { emailLang: 'en-US' }, alice);
+			assert.strictEqual(res.status, 204);
+
+			const i = await api('i', {}, alice);
+			assert.strictEqual(i.status, 200);
+			assert.strictEqual(i.body.emailLang, 'en-US');
+		});
+
+		test('null を指定すると未設定に戻せる', async () => {
+			const set = await api('i/juice/update-email-lang', { emailLang: 'ja-JP' }, alice);
+			assert.strictEqual(set.status, 204);
+
+			const res = await api('i/juice/update-email-lang', { emailLang: null }, alice);
+			assert.strictEqual(res.status, 204);
+
+			const i = await api('i', {}, alice);
+			assert.strictEqual(i.status, 200);
+			assert.strictEqual(i.body.emailLang, null);
+		});
+
+		test('サポート対象外の言語コードは拒否される', async () => {
+			const res = await api('i/juice/update-email-lang', { emailLang: 'xx-XX' } as any, alice);
+			assert.strictEqual(res.status, 400);
+		});
+
+		test('未認証では変更できない', async () => {
+			const res = await api('i/juice/update-email-lang', { emailLang: 'en-US' });
+			assert.strictEqual(res.status, 401);
+		});
+	});
+
 	describe('承認式新規登録', () => {
 		beforeAll(async () => {
 			const res = await api('admin/juice/update-settings', {

@@ -2012,6 +2012,7 @@ declare namespace entities {
         IImportFollowingRequest,
         IImportMutingRequest,
         IImportUserListsRequest,
+        IJuiceUpdateEmailLangRequest,
         IMoveRequest,
         IMoveResponse,
         INotificationsRequest,
@@ -2706,6 +2707,9 @@ type IImportMutingRequest = operations['i___import-muting']['requestBody']['cont
 
 // @public (undocumented)
 type IImportUserListsRequest = operations['i___import-user-lists']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type IJuiceUpdateEmailLangRequest = operations['i___juice___update-email-lang']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type IMoveRequest = operations['i___move']['requestBody']['content']['application/json'];

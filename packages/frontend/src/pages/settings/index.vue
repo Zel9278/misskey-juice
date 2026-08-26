@@ -104,6 +104,11 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		to: '/settings/email',
 		active: currentPage.value?.route.name === 'email',
 	}, {
+		icon: 'ti ti-droplet',
+		text: i18n.ts.juice,
+		to: '/settings/juice',
+		active: currentPage.value?.route.name === 'juice',
+	}, {
 		icon: 'ti ti-lock',
 		text: i18n.ts.security,
 		to: '/settings/security',

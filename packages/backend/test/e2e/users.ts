@@ -156,6 +156,7 @@ describe('ユーザー', () => {
 			...(security ? {
 				email: user.email,
 				emailVerified: user.emailVerified,
+				emailLang: user.emailLang,
 				securityKeysList: user.securityKeysList,
 			} : {}),
 		});
