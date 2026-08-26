@@ -12,6 +12,7 @@ import { DriveService } from '@/core/DriveService.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import type { MiNote } from '@/models/Note.js';
 import { EmailService } from '@/core/EmailService.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
 import { bindThis } from '@/decorators.js';
 import { SearchService } from '@/core/SearchService.js';
 import { PageService } from '@/core/PageService.js';
@@ -42,6 +43,7 @@ export class DeleteAccountProcessorService {
 		private driveService: DriveService,
 		private pageService: PageService,
 		private emailService: EmailService,
+		private emailI18nService: EmailI18nService,
 		private queueLoggerService: QueueLoggerService,
 		private searchService: SearchService,
 	) {
@@ -142,9 +144,11 @@ export class DeleteAccountProcessorService {
 		{ // Send email notification
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 			if (profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, 'Account deleted',
-					'Your account has been deleted.',
-					'Your account has been deleted.');
+				const lang = await this.emailI18nService.resolveLang(profile.emailLang);
+				const i18n = this.emailI18nService.getI18n(lang);
+				this.emailService.sendEmail(profile.email, i18n.t('_email.accountDeleted.subject'),
+					i18n.t('_email.accountDeleted.html'),
+					i18n.t('_email.accountDeleted.text'));
 			}
 		}
 

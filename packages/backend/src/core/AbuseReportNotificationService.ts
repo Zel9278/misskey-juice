@@ -18,6 +18,7 @@ import type {
 	MiUser,
 } from '@/models/_.js';
 import { EmailService } from '@/core/EmailService.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { RecipientMethod } from '@/models/AbuseReportNotificationRecipient.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
@@ -41,6 +42,7 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 		private roleService: RoleService,
 		private systemWebhookService: SystemWebhookService,
 		private emailService: EmailService,
+		private emailI18nService: EmailI18nService,
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
 		private userEntityService: UserEntityService,
@@ -96,27 +98,30 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 			return;
 		}
 
-		const recipientEMailAddresses = await this.fetchEMailRecipients().then(it => it
+		const recipients = await this.fetchEMailRecipients().then(it => it
 			.filter(it => it.isActive && it.userProfile?.emailVerified)
-			.map(it => it.userProfile?.email)
-			.filter(x => x != null),
+			.map(it => ({ email: it.userProfile?.email, emailLang: it.userProfile?.emailLang ?? null }))
+			.filter((it): it is { email: string; emailLang: string | null } => it.email != null),
 		);
 
-		recipientEMailAddresses.push(
-			...(this.meta.email ? [this.meta.email] : []),
-		);
+		if (this.meta.email) {
+			recipients.push({ email: this.meta.email, emailLang: null });
+		}
 
-		if (recipientEMailAddresses.length <= 0) {
+		if (recipients.length <= 0) {
 			return;
 		}
 
-		for (const mailAddress of recipientEMailAddresses) {
+		for (const recipient of recipients) {
+			const lang = await this.emailI18nService.resolveLang(recipient.emailLang);
+			const subject = this.emailI18nService.getI18n(lang).t('_email.newAbuseReport.subject');
+
 			await Promise.all(
 				abuseReports.map(it => {
 					// TODO: 送信処理はJobQueue化したい
 					return this.emailService.sendEmail(
-						mailAddress,
-						'New Abuse Report',
+						recipient.email,
+						subject,
 						sanitizeHtml(it.comment),
 						sanitizeHtml(it.comment),
 					);

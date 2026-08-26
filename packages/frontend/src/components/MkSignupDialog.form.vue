@@ -34,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #label>{{ i18n.ts._signup.reason }}</template>
 				<template #caption>{{ i18n.tsx._signup.reasonCaption({ max: props.juicePublicSettings.signupReasonMaxLength }) }}</template>
 			</MkTextarea>
-			<MkInput v-if="instance.emailRequiredForSignup" v-model="email" :debounce="true" type="email" :spellcheck="false" required data-testid="signup-email" @update:modelValue="onChangeEmail">
+			<MkInput v-if="showEmailField" v-model="email" :debounce="true" type="email" :spellcheck="false" required data-testid="signup-email" @update:modelValue="onChangeEmail">
 				<template #label>{{ i18n.ts.emailAddress }} <div v-tooltip:dialog="i18n.ts._signup.emailAddressInfo" class="_button _help"><i class="ti ti-help-circle"></i></div></template>
 				<template #prefix><i class="ti ti-mail"></i></template>
 				<template #caption>
@@ -50,6 +50,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span v-else-if="emailState === 'error'" style="color: var(--MI_THEME-error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.error }}</span>
 				</template>
 			</MkInput>
+			<MkSelect v-if="showEmailField" v-model="emailLang" :items="langs.map(x => ({ label: x[1], value: x[0] }))" data-testid="signup-email-lang">
+				<template #label>{{ i18n.ts._juice.emailLanguage }}</template>
+				<template #caption>{{ i18n.ts._juice.emailLanguageCaption }}</template>
+			</MkSelect>
 			<MkInput v-model="password" type="password" autocomplete="new-password" required data-testid="signup-password" @update:modelValue="onChangePassword">
 				<template #label>{{ i18n.ts.password }}</template>
 				<template #prefix><i class="ti ti-lock"></i></template>
@@ -88,10 +92,12 @@ import { ref, computed } from 'vue';
 import { toUnicode } from 'punycode.js';
 import * as Misskey from 'misskey-js';
 import * as config from '@@/js/config.js';
+import { langs } from '@@/js/config.js';
 import MkButton from './MkButton.vue';
 import MkInput from './MkInput.vue';
 import MkTextarea from './MkTextarea.vue';
 import MkInfo from './MkInfo.vue';
+import MkSelect from './MkSelect.vue';
 import type { Captcha } from '@/components/MkCaptcha.vue';
 import MkCaptcha from '@/components/MkCaptcha.vue';
 import * as os from '@/os.js';
@@ -136,6 +142,26 @@ const retypedPassword = ref<string>('');
 const invitationCode = ref<string>('');
 const email = ref('');
 const reason = ref('');
+
+// ブラウザの優先言語リスト(navigator.languages)を優先度順に見て、完全一致する翻訳があればそれを使う。
+// 無ければ次に優先度順で主言語一致を探す。最後まで何も無ければ ja-JP にフォールバックする
+function pickDefaultEmailLang(): string {
+	const preferred = navigator.languages && navigator.languages.length > 0 ? navigator.languages : [navigator.language];
+
+	for (const pref of preferred) {
+		const exact = langs.find(([code]) => code === pref)?.[0];
+		if (exact) return exact;
+	}
+
+	for (const pref of preferred) {
+		const primary = langs.find(([code]) => code.split('-')[0] === pref.split('-')[0])?.[0];
+		if (primary) return primary;
+	}
+
+	return 'ja-JP';
+}
+
+const emailLang = ref<string>(pickDefaultEmailLang());
 const usernameState = ref<null | 'wait' | 'ok' | 'unavailable' | 'error' | 'invalid-format' | 'min-range' | 'max-range'>(null);
 const emailState = ref<null | 'wait' | 'ok' | 'unavailable:used' | 'unavailable:format' | 'unavailable:disposable' | 'unavailable:banned' | 'unavailable:mx' | 'unavailable:smtp' | 'unavailable' | 'error'>(null);
 const passwordStrength = ref<'' | 'low' | 'medium' | 'high'>('');
@@ -169,6 +195,9 @@ const showReasonField = computed((): boolean => {
 	return props.juicePublicSettings.approvalRequiredForSignup && !approvalBypassedByInvitation.value;
 });
 
+// メールアドレス欄・メール受信言語欄を表示するか
+const showEmailField = computed((): boolean => instance.emailRequiredForSignup);
+
 const shouldDisableSubmitting = computed((): boolean => {
 	return submitting.value ||
 		instance.enableHcaptcha && !hCaptchaResponse.value ||
@@ -176,7 +205,7 @@ const shouldDisableSubmitting = computed((): boolean => {
 		instance.enableRecaptcha && !reCaptchaResponse.value ||
 		instance.enableTurnstile && !turnstileResponse.value ||
 		instance.enableTestcaptcha && !testcaptchaResponse.value ||
-		instance.emailRequiredForSignup && emailState.value !== 'ok' ||
+		showEmailField.value && emailState.value !== 'ok' ||
 		showInvitationField.value && invitationCode.value === '' ||
 		showReasonField.value && props.juicePublicSettings.signupReasonRequired && reason.value.trim() === '' ||
 		showReasonField.value && reason.value.length > props.juicePublicSettings.signupReasonMaxLength ||
@@ -303,6 +332,7 @@ async function onSubmit(): Promise<void> {
 		emailAddress: email.value,
 		invitationCode: showInvitationField.value ? invitationCode.value : undefined,
 		reason: showReasonField.value ? reason.value : undefined,
+		emailLang: showEmailField.value ? emailLang.value : undefined,
 		'hcaptcha-response': hCaptchaResponse.value,
 		'm-captcha-response': mCaptchaResponse.value,
 		'g-recaptcha-response': reCaptchaResponse.value,

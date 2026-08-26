@@ -10,6 +10,7 @@ import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { EmailService } from '@/core/EmailService.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -56,6 +57,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private moderationLogService: ModerationLogService,
 		private emailService: EmailService,
+		private emailI18nService: EmailI18nService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({ id: ps.userId });
@@ -68,9 +70,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const profile = await this.userProfilesRepository.findOneBy({ userId: user.id });
 			if (profile?.email != null) {
-				this.emailService.sendEmail(profile.email, 'Signup declined / 登録が却下されました',
-					'Your signup application has been declined.<br><br>アカウントの登録申請は却下されました。',
-					'Your signup application has been declined.\n\nアカウントの登録申請は却下されました。');
+				const lang = await this.emailI18nService.resolveLang(profile.emailLang);
+				const i18n = this.emailI18nService.getI18n(lang);
+				this.emailService.sendEmail(profile.email, i18n.t('_email.signupDeclined.subject'),
+					i18n.t('_email.signupDeclined.html'),
+					i18n.t('_email.signupDeclined.text'));
 			}
 
 			this.moderationLogService.log(me, 'declineSignup', {

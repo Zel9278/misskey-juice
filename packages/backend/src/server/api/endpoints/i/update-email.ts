@@ -10,6 +10,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { MiMeta, UserProfilesRepository } from '@/models/_.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { EmailService } from '@/core/EmailService.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -77,6 +78,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private userEntityService: UserEntityService,
 		private emailService: EmailService,
+		private emailI18nService: EmailI18nService,
 		private userAuthService: UserAuthService,
 		private globalEventService: GlobalEventService,
 	) {
@@ -133,9 +135,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 				const link = `${this.config.url}/verify-email/${code}`;
 
-				this.emailService.sendEmail(ps.email, 'Email verification',
-					`To verify email, please click this link:<br><a href="${link}">${link}</a>`,
-					`To verify email, please click this link: ${link}`);
+				const lang = await this.emailI18nService.resolveLang(profile.emailLang);
+				const i18n = this.emailI18nService.getI18n(lang);
+				this.emailService.sendEmail(ps.email, i18n.t('_email.verifyEmail.subject'),
+					i18n.t('_email.verifyEmail.html', { link }),
+					i18n.t('_email.verifyEmail.text', { link }));
 			}
 
 			return iObj;

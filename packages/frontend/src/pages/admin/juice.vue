@@ -30,11 +30,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 									<template #label><SearchLabel>{{ i18n.ts._juice.signupReasonMaxLength }}</SearchLabel></template>
 								</MkInput>
 							</SearchMarker>
-
-							<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 						</div>
 					</MkFolder>
 				</SearchMarker>
+
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.emailLanguage }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSelect v-model="defaultEmailLang" :items="langs.map(x => ({ label: x[1], value: x[0] }))">
+									<template #label><SearchLabel>{{ i18n.ts._juice.defaultEmailLang }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.defaultEmailLangCaption }}</template>
+								</MkSelect>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 			</div>
 		</SearchMarker>
 	</div>
@@ -43,9 +58,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
+import { langs } from '@@/js/config.js';
 import MkFolder from '@/components/MkFolder.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkInput from '@/components/MkInput.vue';
+import MkSelect from '@/components/MkSelect.vue';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
@@ -57,12 +74,14 @@ const settings = await misskeyApi('admin/juice/settings');
 const approvalRequiredForSignup = ref(settings.approvalRequiredForSignup);
 const signupReasonRequired = ref(settings.signupReasonRequired);
 const signupReasonMaxLength = ref(settings.signupReasonMaxLength);
+const defaultEmailLang = ref(settings.defaultEmailLang);
 
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
 		approvalRequiredForSignup: approvalRequiredForSignup.value,
 		signupReasonRequired: signupReasonRequired.value,
 		signupReasonMaxLength: signupReasonMaxLength.value,
+		defaultEmailLang: defaultEmailLang.value,
 	});
 }
 

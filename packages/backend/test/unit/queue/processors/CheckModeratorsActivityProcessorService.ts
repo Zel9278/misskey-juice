@@ -17,6 +17,7 @@ import { MetaService } from '@/core/MetaService.js';
 import { DI } from '@/di-symbols.js';
 import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
 import { EmailService } from '@/core/EmailService.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
 import { SystemWebhookEventType } from '@/models/SystemWebhook.js';
@@ -105,6 +106,12 @@ describe('CheckModeratorsActivityProcessorService', () => {
 					},
 					{
 						provide: EmailService, useFactory: () => ({ sendEmail: vi.fn() }),
+					},
+					{
+						provide: EmailI18nService, useFactory: () => ({
+							resolveLang: vi.fn().mockResolvedValue('ja-JP'),
+							getI18n: vi.fn().mockReturnValue({ t: (key: string) => key }),
+						}),
 					},
 					{
 						provide: SystemWebhookService, useFactory: () => ({

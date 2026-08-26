@@ -3521,6 +3521,7 @@ type SignupRequest = {
     invitationCode?: string;
     emailAddress?: string;
     reason?: string;
+    emailLang?: string;
     'hcaptcha-response'?: string | null;
     'g-recaptcha-response'?: string | null;
     'turnstile-response'?: string | null;

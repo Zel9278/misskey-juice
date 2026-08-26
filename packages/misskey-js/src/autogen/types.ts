@@ -9729,6 +9729,7 @@ export interface operations {
                         approvalRequiredForSignup: boolean;
                         signupReasonRequired: boolean;
                         signupReasonMaxLength: number;
+                        defaultEmailLang: string;
                     };
                 };
             };
@@ -9786,6 +9787,7 @@ export interface operations {
                     approvalRequiredForSignup?: boolean;
                     signupReasonRequired?: boolean;
                     signupReasonMaxLength?: number;
+                    defaultEmailLang?: string;
                 };
             };
         };

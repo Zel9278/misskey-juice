@@ -14,6 +14,8 @@ export interface JuiceSettingsValue {
 	signupReasonRequired?: boolean;
 	/** 登録理由の最大文字数 */
 	signupReasonMaxLength?: number;
+	/** ユーザーがメール言語を選択・保存していない場合に、システムメールで使う既定の言語 */
+	defaultEmailLang?: string;
 }
 
 /**
@@ -29,6 +31,18 @@ export function resolveSignupApprovalSettings(settings: JuiceSettingsValue): {
 		approvalRequiredForSignup: settings.approvalRequiredForSignup ?? false,
 		signupReasonRequired: settings.signupReasonRequired ?? true,
 		signupReasonMaxLength: settings.signupReasonMaxLength ?? 4096,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・EmailI18nService の2箇所で共通利用する。
+ */
+export function resolveEmailSettings(settings: JuiceSettingsValue): {
+	defaultEmailLang: string;
+} {
+	return {
+		defaultEmailLang: settings.defaultEmailLang ?? 'ja-JP',
 	};
 }
 

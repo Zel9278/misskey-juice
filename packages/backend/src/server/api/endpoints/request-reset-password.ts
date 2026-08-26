@@ -12,6 +12,7 @@ import { IdService } from '@/core/IdService.js';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import { EmailService } from '@/core/EmailService.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
 import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
 
 export const meta = {
@@ -57,6 +58,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private idService: IdService,
 		private emailService: EmailService,
+		private emailI18nService: EmailI18nService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({
@@ -91,9 +93,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const link = `${this.config.url}/reset-password/${token}`;
 
-			this.emailService.sendEmail(ps.email, 'Password reset requested',
-				`To reset password, please click this link:<br><a href="${link}">${link}</a>`,
-				`To reset password, please click this link: ${link}`);
+			const lang = await this.emailI18nService.resolveLang(profile.emailLang);
+			const i18n = this.emailI18nService.getI18n(lang);
+			this.emailService.sendEmail(ps.email, i18n.t('_email.resetPassword.subject'),
+				i18n.t('_email.resetPassword.html', { link }),
+				i18n.t('_email.resetPassword.text', { link }));
 		});
 	}
 }

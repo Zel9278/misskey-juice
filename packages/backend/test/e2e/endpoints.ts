@@ -69,6 +69,19 @@ describe('Endpoints', () => {
 
 			assert.strictEqual(res.status, 400);
 		});
+
+		test('emailLang を指定してもアカウントが作成できる', async () => {
+			const username = randomString();
+			const res = await api('signup', {
+				username,
+				password: 'test1',
+				emailLang: 'en-US',
+			});
+
+			assert.strictEqual(res.status, 200);
+			assert.ok(res.body && !('pendingApproval' in res.body));
+			assert.strictEqual(res.body.username, username);
+		});
 	});
 
 	describe('signin-flow', () => {
@@ -1330,24 +1343,28 @@ describe('Endpoints', () => {
 				approvalRequiredForSignup: false,
 				signupReasonRequired: true,
 				signupReasonMaxLength: 4096,
+				defaultEmailLang: 'ja-JP',
 			});
 		});
 
 		test('管理者は設定を更新でき、値が往復する', async () => {
 			const res = await api('admin/juice/update-settings', {
 				signupReasonMaxLength: 1000,
+				defaultEmailLang: 'en-US',
 			}, alice);
 			assert.strictEqual(res.status, 204);
 
 			const after = await api('admin/juice/settings', {}, alice);
 			assert.strictEqual(after.status, 200);
 			assert.strictEqual(after.body.signupReasonMaxLength, 1000);
+			assert.strictEqual(after.body.defaultEmailLang, 'en-US');
 
 			// 他のテストに影響しないよう元に戻す
 			const reset = await api('admin/juice/update-settings', {
 				approvalRequiredForSignup: false,
 				signupReasonRequired: true,
 				signupReasonMaxLength: 4096,
+				defaultEmailLang: 'ja-JP',
 			}, alice);
 			assert.strictEqual(reset.status, 204);
 		});

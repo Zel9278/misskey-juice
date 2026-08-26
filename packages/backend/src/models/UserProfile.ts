@@ -70,6 +70,12 @@ export class MiUserProfile {
 	public lang: string | null;
 
 	@Column('varchar', {
+		length: 32, nullable: true,
+		comment: 'The language used for system emails sent to this user (JUICE). Falls back to the instance default when null.',
+	})
+	public emailLang: string | null;
+
+	@Column('varchar', {
 		length: 512, nullable: true,
 		comment: 'Remote URL of the user.',
 	})

@@ -101,6 +101,9 @@ export default defineConfig((args) => {
 		'file-type',
 		// バンドルするとSentryの自動計装が正しく行われなくなるため外しておく
 		'pg',
+		// バンドルすると import.meta.url 相対で読んでいる locales/*.yml の解決先が
+		// バンドル後のチャンクファイルの場所になってしまい読み込めなくなるため外しておく
+		'i18n',
 	];
 
 	const define: Record<string, string> = {

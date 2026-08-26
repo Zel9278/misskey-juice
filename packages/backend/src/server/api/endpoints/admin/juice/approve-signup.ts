@@ -10,6 +10,7 @@ import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { EmailService } from '@/core/EmailService.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -53,6 +54,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private moderationLogService: ModerationLogService,
 		private emailService: EmailService,
+		private emailI18nService: EmailI18nService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const user = await this.usersRepository.findOneBy({ id: ps.userId });
@@ -75,9 +77,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const profile = await this.userProfilesRepository.findOneBy({ userId: user.id });
 			if (profile?.email != null) {
-				this.emailService.sendEmail(profile.email, 'Signup approved / 登録が承認されました',
-					'Your account has been approved. You can now sign in.<br><br>アカウントの登録が承認されました。サインインできるようになりました。',
-					'Your account has been approved. You can now sign in.\n\nアカウントの登録が承認されました。サインインできるようになりました。');
+				const lang = await this.emailI18nService.resolveLang(profile.emailLang);
+				const i18n = this.emailI18nService.getI18n(lang);
+				this.emailService.sendEmail(profile.email, i18n.t('_email.signupApproved.subject'),
+					i18n.t('_email.signupApproved.html'),
+					i18n.t('_email.signupApproved.text'));
 			}
 		});
 	}

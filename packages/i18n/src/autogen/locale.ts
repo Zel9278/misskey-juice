@@ -8610,6 +8610,169 @@ export interface Locale extends ILocale {
              */
             "title": string;
         };
+        "resetPassword": {
+            /**
+             * パスワード再設定のリクエスト
+             */
+            "subject": string;
+            /**
+             * パスワードを再設定するには、こちらのリンクをクリックしてください:<br><a href="{link}">{link}</a>
+             */
+            "html": ParameterizedString<"link" | "link">;
+            /**
+             * パスワードを再設定するには、こちらのリンクをクリックしてください: {link}
+             */
+            "text": ParameterizedString<"link">;
+        };
+        "verifyEmail": {
+            /**
+             * メールアドレスの確認
+             */
+            "subject": string;
+            /**
+             * メールアドレスを確認するには、こちらのリンクをクリックしてください:<br><a href="{link}">{link}</a>
+             */
+            "html": ParameterizedString<"link" | "link">;
+            /**
+             * メールアドレスを確認するには、こちらのリンクをクリックしてください: {link}
+             */
+            "text": ParameterizedString<"link">;
+        };
+        "signupConfirm": {
+            /**
+             * 新規登録の確認
+             */
+            "subject": string;
+            /**
+             * 登録を完了するには、こちらのリンクをクリックしてください:<br><a href="{link}">{link}</a>
+             */
+            "html": ParameterizedString<"link" | "link">;
+            /**
+             * 登録を完了するには、こちらのリンクをクリックしてください: {link}
+             */
+            "text": ParameterizedString<"link">;
+        };
+        "signupPendingApproval": {
+            /**
+             * 登録の承認待ちです
+             */
+            "subject": string;
+            /**
+             * ご登録ありがとうございます。管理者の承認が完了するまでサインインできません。審査結果は追ってメールでお知らせします。
+             */
+            "html": string;
+            /**
+             * ご登録ありがとうございます。管理者の承認が完了するまでサインインできません。審査結果は追ってメールでお知らせします。
+             */
+            "text": string;
+        };
+        "signupApproved": {
+            /**
+             * 登録が承認されました
+             */
+            "subject": string;
+            /**
+             * アカウントの登録が承認されました。サインインできるようになりました。
+             */
+            "html": string;
+            /**
+             * アカウントの登録が承認されました。サインインできるようになりました。
+             */
+            "text": string;
+        };
+        "signupDeclined": {
+            /**
+             * 登録が却下されました
+             */
+            "subject": string;
+            /**
+             * アカウントの登録申請は却下されました。
+             */
+            "html": string;
+            /**
+             * アカウントの登録申請は却下されました。
+             */
+            "text": string;
+        };
+        "newLogin": {
+            /**
+             * ログインがありました
+             */
+            "subject": string;
+            /**
+             * 新しいログインがありました。このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を更新してください。
+             */
+            "html": string;
+            /**
+             * 新しいログインがありました。このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を更新してください。
+             */
+            "text": string;
+        };
+        "accountDeleted": {
+            /**
+             * アカウントが削除されました
+             */
+            "subject": string;
+            /**
+             * アカウントが削除されました。
+             */
+            "html": string;
+            /**
+             * アカウントが削除されました。
+             */
+            "text": string;
+        };
+        "moderatorInactivity": {
+            /**
+             * モデレーター不在の通知
+             */
+            "subject": string;
+            /**
+             * モデレーター各位<br><br>モデレーターが一定期間活動していないようです。あと{days}日活動していない状態が続くと招待制に切り替わります。<br>招待制に切り替わることを望まない場合は、Misskeyにログインして最終アクティブ日時を更新してください。
+             */
+            "htmlDays": ParameterizedString<"days">;
+            /**
+             * モデレーター各位
+             *
+             * モデレーターが一定期間活動していないようです。あと{days}日活動していない状態が続くと招待制に切り替わります。
+             * 招待制に切り替わることを望まない場合は、Misskeyにログインして最終アクティブ日時を更新してください。
+             */
+            "textDays": ParameterizedString<"days">;
+            /**
+             * モデレーター各位<br><br>モデレーターが一定期間活動していないようです。あと{hours}時間活動していない状態が続くと招待制に切り替わります。<br>招待制に切り替わることを望まない場合は、Misskeyにログインして最終アクティブ日時を更新してください。
+             */
+            "htmlHours": ParameterizedString<"hours">;
+            /**
+             * モデレーター各位
+             *
+             * モデレーターが一定期間活動していないようです。あと{hours}時間活動していない状態が続くと招待制に切り替わります。
+             * 招待制に切り替わることを望まない場合は、Misskeyにログインして最終アクティブ日時を更新してください。
+             */
+            "textHours": ParameterizedString<"hours">;
+        };
+        "invitationOnlyChanged": {
+            /**
+             * 招待制に変更されました
+             */
+            "subject": string;
+            /**
+             * モデレーター各位<br><br>モデレーターの活動が{days}日間検出されなかったため、招待制に変更されました。<br>招待制を解除するには、コントロールパネルにアクセスする必要があります。
+             */
+            "html": ParameterizedString<"days">;
+            /**
+             * モデレーター各位
+             *
+             * モデレーターの活動が{days}日間検出されなかったため、招待制に変更されました。
+             * 招待制を解除するには、コントロールパネルにアクセスする必要があります。
+             */
+            "text": ParameterizedString<"days">;
+        };
+        "newAbuseReport": {
+            /**
+             * 新しい通報があります
+             */
+            "subject": string;
+        };
     };
     "_plugin": {
         /**
@@ -13459,6 +13622,22 @@ export interface Locale extends ILocale {
          * このサーバーは承認式の新規登録です。登録後、モデレーターまたは管理者が承認するまでサインインできません。
          */
         "approvalSignupNotice": string;
+        /**
+         * メールの言語
+         */
+        "emailLanguage": string;
+        /**
+         * パスワード再設定や各種通知など、今後このアカウント宛に送信されるメールで使う言語を選択してください。
+         */
+        "emailLanguageCaption": string;
+        /**
+         * メールの既定の言語
+         */
+        "defaultEmailLang": string;
+        /**
+         * ユーザーがメールの言語を選択していない場合に使う既定の言語です。
+         */
+        "defaultEmailLangCaption": string;
     };
     "_juiceApprovals": {
         /**

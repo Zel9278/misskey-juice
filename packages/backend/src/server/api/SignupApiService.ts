@@ -14,6 +14,7 @@ import { IdService } from '@/core/IdService.js';
 import { SignupService } from '@/core/SignupService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { EmailService } from '@/core/EmailService.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
 import { resolveSignupApprovalSettings } from '@/models/JuiceSettings.js';
 import { MiLocalUser } from '@/models/User.js';
@@ -53,6 +54,7 @@ export class SignupApiService {
 		private signupService: SignupService,
 		private signinService: SigninService,
 		private emailService: EmailService,
+		private emailI18nService: EmailI18nService,
 		private juiceSettingsService: JuiceSettingsService,
 	) {
 	}
@@ -67,6 +69,7 @@ export class SignupApiService {
 				invitationCode?: string;
 				emailAddress?: string;
 				reason?: string;
+				emailLang?: string;
 				'hcaptcha-response'?: string;
 				'g-recaptcha-response'?: string;
 				'turnstile-response'?: string;
@@ -118,6 +121,7 @@ export class SignupApiService {
 		const invitationCode = body['invitationCode'];
 		const emailAddress = body['emailAddress'];
 		const reason = typeof body['reason'] === 'string' ? body['reason'] : undefined;
+		const emailLang = typeof body['emailLang'] === 'string' ? body['emailLang'] : undefined;
 
 		const { approvalRequiredForSignup, signupReasonRequired, signupReasonMaxLength } =
 			resolveSignupApprovalSettings(await this.juiceSettingsService.fetch());
@@ -225,13 +229,16 @@ export class SignupApiService {
 				username: username,
 				password: hash,
 				reason: approvalRequiredForThisSignup ? (reason ?? null) : null,
+				emailLang: emailLang ?? null,
 			});
 
 			const link = `${this.config.url}/signup-complete/${code}`;
 
-			this.emailService.sendEmail(emailAddress!, 'Signup',
-				`To complete signup, please click this link:<br><a href="${link}">${link}</a>`,
-				`To complete signup, please click this link: ${link}`);
+			const lang = await this.emailI18nService.resolveLang(emailLang);
+			const i18n = this.emailI18nService.getI18n(lang);
+			this.emailService.sendEmail(emailAddress!, i18n.t('_email.signupConfirm.subject'),
+				i18n.t('_email.signupConfirm.html', { link }),
+				i18n.t('_email.signupConfirm.text', { link }));
 
 			if (ticket) {
 				await this.registrationTicketsRepository.update(ticket.id, {
@@ -248,6 +255,7 @@ export class SignupApiService {
 					username, password, host,
 					approved: !approvalRequiredForThisSignup,
 					signupReason: approvalRequiredForThisSignup ? (reason ?? null) : undefined,
+					emailLang,
 				});
 
 				if (ticket) {
@@ -301,6 +309,7 @@ export class SignupApiService {
 				passwordHash: pendingUser.password,
 				approved: !approvalRequiredForThisSignup,
 				signupReason: approvalRequiredForThisSignup ? pendingUser.reason : undefined,
+				emailLang: pendingUser.emailLang,
 			});
 
 			this.userPendingsRepository.delete({
@@ -324,9 +333,11 @@ export class SignupApiService {
 			}
 
 			if (approvalRequiredForThisSignup) {
-				this.emailService.sendEmail(pendingUser.email, 'Signup pending approval / 登録の承認待ちです',
-					'Thank you for signing up. An administrator needs to review your application before you can sign in. We will email you again once a decision has been made.<br><br>ご登録ありがとうございます。管理者の承認が完了するまでサインインできません。審査結果は追ってメールでお知らせします。',
-					'Thank you for signing up. An administrator needs to review your application before you can sign in. We will email you again once a decision has been made.\n\nご登録ありがとうございます。管理者の承認が完了するまでサインインできません。審査結果は追ってメールでお知らせします。');
+				const lang = await this.emailI18nService.resolveLang(pendingUser.emailLang);
+				const i18n = this.emailI18nService.getI18n(lang);
+				this.emailService.sendEmail(pendingUser.email, i18n.t('_email.signupPendingApproval.subject'),
+					i18n.t('_email.signupPendingApproval.html'),
+					i18n.t('_email.signupPendingApproval.text'));
 
 				return { pendingApproval: true } as const;
 			}
