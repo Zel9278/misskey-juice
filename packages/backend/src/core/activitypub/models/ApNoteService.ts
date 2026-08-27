@@ -322,6 +322,7 @@ export class ApNoteService {
 				cw,
 				text,
 				localOnly: false,
+				isAIGenerated: !!note._juice_isAIGenerated, // JUICE
 				visibility,
 				visibleUsers,
 				apMentions,

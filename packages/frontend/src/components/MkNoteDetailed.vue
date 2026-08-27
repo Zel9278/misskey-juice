@@ -56,6 +56,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<MkUserName :nowrap="false" :user="appearNote.user"/>
 						</MkA>
 						<span v-if="appearNote.user.isBot" :class="$style.isBot">bot</span>
+						<span v-if="$appearNote.isAIGenerated" v-tooltip="i18n.ts.aiGenerated" :class="$style.aiGenerated" :aria-label="i18n.ts.aiGenerated" role="img"><i class="ti ti-sparkles"></i></span>
 						<div :class="$style.noteHeaderInfo">
 							<span v-if="appearNote.visibility !== 'public'" style="margin-left: 0.5em;" :title="i18n.ts._visibility[appearNote.visibility]">
 								<i v-if="appearNote.visibility === 'home'" class="ti ti-home"></i>
@@ -519,6 +520,16 @@ const keymap = {
 }
 
 .isBot {
+	display: inline-block;
+	margin: 0 0.5em;
+	padding: 4px 6px;
+	font-size: 80%;
+	line-height: 1;
+	border: solid 0.5px var(--MI_THEME-divider);
+	border-radius: 4px;
+}
+
+.aiGenerated {
 	display: inline-block;
 	margin: 0 0.5em;
 	padding: 4px 6px;

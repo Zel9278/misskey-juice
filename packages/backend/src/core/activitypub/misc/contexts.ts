@@ -564,6 +564,9 @@ const extension_context_definition = {
 		'@type': 'schema:text',
 	},
 	'isCat': 'misskey:isCat',
+	// JUICE (misskey-juice独自拡張。misskey-hub.netの名前空間とは別に、フォーク独自のプロパティとして分離する)
+	juice: 'https://github.com/Zel9278/misskey-juice#',
+	'_juice_isAIGenerated': 'juice:_juice_isAIGenerated',
 	// vcard
 	vcard: 'http://www.w3.org/2006/vcard/ns#',
 } satisfies Context;

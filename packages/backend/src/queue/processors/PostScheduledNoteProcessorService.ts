@@ -53,6 +53,7 @@ export class PostScheduledNoteProcessorService {
 				renoteId: draft.renoteId,
 				cw: draft.cw,
 				localOnly: draft.localOnly,
+				isAIGenerated: draft.isAIGenerated,
 				reactionAcceptance: draft.reactionAcceptance,
 				visibility: draft.visibility,
 				visibleUserIds: draft.visibleUserIds,

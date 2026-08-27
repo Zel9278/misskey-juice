@@ -284,6 +284,7 @@ export * as 'i/import-following' from './endpoints/i/import-following.js';
 export * as 'i/import-muting' from './endpoints/i/import-muting.js';
 export * as 'i/import-user-lists' from './endpoints/i/import-user-lists.js';
 export * as 'i/juice/update-email-lang' from './endpoints/i/juice/update-email-lang.js';
+export * as 'i/juice/update-mute-ai-generated' from './endpoints/i/juice/update-mute-ai-generated.js';
 export * as 'i/move' from './endpoints/i/move.js';
 export * as 'i/notifications' from './endpoints/i/notifications.js';
 export * as 'i/notifications-grouped' from './endpoints/i/notifications-grouped.js';
@@ -338,6 +339,7 @@ export * as 'notes/favorites/delete' from './endpoints/notes/favorites/delete.js
 export * as 'notes/featured' from './endpoints/notes/featured.js';
 export * as 'notes/global-timeline' from './endpoints/notes/global-timeline.js';
 export * as 'notes/hybrid-timeline' from './endpoints/notes/hybrid-timeline.js';
+export * as 'notes/juice/update-ai-generated' from './endpoints/notes/juice/update-ai-generated.js';
 export * as 'notes/local-timeline' from './endpoints/notes/local-timeline.js';
 export * as 'notes/mentions' from './endpoints/notes/mentions.js';
 export * as 'notes/polls/recommendation' from './endpoints/notes/polls/recommendation.js';

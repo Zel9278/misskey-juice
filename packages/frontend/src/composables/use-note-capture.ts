@@ -20,6 +20,8 @@ export const noteEvents = new EventEmitter<{
 	[ev: `reacted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; reaction: string; emoji?: { name: string; url: string; } | null; }) => void;
 	[ev: `unreacted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; reaction: string; emoji?: { name: string; url: string; } | null; }) => void;
 	[ev: `pollVoted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; choice: number; }) => void;
+	// JUICE
+	[ev: `aiGeneratedChanged:${string}`]: (ctx: { isAIGenerated: boolean; }) => void;
 }>();
 
 const fetchEvent = new EventEmitter<{
@@ -154,6 +156,14 @@ function realtimeSubscribe(props: {
 				globalEvents.emit('noteDeleted', id);
 				break;
 			}
+
+			case 'aiGeneratedChanged': {
+				// JUICE
+				noteEvents.emit(`aiGeneratedChanged:${id}`, {
+					isAIGenerated: body.isAIGenerated,
+				});
+				break;
+			}
 		}
 	}
 
@@ -186,6 +196,7 @@ export type ReactiveNoteData = {
 	reactionEmojis: Misskey.entities.Note['reactionEmojis'];
 	myReaction: Misskey.entities.Note['myReaction'];
 	pollChoices: NonNullable<Misskey.entities.Note['poll']>['choices'];
+	isAIGenerated: Misskey.entities.Note['isAIGenerated']; // JUICE
 };
 
 const noReaction = Symbol();
@@ -215,11 +226,13 @@ export function useNoteCapture(props: {
 		reactionEmojis: note.reactionEmojis,
 		myReaction: note.myReaction,
 		pollChoices: note.poll?.choices ?? [],
+		isAIGenerated: note.isAIGenerated, // JUICE
 	});
 
 	noteEvents.on(`reacted:${note.id}`, onReacted);
 	noteEvents.on(`unreacted:${note.id}`, onUnreacted);
 	noteEvents.on(`pollVoted:${note.id}`, onPollVoted);
+	noteEvents.on(`aiGeneratedChanged:${note.id}`, onAIGeneratedChanged); // JUICE
 
 	// 操作がダブっていないかどうかを簡易的に記録するためのMap
 	const reactionUserMap = new Map<Misskey.entities.User['id'], string | typeof noReaction>();
@@ -281,6 +294,11 @@ export function useNoteCapture(props: {
 		$note.pollChoices = choices;
 	}
 
+	// JUICE
+	function onAIGeneratedChanged(ctx: { isAIGenerated: boolean; }): void {
+		$note.isAIGenerated = ctx.isAIGenerated;
+	}
+
 	function subscribe() {
 		if (mock) {
 			// モックモードでは購読しない
@@ -303,6 +321,7 @@ export function useNoteCapture(props: {
 		noteEvents.off(`reacted:${note.id}`, onReacted);
 		noteEvents.off(`unreacted:${note.id}`, onUnreacted);
 		noteEvents.off(`pollVoted:${note.id}`, onPollVoted);
+		noteEvents.off(`aiGeneratedChanged:${note.id}`, onAIGeneratedChanged); // JUICE
 	});
 
 	// 投稿からある程度経過している(=タイムラインを遡って表示した)ノートは、イベントが発生する可能性が低いためそもそも購読しない

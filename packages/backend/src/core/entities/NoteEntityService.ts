@@ -401,6 +401,7 @@ export class NoteEntityService implements OnModuleInit {
 			cw: note.cw,
 			visibility: note.visibility,
 			localOnly: note.localOnly,
+			isAIGenerated: note.isAIGenerated,
 			reactionAcceptance: note.reactionAcceptance,
 			visibleUserIds: note.visibility === 'specified' ? note.visibleUserIds : undefined,
 			renoteCount: note.renoteCount,

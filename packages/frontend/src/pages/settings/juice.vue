@@ -18,6 +18,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</FormSection>
 			</SearchMarker>
 		</MkDisableSection>
+
+		<SearchMarker :keywords="['ai', 'generated', 'mute', 'hide']">
+			<FormSection>
+				<template #label><SearchLabel>{{ i18n.ts._juice.muteAIGeneratedNotes }}</SearchLabel></template>
+				<MkSelect v-model="muteAIGeneratedNotes" :items="muteAIGeneratedNotesItems" @update:modelValue="saveMuteAIGeneratedNotes">
+					<template #caption>{{ i18n.ts._juice.muteAIGeneratedNotesDescription }}</template>
+				</MkSelect>
+			</FormSection>
+		</SearchMarker>
 	</div>
 </SearchMarker>
 </template>
@@ -39,12 +48,26 @@ import { instance } from '@/instance.js';
 const $i = ensureSignin();
 
 const emailLang = ref($i.emailLang ?? 'ja-JP');
+const muteAIGeneratedNotes = ref($i.muteAIGeneratedNotes ?? 'none');
+
+const muteAIGeneratedNotesItems = [
+	{ label: i18n.ts.none, value: 'none' },
+	{ label: i18n.ts._juice.muteAIGeneratedNotesMute, value: 'mute' },
+	{ label: i18n.ts._juice.muteAIGeneratedNotesHardMute, value: 'hardMute' },
+];
 
 function save() {
 	os.apiWithDialog('i/juice/update-email-lang', {
 		// emailLang は langs (packages/i18n がサポートする言語コード一覧) から選ばれた値のみが入るが、
 		// MkSelect の items 型が緩い string のため、送信時にエンドポイント側の厳密な enum 型へ合わせる
 		emailLang: emailLang.value as Misskey.entities.IJuiceUpdateEmailLangRequest['emailLang'],
+	});
+}
+
+function saveMuteAIGeneratedNotes() {
+	os.apiWithDialog('i/juice/update-mute-ai-generated', {
+		// MkSelect の items 型が緩い string のため、送信時にエンドポイント側の厳密な enum 型へ合わせる
+		muteAIGeneratedNotes: muteAIGeneratedNotes.value as Misskey.entities.IJuiceUpdateMuteAiGeneratedRequest['muteAIGeneratedNotes'],
 	});
 }
 

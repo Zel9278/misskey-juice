@@ -2013,6 +2013,7 @@ declare namespace entities {
         IImportMutingRequest,
         IImportUserListsRequest,
         IJuiceUpdateEmailLangRequest,
+        IJuiceUpdateMuteAiGeneratedRequest,
         IMoveRequest,
         IMoveResponse,
         INotificationsRequest,
@@ -2100,6 +2101,8 @@ declare namespace entities {
         NotesGlobalTimelineResponse,
         NotesHybridTimelineRequest,
         NotesHybridTimelineResponse,
+        NotesJuiceUpdateAiGeneratedRequest,
+        NotesJuiceUpdateAiGeneratedResponse,
         NotesLocalTimelineRequest,
         NotesLocalTimelineResponse,
         NotesMentionsRequest,
@@ -2712,6 +2715,9 @@ type IImportUserListsRequest = operations['i___import-user-lists']['requestBody'
 type IJuiceUpdateEmailLangRequest = operations['i___juice___update-email-lang']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type IJuiceUpdateMuteAiGeneratedRequest = operations['i___juice___update-mute-ai-generated']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type IMoveRequest = operations['i___move']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -3075,6 +3081,12 @@ type NotesHybridTimelineRequest = operations['notes___hybrid-timeline']['request
 
 // @public (undocumented)
 type NotesHybridTimelineResponse = operations['notes___hybrid-timeline']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type NotesJuiceUpdateAiGeneratedRequest = operations['notes___juice___update-ai-generated']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type NotesJuiceUpdateAiGeneratedResponse = operations['notes___juice___update-ai-generated']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type NotesLocalTimelineRequest = operations['notes___local-timeline']['requestBody']['content']['application/json'];

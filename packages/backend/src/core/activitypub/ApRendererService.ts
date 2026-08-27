@@ -483,6 +483,7 @@ export class ApRendererService {
 			}),
 			_misskey_quote: quote,
 			quoteUrl: quote,
+			_juice_isAIGenerated: note.isAIGenerated, // JUICE
 			published: this.idService.parse(note.id).date.toISOString(),
 			to,
 			cc,

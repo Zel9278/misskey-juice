@@ -7,6 +7,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div v-if="note == null" :class="$style.deleted">
 	{{ i18n.ts.deletedNote }}
 </div>
+<!-- JUICE: ハードミュート時は折りたたみ表示すら出さず完全に非表示にする -->
+<div v-else-if="hardMuted"></div>
 <div v-else-if="!muted" :class="[$style.root, { [$style.children]: depth > 1 }]">
 	<div :class="$style.main">
 		<div v-if="note.channel" :class="$style.colorBar" :style="{ background: note.channel.color }"></div>
@@ -54,6 +56,7 @@ import { i18n } from '@/i18n.js';
 import { $i } from '@/i.js';
 import { userPage } from '@/filters/user.js';
 import { checkWordMute } from '@/utility/check-word-mute.js';
+import { checkAIGeneratedMute } from '@/utility/check-ai-generated-mute.js';
 
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note | null;
@@ -65,7 +68,11 @@ const props = withDefaults(defineProps<{
 	depth: 1,
 });
 
-const muted = ref(props.note && $i ? checkWordMute(props.note, $i, $i.mutedWords) : false);
+// JUICE: AI生成物ミュートは「なし・ミュート(折りたたみ)・ハードミュート(完全非表示)」の3値なので、
+// ワードミュートの折りたたみ表示と混同しないよう hardMuted を分離する
+const aiGeneratedMuteMode = props.note && $i ? checkAIGeneratedMute(props.note, $i) : 'none';
+const muted = ref(props.note && $i ? (checkWordMute(props.note, $i, $i.mutedWords) || aiGeneratedMuteMode === 'mute') : false);
+const hardMuted = ref(aiGeneratedMuteMode === 'hardMute');
 
 const showContent = ref(false);
 const replies = ref<Misskey.entities.Note[]>([]);

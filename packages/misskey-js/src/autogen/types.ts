@@ -2733,6 +2733,15 @@ export type paths = {
          */
         post: operations['i___juice___update-email-lang'];
     };
+    '/i/juice/update-mute-ai-generated': {
+        /**
+         * i/juice/update-mute-ai-generated
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:account*
+         */
+        post: operations['i___juice___update-mute-ai-generated'];
+    };
     '/i/move': {
         /**
          * i/move
@@ -3226,6 +3235,15 @@ export type paths = {
          *     **Credential required**: *Yes* / **Permission**: *read:account*
          */
         post: operations['notes___hybrid-timeline'];
+    };
+    '/notes/juice/update-ai-generated': {
+        /**
+         * notes/juice/update-ai-generated
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:notes*
+         */
+        post: operations['notes___juice___update-ai-generated'];
     };
     '/notes/local-timeline': {
         /**
@@ -4452,6 +4470,8 @@ export type components = {
             email?: string | null;
             emailVerified?: boolean | null;
             emailLang?: string | null;
+            /** @enum {string} */
+            muteAIGeneratedNotes?: 'none' | 'mute' | 'hardMute';
             securityKeysList?: {
                 /**
                  * Format: id
@@ -4608,6 +4628,7 @@ export type components = {
                 userId: string | null;
             } | null;
             localOnly?: boolean;
+            isAIGenerated: boolean;
             /** @enum {string|null} */
             reactionAcceptance: 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote' | null;
             reactionEmojis: {
@@ -4669,6 +4690,7 @@ export type components = {
                 userId: string | null;
             } | null;
             localOnly: boolean;
+            isAIGenerated: boolean;
             /** @enum {string|null} */
             reactionAcceptance: 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote' | null;
             scheduledAt: number | null;
@@ -4936,6 +4958,7 @@ export type components = {
             /** @example 51469 */
             size: number;
             isSensitive: boolean;
+            isAIGenerated: boolean;
             blurhash: string | null;
             properties: {
                 /** @example 1280 */
@@ -20095,6 +20118,7 @@ export interface operations {
                      */
                     folderId?: string | null;
                     type?: string | null;
+                    isAIGenerated?: boolean;
                     /** @enum {string|null} */
                     sort?: '+createdAt' | '-createdAt' | '+name' | '-name' | '+size' | '-size' | null;
                 };
@@ -20801,6 +20825,7 @@ export interface operations {
                     folderId?: string | null;
                     name?: string;
                     isSensitive?: boolean;
+                    isAIGenerated?: boolean;
                     comment?: string | null;
                 };
             };
@@ -27227,6 +27252,69 @@ export interface operations {
             };
         };
     };
+    'i___juice___update-mute-ai-generated': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** @enum {string} */
+                    muteAIGeneratedNotes: 'none' | 'mute' | 'hardMute';
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     i___move: {
         requestBody: {
             content: {
@@ -30349,6 +30437,8 @@ export interface operations {
                     cw?: string | null;
                     /** @default false */
                     localOnly?: boolean;
+                    /** @default false */
+                    isAIGenerated?: boolean;
                     /**
                      * @default null
                      * @enum {string|null}
@@ -30590,6 +30680,8 @@ export interface operations {
                     hashtag?: string | null;
                     /** @default false */
                     localOnly?: boolean;
+                    /** @default false */
+                    isAIGenerated?: boolean;
                     /**
                      * @default null
                      * @enum {string|null}
@@ -30831,6 +30923,7 @@ export interface operations {
                     cw?: string | null;
                     hashtag?: string | null;
                     localOnly?: boolean;
+                    isAIGenerated?: boolean;
                     /** @enum {string|null} */
                     reactionAcceptance?: null | 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote';
                     /** Format: misskey:id */
@@ -31269,6 +31362,82 @@ export interface operations {
             };
             /** @description I'm Ai */
             418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'notes___juice___update-ai-generated': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    noteId: string;
+                    isAIGenerated: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Note'];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -625,6 +625,7 @@ export class UserEntityService implements OnModuleInit {
 				email: profile!.email,
 				emailVerified: profile!.emailVerified,
 				emailLang: profile!.emailLang,
+				muteAIGeneratedNotes: profile!.muteAIGeneratedNotes,
 				securityKeysList: profile!.twoFactorEnabled
 					? this.userSecurityKeysRepository.find({
 						where: {

@@ -445,6 +445,7 @@ import type {
 	IImportMutingRequest,
 	IImportUserListsRequest,
 	IJuiceUpdateEmailLangRequest,
+	IJuiceUpdateMuteAiGeneratedRequest,
 	IMoveRequest,
 	IMoveResponse,
 	INotificationsRequest,
@@ -532,6 +533,8 @@ import type {
 	NotesGlobalTimelineResponse,
 	NotesHybridTimelineRequest,
 	NotesHybridTimelineResponse,
+	NotesJuiceUpdateAiGeneratedRequest,
+	NotesJuiceUpdateAiGeneratedResponse,
 	NotesLocalTimelineRequest,
 	NotesLocalTimelineResponse,
 	NotesMentionsRequest,
@@ -979,6 +982,7 @@ export type Endpoints = {
 	'i/import-muting': { req: IImportMutingRequest; res: EmptyResponse };
 	'i/import-user-lists': { req: IImportUserListsRequest; res: EmptyResponse };
 	'i/juice/update-email-lang': { req: IJuiceUpdateEmailLangRequest; res: EmptyResponse };
+	'i/juice/update-mute-ai-generated': { req: IJuiceUpdateMuteAiGeneratedRequest; res: EmptyResponse };
 	'i/move': { req: IMoveRequest; res: IMoveResponse };
 	'i/notifications': { req: INotificationsRequest; res: INotificationsResponse };
 	'i/notifications-grouped': { req: INotificationsGroupedRequest; res: INotificationsGroupedResponse };
@@ -1033,6 +1037,7 @@ export type Endpoints = {
 	'notes/featured': { req: NotesFeaturedRequest; res: NotesFeaturedResponse };
 	'notes/global-timeline': { req: NotesGlobalTimelineRequest; res: NotesGlobalTimelineResponse };
 	'notes/hybrid-timeline': { req: NotesHybridTimelineRequest; res: NotesHybridTimelineResponse };
+	'notes/juice/update-ai-generated': { req: NotesJuiceUpdateAiGeneratedRequest; res: NotesJuiceUpdateAiGeneratedResponse };
 	'notes/local-timeline': { req: NotesLocalTimelineRequest; res: NotesLocalTimelineResponse };
 	'notes/mentions': { req: NotesMentionsRequest; res: NotesMentionsResponse };
 	'notes/polls/recommendation': { req: NotesPollsRecommendationRequest; res: NotesPollsRecommendationResponse };

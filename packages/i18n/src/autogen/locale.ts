@@ -589,6 +589,22 @@ export interface Locale extends ILocale {
      */
     "unmarkAsSensitive": string;
     /**
+     * AI生成
+     */
+    "aiGenerated": string;
+    /**
+     * AI生成物のみ表示
+     */
+    "aiGeneratedOnly": string;
+    /**
+     * AI生成物としてマーク
+     */
+    "markAsAIGenerated": string;
+    /**
+     * AI生成物のマークを解除
+     */
+    "unmarkAsAIGenerated": string;
+    /**
      * ファイル名を入力
      */
     "enterFileName": string;
@@ -5172,6 +5188,10 @@ export interface Locale extends ILocale {
      * {name}のセンシティブなファイルを含む投稿
      */
     "userSaysSomethingSensitive": ParameterizedString<"name">;
+    /**
+     * {name}はAI生成物を投稿しました
+     */
+    "userSaysSomethingAIGenerated": ParameterizedString<"name">;
     /**
      * スワイプしてタブを切り替える
      */
@@ -13646,6 +13666,22 @@ export interface Locale extends ILocale {
          * ユーザーがメールの言語を選択していない場合に使う既定の言語です。
          */
         "defaultEmailLangCaption": string;
+        /**
+         * AI生成物をミュート
+         */
+        "muteAIGeneratedNotes": string;
+        /**
+         * AI生成物としてマークされたノートの扱いを選択してください。
+         */
+        "muteAIGeneratedNotesDescription": string;
+        /**
+         * ミュート(折りたたんで表示)
+         */
+        "muteAIGeneratedNotesMute": string;
+        /**
+         * ハードミュート(完全に非表示)
+         */
+        "muteAIGeneratedNotesHardMute": string;
     };
     "_juiceApprovals": {
         /**

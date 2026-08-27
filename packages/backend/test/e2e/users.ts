@@ -157,6 +157,7 @@ describe('ユーザー', () => {
 				email: user.email,
 				emailVerified: user.emailVerified,
 				emailLang: user.emailLang,
+				muteAIGeneratedNotes: user.muteAIGeneratedNotes,
 				securityKeysList: user.securityKeysList,
 			} : {}),
 		});

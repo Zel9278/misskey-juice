@@ -1429,6 +1429,135 @@ describe('Endpoints', () => {
 		});
 	});
 
+	describe('i/juice/update-mute-ai-generated', () => {
+		afterAll(async () => {
+			// 他のテストに影響しないよう元に戻す
+			const reset = await api('i/juice/update-mute-ai-generated', { muteAIGeneratedNotes: 'none' }, alice);
+			assert.strictEqual(reset.status, 204);
+		});
+
+		test('AI生成物ミュート設定(mute)を変更でき、値が i に反映される', async () => {
+			const res = await api('i/juice/update-mute-ai-generated', { muteAIGeneratedNotes: 'mute' }, alice);
+			assert.strictEqual(res.status, 204);
+
+			const i = await api('i', {}, alice);
+			assert.strictEqual(i.status, 200);
+			assert.strictEqual(i.body.muteAIGeneratedNotes, 'mute');
+		});
+
+		test('AI生成物ミュート設定(hardMute)を変更でき、値が i に反映される', async () => {
+			const res = await api('i/juice/update-mute-ai-generated', { muteAIGeneratedNotes: 'hardMute' }, alice);
+			assert.strictEqual(res.status, 204);
+
+			const i = await api('i', {}, alice);
+			assert.strictEqual(i.status, 200);
+			assert.strictEqual(i.body.muteAIGeneratedNotes, 'hardMute');
+		});
+
+		test('不正な値は拒否される', async () => {
+			const res = await api('i/juice/update-mute-ai-generated', { muteAIGeneratedNotes: 'invalid' } as any, alice);
+			assert.strictEqual(res.status, 400);
+		});
+
+		test('未認証では変更できない', async () => {
+			const res = await api('i/juice/update-mute-ai-generated', { muteAIGeneratedNotes: 'mute' });
+			assert.strictEqual(res.status, 401);
+		});
+	});
+
+	describe('notes/juice/update-ai-generated', () => {
+		test('自分のノートのAI生成物フラグを変更できる', async () => {
+			const note = await post(alice, { text: 'test' });
+			assert.strictEqual(note.isAIGenerated, false);
+
+			const res = await api('notes/juice/update-ai-generated', { noteId: note.id, isAIGenerated: true }, alice);
+			assert.strictEqual(res.status, 200);
+			assert.strictEqual(res.body.isAIGenerated, true);
+
+			const show = await api('notes/show', { noteId: note.id }, alice);
+			assert.strictEqual(show.status, 200);
+			assert.strictEqual(show.body.isAIGenerated, true);
+		});
+
+		test('他人のノートは変更できない', async () => {
+			const note = await post(alice, { text: 'test' });
+
+			const res = await api('notes/juice/update-ai-generated', { noteId: note.id, isAIGenerated: true }, bob);
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body).error.code, 'ACCESS_DENIED');
+		});
+
+		test('モデレーターでも他人のノートは変更できない(モデレーション操作ではないため)', async () => {
+			const moderator = await signup({ username: 'aiFlagModerator' });
+			const moderatorRole = await role(alice, { isModerator: true, name: 'AI Flag Test Moderator Role' });
+			await api('admin/roles/assign', { userId: moderator.id, roleId: moderatorRole.id }, alice);
+
+			const note = await post(alice, { text: 'test' });
+
+			const res = await api('notes/juice/update-ai-generated', { noteId: note.id, isAIGenerated: true }, moderator);
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body).error.code, 'ACCESS_DENIED');
+		});
+
+		test('存在しないノートは失敗する', async () => {
+			const res = await api('notes/juice/update-ai-generated', { noteId: '000000000000000000000000', isAIGenerated: true }, alice);
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body).error.code, 'NO_SUCH_NOTE');
+		});
+
+		test('未認証では変更できない', async () => {
+			const note = await post(alice, { text: 'test' });
+			const res = await api('notes/juice/update-ai-generated', { noteId: note.id, isAIGenerated: true });
+			assert.strictEqual(res.status, 401);
+		});
+	});
+
+	describe('AI生成物フラグ (notes/create)', () => {
+		test('isAIGenerated を指定して投稿できる', async () => {
+			const note = await post(alice, { text: 'test', isAIGenerated: true });
+			assert.strictEqual(note.isAIGenerated, true);
+		});
+
+		test('未指定の場合は false になる', async () => {
+			const note = await post(alice, { text: 'test' });
+			assert.strictEqual(note.isAIGenerated, false);
+		});
+
+		test('リノートには isAIGenerated が伝播しない(元ノートの値は renote 側にネストされる)', async () => {
+			const original = await post(alice, { text: 'test', isAIGenerated: true });
+			const renote = await post(bob, { renoteId: original.id });
+
+			assert.strictEqual(renote.isAIGenerated, false);
+
+			const show = await api('notes/show', { noteId: renote.id }, alice);
+			assert.strictEqual(show.status, 200);
+			assert.strictEqual(show.body.renote?.isAIGenerated, true);
+		});
+	});
+
+	describe('AI生成物フラグ (drive)', () => {
+		test('drive/files/update で isAIGenerated を変更できる', async () => {
+			const file = await uploadFile(alice);
+			assert.strictEqual(file.body?.isAIGenerated, false);
+
+			const res = await api('drive/files/update', { fileId: file.body!.id, isAIGenerated: true }, alice);
+			assert.strictEqual(res.status, 200);
+			assert.strictEqual(res.body.isAIGenerated, true);
+		});
+
+		test('drive/files で isAIGenerated を絞り込める', async () => {
+			const marked = await uploadFile(alice);
+			await api('drive/files/update', { fileId: marked.body!.id, isAIGenerated: true }, alice);
+			const unmarked = await uploadFile(alice);
+
+			const res = await api('drive/files', { isAIGenerated: true }, alice);
+			assert.strictEqual(res.status, 200);
+			const ids = (res.body as misskey.entities.DriveFile[]).map(f => f.id);
+			assert.ok(ids.includes(marked.body!.id));
+			assert.ok(!ids.includes(unmarked.body!.id));
+		});
+	});
+
 	describe('承認式新規登録', () => {
 		beforeAll(async () => {
 			const res = await api('admin/juice/update-settings', {

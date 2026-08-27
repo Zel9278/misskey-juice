@@ -77,6 +77,12 @@ export class MiNoteDraft {
 	})
 	public localOnly: boolean;
 
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether this note draft is flagged as AI-generated content (JUICE).',
+	})
+	public isAIGenerated: boolean;
+
 	@Column('varchar', {
 		length: 64, nullable: true,
 	})

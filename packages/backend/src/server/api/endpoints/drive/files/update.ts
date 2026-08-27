@@ -65,6 +65,7 @@ export const paramDef = {
 		folderId: { type: 'string', format: 'misskey:id', nullable: true },
 		name: { type: 'string' },
 		isSensitive: { type: 'boolean' },
+		isAIGenerated: { type: 'boolean' },
 		comment: { type: 'string', nullable: true, maxLength: 512 },
 	},
 	required: ['fileId'],
@@ -96,6 +97,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					folderId: ps.folderId,
 					name: ps.name,
 					isSensitive: ps.isSensitive,
+					isAIGenerated: ps.isAIGenerated,
 					comment: ps.comment,
 				}, me);
 			} catch (e) {

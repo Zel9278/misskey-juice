@@ -675,6 +675,11 @@ export const packedMeDetailedOnlySchema = {
 			type: 'string',
 			nullable: true, optional: true,
 		},
+		muteAIGeneratedNotes: {
+			type: 'string',
+			nullable: false, optional: true,
+			enum: ['none', 'mute', 'hardMute'],
+		},
 		securityKeysList: {
 			type: 'array',
 			nullable: false, optional: true,

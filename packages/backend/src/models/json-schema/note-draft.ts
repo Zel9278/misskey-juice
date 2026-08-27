@@ -157,6 +157,10 @@ export const packedNoteDraftSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		isAIGenerated: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 		reactionAcceptance: {
 			type: 'string',
 			optional: false, nullable: true,

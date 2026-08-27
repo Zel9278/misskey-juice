@@ -319,6 +319,12 @@ export type NoteUpdatedEvent = { id: Note['id'] } & ({
 		choice: number;
 		userId: User['id'];
 	};
+} | {
+	// JUICE
+	type: 'aiGeneratedChanged';
+	body: {
+		isAIGenerated: boolean;
+	};
 });
 
 export type BroadcastEvents = {
