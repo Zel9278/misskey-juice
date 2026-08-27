@@ -242,6 +242,11 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		text: i18n.ts._juiceApprovals.title,
 		to: '/admin/juice-approvals',
 		active: currentPage.value?.route.name === 'juice-approvals',
+	}, {
+		icon: 'ti ti-mood-plus',
+		text: i18n.ts._emojiRequestApprovals.title,
+		to: '/admin/emoji-requests',
+		active: currentPage.value?.route.name === 'emoji-requests',
 	}],
 }, {
 	title: i18n.ts.info,

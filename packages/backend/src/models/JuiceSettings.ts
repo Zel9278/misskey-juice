@@ -16,6 +16,8 @@ export interface JuiceSettingsValue {
 	signupReasonMaxLength?: number;
 	/** ユーザーがメール言語を選択・保存していない場合に、システムメールで使う既定の言語 */
 	defaultEmailLang?: string;
+	/** 絵文字申請機能を有効にするか */
+	emojiRequestEnabled?: boolean;
 }
 
 /**
@@ -43,6 +45,18 @@ export function resolveEmailSettings(settings: JuiceSettingsValue): {
 } {
 	return {
 		defaultEmailLang: settings.defaultEmailLang ?? 'ja-JP',
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・juice/public-settings・emoji-requests/*の4箇所で共通利用する。
+ */
+export function resolveEmojiRequestSettings(settings: JuiceSettingsValue): {
+	emojiRequestEnabled: boolean;
+} {
+	return {
+		emojiRequestEnabled: settings.emojiRequestEnabled ?? false,
 	};
 }
 

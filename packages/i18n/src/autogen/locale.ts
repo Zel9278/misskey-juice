@@ -8317,6 +8317,10 @@ export interface Locale extends ILocale {
              * ウォーターマーク機能の使用可否
              */
             "watermarkAvailable": string;
+            /**
+             * 同時に出せる絵文字申請数の上限
+             */
+            "emojiRequestLimit": string;
         };
         "_condition": {
             /**
@@ -8721,6 +8725,34 @@ export interface Locale extends ILocale {
              * アカウントの登録申請は却下されました。
              */
             "text": string;
+        };
+        "emojiRequestApproved": {
+            /**
+             * 絵文字申請が承認されました
+             */
+            "subject": string;
+            /**
+             * 申請した絵文字「{name}」が承認され、カスタム絵文字として登録されました。
+             */
+            "html": ParameterizedString<"name">;
+            /**
+             * 申請した絵文字「{name}」が承認され、カスタム絵文字として登録されました。
+             */
+            "text": ParameterizedString<"name">;
+        };
+        "emojiRequestRejected": {
+            /**
+             * 絵文字申請が却下されました
+             */
+            "subject": string;
+            /**
+             * 申請した絵文字「{name}」は却下されました。理由: {reason}
+             */
+            "html": ParameterizedString<"name" | "reason">;
+            /**
+             * 申請した絵文字「{name}」は却下されました。理由: {reason}
+             */
+            "text": ParameterizedString<"name" | "reason">;
         };
         "newLogin": {
             /**
@@ -9774,6 +9806,14 @@ export interface Locale extends ILocale {
          */
         "write:flash-likes": string;
         /**
+         * 絵文字申請を見る
+         */
+        "read:emoji-requests": string;
+        /**
+         * 絵文字申請を操作する
+         */
+        "write:emoji-requests": string;
+        /**
          * ユーザーからの通報を見る
          */
         "read:admin:abuse-user-reports": string;
@@ -9869,6 +9909,18 @@ export interface Locale extends ILocale {
          * ユーザーの登録を却下する
          */
         "write:admin:juice-decline-signup": string;
+        /**
+         * 絵文字申請の一覧を見る
+         */
+        "read:admin:emoji-requests": string;
+        /**
+         * 絵文字申請を承認する
+         */
+        "write:admin:emoji-requests-approve": string;
+        /**
+         * 絵文字申請を却下する
+         */
+        "write:admin:emoji-requests-reject": string;
         /**
          * モデレーションノートを操作する
          */
@@ -11735,6 +11787,14 @@ export interface Locale extends ILocale {
          * ユーザー登録を却下
          */
         "declineSignup": string;
+        /**
+         * 絵文字申請を承認
+         */
+        "approveEmojiRequest": string;
+        /**
+         * 絵文字申請を却下
+         */
+        "rejectEmojiRequest": string;
         /**
          * ユーザーのモデレーションノート更新
          */
@@ -13682,6 +13742,18 @@ export interface Locale extends ILocale {
          * ハードミュート(完全に非表示)
          */
         "muteAIGeneratedNotesHardMute": string;
+        /**
+         * 絵文字申請機能
+         */
+        "emojiRequest": string;
+        /**
+         * 絵文字申請機能を有効にする
+         */
+        "emojiRequestEnabled": string;
+        /**
+         * 無効にすると、一般ユーザーの申請ページ・APIの両方が利用できなくなります。
+         */
+        "emojiRequestEnabledCaption": string;
     };
     "_juiceApprovals": {
         /**
@@ -13712,5 +13784,89 @@ export interface Locale extends ILocale {
          * @{username} の登録を却下しますか？アカウントは削除されます。この操作は取り消せません。
          */
         "declineConfirm": ParameterizedString<"username">;
+    };
+    "_emojiRequest": {
+        /**
+         * 申請フォーム
+         */
+        "newRequest": string;
+        /**
+         * 自分の申請一覧
+         */
+        "myRequests": string;
+        /**
+         * この機能は現在無効になっています。
+         */
+        "disabled": string;
+        /**
+         * 絵文字名
+         */
+        "name": string;
+        /**
+         * カテゴリ
+         */
+        "category": string;
+        /**
+         * ライセンス
+         */
+        "license": string;
+        /**
+         * 画像を選択
+         */
+        "chooseFile": string;
+        /**
+         * 審査後にこの画像をDriveから削除する
+         */
+        "deleteFileAfterReview": string;
+        /**
+         * 申請する
+         */
+        "submit": string;
+        /**
+         * 申請はまだありません。
+         */
+        "noRequests": string;
+        /**
+         * 審査待ち
+         */
+        "statusPending": string;
+        /**
+         * 承認済み
+         */
+        "statusApproved": string;
+        /**
+         * 却下
+         */
+        "statusRejected": string;
+        /**
+         * 却下理由
+         */
+        "rejectReason": string;
+    };
+    "_emojiRequestApprovals": {
+        /**
+         * 絵文字申請
+         */
+        "title": string;
+        /**
+         * 審査待ちの絵文字申請はありません。
+         */
+        "noPendingRequests": string;
+        /**
+         * 承認
+         */
+        "approve": string;
+        /**
+         * 却下
+         */
+        "reject": string;
+        /**
+         * 「{name}」を絵文字として登録しますか？
+         */
+        "approveConfirm": ParameterizedString<"name">;
+        /**
+         * 却下理由を入力してください
+         */
+        "rejectReasonTitle": string;
     };
 }

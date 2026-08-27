@@ -52,6 +52,16 @@ const emailFallbackLocaleEnUS = {
 		html: 'Your account registration request has been declined.',
 		text: 'Your account registration request has been declined.',
 	},
+	emojiRequestApproved: {
+		subject: 'Your emoji request has been approved',
+		html: 'Your emoji request "{name}" has been approved and registered as a custom emoji.',
+		text: 'Your emoji request "{name}" has been approved and registered as a custom emoji.',
+	},
+	emojiRequestRejected: {
+		subject: 'Your emoji request has been rejected',
+		html: 'Your emoji request "{name}" has been rejected. Reason: {reason}',
+		text: 'Your emoji request "{name}" has been rejected. Reason: {reason}',
+	},
 	newLogin: {
 		subject: 'New sign-in detected',
 		html: 'A new sign-in to your account was detected. If this wasn\'t you, please update your account security, such as changing your password.',

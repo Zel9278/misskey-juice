@@ -27,6 +27,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkSelect>
 			</FormSection>
 		</SearchMarker>
+
+		<SearchMarker :keywords="['emoji', 'request']">
+			<FormSection>
+				<template #label><SearchLabel>{{ i18n.ts._juice.emojiRequest }}</SearchLabel></template>
+				<FormLink to="/emoji-request">{{ i18n.ts._emojiRequest.newRequest }}</FormLink>
+			</FormSection>
+		</SearchMarker>
 	</div>
 </SearchMarker>
 </template>
@@ -36,6 +43,7 @@ import { ref, computed } from 'vue';
 import * as Misskey from 'misskey-js';
 import { langs } from '@@/js/config.js';
 import FormSection from '@/components/form/section.vue';
+import FormLink from '@/components/form/link.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import MkDisableSection from '@/components/MkDisableSection.vue';

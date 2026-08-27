@@ -84,6 +84,8 @@ export const permissions = [
 	'write:flash',
 	'read:flash-likes',
 	'write:flash-likes',
+	'read:emoji-requests',
+	'write:emoji-requests',
 	'read:admin:abuse-user-reports',
 	'write:admin:delete-account',
 	'write:admin:delete-all-files-of-a-user',
@@ -108,6 +110,9 @@ export const permissions = [
 	'read:admin:juice-pending-signups',
 	'write:admin:juice-approve-signup',
 	'write:admin:juice-decline-signup',
+	'read:admin:emoji-requests',
+	'write:admin:emoji-requests-approve',
+	'write:admin:emoji-requests-reject',
 	'write:admin:user-note',
 	'write:admin:roles',
 	'read:admin:roles',
@@ -237,6 +242,7 @@ export const rolePolicies = [
 	'noteDraftLimit',
 	'scheduledNoteLimit',
 	'watermarkAvailable',
+	'emojiRequestLimit',
 ] as const;
 
 export const queueTypes = [

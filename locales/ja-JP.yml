@@ -2157,6 +2157,7 @@ _role:
     noteDraftLimit: "サーバーサイドのノートの下書きの作成可能数"
     scheduledNoteLimit: "予約投稿の同時作成可能数"
     watermarkAvailable: "ウォーターマーク機能の使用可否"
+    emojiRequestLimit: "同時に出せる絵文字申請数の上限"
   _condition:
     roleAssignedTo: "マニュアルロールにアサイン済み"
     isLocal: "ローカルユーザー"
@@ -2279,6 +2280,14 @@ _email:
     subject: "登録が却下されました"
     html: "アカウントの登録申請は却下されました。"
     text: "アカウントの登録申請は却下されました。"
+  emojiRequestApproved:
+    subject: "絵文字申請が承認されました"
+    html: "申請した絵文字「{name}」が承認され、カスタム絵文字として登録されました。"
+    text: "申請した絵文字「{name}」が承認され、カスタム絵文字として登録されました。"
+  emojiRequestRejected:
+    subject: "絵文字申請が却下されました"
+    html: "申請した絵文字「{name}」は却下されました。理由: {reason}"
+    text: "申請した絵文字「{name}」は却下されました。理由: {reason}"
   newLogin:
     subject: "ログインがありました"
     html: "新しいログインがありました。このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を更新してください。"
@@ -2572,6 +2581,8 @@ _permissions:
   "write:flash": "Playを操作する"
   "read:flash-likes": "Playのいいねを見る"
   "write:flash-likes": "Playのいいねを操作する"
+  "read:emoji-requests": "絵文字申請を見る"
+  "write:emoji-requests": "絵文字申請を操作する"
   "read:admin:abuse-user-reports": "ユーザーからの通報を見る"
   "write:admin:delete-account": "ユーザーアカウントを削除する"
   "write:admin:delete-all-files-of-a-user": "ユーザーのすべてのファイルを削除する"
@@ -2596,6 +2607,9 @@ _permissions:
   "read:admin:juice-pending-signups": "承認待ちユーザーの一覧を見る"
   "write:admin:juice-approve-signup": "ユーザーの登録を承認する"
   "write:admin:juice-decline-signup": "ユーザーの登録を却下する"
+  "read:admin:emoji-requests": "絵文字申請の一覧を見る"
+  "write:admin:emoji-requests-approve": "絵文字申請を承認する"
+  "write:admin:emoji-requests-reject": "絵文字申請を却下する"
   "write:admin:user-note": "モデレーションノートを操作する"
   "write:admin:roles": "ロールを操作する"
   "read:admin:roles": "ロールを見る"
@@ -3115,6 +3129,8 @@ _moderationLogTypes:
   updateJuiceSettings: "JUICE独自機能の設定更新"
   approveSignup: "ユーザー登録を承認"
   declineSignup: "ユーザー登録を却下"
+  approveEmojiRequest: "絵文字申請を承認"
+  rejectEmojiRequest: "絵文字申請を却下"
   updateUserNote: "ユーザーのモデレーションノート更新"
   deleteDriveFile: "ファイルを削除"
   deleteNote: "ノートを削除"
@@ -3666,6 +3682,9 @@ _juice:
   muteAIGeneratedNotesDescription: "AI生成物としてマークされたノートの扱いを選択してください。"
   muteAIGeneratedNotesMute: "ミュート(折りたたんで表示)"
   muteAIGeneratedNotesHardMute: "ハードミュート(完全に非表示)"
+  emojiRequest: "絵文字申請機能"
+  emojiRequestEnabled: "絵文字申請機能を有効にする"
+  emojiRequestEnabledCaption: "無効にすると、一般ユーザーの申請ページ・APIの両方が利用できなくなります。"
 
 _juiceApprovals:
   title: "承認待ちユーザー"
@@ -3675,3 +3694,27 @@ _juiceApprovals:
   decline: "却下"
   approveConfirm: "@{username} の登録を承認しますか？"
   declineConfirm: "@{username} の登録を却下しますか？アカウントは削除されます。この操作は取り消せません。"
+
+_emojiRequest:
+  newRequest: "申請フォーム"
+  myRequests: "自分の申請一覧"
+  disabled: "この機能は現在無効になっています。"
+  name: "絵文字名"
+  category: "カテゴリ"
+  license: "ライセンス"
+  chooseFile: "画像を選択"
+  deleteFileAfterReview: "審査後にこの画像をDriveから削除する"
+  submit: "申請する"
+  noRequests: "申請はまだありません。"
+  statusPending: "審査待ち"
+  statusApproved: "承認済み"
+  statusRejected: "却下"
+  rejectReason: "却下理由"
+
+_emojiRequestApprovals:
+  title: "絵文字申請"
+  noPendingRequests: "審査待ちの絵文字申請はありません。"
+  approve: "承認"
+  reject: "却下"
+  approveConfirm: "「{name}」を絵文字として登録しますか？"
+  rejectReasonTitle: "却下理由を入力してください"

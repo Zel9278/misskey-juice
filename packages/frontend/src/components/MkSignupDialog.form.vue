@@ -119,6 +119,7 @@ const props = withDefaults(defineProps<{
 		approvalRequiredForSignup: false,
 		signupReasonRequired: true,
 		signupReasonMaxLength: 4096,
+		emojiRequestEnabled: false,
 	}),
 });
 

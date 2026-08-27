@@ -268,6 +268,33 @@ export type paths = {
          */
         post: operations['admin___drive___show-file'];
     };
+    '/admin/emoji-requests/approve': {
+        /**
+         * admin/emoji-requests/approve
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:admin:emoji-requests-approve*
+         */
+        post: operations['admin___emoji-requests___approve'];
+    };
+    '/admin/emoji-requests/list': {
+        /**
+         * admin/emoji-requests/list
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *read:admin:emoji-requests*
+         */
+        post: operations['admin___emoji-requests___list'];
+    };
+    '/admin/emoji-requests/reject': {
+        /**
+         * admin/emoji-requests/reject
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:admin:emoji-requests-reject*
+         */
+        post: operations['admin___emoji-requests___reject'];
+    };
     '/admin/emoji/add': {
         /**
          * admin/emoji/add
@@ -1976,6 +2003,24 @@ export type paths = {
          *     **Credential required**: *No*
          */
         post: operations['emoji'];
+    };
+    '/emoji-requests/create': {
+        /**
+         * emoji-requests/create
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:emoji-requests*
+         */
+        post: operations['emoji-requests___create'];
+    };
+    '/emoji-requests/list': {
+        /**
+         * emoji-requests/list
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *read:emoji-requests*
+         */
+        post: operations['emoji-requests___list'];
     };
     '/emojis': {
         /**
@@ -5358,6 +5403,28 @@ export type components = {
                 name: string;
             }[];
         };
+        EmojiRequestEntry: {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: id */
+            fileId: string | null;
+            name: string;
+            category: string | null;
+            license: string | null;
+            /** @enum {string} */
+            status: 'pending' | 'approved' | 'rejected';
+            rejectReason: string | null;
+            /** Format: date-time */
+            reviewedAt: string | null;
+            /** Format: id */
+            resultEmojiId: string | null;
+        };
+        EmojiRequestEntryDetailedAdmin: components['schemas']['EmojiRequestEntry'] & {
+            user: components['schemas']['UserLite'];
+            fileUrl: string | null;
+        };
         Flash: {
             /**
              * Format: id
@@ -5519,6 +5586,7 @@ export type components = {
             noteDraftLimit: number;
             scheduledNoteLimit: number;
             watermarkAvailable: boolean;
+            emojiRequestLimit: number;
         };
         ReversiGameLite: {
             /** Format: id */
@@ -8021,6 +8089,208 @@ export interface operations {
             };
         };
     };
+    'admin___emoji-requests___approve': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    requestId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'admin___emoji-requests___list': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /**
+                     * @default pending
+                     * @enum {string}
+                     */
+                    state?: 'pending' | 'approved' | 'rejected';
+                    /** @default 10 */
+                    limit?: number;
+                    /** Format: misskey:id */
+                    sinceId?: string;
+                    /** Format: misskey:id */
+                    untilId?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['EmojiRequestEntryDetailedAdmin'][];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'admin___emoji-requests___reject': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    requestId: string;
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     admin___emoji___add: {
         requestBody: {
             content: {
@@ -9763,6 +10033,7 @@ export interface operations {
                         signupReasonRequired: boolean;
                         signupReasonMaxLength: number;
                         defaultEmailLang: string;
+                        emojiRequestEnabled: boolean;
                     };
                 };
             };
@@ -9821,6 +10092,7 @@ export interface operations {
                     signupReasonRequired?: boolean;
                     signupReasonMaxLength?: number;
                     defaultEmailLang?: string;
+                    emojiRequestEnabled?: boolean;
                 };
             };
         };
@@ -21599,6 +21871,156 @@ export interface operations {
             };
         };
     };
+    'emoji-requests___create': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    fileId: string;
+                    name: string;
+                    category?: string | null;
+                    license?: string | null;
+                    /** @default false */
+                    deleteFileAfterReview?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['EmojiRequestEntry'];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'emoji-requests___list': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** @default 10 */
+                    limit?: number;
+                    /** Format: misskey:id */
+                    sinceId?: string;
+                    /** Format: misskey:id */
+                    untilId?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['EmojiRequestEntry'][];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     emojis: {
         responses: {
             /** @description OK (with results) */
@@ -29672,6 +30094,7 @@ export interface operations {
                         approvalRequiredForSignup: boolean;
                         signupReasonRequired: boolean;
                         signupReasonMaxLength: number;
+                        emojiRequestEnabled: boolean;
                     };
                 };
             };

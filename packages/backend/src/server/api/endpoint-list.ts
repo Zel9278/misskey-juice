@@ -52,6 +52,9 @@ export * as 'admin/emoji/set-aliases-bulk' from './endpoints/admin/emoji/set-ali
 export * as 'admin/emoji/set-category-bulk' from './endpoints/admin/emoji/set-category-bulk.js';
 export * as 'admin/emoji/set-license-bulk' from './endpoints/admin/emoji/set-license-bulk.js';
 export * as 'admin/emoji/update' from './endpoints/admin/emoji/update.js';
+export * as 'admin/emoji-requests/approve' from './endpoints/admin/emoji-requests/approve.js';
+export * as 'admin/emoji-requests/list' from './endpoints/admin/emoji-requests/list.js';
+export * as 'admin/emoji-requests/reject' from './endpoints/admin/emoji-requests/reject.js';
 export * as 'admin/federation/delete-all-files' from './endpoints/admin/federation/delete-all-files.js';
 export * as 'admin/federation/refresh-remote-instance-metadata' from './endpoints/admin/federation/refresh-remote-instance-metadata.js';
 export * as 'admin/federation/remove-all-following' from './endpoints/admin/federation/remove-all-following.js';
@@ -203,6 +206,8 @@ export * as 'drive/folders/update' from './endpoints/drive/folders/update.js';
 export * as 'drive/stream' from './endpoints/drive/stream.js';
 export * as 'email-address/available' from './endpoints/email-address/available.js';
 export * as 'emoji' from './endpoints/emoji.js';
+export * as 'emoji-requests/create' from './endpoints/emoji-requests/create.js';
+export * as 'emoji-requests/list' from './endpoints/emoji-requests/list.js';
 export * as 'emojis' from './endpoints/emojis.js';
 export * as 'endpoint' from './endpoints/endpoint.js';
 export * as 'endpoints' from './endpoints/endpoints.js';

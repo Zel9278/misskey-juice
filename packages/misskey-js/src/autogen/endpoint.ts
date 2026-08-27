@@ -43,6 +43,10 @@ import type {
 	AdminDriveFilesResponse,
 	AdminDriveShowFileRequest,
 	AdminDriveShowFileResponse,
+	AdminEmojiRequestsApproveRequest,
+	AdminEmojiRequestsListRequest,
+	AdminEmojiRequestsListResponse,
+	AdminEmojiRequestsRejectRequest,
 	AdminEmojiAddRequest,
 	AdminEmojiAddResponse,
 	AdminEmojiAddAliasesBulkRequest,
@@ -331,6 +335,10 @@ import type {
 	EmailAddressAvailableResponse,
 	EmojiRequest,
 	EmojiResponse,
+	EmojiRequestsCreateRequest,
+	EmojiRequestsCreateResponse,
+	EmojiRequestsListRequest,
+	EmojiRequestsListResponse,
 	EmojisResponse,
 	EndpointRequest,
 	EndpointResponse,
@@ -712,6 +720,9 @@ export type Endpoints = {
 	'admin/drive/cleanup': { req: EmptyRequest; res: EmptyResponse };
 	'admin/drive/files': { req: AdminDriveFilesRequest; res: AdminDriveFilesResponse };
 	'admin/drive/show-file': { req: AdminDriveShowFileRequest; res: AdminDriveShowFileResponse };
+	'admin/emoji-requests/approve': { req: AdminEmojiRequestsApproveRequest; res: EmptyResponse };
+	'admin/emoji-requests/list': { req: AdminEmojiRequestsListRequest; res: AdminEmojiRequestsListResponse };
+	'admin/emoji-requests/reject': { req: AdminEmojiRequestsRejectRequest; res: EmptyResponse };
 	'admin/emoji/add': { req: AdminEmojiAddRequest; res: AdminEmojiAddResponse };
 	'admin/emoji/add-aliases-bulk': { req: AdminEmojiAddAliasesBulkRequest; res: EmptyResponse };
 	'admin/emoji/copy': { req: AdminEmojiCopyRequest; res: AdminEmojiCopyResponse };
@@ -901,6 +912,8 @@ export type Endpoints = {
 	'drive/stream': { req: DriveStreamRequest; res: DriveStreamResponse };
 	'email-address/available': { req: EmailAddressAvailableRequest; res: EmailAddressAvailableResponse };
 	'emoji': { req: EmojiRequest; res: EmojiResponse };
+	'emoji-requests/create': { req: EmojiRequestsCreateRequest; res: EmojiRequestsCreateResponse };
+	'emoji-requests/list': { req: EmojiRequestsListRequest; res: EmojiRequestsListResponse };
 	'emojis': { req: EmptyRequest; res: EmojisResponse };
 	'endpoint': { req: EndpointRequest; res: EndpointResponse };
 	'endpoints': { req: EmptyRequest; res: EndpointsResponse };

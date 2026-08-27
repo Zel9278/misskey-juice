@@ -138,6 +138,8 @@ export const moderationLogTypes = [
 	'updateJuiceSettings',
 	'approveSignup',
 	'declineSignup',
+	'approveEmojiRequest',
+	'rejectEmojiRequest',
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -418,6 +420,22 @@ export type ModerationLogPayloads = {
 		userId: string;
 		userUsername: string;
 		userHost: string | null;
+	};
+	approveEmojiRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		emojiId: string;
+		emojiName: string;
+	};
+	rejectEmojiRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		requestedName: string;
+		reason: string;
 	};
 };
 
