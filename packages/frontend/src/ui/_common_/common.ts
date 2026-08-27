@@ -68,15 +68,6 @@ export function openInstanceMenu(ev: PointerEvent) {
 		to: '/about#emojis',
 	});
 
-	if ($i) {
-		menuItems.push({
-			type: 'link',
-			text: i18n.ts._juice.emojiRequest,
-			icon: 'ti ti-mood-plus',
-			to: '/emoji-request',
-		});
-	}
-
 	if (instance.federation !== 'none') {
 		menuItems.push({
 			type: 'link',
@@ -104,6 +95,15 @@ export function openInstanceMenu(ev: PointerEvent) {
 			to: '/invite',
 			text: i18n.ts.invite,
 			icon: 'ti ti-user-plus',
+		});
+	}
+
+	if ($i) {
+		menuItems.push({
+			type: 'link',
+			text: i18n.ts._juice.emojiRequest,
+			icon: 'ti ti-mood-plus',
+			to: '/emoji-request',
 		});
 	}
 
