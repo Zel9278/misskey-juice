@@ -9,11 +9,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkInfo v-if="!enabled">{{ i18n.ts._emojiRequest.disabled }}</MkInfo>
 		<template v-else>
 			<div v-if="tab === 'form'" class="_gaps_m">
-				<div :class="$style.filePreview">
-					<img v-if="file" :class="$style.fileImg" :src="file.url"/>
-					<MkButton @click="chooseFile">
-						<i class="ti ti-photo-plus"></i> {{ i18n.ts._emojiRequest.chooseFile }}
-					</MkButton>
+				<div v-if="file" :class="$style.filePreview">
+					<img :class="$style.fileImg" :src="file.url"/>
+				</div>
+				<div class="_buttonsCenter">
+					<MkButton primary rounded @click="onFileSelectClicked">{{ i18n.ts.upload }}</MkButton>
+					<MkButton primary rounded @click="onDriveSelectClicked">{{ i18n.ts.fromDrive }}</MkButton>
 				</div>
 
 				<MkInput v-model="name" pattern="^[a-zA-Z0-9_]+$">
@@ -57,7 +58,7 @@ import MkButton from '@/components/MkButton.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import MkEmojiRequestItem from '@/components/MkEmojiRequestItem.vue';
 import * as os from '@/os.js';
-import { selectFile } from '@/utility/drive.js';
+import { chooseFileFromPcAndUpload, chooseDriveFile } from '@/utility/drive.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
@@ -82,12 +83,19 @@ const paginator = markRaw(new Paginator('emoji-requests/list', {
 	limit: 10,
 }));
 
-function chooseFile(evt: MouseEvent) {
-	selectFile({
-		anchorElement: evt.currentTarget ?? evt.target,
+function onFileSelectClicked() {
+	chooseFileFromPcAndUpload({
 		multiple: false,
-	}).then(f => {
-		file.value = f;
+	}).then(files => {
+		if (files[0]) file.value = files[0];
+	});
+}
+
+function onDriveSelectClicked() {
+	chooseDriveFile({
+		multiple: false,
+	}).then(files => {
+		if (files[0]) file.value = files[0];
 	});
 }
 

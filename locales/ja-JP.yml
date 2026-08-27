@@ -3702,7 +3702,6 @@ _emojiRequest:
   name: "絵文字名"
   category: "カテゴリ"
   license: "ライセンス"
-  chooseFile: "画像を選択"
   deleteFileAfterReview: "審査後にこの画像をDriveから削除する"
   submit: "申請する"
   noRequests: "申請はまだありません。"
