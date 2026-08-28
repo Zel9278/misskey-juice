@@ -24,6 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div :class="$style.itemBody">
 				<div>
 					<i v-if="displayItem.item.isSensitive" style="color: var(--MI_THEME-warn); margin-right: 0.5em;" class="ti ti-eye-exclamation"></i>
+					<i v-if="displayItem.item.isAIGenerated" style="margin-right: 0.5em;" class="ti ti-sparkles"></i>
 					<MkCondensedLine :minScale="2 / 3">
 						<span>{{ displayItem.nameParts.baseName }}</span>
 						<span v-if="displayItem.nameParts.extension != null" style="opacity: 0.5;">{{ displayItem.nameParts.extension }}</span>

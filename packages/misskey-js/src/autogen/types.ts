@@ -20685,6 +20685,8 @@ export interface operations {
                     /** @default false */
                     isSensitive?: boolean;
                     /** @default false */
+                    isAIGenerated?: boolean;
+                    /** @default false */
                     force?: boolean;
                     /**
                      * Format: binary
