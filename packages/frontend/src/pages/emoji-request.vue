@@ -29,7 +29,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #label>{{ i18n.ts.name }}</template>
 				</MkInput>
 
-				<MkInput v-model="category">
+				<MkInput v-model="category" :datalist="customEmojiCategories.filter(x => x != null)">
 					<template #label>{{ i18n.ts.category }}</template>
 				</MkInput>
 
@@ -78,6 +78,7 @@ import MkEmojiRequestItem from '@/components/MkEmojiRequestItem.vue';
 import * as os from '@/os.js';
 import { selectFile } from '@/utility/drive.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
+import { customEmojiCategories } from '@/custom-emojis.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { Paginator } from '@/utility/paginator.js';
