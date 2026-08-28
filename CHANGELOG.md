@@ -15,7 +15,7 @@
 - Feat: ノートメニューから自分の投稿のAI生成物フラグを投稿後でも変更できるように
 - Feat: Drive画面に「AI生成物のみ表示」フィルタを追加
 - Feat: 設定の「JUICE」項目に、AI生成物としてマークされた投稿の扱いを「なし・ミュート(折りたたみ表示)・ハードミュート(完全に非表示)」から選べる設定を追加(タイムライン・通知・検索・ユーザーページに適用)
-- Feat: 絵文字申請機能を追加。一般ユーザーが画像・名前・カテゴリ・ライセンスを添えて絵文字を申請できる新規ページ「絵文字申請」を追加(設定の「JUICE」項目からリンク)。自分の申請一覧・審査状況・却下理由を確認できる
+- Feat: 絵文字申請機能を追加。一般ユーザーが画像・名前・カテゴリ・タグ・ライセンス・センシティブ・ローカルのみを指定して絵文字を申請できる新規ページ「絵文字申請」を追加(設定の「JUICE」項目からリンク)。自分の申請一覧・審査状況・却下理由を確認できる。申請フォームは本家の管理画面「絵文字の登録」ダイアログに準拠したUIにしている
 - Feat: コントロールパネルに絵文字申請の一覧・承認・却下画面を追加
 - Feat: コントロールパネルの JUICE 設定に、絵文字申請機能の有効・無効を切り替える項目を追加(既定は無効)
 - Feat: ロールの権限設定に、1ユーザーが同時に出せる未審査の絵文字申請数の上限を追加
@@ -31,7 +31,7 @@
 - Feat: 投稿後にAI生成物フラグだけを変更する `notes/juice/update-ai-generated` を追加(このフォークには汎用のノート編集機能が無いため専用エンドポイントとして分離)
 - Feat: AI生成物のミュート設定を変更する `i/juice/update-mute-ai-generated` を追加
 - Feat: `isAIGenerated` フラグをActivityPubで連合するように(JUICE独自の `_juice_isAIGenerated` プロパティ)。対応していないサーバーからは無視される(未指定分は`false`扱い)
-- Feat: 絵文字申請機能(JUICE独自実装)を追加。`emoji-requests/create` / `emoji-requests/list` / `admin/emoji-requests/list` / `admin/emoji-requests/approve` / `admin/emoji-requests/reject` を追加。承認時は既存の `CustomEmojiService` に接続してカスタム絵文字として登録し、名前重複はエラーで弾く。却下時は理由をメールで通知する
+- Feat: 絵文字申請機能(JUICE独自実装)を追加。`emoji-requests/create` / `emoji-requests/list` / `admin/emoji-requests/list` / `admin/emoji-requests/approve` / `admin/emoji-requests/reject` を追加。申請時に名前・カテゴリ・タグ(aliases)・ライセンス・センシティブ・ローカルのみを指定でき、承認時は既存の `CustomEmojiService` に接続してその内容のままカスタム絵文字として登録する。名前重複はエラーで弾く。却下時は理由をメールで通知する
 - Feat: 絵文字申請の同時pending数上限をロールポリシー `emojiRequestLimit` として追加(既定値3、ロールごとに上書き可能)
 
 ## 2026.7.0-juice+1.0

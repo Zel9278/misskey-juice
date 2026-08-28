@@ -63,6 +63,24 @@ export class MiEmojiRequest {
 	})
 	public license: string | null;
 
+	@Column('varchar', {
+		length: 128, array: true, default: '{}',
+		comment: 'The requested emoji aliases (JUICE).',
+	})
+	public aliases: string[];
+
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether the requested emoji should be marked as sensitive (JUICE).',
+	})
+	public isSensitive: boolean;
+
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether the requested emoji should be local-only (JUICE).',
+	})
+	public localOnly: boolean;
+
 	@Index()
 	@Column('varchar', {
 		length: 16, default: 'pending',

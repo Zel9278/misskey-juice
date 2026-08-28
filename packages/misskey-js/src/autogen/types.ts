@@ -5413,6 +5413,9 @@ export type components = {
             name: string;
             category: string | null;
             license: string | null;
+            aliases: string[];
+            isSensitive: boolean;
+            localOnly: boolean;
             /** @enum {string} */
             status: 'pending' | 'approved' | 'rejected';
             rejectReason: string | null;
@@ -21879,7 +21882,13 @@ export interface operations {
                     fileId: string;
                     name: string;
                     category?: string | null;
+                    /** @default [] */
+                    aliases?: string[];
                     license?: string | null;
+                    /** @default false */
+                    isSensitive?: boolean;
+                    /** @default false */
+                    localOnly?: boolean;
                     /** @default false */
                     deleteFileAfterReview?: boolean;
                 };

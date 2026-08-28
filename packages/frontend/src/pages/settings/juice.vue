@@ -31,7 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<SearchMarker :keywords="['emoji', 'request']">
 			<FormSection>
 				<template #label><SearchLabel>{{ i18n.ts._juice.emojiRequest }}</SearchLabel></template>
-				<FormLink to="/emoji-request">{{ i18n.ts._emojiRequest.newRequest }}</FormLink>
+				<FormLink to="/emoji-request">{{ i18n.ts._emojiRequestPage.newRequest }}</FormLink>
 			</FormSection>
 		</SearchMarker>
 	</div>

@@ -33,6 +33,22 @@ export const packedEmojiRequestEntrySchema = {
 			type: 'string',
 			optional: false, nullable: true,
 		},
+		aliases: {
+			type: 'array',
+			optional: false, nullable: false,
+			items: {
+				type: 'string',
+				optional: false, nullable: false,
+			},
+		},
+		isSensitive: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
+		localOnly: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 		status: {
 			type: 'string',
 			optional: false, nullable: false,

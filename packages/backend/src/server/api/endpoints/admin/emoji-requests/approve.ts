@@ -100,11 +100,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				fileType: driveFile.webpublicType ?? driveFile.type,
 				name: request.name,
 				category: request.category,
-				aliases: [],
+				aliases: request.aliases,
 				host: null,
 				license: request.license,
-				isSensitive: false,
-				localOnly: false,
+				isSensitive: request.isSensitive,
+				localOnly: request.localOnly,
 				roleIdsThatCanBeUsedThisEmojiAsReaction: [],
 			}, me);
 

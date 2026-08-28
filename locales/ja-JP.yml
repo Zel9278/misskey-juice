@@ -3695,11 +3695,10 @@ _juiceApprovals:
   approveConfirm: "@{username} の登録を承認しますか？"
   declineConfirm: "@{username} の登録を却下しますか？アカウントは削除されます。この操作は取り消せません。"
 
-_emojiRequest:
+_emojiRequestPage:
   newRequest: "申請フォーム"
   myRequests: "自分の申請一覧"
   disabled: "この機能は現在無効になっています。"
-  name: "絵文字名"
   category: "カテゴリ"
   license: "ライセンス"
   deleteFileAfterReview: "審査後にこの画像をDriveから削除する"

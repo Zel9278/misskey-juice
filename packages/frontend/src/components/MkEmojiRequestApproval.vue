@@ -17,8 +17,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<div class="_gaps_s">
 		<img v-if="request.fileUrl" :src="request.fileUrl" :class="$style.img"/>
-		<div v-if="request.category">{{ i18n.ts._emojiRequest.category }}: {{ request.category }}</div>
-		<div v-if="request.license" class="_selectable">{{ i18n.ts._emojiRequest.license }}: {{ request.license }}</div>
+		<div v-if="request.category">{{ i18n.ts._emojiRequestPage.category }}: {{ request.category }}</div>
+		<div v-if="request.license" class="_selectable">{{ i18n.ts._emojiRequestPage.license }}: {{ request.license }}</div>
 	</div>
 </MkFolder>
 </template>

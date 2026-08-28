@@ -6,37 +6,55 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <PageWithHeader v-model:tab="tab" :actions="headerActions" :tabs="headerTabs">
 	<div class="_spacer" style="--MI_SPACER-w: 700px; --MI_SPACER-min: 16px; --MI_SPACER-max: 32px;">
-		<MkInfo v-if="!enabled">{{ i18n.ts._emojiRequest.disabled }}</MkInfo>
+		<MkInfo v-if="!enabled">{{ i18n.ts._emojiRequestPage.disabled }}</MkInfo>
 		<template v-else>
 			<div v-if="tab === 'form'" class="_gaps_m">
-				<div v-if="file" :class="$style.filePreview">
-					<img :class="$style.fileImg" :src="file.url"/>
+				<div v-if="file" :class="$style.imgs">
+					<div style="background: #000;" :class="$style.imgContainer">
+						<img :src="file.url" :class="$style.img"/>
+					</div>
+					<div style="background: #222;" :class="$style.imgContainer">
+						<img :src="file.url" :class="$style.img"/>
+					</div>
+					<div style="background: #ddd;" :class="$style.imgContainer">
+						<img :src="file.url" :class="$style.img"/>
+					</div>
+					<div style="background: #fff;" :class="$style.imgContainer">
+						<img :src="file.url" :class="$style.img"/>
+					</div>
 				</div>
-				<div class="_buttonsCenter">
-					<MkButton primary rounded @click="onFileSelectClicked">{{ i18n.ts.upload }}</MkButton>
-					<MkButton primary rounded @click="onDriveSelectClicked">{{ i18n.ts.fromDrive }}</MkButton>
-				</div>
+				<MkButton rounded style="margin: 0 auto;" @click="chooseFile">{{ i18n.ts.selectFile }}</MkButton>
 
-				<MkInput v-model="name" pattern="^[a-zA-Z0-9_]+$">
-					<template #label>{{ i18n.ts._emojiRequest.name }}</template>
+				<MkInput v-model="name" pattern="[a-z0-9_]" autocapitalize="off">
+					<template #label>{{ i18n.ts.name }}</template>
 				</MkInput>
 
 				<MkInput v-model="category">
-					<template #label>{{ i18n.ts._emojiRequest.category }}</template>
+					<template #label>{{ i18n.ts.category }}</template>
 				</MkInput>
 
-				<MkInput v-model="license">
-					<template #label>{{ i18n.ts._emojiRequest.license }}</template>
+				<MkInput v-model="aliases" autocapitalize="off">
+					<template #label>{{ i18n.ts.tags }}</template>
+					<template #caption>
+						{{ i18n.ts.theKeywordWhenSearchingForCustomEmoji }}<br/>
+						{{ i18n.ts.setMultipleBySeparatingWithSpace }}
+					</template>
 				</MkInput>
 
+				<MkInput v-model="license" :mfmAutocomplete="true">
+					<template #label>{{ i18n.ts.license }}</template>
+				</MkInput>
+
+				<MkSwitch v-model="isSensitive">{{ i18n.ts.sensitive }}</MkSwitch>
+				<MkSwitch v-model="localOnly">{{ i18n.ts.localOnly }}</MkSwitch>
 				<MkSwitch v-model="deleteFileAfterReview">
-					<template #label>{{ i18n.ts._emojiRequest.deleteFileAfterReview }}</template>
+					<template #label>{{ i18n.ts._emojiRequestPage.deleteFileAfterReview }}</template>
 				</MkSwitch>
 
-				<MkButton primary rounded :disabled="!file || !name" @click="submit">{{ i18n.ts._emojiRequest.submit }}</MkButton>
+				<MkButton primary rounded :disabled="!file || !name" @click="submit"><i class="ti ti-check"></i> {{ i18n.ts._emojiRequestPage.submit }}</MkButton>
 			</div>
 			<div v-else-if="tab === 'list'" class="_gaps">
-				<MkInfo v-if="paginator.items.value.length === 0 && !paginator.fetching.value">{{ i18n.ts._emojiRequest.noRequests }}</MkInfo>
+				<MkInfo v-if="paginator.items.value.length === 0 && !paginator.fetching.value">{{ i18n.ts._emojiRequestPage.noRequests }}</MkInfo>
 				<MkPagination v-slot="{items}" :paginator="paginator">
 					<div class="_gaps">
 						<MkEmojiRequestItem v-for="request in items" :key="request.id" :request="request"/>
@@ -58,7 +76,7 @@ import MkButton from '@/components/MkButton.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import MkEmojiRequestItem from '@/components/MkEmojiRequestItem.vue';
 import * as os from '@/os.js';
-import { chooseFileFromPcAndUpload, chooseDriveFile } from '@/utility/drive.js';
+import { selectFile } from '@/utility/drive.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
@@ -76,26 +94,26 @@ const tab = ref('form');
 const file = ref<Misskey.entities.DriveFile | null>(null);
 const name = ref('');
 const category = ref('');
+const aliases = ref('');
 const license = ref('');
+const isSensitive = ref(false);
+const localOnly = ref(false);
 const deleteFileAfterReview = ref(false);
 
 const paginator = markRaw(new Paginator('emoji-requests/list', {
 	limit: 10,
 }));
 
-function onFileSelectClicked() {
-	chooseFileFromPcAndUpload({
+function chooseFile(ev: PointerEvent) {
+	selectFile({
+		anchorElement: ev.currentTarget ?? ev.target,
 		multiple: false,
-	}).then(files => {
-		if (files[0]) file.value = files[0];
-	});
-}
-
-function onDriveSelectClicked() {
-	chooseDriveFile({
-		multiple: false,
-	}).then(files => {
-		if (files[0]) file.value = files[0];
+	}).then(f => {
+		file.value = f;
+		const candidate = f.name.replace(/\.(.+)$/, '');
+		if (candidate.match(/^[a-z0-9_]+$/)) {
+			name.value = candidate;
+		}
 	});
 }
 
@@ -106,14 +124,20 @@ function submit() {
 		fileId: file.value.id,
 		name: name.value,
 		category: category.value || null,
+		aliases: aliases.value.split(' ').filter(x => x !== ''),
 		license: license.value || null,
+		isSensitive: isSensitive.value,
+		localOnly: localOnly.value,
 		deleteFileAfterReview: deleteFileAfterReview.value,
 	}).then(request => {
 		paginator.prepend(request);
 		file.value = null;
 		name.value = '';
 		category.value = '';
+		aliases.value = '';
 		license.value = '';
+		isSensitive.value = false;
+		localOnly.value = false;
 		deleteFileAfterReview.value = false;
 		tab.value = 'list';
 	});
@@ -123,11 +147,11 @@ const headerActions = computed(() => []);
 
 const headerTabs = computed(() => [{
 	key: 'form',
-	title: i18n.ts._emojiRequest.newRequest,
+	title: i18n.ts._emojiRequestPage.newRequest,
 	icon: 'ti ti-plus',
 }, {
 	key: 'list',
-	title: i18n.ts._emojiRequest.myRequests,
+	title: i18n.ts._emojiRequestPage.myRequests,
 	icon: 'ti ti-list',
 }]);
 
@@ -138,17 +162,22 @@ definePage(() => ({
 </script>
 
 <style lang="scss" module>
-.filePreview {
+.imgs {
 	display: flex;
-	align-items: center;
-	gap: 12px;
+	gap: 8px;
+	flex-wrap: wrap;
+	justify-content: center;
 }
 
-.fileImg {
-	width: 64px;
-	height: 64px;
-	object-fit: contain;
+.imgContainer {
+	padding: 8px;
 	border-radius: 6px;
-	background: var(--MI_THEME-panel);
+}
+
+.img {
+	display: block;
+	height: 64px;
+	width: 64px;
+	object-fit: contain;
 }
 </style>

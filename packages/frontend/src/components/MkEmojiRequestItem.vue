@@ -12,10 +12,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</template>
 
 	<div class="_gaps_s">
-		<div v-if="request.category">{{ i18n.ts._emojiRequest.category }}: {{ request.category }}</div>
-		<div v-if="request.license">{{ i18n.ts._emojiRequest.license }}: {{ request.license }}</div>
+		<div v-if="request.category">{{ i18n.ts._emojiRequestPage.category }}: {{ request.category }}</div>
+		<div v-if="request.license">{{ i18n.ts._emojiRequestPage.license }}: {{ request.license }}</div>
 		<div v-if="request.status === 'rejected'" class="_selectable">
-			{{ i18n.ts._emojiRequest.rejectReason }}: {{ request.rejectReason }}
+			{{ i18n.ts._emojiRequestPage.rejectReason }}: {{ request.rejectReason }}
 		</div>
 	</div>
 </MkFolder>
@@ -33,9 +33,9 @@ const props = defineProps<{
 
 const statusLabel = computed(() => {
 	switch (props.request.status) {
-		case 'pending': return i18n.ts._emojiRequest.statusPending;
-		case 'approved': return i18n.ts._emojiRequest.statusApproved;
-		case 'rejected': return i18n.ts._emojiRequest.statusRejected;
+		case 'pending': return i18n.ts._emojiRequestPage.statusPending;
+		case 'approved': return i18n.ts._emojiRequestPage.statusApproved;
+		case 'rejected': return i18n.ts._emojiRequestPage.statusRejected;
 	}
 });
 

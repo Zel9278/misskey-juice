@@ -13743,7 +13743,7 @@ export interface Locale extends ILocale {
          */
         "muteAIGeneratedNotesHardMute": string;
         /**
-         * 絵文字申請機能
+         * 絵文字申請
          */
         "emojiRequest": string;
         /**
@@ -13785,7 +13785,7 @@ export interface Locale extends ILocale {
          */
         "declineConfirm": ParameterizedString<"username">;
     };
-    "_emojiRequest": {
+    "_emojiRequestPage": {
         /**
          * 申請フォーム
          */
@@ -13799,10 +13799,6 @@ export interface Locale extends ILocale {
          */
         "disabled": string;
         /**
-         * 絵文字名
-         */
-        "name": string;
-        /**
          * カテゴリ
          */
         "category": string;
@@ -13810,10 +13806,6 @@ export interface Locale extends ILocale {
          * ライセンス
          */
         "license": string;
-        /**
-         * 画像を選択
-         */
-        "chooseFile": string;
         /**
          * 審査後にこの画像をDriveから削除する
          */
