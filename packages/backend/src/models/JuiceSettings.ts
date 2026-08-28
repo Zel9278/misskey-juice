@@ -20,6 +20,8 @@ export interface JuiceSettingsValue {
 	emojiRequestEnabled?: boolean;
 	/** ユーザーランキングの集計期間(時間単位) */
 	rankingAggregationPeriodHours?: number;
+	/** リレーTL機能を有効にするか */
+	relayTimelineEnabled?: boolean;
 }
 
 /**
@@ -71,6 +73,18 @@ export function resolveRankingSettings(settings: JuiceSettingsValue): {
 } {
 	return {
 		rankingAggregationPeriodHours: settings.rankingAggregationPeriodHours ?? 12,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・juice/public-settings・notes/relay-timeline・stream/relay-timelineの4箇所で共通利用する。
+ */
+export function resolveRelayTimelineSettings(settings: JuiceSettingsValue): {
+	relayTimelineEnabled: boolean;
+} {
+	return {
+		relayTimelineEnabled: settings.relayTimelineEnabled ?? false,
 	};
 }
 

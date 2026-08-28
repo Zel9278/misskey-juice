@@ -323,6 +323,11 @@ export type GlobalEvents = {
 		name: 'notesStream';
 		payload: Serialized<Packed<'Note'>>;
 	};
+	/** JUICE: リレーTL */
+	relayTimeline: {
+		name: 'relayTimelineStream';
+		payload: Serialized<Packed<'Note'>>;
+	};
 	chatUser: {
 		name: `chatUserStream:${MiUser['id']}-${MiUser['id']}`;
 		payload: EventTypesToEventPayload<ChatEventTypes>;
@@ -425,6 +430,12 @@ export class GlobalEventService {
 	@bindThis
 	public publishNotesStream(note: Packed<'Note'>): void {
 		this.publish('notesStream', null, note);
+	}
+
+	/** JUICE: リレー経由で届いた公開ノートをリレーTL購読者に配信する */
+	@bindThis
+	public publishRelayTimelineStream(note: Packed<'Note'>): void {
+		this.publish('relayTimelineStream', null, note);
 	}
 
 	@bindThis

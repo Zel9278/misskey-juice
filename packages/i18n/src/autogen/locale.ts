@@ -13762,6 +13762,18 @@ export interface Locale extends ILocale {
          * 集計期間(時間)
          */
         "rankingPeriodHours": string;
+        /**
+         * リレータイムライン
+         */
+        "relayTimeline": string;
+        /**
+         * リレータイムライン機能を有効にする
+         */
+        "relayTimelineEnabled": string;
+        /**
+         * 登録したリレー経由で届いた公開ノートだけを集めたタイムラインです。無効にすると、タイムラインの導線・API・stream配信のすべてが利用できなくなります。
+         */
+        "relayTimelineEnabledCaption": string;
     };
     "_juiceApprovals": {
         /**

@@ -21,10 +21,12 @@
 | 2 | AI 生成物フラグ | ✅ 完了 |
 | 3 | 絵文字申請ページ | ✅ 完了 |
 | 4 | ユーザーランキング | ✅ 完了 |
-| 5 | リレー TL | ⬜ 未着手 |
+| 5 | リレー TL | ✅ 完了 |
 | 6 | JUICE 専用 About ページ | ⬜ 未着手 |
+| 7 | モバイル表示時のウィジェット並び順設定 | ⬜ 未着手 |
+| 8 | お知らせの投票機能 | ⬜ 未着手 |
 
-ロードマップ外で追加実装した内容は [8. ロードマップ外の追加実装](#8-ロードマップ外の追加実装) を参照。
+ロードマップ外で追加実装した内容は [10. ロードマップ外の追加実装](#10-ロードマップ外の追加実装) を参照。
 
 ## 1. 承認式の登録方式
 
@@ -144,6 +146,13 @@ CherryPick には、希望している「承認式登録」にかなり近い実
 - REST API だけでなく、他のタイムラインと同様に WebSocket / stream でリアルタイム配信する。
 - リレー TL の有効・無効や表示関連オプションは、コントロールパネルの **「JUICE」項目** から設定可能にする。
 
+### 実装結果
+
+- 「どのリレーから来たかを記録する」は、本家Misskeyの`ApInboxService.announceNote()`に既に存在する`fromRelay`判定(Announceの送信者actorが登録済みリレーのinboxと一致するか)にそのまま乗せる形で実現した。`RelayService.isRelayActor()`(bool判定)を`RelayService.getRelayForActor()`(一致した`MiRelay`を返す)に置き換え、一致したリレーのIDを`note.relayId`(`channelId`と同型のnullable FK、`ON DELETE SET NULL`)に書き込む。
+- 複数リレーから同じノートが届く重複排除は、既存の`exist = await this.apNoteService.fetchNote(uri); if (exist) return;`という早期リターンでほぼ解決される(2件目以降のAnnounceは新規作成経路に到達しない)。まれに同時到着した場合でも`UPDATE note SET "relayId"=$1 WHERE id=$2 AND "relayId" IS NULL`というfirst-writer-winsの書き込みにしたため、後続の書き込みは静かに0件更新で終わる。多対多の中間テーブルは持たない(全リレーの配送履歴を監査する機能ではなく、「最初に届いた1件」で十分という判断)。
+- 配信はREST(`notes/relay-timeline`)とWebSocket(`relayTimeline`チャンネル)の両方に対応。stream配信は汎用の`notesStream`とは別に専用の`relayTimelineStream`イベントを新設し、`ApInboxService`のリレー分岐から直接発火する(全チャンネルが毎回firehoseをフィルタするコストを増やさないため)。
+- 実機検証で判明した重要な事実: 本家Misskeyの`RelayService.renderFollowRelay()`は`object: '...#Public'`でFollowを送る、いわゆる「Subscriber」方式の購読になる。今回実際にActivity Relayサーバー(Go実装、`yukimochi/Activity-Relay`のフォーク)をビルドして実機の2インスタンス環境(a.test⇔b.test)に接続したところ、このリレーソフトウェアは「Subscriber」に対しては受信したCreateアクティビティを**Announceでラップせず生のまま転送する**仕様だった(Announceラップは「Follower」=Mastodon/Pleroma式の直接Followにのみ使われる)。そのため通常の購読フローでは`fromRelay`判定(Announce受信時のみ発火)が一度も呼ばれず、`relayId`は付与されない。これはこの特定のリレー実装とMisskeyの購読方式の組み合わせ由来の制約であり、JUICE側のコードの不備ではない。コード自体の正しさは、リレーactorの実鍵で本物のHTTP署名付きAnnounceアクティビティを直接b.testのinboxへ送信するテストで別途確認済み(`relayId`が正しくセットされ、`notes/relay-timeline`のレスポンスにも反映されることを実機で確認)。Announce形式で配信する他のリレー実装(または将来的なMisskey側のFollower方式対応)であれば、追加の実装無しでそのまま動作する設計になっている。
+
 ## 5. JUICE 専用 About ページ（JUICE 独自実装）
 
 ### 実装方針
@@ -176,7 +185,43 @@ CherryPick には、希望している「承認式登録」にかなり近い実
 - 編集時は AI 生成物フラグを変更可能にする。
 - 機能自体の有効・無効設定は設けない。
 
-## 7. 実装順の候補（依存関係を考慮した順序）
+## 7. モバイル表示時のウィジェット並び順設定（JUICE 独自実装）
+
+### 現状
+
+- 各ウィジェットにはデスクトップ用に `place: 'left' | null | 'right'` という属性が既にある(`packages/frontend/src/ui/_common_/widgets.vue`)。デスクトップの `universal.vue` では本来この属性で左右のウィジェットパネルへ振り分ける仕組みだが、現行の `universal.vue` はこの左右振り分けUI自体を使っておらず、単一の `<XWidgets/>` を右側にのみ表示している。
+- モバイル表示(`isMobile`。`deviceKind === 'smartphone'` または `window.innerWidth <= 500`、判定は `packages/frontend/src/ui/universal.vue`)では、ウィジェットは常設パネルではなく、フッターメニュー(`XMobileFooterMenu`)の「アプリ」アイコンから開く全画面ドロワー(`widgetsDrawer`、`packages/frontend/src/ui/_common_/common.vue`)として表示される。この経路では `place` 属性は参照されず、単純に登録順で並ぶ。
+- ウィジェットの追加・削除・個別設定はドロワー内の「ウィジェットを編集」(`MkWidgets.vue`)から行えるが、モバイルには「左右どちらに寄せるか」を選ぶUIが存在しない。
+
+### 実装方針
+
+- ユーザーごとの個人設定として、モバイル表示時のウィジェットの並び順(左寄せ優先/右寄せ優先)を選べるようにする。
+- インスタンス全体の管理者設定(コントロールパネルの「JUICE」項目)ではなく、ユーザー個人の設定画面(メール受信言語設定と同じ枠の `/settings/juice` など)から変更可能にする。
+- 実装候補: 新規トグルを増やすのではなく、既存の `place` 属性(ウィジェットごとに左/右を個別指定できる仕組み)をモバイルドロワーでも参照し、指定に応じて並び順を決める方向で検討する。
+- 具体的な並び順ロジック・UI文言・`place` 未設定ウィジェットの扱いは実装着手時に詰める。
+
+## 8. お知らせの投票機能(JUICE 独自実装)
+
+### 現状
+
+- `packages/backend/src/models/Announcement.ts`(`MiAnnouncement`)は `title`/`text`/`imageUrl`/`icon`/`display`/`needConfirmationToRead`/`isActive`/`forExistingUsers`/`silence`/`userId`(個別宛て)を持つ。
+- 既読管理は `AnnouncementRead.ts`(`userId`+`announcementId` のユニーク複合インデックスを持つ中間テーブル)、リアクションは `AnnouncementReaction.ts`/`AnnouncementReactionService.ts`/`announcements/reactions/{create,delete}.ts` が既にある。「お知らせに対する追加機能」の前例として、この2つの中間テーブルパターンが参考になる。
+- 管理 API(`admin/announcements/{create,update,delete,list}.ts`)は paramDef を受けて `AnnouncementService` を呼ぶ薄い実装。
+- 投票(Poll)は `packages/backend/src/models/Poll.ts` / `PollVote.ts` として既にあるが、**Note 専用設計**。`Poll` は `noteId` が PrimaryColumn かつ `MiNote` と `@OneToOne`(`onDelete: 'CASCADE'`)、さらに `noteVisibility`/`userId`/`userHost`/`channelId` という Note 由来の非正規化列を持つ。集計は `votes`(integer[])を `UPDATE poll SET votes[n] = votes[n]+1 WHERE noteId = ...` という生 SQL で直接インクリメントする方式(`notes/polls/vote.ts` / `PollService.vote()`)。期限切れ時は `EndedPollNotificationProcessorService`(BullMQ)が通知のみ送る。
+- Poll は AP 連合(`renderVote`、投票締切の配信等)にも密結合しており、Announcement へそのまま拡張(`noteId` を nullable にして `announcementId` も持たせる等)するのは侵襲的。
+
+### 実装方針
+
+- 「本家のノート機能から引っ張ってくる」方針に沿って、**既存 Poll/PollVote のコード自体は拡張せず**、集計パターン(`votes` 配列 + 生 SQL 加算、`multiple` 対応、`(userId, 対象ID, choice)` のユニーク複合インデックスによる多重投票防止)を踏襲した専用エンティティ `AnnouncementPoll` / `AnnouncementPollVote` を新設する。
+  - 理由: 既存 `Poll` は `noteId` が PrimaryKey かつ AP 配信ロジックに深く結合しており、Announcement 用に条件分岐を増やすより、パターンだけ流用した別エンティティにする方が既存 Note 機能への影響もなく素直。
+- `AnnouncementPollVote` は `AnnouncementRead` / `AnnouncementReaction` と同じ「ユーザー×お知らせ」中間テーブルパターン(`(userId, announcementId, choice)` ユニーク複合インデックス)を踏襲する。
+- Announcement はそもそも連合機能を持たないため、AP 連合は対象外とする。
+- 選択肢・複数選択可否・期限といった入力項目は、既存 Note 用 Poll の `IPoll` 形状(`choices`/`multiple`/`expiresAt`)に揃える。
+- 管理画面のお知らせ作成・編集フォーム(`pages/admin/announcements.vue`)に投票設定 UI を追加し、お知らせ表示側(`MkAnnouncementDialog.vue` など)に投票 UI(既存 `MkPoll.vue` 相当の見た目・挙動)を組み込む。
+- 期限切れ時の扱い(通知の要否、投票締切後の表示)は実装着手時に詰める。
+- 機能自体の有効・無効設定は、既存のお知らせ機能の一部として扱うか、コントロールパネルの「JUICE」項目に置くかは実装着手時に判断する。
+
+## 9. 実装順の候補(依存関係を考慮した順序)
 
 一気に全機能を実装せず、影響範囲と依存関係を考慮して以下の順番で進める。
 
@@ -240,6 +285,16 @@ JUICE 独自実装として、さらに小さく分割して進める。
 - GitHub リポジトリ `https://github.com/Zel9278/misskey-juice` へのリンクを掲載する。
 - 詳細な紹介文は後から確定してもよいため、他機能の実装完了後に作成する。
 
+### 7. モバイル表示時のウィジェット並び順設定 ⬜ 未着手
+
+- 既存の `place: 'left' | null | 'right'` 属性をモバイルのウィジェットドロワーでも参照し、左寄せ/右寄せの並び順を反映する。
+- ユーザーごとの個人設定として提供し、インスタンス全体設定(コントロールパネルの「JUICE」項目)には置かない。
+
+### 8. お知らせの投票機能 ⬜ 未着手
+
+- 既存 Poll/PollVote は拡張せず、集計パターンを踏襲した専用エンティティ `AnnouncementPoll` / `AnnouncementPollVote` を新設する。
+- `AnnouncementRead` / `AnnouncementReaction` と同じ中間テーブルパターンを踏襲し、AP 連合は対象外とする。
+
 この順番で進める方針とする。
 
 - About ページの詳細な紹介文。
@@ -267,7 +322,7 @@ JUICE 独自実装として、さらに小さく分割して進める。
 - 集計期間はコントロールパネルの **「JUICE」項目** で設定可能にし、初期値は **12時間** とする。
 - 投稿数にはリノートを含めない。
 
-## 8. ロードマップ外の追加実装
+## 10. ロードマップ外の追加実装
 
 このロードマップの策定後、承認式新規登録(1.)の実装過程で見つかった課題への対応として、当初計画には無かった以下の機能を追加実装した。
 

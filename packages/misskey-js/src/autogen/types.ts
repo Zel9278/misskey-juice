@@ -3362,6 +3362,15 @@ export type paths = {
          */
         post: operations['notes___reactions___delete'];
     };
+    '/notes/relay-timeline': {
+        /**
+         * notes/relay-timeline
+         * @description No description provided.
+         *
+         *     **Credential required**: *No*
+         */
+        post: operations['notes___relay-timeline'];
+    };
     '/notes/renotes': {
         /**
          * notes/renotes
@@ -4683,6 +4692,11 @@ export type components = {
             } | null;
             localOnly?: boolean;
             isAIGenerated: boolean;
+            /**
+             * Format: id
+             * @example xxxxxxxxxx
+             */
+            relayId?: string | null;
             /** @enum {string|null} */
             reactionAcceptance: 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote' | null;
             reactionEmojis: {
@@ -10047,6 +10061,7 @@ export interface operations {
                         defaultEmailLang: string;
                         emojiRequestEnabled: boolean;
                         rankingAggregationPeriodHours: number;
+                        relayTimelineEnabled: boolean;
                     };
                 };
             };
@@ -10107,6 +10122,7 @@ export interface operations {
                     defaultEmailLang?: string;
                     emojiRequestEnabled?: boolean;
                     rankingAggregationPeriodHours?: number;
+                    relayTimelineEnabled?: boolean;
                 };
             };
         };
@@ -30117,6 +30133,7 @@ export interface operations {
                         signupReasonRequired: boolean;
                         signupReasonMaxLength: number;
                         emojiRequestEnabled: boolean;
+                        relayTimelineEnabled: boolean;
                     };
                 };
             };
@@ -32451,6 +32468,82 @@ export interface operations {
             };
             /** @description Too many requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'notes___relay-timeline': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** @default false */
+                    withFiles?: boolean;
+                    /** @default true */
+                    withRenotes?: boolean;
+                    /** @default 10 */
+                    limit?: number;
+                    /** Format: misskey:id */
+                    sinceId?: string;
+                    /** Format: misskey:id */
+                    untilId?: string;
+                    sinceDate?: number;
+                    untilDate?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Note'][];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
                 headers: {
                     [name: string]: unknown;
                 };

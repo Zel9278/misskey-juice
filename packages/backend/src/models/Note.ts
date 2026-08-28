@@ -8,6 +8,7 @@ import { noteVisibilities, noteReactionAcceptances } from '@/types.js';
 import { id } from './util/id.js';
 import { MiUser } from './User.js';
 import { MiChannel } from './Channel.js';
+import { MiRelay } from './Relay.js';
 import type { MiDriveFile } from './DriveFile.js';
 
 // Note: When you create a new index for existing column of this table,
@@ -220,6 +221,20 @@ export class MiNote {
 	})
 	@JoinColumn()
 	public channel: MiChannel | null;
+
+	@Index()
+	@Column({
+		...id(),
+		nullable: true,
+		comment: 'The ID of source relay this note was received from. Null if not relay-delivered (JUICE).',
+	})
+	public relayId: MiRelay['id'] | null;
+
+	@ManyToOne(() => MiRelay, {
+		onDelete: 'SET NULL',
+	})
+	@JoinColumn()
+	public relay: MiRelay | null;
 
 	//#region Denormalized fields
 	@Index()

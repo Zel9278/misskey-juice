@@ -25,6 +25,7 @@
 - Fix: Drive画面のファイル一覧で、センシティブとAI生成物のバッジが同じ位置に重なって表示されていたのを修正。AI生成物はサムネイル右下の小さいバッジで表示するように
 - Feat: 探索ページに「ユーザーランキング」タブを追加。投稿数(リノートを除く)・リアクション数(受け取った数)それぞれの上位3人を表示する
 - Feat: コントロールパネルの JUICE 設定に、ユーザーランキングの集計期間(時間単位、既定12時間)を設定する項目を追加
+- Feat: タイムラインに「リレータイムライン」を追加。登録済みリレー経由で届いた公開ノートだけを表示する。コントロールパネルの JUICE 設定で有効化した場合のみ、Social/Global の近くにタブとして表示される
 
 ### Server
 - Feat: JUICE 独自機能の設定を取得・更新する `admin/juice/settings` / `admin/juice/update-settings` を追加
@@ -43,6 +44,7 @@
 - Feat: ユーザーランキング機能(JUICE独自実装)を追加。`juice/ranking` を新設し、投稿数(純粋リノートを除く)・リアクション数(受け取った数)それぞれ上位3人を返す。集計はRedisの期間別カウンター(`FeaturedService`と同様のエポック基準ウィンドウ+前ウィンドウとのブレンド+TTL自然消滅方式)で行い、毎回の重いSQL集計を避けている。集計期間は `admin/juice/settings` / `admin/juice/update-settings` から設定可能(既定12時間)
 - Feat: Driveファイル単位の`isAIGenerated`フラグをActivityPubで連合するように(添付画像のDocument/ImageオブジェクトにJUICE独自の`_juice_isAIGenerated`プロパティを付与)。ノート単位のフラグとは独立して、添付ファイルごとに連合先へ伝わる
 - Fix: リモートユーザーが以前federateした画像と同一内容(md5一致)のファイルを再度AI生成物としてfederateしても、既存ファイルの`isAIGenerated`が追従して更新されない不具合を修正(`isSensitive`は元々追従していたが`isAIGenerated`は対象外だった)
+- Feat: リレータイムライン機能(JUICE独自実装)を追加。`notes/relay-timeline`(REST)と`relayTimeline`(stream channel)を新設し、登録済みリレー経由でAnnounceとして届いた公開ノートのみを返す。受信時にどのリレー経由か(`note.relayId`)を記録し、複数リレーから同じノートが届いた場合は最初に処理した1件のみを採用する(first-writer-wins)。過去ノートへの遡及付与はしない。機能の有効・無効は`admin/juice/settings` / `admin/juice/update-settings`の`relayTimelineEnabled`から設定可能(既定は無効)
 
 ## 2026.7.0-juice+1.0
 

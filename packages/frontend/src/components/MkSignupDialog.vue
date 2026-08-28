@@ -46,6 +46,7 @@ const juicePublicSettings = ref<Misskey.entities.JuicePublicSettingsResponse>({
 	signupReasonRequired: true,
 	signupReasonMaxLength: 4096,
 	emojiRequestEnabled: false,
+	relayTimelineEnabled: false,
 });
 misskeyApi('juice/public-settings').then(res => {
 	juicePublicSettings.value = res;

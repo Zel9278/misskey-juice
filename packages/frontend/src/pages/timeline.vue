@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			ref="tlComponent"
 			:key="src + withRenotes + withReplies + onlyFiles + withSensitive"
 			:class="$style.tl"
-			:src="(src.split(':')[0] as (BasicTimelineType | 'list'))"
+			:src="(src.split(':')[0] as (BasicTimelineType | 'list' | 'relay'))"
 			:list="src.split(':')[1]"
 			:withRenotes="withRenotes"
 			:withReplies="withReplies"
@@ -45,10 +45,19 @@ import { deepMerge } from '@/utility/merge.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
 import { prefer } from '@/preferences.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
 
 const tlComponent = useTemplateRef('tlComponent');
 
-type TimelinePageSrc = BasicTimelineType | `list:${string}`;
+// JUICE: リレーTLが有効なインスタンスでのみタブに出す
+const relayTimelineEnabled = ref(false);
+misskeyApi('juice/public-settings').then(res => {
+	relayTimelineEnabled.value = res.relayTimelineEnabled;
+	// 取得前に選択されていた場合や、無効化された後に古い選択が残っていた場合に備えて再チェックする
+	switchTlIfNeeded();
+});
+
+type TimelinePageSrc = BasicTimelineType | 'relay' | `list:${string}`;
 
 const srcWhenNotSignin = ref<'local' | 'global'>(isAvailableBasicTimeline('local') ? 'local' : 'global');
 const src = computed<TimelinePageSrc>({
@@ -194,6 +203,8 @@ function saveTlFilter(key: keyof typeof store.s.tl.filter, newValue: boolean) {
 function switchTlIfNeeded() {
 	if (isBasicTimeline(src.value) && !isAvailableBasicTimeline(src.value)) {
 		src.value = availableBasicTimelines()[0];
+	} else if (src.value === 'relay' && !relayTimelineEnabled.value) {
+		src.value = availableBasicTimelines()[0];
 	}
 }
 
@@ -274,7 +285,12 @@ const headerTabs = computed(() => [...(prefer.r.pinnedUserLists.value.map(l => (
 	title: i18n.ts._timelines[tl],
 	icon: basicTimelineIconClass(tl),
 	iconOnly: true,
-})), {
+})), ...(relayTimelineEnabled.value ? [{
+	key: 'relay',
+	title: i18n.ts._juice.relayTimeline,
+	icon: 'ti ti-broadcast',
+	iconOnly: true,
+}] : []), {
 	icon: 'ti ti-list',
 	title: i18n.ts.lists,
 	iconOnly: true,
@@ -296,7 +312,12 @@ const headerTabsWhenNotLogin = computed(() => [...availableBasicTimelines().map(
 	title: i18n.ts._timelines[tl],
 	icon: basicTimelineIconClass(tl),
 	iconOnly: true,
-}))] as Tab[]);
+})), ...(relayTimelineEnabled.value ? [{
+	key: 'relay',
+	title: i18n.ts._juice.relayTimeline,
+	icon: 'ti ti-broadcast',
+	iconOnly: true,
+}] : [])] as Tab[]);
 
 definePage(() => ({
 	title: i18n.ts.timeline,

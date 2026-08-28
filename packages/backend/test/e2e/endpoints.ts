@@ -12,7 +12,7 @@ import { describe, beforeAll, afterAll, test, expect, vi } from 'vitest';
 import { Blob } from 'node-fetch';
 import { api, castAsError, initTestDb, post, randomString, role, signup, simpleGet, uploadFile } from '../utils.js';
 import type * as misskey from 'misskey-js';
-import { MiUser } from '@/models/_.js';
+import { MiUser, MiNote, MiRelay } from '@/models/_.js';
 
 const waitForPushToTlOptions = { timeout: 3000, interval: 25 };
 
@@ -1346,6 +1346,7 @@ describe('Endpoints', () => {
 				defaultEmailLang: 'ja-JP',
 				emojiRequestEnabled: false,
 				rankingAggregationPeriodHours: 12,
+				relayTimelineEnabled: false,
 			});
 		});
 
@@ -1417,6 +1418,53 @@ describe('Endpoints', () => {
 			// 他のテストに影響しないよう元に戻す
 			const reset = await api('admin/juice/update-settings', {
 				rankingAggregationPeriodHours: 12,
+			}, alice);
+			assert.strictEqual(reset.status, 204);
+		});
+	});
+
+	describe('notes/relay-timeline (JUICE)', () => {
+		test('機能が無効な間はfunctionDisabledで弾かれる', async () => {
+			const res = await api('notes/relay-timeline', {});
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body).error.code, 'FUNCTION_DISABLED');
+		});
+
+		test('relayIdが付いた公開ノートのみを返す', async () => {
+			const enable = await api('admin/juice/update-settings', {
+				relayTimelineEnabled: true,
+			}, alice);
+			assert.strictEqual(enable.status, 204);
+
+			const connection = await initTestDb(true);
+			const Notes = connection.getRepository(MiNote);
+			const Relays = connection.getRepository(MiRelay);
+
+			// 投稿を先に作ってから relay 行を追加する(先にstatus:'accepted'のrelayを作ると、
+			// notes/create のたびに実配送(RelayService.deliverToRelays)が走ってしまうため)
+			const relayNote = (await api('notes/create', { text: 'via relay (JUICE test)' }, alice)).body.createdNote;
+			const normalNote = (await api('notes/create', { text: 'not via relay (JUICE test)' }, alice)).body.createdNote;
+
+			const relay = await Relays.save(Relays.create({
+				id: randomString(),
+				inbox: `https://relay.example.com/${randomString()}/inbox`,
+				status: 'accepted',
+			}));
+			await Notes.update({ id: relayNote.id }, { relayId: relay.id });
+
+			const res = await api('notes/relay-timeline', {});
+			assert.strictEqual(res.status, 200);
+			const ids = (res.body as misskey.entities.Note[]).map(n => n.id);
+			assert.strictEqual(ids.includes(relayNote.id), true);
+			assert.strictEqual(ids.includes(normalNote.id), false);
+
+			const found = (res.body as misskey.entities.Note[]).find(n => n.id === relayNote.id);
+			assert.strictEqual((found as any).relayId, relay.id);
+
+			// 他のテストに影響しないよう元に戻す(リレー行の削除でON DELETE SET NULLによりnote側のrelayIdも自動でnullになる)
+			await Relays.delete({ id: relay.id });
+			const reset = await api('admin/juice/update-settings', {
+				relayTimelineEnabled: false,
 			}, alice);
 			assert.strictEqual(reset.status, 204);
 		});

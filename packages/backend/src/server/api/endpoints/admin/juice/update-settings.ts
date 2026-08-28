@@ -26,6 +26,7 @@ export const paramDef = {
 		defaultEmailLang: { type: 'string' },
 		emojiRequestEnabled: { type: 'boolean' },
 		rankingAggregationPeriodHours: { type: 'integer', minimum: 1 },
+		relayTimelineEnabled: { type: 'boolean' },
 	},
 } as const;
 
@@ -48,6 +49,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.defaultEmailLang !== undefined) set.defaultEmailLang = ps.defaultEmailLang;
 			if (ps.emojiRequestEnabled !== undefined) set.emojiRequestEnabled = ps.emojiRequestEnabled;
 			if (ps.rankingAggregationPeriodHours !== undefined) set.rankingAggregationPeriodHours = ps.rankingAggregationPeriodHours;
+			if (ps.relayTimelineEnabled !== undefined) set.relayTimelineEnabled = ps.relayTimelineEnabled;
 
 			const after = await this.juiceSettingsService.update(set);
 

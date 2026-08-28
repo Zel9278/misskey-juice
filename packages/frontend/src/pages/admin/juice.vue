@@ -78,6 +78,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 				</SearchMarker>
 
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.relayTimeline }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="relayTimelineEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.relayTimelineEnabled }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.relayTimelineEnabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
 				<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 			</div>
 		</SearchMarker>
@@ -106,6 +121,7 @@ const signupReasonMaxLength = ref(settings.signupReasonMaxLength);
 const defaultEmailLang = ref(settings.defaultEmailLang);
 const emojiRequestEnabled = ref(settings.emojiRequestEnabled);
 const rankingAggregationPeriodHours = ref(settings.rankingAggregationPeriodHours);
+const relayTimelineEnabled = ref(settings.relayTimelineEnabled);
 
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
@@ -115,6 +131,7 @@ function save() {
 		defaultEmailLang: defaultEmailLang.value,
 		emojiRequestEnabled: emojiRequestEnabled.value,
 		rankingAggregationPeriodHours: rankingAggregationPeriodHours.value,
+		relayTimelineEnabled: relayTimelineEnabled.value,
 	});
 }
 
