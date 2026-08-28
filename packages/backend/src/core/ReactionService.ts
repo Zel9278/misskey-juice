@@ -26,6 +26,7 @@ import { UserBlockingService } from '@/core/UserBlockingService.js';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { FeaturedService } from '@/core/FeaturedService.js';
+import { JuiceUserRankingService } from '@/core/JuiceUserRankingService.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
 import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
@@ -99,6 +100,7 @@ export class ReactionService {
 		private apDeliverManagerService: ApDeliverManagerService,
 		private notificationService: NotificationService,
 		private perUserReactionsChart: PerUserReactionsChart,
+		private juiceUserRankingService: JuiceUserRankingService,
 	) {
 	}
 
@@ -230,6 +232,9 @@ export class ReactionService {
 		if (this.meta.enableChartsForRemoteUser || (user.host == null)) {
 			this.perUserReactionsChart.update(user, note);
 		}
+
+		// JUICE: ユーザーランキング(リアクション数)。もらった側(投稿者)に加点。
+		this.juiceUserRankingService.incrementReactionCount(note.userId);
 
 		// カスタム絵文字リアクションだったら絵文字情報も送る
 		const decodedReaction = this.decodeReaction(reaction);

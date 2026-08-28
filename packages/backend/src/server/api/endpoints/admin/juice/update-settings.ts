@@ -25,6 +25,7 @@ export const paramDef = {
 		signupReasonMaxLength: { type: 'integer', minimum: 1 },
 		defaultEmailLang: { type: 'string' },
 		emojiRequestEnabled: { type: 'boolean' },
+		rankingAggregationPeriodHours: { type: 'integer', minimum: 1 },
 	},
 } as const;
 
@@ -46,6 +47,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.signupReasonMaxLength !== undefined) set.signupReasonMaxLength = ps.signupReasonMaxLength;
 			if (ps.defaultEmailLang !== undefined) set.defaultEmailLang = ps.defaultEmailLang;
 			if (ps.emojiRequestEnabled !== undefined) set.emojiRequestEnabled = ps.emojiRequestEnabled;
+			if (ps.rankingAggregationPeriodHours !== undefined) set.rankingAggregationPeriodHours = ps.rankingAggregationPeriodHours;
 
 			const after = await this.juiceSettingsService.update(set);
 

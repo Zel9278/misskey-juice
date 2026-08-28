@@ -13754,6 +13754,14 @@ export interface Locale extends ILocale {
          * 無効にすると、一般ユーザーの申請ページ・APIの両方が利用できなくなります。
          */
         "emojiRequestEnabledCaption": string;
+        /**
+         * ユーザーランキング
+         */
+        "ranking": string;
+        /**
+         * 集計期間(時間)
+         */
+        "rankingPeriodHours": string;
     };
     "_juiceApprovals": {
         /**
@@ -13860,5 +13868,23 @@ export interface Locale extends ILocale {
          * 却下理由を入力してください
          */
         "rejectReasonTitle": string;
+    };
+    "_juiceRanking": {
+        /**
+         * 集計期間: 直近{hours}時間ごと
+         */
+        "periodInfo": ParameterizedString<"hours">;
+        /**
+         * 投稿数ランキング
+         */
+        "posts": string;
+        /**
+         * リアクション数ランキング
+         */
+        "reactions": string;
+        /**
+         * まだランキングデータがありません。
+         */
+        "empty": string;
     };
 }

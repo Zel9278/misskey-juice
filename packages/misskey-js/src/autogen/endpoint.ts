@@ -504,6 +504,7 @@ import type {
 	InviteListRequest,
 	InviteListResponse,
 	JuicePublicSettingsResponse,
+	JuiceRankingResponse,
 	MetaRequest,
 	MetaResponse,
 	MiauthGenTokenRequest,
@@ -1028,6 +1029,7 @@ export type Endpoints = {
 	'invite/limit': { req: EmptyRequest; res: InviteLimitResponse };
 	'invite/list': { req: InviteListRequest; res: InviteListResponse };
 	'juice/public-settings': { req: EmptyRequest; res: JuicePublicSettingsResponse };
+	'juice/ranking': { req: EmptyRequest; res: JuiceRankingResponse };
 	'meta': { req: MetaRequest; res: MetaResponse };
 	'miauth/gen-token': { req: MiauthGenTokenRequest; res: MiauthGenTokenResponse };
 	'mute/create': { req: MuteCreateRequest; res: EmptyResponse };

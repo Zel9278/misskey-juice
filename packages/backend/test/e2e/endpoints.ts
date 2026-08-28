@@ -1344,6 +1344,8 @@ describe('Endpoints', () => {
 				signupReasonRequired: true,
 				signupReasonMaxLength: 4096,
 				defaultEmailLang: 'ja-JP',
+				emojiRequestEnabled: false,
+				rankingAggregationPeriodHours: 12,
 			});
 		});
 
@@ -1351,6 +1353,7 @@ describe('Endpoints', () => {
 			const res = await api('admin/juice/update-settings', {
 				signupReasonMaxLength: 1000,
 				defaultEmailLang: 'en-US',
+				rankingAggregationPeriodHours: 6,
 			}, alice);
 			assert.strictEqual(res.status, 204);
 
@@ -1358,6 +1361,7 @@ describe('Endpoints', () => {
 			assert.strictEqual(after.status, 200);
 			assert.strictEqual(after.body.signupReasonMaxLength, 1000);
 			assert.strictEqual(after.body.defaultEmailLang, 'en-US');
+			assert.strictEqual(after.body.rankingAggregationPeriodHours, 6);
 
 			// 他のテストに影響しないよう元に戻す
 			const reset = await api('admin/juice/update-settings', {
@@ -1365,6 +1369,7 @@ describe('Endpoints', () => {
 				signupReasonRequired: true,
 				signupReasonMaxLength: 4096,
 				defaultEmailLang: 'ja-JP',
+				rankingAggregationPeriodHours: 12,
 			}, alice);
 			assert.strictEqual(reset.status, 204);
 		});
@@ -1387,6 +1392,33 @@ describe('Endpoints', () => {
 		test('未認証では設定を更新できない', async () => {
 			const res = await api('admin/juice/update-settings', {});
 			assert.strictEqual(res.status, 401);
+		});
+	});
+
+	describe('juice/ranking', () => {
+		test('未認証でもランキングを取得でき、形が仕様通り', async () => {
+			const res = await api('juice/ranking', {});
+			assert.strictEqual(res.status, 200);
+			assert.strictEqual(typeof res.body.periodHours, 'number');
+			assert.strictEqual(Array.isArray(res.body.posts), true);
+			assert.strictEqual(Array.isArray(res.body.reactions), true);
+		});
+
+		test('集計期間の設定変更がperiodHoursへ反映される', async () => {
+			const update = await api('admin/juice/update-settings', {
+				rankingAggregationPeriodHours: 3,
+			}, alice);
+			assert.strictEqual(update.status, 204);
+
+			const res = await api('juice/ranking', {});
+			assert.strictEqual(res.status, 200);
+			assert.strictEqual(res.body.periodHours, 3);
+
+			// 他のテストに影響しないよう元に戻す
+			const reset = await api('admin/juice/update-settings', {
+				rankingAggregationPeriodHours: 12,
+			}, alice);
+			assert.strictEqual(reset.status, 204);
 		});
 	});
 

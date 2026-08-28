@@ -64,6 +64,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 				</SearchMarker>
 
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.ranking }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkInput v-model="rankingAggregationPeriodHours" type="number" :min="1">
+									<template #label><SearchLabel>{{ i18n.ts._juice.rankingPeriodHours }}</SearchLabel></template>
+								</MkInput>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
 				<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 			</div>
 		</SearchMarker>
@@ -91,6 +105,7 @@ const signupReasonRequired = ref(settings.signupReasonRequired);
 const signupReasonMaxLength = ref(settings.signupReasonMaxLength);
 const defaultEmailLang = ref(settings.defaultEmailLang);
 const emojiRequestEnabled = ref(settings.emojiRequestEnabled);
+const rankingAggregationPeriodHours = ref(settings.rankingAggregationPeriodHours);
 
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
@@ -99,6 +114,7 @@ function save() {
 		signupReasonMaxLength: signupReasonMaxLength.value,
 		defaultEmailLang: defaultEmailLang.value,
 		emojiRequestEnabled: emojiRequestEnabled.value,
+		rankingAggregationPeriodHours: rankingAggregationPeriodHours.value,
 	});
 }
 

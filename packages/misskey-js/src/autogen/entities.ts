@@ -507,6 +507,7 @@ export type InviteLimitResponse = operations['invite___limit']['responses']['200
 export type InviteListRequest = operations['invite___list']['requestBody']['content']['application/json'];
 export type InviteListResponse = operations['invite___list']['responses']['200']['content']['application/json'];
 export type JuicePublicSettingsResponse = operations['juice___public-settings']['responses']['200']['content']['application/json'];
+export type JuiceRankingResponse = operations['juice___ranking']['responses']['200']['content']['application/json'];
 export type MetaRequest = operations['meta']['requestBody']['content']['application/json'];
 export type MetaResponse = operations['meta']['responses']['200']['content']['application/json'];
 export type MiauthGenTokenRequest = operations['miauth___gen-token']['requestBody']['content']['application/json'];

@@ -39,6 +39,7 @@ import { ImageProcessingService } from './ImageProcessingService.js';
 import { SystemAccountService } from './SystemAccountService.js';
 import { InternalStorageService } from './InternalStorageService.js';
 import { JuiceSettingsService } from './JuiceSettingsService.js';
+import { JuiceUserRankingService } from './JuiceUserRankingService.js';
 import { EmailI18nService } from './EmailI18nService.js';
 import { MetaService } from './MetaService.js';
 import { MfmService } from './MfmService.js';
@@ -188,6 +189,7 @@ const $IdService: Provider = { provide: 'IdService', useExisting: IdService };
 const $ImageProcessingService: Provider = { provide: 'ImageProcessingService', useExisting: ImageProcessingService };
 const $InternalStorageService: Provider = { provide: 'InternalStorageService', useExisting: InternalStorageService };
 const $JuiceSettingsService: Provider = { provide: 'JuiceSettingsService', useExisting: JuiceSettingsService };
+const $JuiceUserRankingService: Provider = { provide: 'JuiceUserRankingService', useExisting: JuiceUserRankingService };
 const $EmailI18nService: Provider = { provide: 'EmailI18nService', useExisting: EmailI18nService };
 const $MetaService: Provider = { provide: 'MetaService', useExisting: MetaService };
 const $MfmService: Provider = { provide: 'MfmService', useExisting: MfmService };
@@ -345,6 +347,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ImageProcessingService,
 		InternalStorageService,
 		JuiceSettingsService,
+		JuiceUserRankingService,
 		EmailI18nService,
 		MetaService,
 		MfmService,
@@ -500,6 +503,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$ImageProcessingService,
 		$InternalStorageService,
 		$JuiceSettingsService,
+		$JuiceUserRankingService,
 		$EmailI18nService,
 		$MetaService,
 		$MfmService,
@@ -655,6 +659,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ImageProcessingService,
 		InternalStorageService,
 		JuiceSettingsService,
+		JuiceUserRankingService,
 		EmailI18nService,
 		MetaService,
 		MfmService,
@@ -809,6 +814,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$ImageProcessingService,
 		$InternalStorageService,
 		$JuiceSettingsService,
+		$JuiceUserRankingService,
 		$EmailI18nService,
 		$MetaService,
 		$MfmService,

@@ -23,6 +23,8 @@
 - Feat: コントロールパネルの JUICE 設定に、絵文字申請機能の有効・無効を切り替える項目を追加(既定は無効)
 - Feat: ロールの権限設定に、1ユーザーが同時に出せる未審査の絵文字申請数の上限を追加
 - Fix: Drive画面のファイル一覧で、センシティブとAI生成物のバッジが同じ位置に重なって表示されていたのを修正。AI生成物はサムネイル右下の小さいバッジで表示するように
+- Feat: 探索ページに「ユーザーランキング」タブを追加。投稿数(リノートを除く)・リアクション数(受け取った数)それぞれの上位3人を表示する
+- Feat: コントロールパネルの JUICE 設定に、ユーザーランキングの集計期間(時間単位、既定12時間)を設定する項目を追加
 
 ### Server
 - Feat: JUICE 独自機能の設定を取得・更新する `admin/juice/settings` / `admin/juice/update-settings` を追加
@@ -38,6 +40,7 @@
 - Feat: `isAIGenerated` フラグをActivityPubで連合するように(JUICE独自の `_juice_isAIGenerated` プロパティ)。対応していないサーバーからは無視される(未指定分は`false`扱い)
 - Feat: 絵文字申請機能(JUICE独自実装)を追加。`emoji-requests/create` / `emoji-requests/list` / `admin/emoji-requests/list` / `admin/emoji-requests/approve` / `admin/emoji-requests/reject` を追加。申請時に名前・カテゴリ・タグ(aliases)・ライセンス・センシティブ・ローカルのみを指定でき、承認時は既存の `CustomEmojiService` に接続してその内容のままカスタム絵文字として登録する。名前重複はエラーで弾く。却下時は理由をメールで通知する
 - Feat: 絵文字申請の同時pending数上限をロールポリシー `emojiRequestLimit` として追加(既定値3、ロールごとに上書き可能)
+- Feat: ユーザーランキング機能(JUICE独自実装)を追加。`juice/ranking` を新設し、投稿数(純粋リノートを除く)・リアクション数(受け取った数)それぞれ上位3人を返す。集計はRedisの期間別カウンター(`FeaturedService`と同様のエポック基準ウィンドウ+前ウィンドウとのブレンド+TTL自然消滅方式)で行い、毎回の重いSQL集計を避けている。集計期間は `admin/juice/settings` / `admin/juice/update-settings` から設定可能(既定12時間)
 
 ## 2026.7.0-juice+1.0
 

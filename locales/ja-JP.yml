@@ -3685,6 +3685,8 @@ _juice:
   emojiRequest: "絵文字申請"
   emojiRequestEnabled: "絵文字申請機能を有効にする"
   emojiRequestEnabledCaption: "無効にすると、一般ユーザーの申請ページ・APIの両方が利用できなくなります。"
+  ranking: "ユーザーランキング"
+  rankingPeriodHours: "集計期間(時間)"
 
 _juiceApprovals:
   title: "承認待ちユーザー"
@@ -3716,3 +3718,9 @@ _emojiRequestApprovals:
   reject: "却下"
   approveConfirm: "「{name}」を絵文字として登録しますか？"
   rejectReasonTitle: "却下理由を入力してください"
+
+_juiceRanking:
+  periodInfo: "集計期間: 直近{hours}時間ごと"
+  posts: "投稿数ランキング"
+  reactions: "リアクション数ランキング"
+  empty: "まだランキングデータがありません。"

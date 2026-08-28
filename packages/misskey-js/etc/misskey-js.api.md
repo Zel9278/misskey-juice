@@ -2102,6 +2102,7 @@ declare namespace entities {
         InviteListRequest,
         InviteListResponse,
         JuicePublicSettingsResponse,
+        JuiceRankingResponse,
         MetaRequest,
         MetaResponse,
         MiauthGenTokenRequest,
@@ -2952,6 +2953,9 @@ type IWebhooksUpdateRequest = operations['i___webhooks___update']['requestBody']
 
 // @public (undocumented)
 type JuicePublicSettingsResponse = operations['juice___public-settings']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type JuiceRankingResponse = operations['juice___ranking']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type MeDetailed = components['schemas']['MeDetailed'];

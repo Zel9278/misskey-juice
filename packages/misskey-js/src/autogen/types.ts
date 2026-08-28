@@ -3082,6 +3082,15 @@ export type paths = {
          */
         post: operations['juice___public-settings'];
     };
+    '/juice/ranking': {
+        /**
+         * juice/ranking
+         * @description No description provided.
+         *
+         *     **Credential required**: *No*
+         */
+        post: operations['juice___ranking'];
+    };
     '/meta': {
         /**
          * meta
@@ -10037,6 +10046,7 @@ export interface operations {
                         signupReasonMaxLength: number;
                         defaultEmailLang: string;
                         emojiRequestEnabled: boolean;
+                        rankingAggregationPeriodHours: number;
                     };
                 };
             };
@@ -10096,6 +10106,7 @@ export interface operations {
                     signupReasonMaxLength?: number;
                     defaultEmailLang?: string;
                     emojiRequestEnabled?: boolean;
+                    rankingAggregationPeriodHours?: number;
                 };
             };
         };
@@ -30106,6 +30117,74 @@ export interface operations {
                         signupReasonRequired: boolean;
                         signupReasonMaxLength: number;
                         emojiRequestEnabled: boolean;
+                    };
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    juice___ranking: {
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        periodHours: number;
+                        posts: {
+                            user: components['schemas']['UserLite'];
+                            count: number;
+                        }[];
+                        reactions: {
+                            user: components['schemas']['UserLite'];
+                            count: number;
+                        }[];
                     };
                 };
             };
