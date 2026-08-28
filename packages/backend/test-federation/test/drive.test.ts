@@ -40,6 +40,20 @@ describe('Drive', () => {
 			});
 		});
 
+		describe('AI-generated flag (JUICE)', () => {
+			test('Alice uploads an AI-generated image and it is shown as AI-generated from Bob', async () => {
+				const file = await uploadFile('a.test', uploader, undefined, true);
+
+				const note = (await uploader.client.request('notes/create', { text: 'ai generated', fileIds: [file.id] })).createdNote;
+				const noteInB = await resolveRemoteNote('a.test', note.id, bAdmin);
+				assert(noteInB.files != null);
+				strictEqual(noteInB.files.length, 1);
+
+				strictEqual(file.isAIGenerated, true);
+				strictEqual(noteInB.files[0].isAIGenerated, true);
+			});
+		});
+
 		let updatedImage: Misskey.entities.DriveFile, updatedImageInB: Misskey.entities.DriveFile;
 
 		describe('Update', () => {

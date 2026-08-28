@@ -187,6 +187,8 @@ export async function uploadFile(
 	host: Host,
 	user: { i: string },
 	path = '../../test/resources/192.jpg',
+	/** JUICE */
+	isAIGenerated = false,
 ): Promise<Misskey.entities.DriveFile> {
 	const filename = path.split('/').pop() ?? 'untitled';
 	const buffer = await readFile(join(__dirname, path));
@@ -197,6 +199,7 @@ export async function uploadFile(
 	body.append('force', 'true');
 	body.append('file', blob);
 	body.append('name', filename);
+	body.append('isAIGenerated', isAIGenerated ? 'true' : 'false');
 
 	return await fetch(`https://${host}/api/drive/files/create`, { method: 'POST', body })
 		.then(async res => await res.json());

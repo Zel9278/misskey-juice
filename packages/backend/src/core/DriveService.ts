@@ -81,6 +81,7 @@ type UploadFromUrlArgs = {
 	folderId?: MiDriveFolder['id'] | null;
 	uri?: string | null;
 	sensitive?: boolean;
+	isAIGenerated?: boolean;
 	force?: boolean;
 	isLink?: boolean;
 	comment?: string | null;
@@ -514,6 +515,11 @@ export class DriveService {
 					await this.driveFilesRepository.update({ id: matched.id }, { isSensitive: true });
 					matched.isSensitive = true;
 				}
+				// JUICE: sensitiveと同様、AI生成物フラグも「今回はtrueだが以前はfalseだった」場合は追従させる
+				if (isAIGenerated && !matched.isAIGenerated) {
+					await this.driveFilesRepository.update({ id: matched.id }, { isAIGenerated: true });
+					matched.isAIGenerated = true;
+				}
 				return matched;
 			}
 		}
@@ -887,6 +893,7 @@ export class DriveService {
 		folderId = null,
 		uri = null,
 		sensitive = false,
+		isAIGenerated = false,
 		force = false,
 		isLink = false,
 		comment = null,
@@ -906,7 +913,7 @@ export class DriveService {
 				comment = null;
 			}
 
-			const driveFile = await this.addFile({ user, path, name, comment, folderId, force, isLink, url, uri, sensitive, requestIp, requestHeaders });
+			const driveFile = await this.addFile({ user, path, name, comment, folderId, force, isLink, url, uri, sensitive, isAIGenerated, requestIp, requestHeaders });
 			this.downloaderLogger.succ(`Got: ${driveFile.id}`);
 			return driveFile!;
 		} catch (err) {

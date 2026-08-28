@@ -41,6 +41,8 @@
 - Feat: 絵文字申請機能(JUICE独自実装)を追加。`emoji-requests/create` / `emoji-requests/list` / `admin/emoji-requests/list` / `admin/emoji-requests/approve` / `admin/emoji-requests/reject` を追加。申請時に名前・カテゴリ・タグ(aliases)・ライセンス・センシティブ・ローカルのみを指定でき、承認時は既存の `CustomEmojiService` に接続してその内容のままカスタム絵文字として登録する。名前重複はエラーで弾く。却下時は理由をメールで通知する
 - Feat: 絵文字申請の同時pending数上限をロールポリシー `emojiRequestLimit` として追加(既定値3、ロールごとに上書き可能)
 - Feat: ユーザーランキング機能(JUICE独自実装)を追加。`juice/ranking` を新設し、投稿数(純粋リノートを除く)・リアクション数(受け取った数)それぞれ上位3人を返す。集計はRedisの期間別カウンター(`FeaturedService`と同様のエポック基準ウィンドウ+前ウィンドウとのブレンド+TTL自然消滅方式)で行い、毎回の重いSQL集計を避けている。集計期間は `admin/juice/settings` / `admin/juice/update-settings` から設定可能(既定12時間)
+- Feat: Driveファイル単位の`isAIGenerated`フラグをActivityPubで連合するように(添付画像のDocument/ImageオブジェクトにJUICE独自の`_juice_isAIGenerated`プロパティを付与)。ノート単位のフラグとは独立して、添付ファイルごとに連合先へ伝わる
+- Fix: リモートユーザーが以前federateした画像と同一内容(md5一致)のファイルを再度AI生成物としてfederateしても、既存ファイルの`isAIGenerated`が追従して更新されない不具合を修正(`isSensitive`は元々追従していたが`isAIGenerated`は対象外だった)
 
 ## 2026.7.0-juice+1.0
 

@@ -175,6 +175,7 @@ export class ApRendererService {
 			width: file.properties?.width,
 			height: file.properties?.height,
 			sensitive: file.isSensitive,
+			_juice_isAIGenerated: file.isAIGenerated, // JUICE
 		};
 	}
 
