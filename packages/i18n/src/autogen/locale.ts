@@ -13896,6 +13896,18 @@ export interface Locale extends ILocale {
          * 右寄せ(モバイル表示で末尾に固定)
          */
         "widgetPlaceRight": string;
+        /**
+         * モバイルウィジェットの並び順
+         */
+        "widgetPlace": string;
+        /**
+         * ONにしたウィジェットは、モバイル表示のウィジェットドロワーで先頭にまとまって表示されます。
+         */
+        "widgetPlaceCaption": string;
+        /**
+         * 設定できるウィジェットがありません。ホーム画面のウィジェットドロワーからウィジェットを追加してください。
+         */
+        "widgetPlaceEmpty": string;
     };
     "_juiceApprovals": {
         /**

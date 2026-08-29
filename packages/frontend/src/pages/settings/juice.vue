@@ -28,6 +28,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</FormSection>
 		</SearchMarker>
 
+		<SearchMarker :keywords="['widget', 'mobile', 'place', 'left', 'right', 'order']">
+			<FormSection>
+				<template #label><SearchLabel>{{ i18n.ts._juice.widgetPlace }}</SearchLabel></template>
+				<div class="_gaps_s">
+					<MkInfo v-if="widgets.length === 0">{{ i18n.ts._juice.widgetPlaceEmpty }}</MkInfo>
+					<template v-else>
+						<MkInfo>{{ i18n.ts._juice.widgetPlaceCaption }}</MkInfo>
+						<MkSwitch
+							v-for="widget in widgets"
+							:key="widget.id"
+							:modelValue="widget.place === 'left'"
+							@update:modelValue="(v) => onChangeWidgetPlace(widget.id, v)"
+						>
+							<template #label>{{ i18n.ts._widgets[widget.name as typeof widgetDefs[number]] }}</template>
+						</MkSwitch>
+					</template>
+				</div>
+			</FormSection>
+		</SearchMarker>
+
 		<SearchMarker :keywords="['signup', 'approval', 'check']">
 			<FormSection>
 				<template #label><SearchLabel>{{ i18n.ts._juice.signupCheck }}</SearchLabel></template>
@@ -69,11 +89,24 @@ import { ensureSignin } from '@/i.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { instance } from '@/instance.js';
+import { prefer } from '@/preferences.js';
+import { widgets as widgetDefs } from '@/widgets/index.js';
 
 const $i = ensureSignin();
 
 const emailLang = ref($i.emailLang ?? 'ja-JP');
 const muteAIGeneratedNotes = ref($i.muteAIGeneratedNotes ?? 'none');
+
+// ウィジェット編集モード(MkWidgets.vue)のplace切り替えボタンと同じく、
+// 既に配置済みのウィジェットは連合無効化などで一時的に選択肢から外れていても編集対象からは外さない
+const widgets = computed(() => prefer.r.widgets.value);
+
+function onChangeWidgetPlace(id: string, isLeft: boolean) {
+	prefer.commit('widgets', prefer.s.widgets.map(w => w.id === id ? {
+		...w,
+		place: isLeft ? 'left' : 'right',
+	} : w));
+}
 
 const muteAIGeneratedNotesItems = [
 	{ label: i18n.ts.none, value: 'none' },

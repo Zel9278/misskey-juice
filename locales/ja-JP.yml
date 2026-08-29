@@ -3724,6 +3724,9 @@ _juice:
   relayTimelineEnabledCaption: "登録したリレー経由で届いた公開ノートだけを集めたタイムラインです。無効にすると、タイムラインの導線・API・stream配信のすべてが利用できなくなります。"
   widgetPlaceLeft: "左寄せ(モバイル表示で先頭に固定)"
   widgetPlaceRight: "右寄せ(モバイル表示で末尾に固定)"
+  widgetPlace: "モバイルウィジェットの並び順"
+  widgetPlaceCaption: "ONにしたウィジェットは、モバイル表示のウィジェットドロワーで先頭にまとまって表示されます。"
+  widgetPlaceEmpty: "設定できるウィジェットがありません。ホーム画面のウィジェットドロワーからウィジェットを追加してください。"
 
 _juiceApprovals:
   title: "承認待ちユーザー"
