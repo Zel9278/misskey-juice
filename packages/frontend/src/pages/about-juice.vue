@@ -47,9 +47,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<FormSection>
 					<template #label>{{ i18n.ts._aboutJuice.features }}</template>
-					<ul :class="$style.features">
-						<li v-for="feature in features" :key="feature">{{ feature }}</li>
-					</ul>
+					<div :class="$style.features">
+						<div v-for="feature in features" :key="feature.text" :class="$style.feature">
+							<i :class="[feature.icon, $style.featureIcon]"></i>
+							<span>{{ feature.text }}</span>
+						</div>
+					</div>
 				</FormSection>
 
 				<FormLink to="/about-misskey">
@@ -72,12 +75,12 @@ import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 
 const features = [
-	i18n.ts._aboutJuice._features.approvalSignup,
-	i18n.ts._aboutJuice._features.aiGenerated,
-	i18n.ts._aboutJuice._features.emojiRequest,
-	i18n.ts._aboutJuice._features.ranking,
-	i18n.ts._aboutJuice._features.relayTimeline,
-	i18n.ts._aboutJuice._features.emailI18n,
+	{ icon: 'ti ti-user-check', text: i18n.ts._aboutJuice._features.approvalSignup },
+	{ icon: 'ti ti-sparkles', text: i18n.ts._aboutJuice._features.aiGenerated },
+	{ icon: 'ti ti-mood-plus', text: i18n.ts._aboutJuice._features.emojiRequest },
+	{ icon: 'ti ti-trophy', text: i18n.ts._aboutJuice._features.ranking },
+	{ icon: 'ti ti-broadcast', text: i18n.ts._aboutJuice._features.relayTimeline },
+	{ icon: 'ti ti-language', text: i18n.ts._aboutJuice._features.emailI18n },
 ];
 
 const headerActions = computed(() => []);
@@ -118,11 +121,24 @@ definePage(() => ({
 }
 
 .features {
-	margin: 0;
-	padding-left: 1.5em;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	grid-gap: 12px;
+}
 
-	> li {
-		margin: 0.25em 0;
-	}
+.feature {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	background: var(--MI_THEME-buttonBg);
+	border-radius: 8px;
+	line-height: 1.4;
+}
+
+.featureIcon {
+	flex-shrink: 0;
+	font-size: 20px;
+	color: var(--MI_THEME-accent);
 }
 </style>
