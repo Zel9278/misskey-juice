@@ -24,7 +24,7 @@
 | 5 | リレー TL | ✅ 完了 |
 | 6 | JUICE 専用 About ページ | ✅ 完了 |
 | 7 | モバイル表示時のウィジェット並び順設定 | ✅ 完了 |
-| 8 | お知らせの投票機能 | ⬜ 未着手 |
+| 8 | お知らせの投票機能 | ✅ 完了 |
 | 9 | LaTeX(数式)表示機能の復旧 | ✅ 完了 |
 
 各機能の番号は、この表・以下の各セクション・[10. ロードマップ外の追加実装](#10-ロードマップ外の追加実装) 内の参照(例: 「絵文字申請(3.)」)ですべて共通。
@@ -236,7 +236,7 @@ CherryPick には、希望している「承認式登録」にかなり近い実
   - レビューで指摘: 設定ページのウィジェット一覧に、ウィジェット編集モード(`_widgetDefs`)と同じ連合無効化時フィルタ(`instance.federation === 'none'` で連合専用ウィジェットを除外)を誤って適用していた。しかし編集モードの実際の並び替え・place切り替え対象(`MkWidgets.vue`のドラッグリスト)はこのフィルタを一切適用せず常に全ウィジェットを対象にしており、フィルタは「新規追加の選択肢」と「表示モードの描画」にのみ使うのが既存の一貫した方針だった。設定ページ側だけこのフィルタを付けると、連合を無効化した瞬間に既存の連合専用ウィジェットの`place`設定がこの一覧から見えなくなり(編集モードからは引き続き見える)、2つの導線で見える対象がズレてしまう不具合だったため、設定ページのフィルタを撤去して修正した。
 - Playwrightでの実機確認: ウィジェットをトグルすると即座にドロワー内の表示順が変わる(末尾のウィジェットを左寄せにすると先頭へ移動)ことを確認済み。`/settings/juice`側のスイッチをトグルした場合も、同じくドロワーの表示順に即座に反映されることを確認済み。
 
-## 8. お知らせの投票機能（JUICE 独自実装） ⬜ 未着手
+## 8. お知らせの投票機能（JUICE 独自実装） ✅ 完了
 
 ### 現状
 
@@ -256,6 +256,18 @@ CherryPick には、希望している「承認式登録」にかなり近い実
 - 管理画面のお知らせ作成・編集フォーム(`pages/admin/announcements.vue`)に投票設定 UI を追加し、お知らせ表示側(`MkAnnouncementDialog.vue` など)に投票 UI(既存 `MkPoll.vue` 相当の見た目・挙動)を組み込む。
 - 期限切れ時の扱い(通知の要否、投票締切後の表示)は実装着手時に詰める。
 - 機能自体の有効・無効設定は、既存のお知らせ機能の一部として扱うか、コントロールパネルの「JUICE」項目に置くかは実装着手時に判断する。
+
+### 実装結果(2026-08-30)
+
+- `MiAnnouncementPoll`(`announcementId`をPrimaryColumn兼`@OneToOne`FKにする、`MiPoll`の`noteId`パターンを踏襲)と`MiAnnouncementPollVote`(`(userId, announcementId, choice)`ユニーク複合インデックス、`MiAnnouncementReaction`と同型)を新設した。`migration:generate`で生成し、既存の`AddAnnouncementReaction`migrationと同型の構造(CREATE TABLE×2・FK制約・インデックス)になることを確認済み。`pnpm migrate`→`pnpm revert`→`pnpm migrate`のロールバック往復を実機DBで検証済み。
+- 投票の検証ロジック(存在確認・期限切れ確認・選択肢範囲確認・重複投票確認・生SQLでの`votes`配列インクリメント)はすべて新規`AnnouncementPollService`に集約した。Note投票(`PollService.vote()`と`notes/polls/vote.ts`)は同じロジックが2箇所に重複しており技術的負債として認識済みのコメントが残っていたため、新規実装ではこの重複を持ち込まず、エンドポイント(`announcements/polls/vote`)は`IdentifiableError`を`ApiError`にマップするだけの薄いラッパーにした。
+- **投票は作成後編集不可**とした。`AnnouncementService.update()`のフィールド許可リストに`poll`を追加せず、`admin/announcements/update`のparamDefにも`poll`を含めていない。理由: 投票後に`choices`を変更すると`votes`配列とのインデックス対応が壊れるため(Note投稿の投票が一切編集不可なのと同じ理由)。
+- **機能ON/OFFのJUICE設定トグルは追加しなかった。** お知らせの作成自体が`requireModerator: true`で既にモデレーター限定であり、投票を付けるかどうかは作成時に個別選択するだけなので十分opt-inと判断した。最も近い前例である`AnnouncementReaction`(同じ「管理者コンテンツ+ユーザー操作」という形の既存機能)にも専用トグルが無いことに揃えた。
+- 個人宛てのお知らせ(`userId`指定あり)には投票を付けられないようにした。`AnnouncementService.create()`側でINSERT前にガードし、`announcements/polls/vote`エンドポイントでも`announcements/reactions/{create,delete}.ts`と全く同じガード(本人以外には`noSuchAnnouncement`で存在を隠し、本人には専用エラー)を転用した。
+- フロントエンドは`MkPoll.vue`をベースに`MkAnnouncementPoll.vue`を新設。**`MkPoll.vue`との意図的な差分**: お知らせはノートの`pollVoted`ストリームのようなフロント側購読を持たない(`announcementReacted`/`announcementUnreacted`も同様に未購読)ため、`MkPoll.vue`のように投票後の更新をストリーム頼みにすると件数がスタックして見える。代わりに`MkAnnouncementReactions.vue`の`applyLocally()`と同じ楽観的ローカル更新+失敗時ロールバックの方式を採用した。
+- 埋め込み先は`pages/announcement.vue`・`pages/announcements.vue`(いずれも`MkAnnouncementReactions`と同じ`!announcement.forYou`ガードの直下)のみとし、`MkAnnouncementDialog.vue`(強制既読ダイアログ)には追加していない。このダイアログは元々リアクションUIも持たない意図的に最小限の作りであるため、投票も同様に対象外とした。
+- 管理画面(`pages/admin/announcements.vue`)は既存の汎用コンポーネント`MkPollEditor.vue`(Note非依存)をそのまま流用し、新規エディタは作らなかった。「投票を追加」スイッチは新規作成時(`id == null`)のみ表示し、既存のお知らせには投票エディタの代わりに総投票数の読み取り専用表示のみを出す。
+- `pnpm build-misskey-js-with-types`で misskey-js の型に`poll`フィールドと`announcements/polls/vote`エンドポイントが正しく反映されることを確認済み。この変更で`Announcement`型に必須フィールド`poll`が増えたため、`MkAnnouncementDialog.stories.impl.ts`のモックデータと`MkUserAnnouncementEditDialog.vue`(個人宛てお知らせ編集、投票非対応)の型に副次的な修正が必要だった。
 
 ## 9. LaTeX(数式)表示機能の復旧（JUICE 独自実装） ✅ 完了
 

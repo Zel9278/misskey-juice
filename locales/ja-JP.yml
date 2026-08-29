@@ -3727,6 +3727,8 @@ _juice:
   widgetPlace: "モバイルウィジェットの並び順"
   widgetPlaceCaption: "ONにしたウィジェットは、モバイル表示のウィジェットドロワーで先頭にまとまって表示されます。"
   widgetPlaceEmpty: "設定できるウィジェットがありません。ホーム画面のウィジェットドロワーからウィジェットを追加してください。"
+  enablePoll: "投票を追加"
+  enablePollCaption: "作成後に選択肢や期限を変更することはできません。"
 
 _juiceApprovals:
   title: "承認待ちユーザー"

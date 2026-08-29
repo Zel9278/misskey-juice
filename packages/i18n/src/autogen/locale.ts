@@ -13908,6 +13908,14 @@ export interface Locale extends ILocale {
          * 設定できるウィジェットがありません。ホーム画面のウィジェットドロワーからウィジェットを追加してください。
          */
         "widgetPlaceEmpty": string;
+        /**
+         * 投票を追加
+         */
+        "enablePoll": string;
+        /**
+         * 作成後に選択肢や期限を変更することはできません。
+         */
+        "enablePollCaption": string;
     };
     "_juiceApprovals": {
         /**

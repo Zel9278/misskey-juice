@@ -17,6 +17,13 @@ services:
       - ../:/workspace:cached
       - node_modules:/workspace/node_modules
 
+    # rolldownのwatchモード(backend/frontend双方)がこのモノレポの規模だと
+    # デフォルトのnofile(1024)を超えて"Too many open files"でクラッシュするため引き上げる
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
     command: sleep infinity
 
     networks:
