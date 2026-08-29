@@ -2113,6 +2113,8 @@ declare namespace entities {
         InviteListResponse,
         JuicePublicSettingsResponse,
         JuiceRankingResponse,
+        JuiceSignupCheckStatusRequest,
+        JuiceSignupCheckStatusResponse,
         MetaRequest,
         MetaResponse,
         MiauthGenTokenRequest,
@@ -2970,6 +2972,12 @@ type JuicePublicSettingsResponse = operations['juice___public-settings']['respon
 type JuiceRankingResponse = operations['juice___ranking']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type JuiceSignupCheckStatusRequest = operations['juice___signup-check-status']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type JuiceSignupCheckStatusResponse = operations['juice___signup-check-status']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type MeDetailed = components['schemas']['MeDetailed'];
 
 // @public (undocumented)
@@ -3589,6 +3597,7 @@ type SignupPendingResponse = {
     i: string;
 } | {
     pendingApproval: true;
+    checkCode: string;
 };
 
 // @public (undocumented)
@@ -3610,6 +3619,7 @@ type SignupRequest = {
 // @public (undocumented)
 type SignupResponse = SignupSuccessResponse | {
     pendingApproval: true;
+    checkCode: string;
 };
 
 // @public (undocumented)

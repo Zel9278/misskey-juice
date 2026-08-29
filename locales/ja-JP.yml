@@ -2219,6 +2219,19 @@ _signup:
   pendingApproval: "登録ありがとうございます。運営による承認をお待ちください。承認結果はメールでお知らせします。"
   pendingApprovalNoEmail: "登録ありがとうございます。運営による承認をお待ちください。承認されるとサインインできるようになります。"
 
+_signupCheck:
+  title: "登録審査状況の確認"
+  description: "この端末で申請した承認式新規登録の審査状況をまとめて確認できます。別の端末で申請した場合や、確認コードだけを知っている場合は下から追加してください。"
+  addCode: "確認コードを追加"
+  codeLabel: "確認コード"
+  check: "確認する"
+  statusPending: "審査待ちです。運営による確認をお待ちください。"
+  statusApproved: "承認されました。サインインできます。"
+  statusDeclined: "この申請は却下されました。"
+  statusNotFound: "該当する申請が見つかりませんでした。コードが正しいか確認してください。"
+  goToSignin: "サインインする"
+  openPage: "確認ページを開く"
+
 _accountDelete:
   accountDelete: "アカウントの削除"
   mayTakeTime: "アカウントの削除は負荷のかかる処理であるため、作成したコンテンツの数やアップロードしたファイルの数が多いと完了までに時間がかかることがあります。"
@@ -3691,6 +3704,7 @@ _juice:
   rankingPeriodHours: "集計期間(時間)"
   relayTimeline: "リレータイムライン"
   relayTimelineTab: "リレー"
+  signupCheck: "登録審査状況の確認"
   relayTimelineEnabled: "リレータイムライン機能を有効にする"
   relayTimelineEnabledCaption: "登録したリレー経由で届いた公開ノートだけを集めたタイムラインです。無効にすると、タイムラインの導線・API・stream配信のすべてが利用できなくなります。"
 

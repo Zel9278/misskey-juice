@@ -3769,6 +3769,17 @@ declare module '../api.js' {
     ): Promise<SwitchCaseResponseType<E, P>>;
 
     /**
+     * Check the approval status of a pending signup application using its check code (JUICE).
+     * 
+     * **Credential required**: *No*
+     */
+    request<E extends 'juice/signup-check-status', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
      * No description provided.
      * 
      * **Credential required**: *No*

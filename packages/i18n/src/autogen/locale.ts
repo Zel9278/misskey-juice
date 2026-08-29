@@ -8537,6 +8537,52 @@ export interface Locale extends ILocale {
          */
         "pendingApprovalNoEmail": string;
     };
+    "_signupCheck": {
+        /**
+         * 登録審査状況の確認
+         */
+        "title": string;
+        /**
+         * この端末で申請した承認式新規登録の審査状況をまとめて確認できます。別の端末で申請した場合や、確認コードだけを知っている場合は下から追加してください。
+         */
+        "description": string;
+        /**
+         * 確認コードを追加
+         */
+        "addCode": string;
+        /**
+         * 確認コード
+         */
+        "codeLabel": string;
+        /**
+         * 確認する
+         */
+        "check": string;
+        /**
+         * 審査待ちです。運営による確認をお待ちください。
+         */
+        "statusPending": string;
+        /**
+         * 承認されました。サインインできます。
+         */
+        "statusApproved": string;
+        /**
+         * この申請は却下されました。
+         */
+        "statusDeclined": string;
+        /**
+         * 該当する申請が見つかりませんでした。コードが正しいか確認してください。
+         */
+        "statusNotFound": string;
+        /**
+         * サインインする
+         */
+        "goToSignin": string;
+        /**
+         * 確認ページを開く
+         */
+        "openPage": string;
+    };
     "_accountDelete": {
         /**
          * アカウントの削除
@@ -13778,6 +13824,10 @@ export interface Locale extends ILocale {
          * リレー
          */
         "relayTimelineTab": string;
+        /**
+         * 登録審査状況の確認
+         */
+        "signupCheck": string;
         /**
          * リレータイムライン機能を有効にする
          */

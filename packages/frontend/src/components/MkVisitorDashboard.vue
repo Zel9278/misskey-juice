@@ -33,6 +33,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkButton :class="$style.mainAction" full rounded type="a" target="_blank" rel="noopener" href="https://misskey-hub.net/servers/">{{ i18n.ts.exploreOtherServers }}</MkButton>
 				<MkButton :class="$style.mainAction" full rounded data-testid="signin" @click="signin()">{{ i18n.ts.login }}</MkButton>
 			</div>
+			<div v-if="juicePublicSettings.approvalRequiredForSignup" :class="$style.mainSignupCheck">
+				<MkButton :class="$style.mainAction" full rounded data-testid="signup-check" @click="openSignupCheck()">{{ i18n.ts._juice.signupCheck }}</MkButton>
+			</div>
 		</div>
 	</div>
 	<div v-if="stats && instance.clientOptions.showActivitiesForVisitor !== false" :class="$style.stats">
@@ -58,7 +61,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, defineAsyncComponent } from 'vue';
 import * as Misskey from 'misskey-js';
 import { instanceName } from '@@/js/config.js';
 import type { MenuItem } from '@/types/menu.js';
@@ -107,6 +110,12 @@ function signup(mode?: 'invitation' | 'application') {
 		autoSet: true,
 		mode,
 	}, {
+		closed: () => dispose(),
+	});
+}
+
+function openSignupCheck() {
+	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkSignupCheckPanel.vue')), {}, {
 		closed: () => dispose(),
 	});
 }
@@ -186,6 +195,10 @@ function showMenu(ev: PointerEvent) {
 
 .mainAction {
 	line-height: 28px;
+}
+
+.mainSignupCheck {
+	padding: 0 32px 32px 32px;
 }
 
 .stats {

@@ -24,12 +24,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, defineAsyncComponent } from 'vue';
 import MkButton from '@/components/MkButton.vue';
 import { i18n } from '@/i18n.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { login } from '@/accounts.js';
+import { addSignupApprovalCheckCode } from '@/utility/signup-approval-check-codes.js';
 
 const submitting = ref(false);
 
@@ -46,10 +47,13 @@ function submit() {
 	}).then(res => {
 		if ('pendingApproval' in res) {
 			submitting.value = false;
-			os.alert({
-				type: 'success',
-				title: i18n.ts._signup.almostThere,
+			// 確認コードをこの端末へ保存し、/signup-check でいつでも審査状況を確認できるようにする(JUICE)。
+			addSignupApprovalCheckCode(res.checkCode);
+			const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkSignupApprovalPendingDialog.vue')), {
 				text: i18n.ts._signup.pendingApproval,
+				code: res.checkCode,
+			}, {
+				closed: () => dispose(),
 			});
 			return;
 		}

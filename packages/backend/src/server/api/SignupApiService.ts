@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import type { RegistrationTicketsRepository, UsedUsernamesRepository, UserPendingsRepository, UserProfilesRepository, UsersRepository, MiRegistrationTicket, MiMeta } from '@/models/_.js';
+import type { RegistrationTicketsRepository, SignupApprovalChecksRepository, UsedUsernamesRepository, UserPendingsRepository, UserProfilesRepository, UsersRepository, MiRegistrationTicket, MiMeta } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import { CaptchaService } from '@/core/CaptchaService.js';
 import { IdService } from '@/core/IdService.js';
@@ -48,6 +48,9 @@ export class SignupApiService {
 		@Inject(DI.registrationTicketsRepository)
 		private registrationTicketsRepository: RegistrationTicketsRepository,
 
+		@Inject(DI.signupApprovalChecksRepository)
+		private signupApprovalChecksRepository: SignupApprovalChecksRepository,
+
 		private userEntityService: UserEntityService,
 		private idService: IdService,
 		private captchaService: CaptchaService,
@@ -57,6 +60,20 @@ export class SignupApiService {
 		private emailI18nService: EmailI18nService,
 		private juiceSettingsService: JuiceSettingsService,
 	) {
+	}
+
+	// 承認待ちの申請者がメールアドレスなしでも審査状況を確認できるよう、
+	// 引換コードを発行してsignup_approval_checkに記録する(JUICE)。
+	@bindThis
+	private async issueApprovalCheckCode(userId: string): Promise<string> {
+		const code = secureRndstr(32, { chars: L_CHARS });
+		await this.signupApprovalChecksRepository.insertOne({
+			id: this.idService.gen(),
+			code,
+			userId,
+			status: 'pending',
+		});
+		return code;
 	}
 
 	@bindThis
@@ -267,7 +284,8 @@ export class SignupApiService {
 				}
 
 				if (approvalRequiredForThisSignup) {
-					return { pendingApproval: true } as const;
+					const checkCode = await this.issueApprovalCheckCode(account.id);
+					return { pendingApproval: true, checkCode } as const;
 				}
 
 				const res = await this.userEntityService.pack(account, account, {
@@ -339,7 +357,8 @@ export class SignupApiService {
 					i18n.t('_email.signupPendingApproval.html'),
 					i18n.t('_email.signupPendingApproval.text'));
 
-				return { pendingApproval: true } as const;
+				const checkCode = await this.issueApprovalCheckCode(account.id);
+				return { pendingApproval: true, checkCode } as const;
 			}
 
 			return this.signinService.signin(request, reply, account as MiLocalUser);

@@ -69,6 +69,7 @@ import { MiReversiGame } from '@/models/ReversiGame.js';
 import { MiRole } from '@/models/Role.js';
 import { MiRoleAssignment } from '@/models/RoleAssignment.js';
 import { MiSignin } from '@/models/Signin.js';
+import { MiSignupApprovalCheck } from '@/models/SignupApprovalCheck.js';
 import { MiSwSubscription } from '@/models/SwSubscription.js';
 import { MiSystemAccount } from '@/models/SystemAccount.js';
 import { MiSystemWebhook } from '@/models/SystemWebhook.js';
@@ -147,6 +148,7 @@ export {
 	MiRegistryItem,
 	MiRelay,
 	MiSignin,
+	MiSignupApprovalCheck,
 	MiSwSubscription,
 	MiSystemAccount,
 	MiUsedUsername,
@@ -229,6 +231,7 @@ export type RegistrationTicketsRepository = Repository<MiRegistrationTicket> & M
 export type RegistryItemsRepository = Repository<MiRegistryItem> & MiRepository<MiRegistryItem>;
 export type RelaysRepository = Repository<MiRelay> & MiRepository<MiRelay>;
 export type SigninsRepository = Repository<MiSignin> & MiRepository<MiSignin>;
+export type SignupApprovalChecksRepository = Repository<MiSignupApprovalCheck> & MiRepository<MiSignupApprovalCheck>;
 export type SwSubscriptionsRepository = Repository<MiSwSubscription> & MiRepository<MiSwSubscription>;
 export type SystemAccountsRepository = Repository<MiSystemAccount> & MiRepository<MiSystemAccount>;
 export type UsedUsernamesRepository = Repository<MiUsedUsername> & MiRepository<MiUsedUsername>;

@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { UserProfilesRepository, UsersRepository } from '@/models/_.js';
+import type { SignupApprovalChecksRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
@@ -52,6 +52,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
 
+		@Inject(DI.signupApprovalChecksRepository)
+		private signupApprovalChecksRepository: SignupApprovalChecksRepository,
+
 		private moderationLogService: ModerationLogService,
 		private emailService: EmailService,
 		private emailI18nService: EmailI18nService,
@@ -67,6 +70,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			await this.usersRepository.update(user.id, {
 				approved: true,
+			});
+
+			await this.signupApprovalChecksRepository.update({ userId: user.id }, {
+				status: 'approved',
 			});
 
 			this.moderationLogService.log(me, 'approveSignup', {

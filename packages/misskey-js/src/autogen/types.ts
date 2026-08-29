@@ -3091,6 +3091,15 @@ export type paths = {
          */
         post: operations['juice___ranking'];
     };
+    '/juice/signup-check-status': {
+        /**
+         * juice/signup-check-status
+         * @description Check the approval status of a pending signup application using its check code (JUICE).
+         *
+         *     **Credential required**: *No*
+         */
+        post: operations['juice___signup-check-status'];
+    };
     '/meta': {
         /**
          * meta
@@ -4314,6 +4323,7 @@ export type components = {
             isAdmin: boolean;
             injectFeaturedNote: boolean;
             receiveAnnouncementEmail: boolean;
+            receiveEmojiRequestResultEmail: boolean;
             alwaysMarkNsfw: boolean;
             autoSensitive: boolean;
             carefulBot: boolean;
@@ -29137,6 +29147,7 @@ export interface operations {
                     isCat?: boolean;
                     injectFeaturedNote?: boolean;
                     receiveAnnouncementEmail?: boolean;
+                    receiveEmojiRequestResultEmail?: boolean;
                     alwaysMarkNsfw?: boolean;
                     autoSensitive?: boolean;
                     /** @enum {string} */
@@ -30234,6 +30245,83 @@ export interface operations {
             };
             /** @description I'm Ai */
             418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'juice___signup-check-status': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    code: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /** @enum {string} */
+                        status: 'pending' | 'approved' | 'declined' | 'notFound';
+                    };
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

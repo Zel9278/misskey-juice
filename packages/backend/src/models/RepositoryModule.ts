@@ -64,6 +64,7 @@ import {
 	MiRole,
 	MiRoleAssignment,
 	MiSignin,
+	MiSignupApprovalCheck,
 	MiSwSubscription,
 	MiSystemAccount,
 	MiSystemWebhook,
@@ -354,6 +355,12 @@ const $signinsRepository: Provider = {
 	inject: [DI.db],
 };
 
+const $signupApprovalChecksRepository: Provider = {
+	provide: DI.signupApprovalChecksRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiSignupApprovalCheck).extend(miRepository as MiRepository<MiSignupApprovalCheck>),
+	inject: [DI.db],
+};
+
 const $pagesRepository: Provider = {
 	provide: DI.pagesRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiPage).extend(miRepository as MiRepository<MiPage>),
@@ -605,6 +612,7 @@ const $reversiGamesRepository: Provider = {
 		$authSessionsRepository,
 		$accessTokensRepository,
 		$signinsRepository,
+		$signupApprovalChecksRepository,
 		$pagesRepository,
 		$pageLikesRepository,
 		$galleryPostsRepository,
@@ -685,6 +693,7 @@ const $reversiGamesRepository: Provider = {
 		$authSessionsRepository,
 		$accessTokensRepository,
 		$signinsRepository,
+		$signupApprovalChecksRepository,
 		$pagesRepository,
 		$pageLikesRepository,
 		$galleryPostsRepository,

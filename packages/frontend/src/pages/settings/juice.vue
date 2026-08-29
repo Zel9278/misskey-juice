@@ -28,6 +28,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</FormSection>
 		</SearchMarker>
 
+		<SearchMarker :keywords="['signup', 'approval', 'check']">
+			<FormSection>
+				<template #label><SearchLabel>{{ i18n.ts._juice.signupCheck }}</SearchLabel></template>
+				<FormLink to="/signup-check">{{ i18n.ts._signupCheck.openPage }}</FormLink>
+			</FormSection>
+		</SearchMarker>
+
 		<SearchMarker :keywords="['emoji', 'request']">
 			<FormSection>
 				<template #label><SearchLabel>{{ i18n.ts._juice.emojiRequest }}</SearchLabel></template>

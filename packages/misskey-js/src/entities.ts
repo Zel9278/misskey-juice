@@ -134,6 +134,7 @@ export type SignupSuccessResponse = MeDetailed & {
 
 export type SignupResponse = SignupSuccessResponse | {
 	pendingApproval: true;
+	checkCode: string;
 };
 
 export type SignupPendingRequest = {
@@ -145,6 +146,7 @@ export type SignupPendingResponse = {
 	i: string,
 } | {
 	pendingApproval: true;
+	checkCode: string;
 };
 
 export type SigninFlowRequest = {

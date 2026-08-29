@@ -88,7 +88,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, defineAsyncComponent } from 'vue';
 import { toUnicode } from 'punycode.js';
 import * as Misskey from 'misskey-js';
 import * as config from '@@/js/config.js';
@@ -105,6 +105,7 @@ import { misskeyApi } from '@/utility/misskey-api.js';
 import { instance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 import { login } from '@/accounts.js';
+import { addSignupApprovalCheckCode } from '@/utility/signup-approval-check-codes.js';
 
 const props = withDefaults(defineProps<{
 	autoSet?: boolean;
@@ -369,10 +370,13 @@ async function onSubmit(): Promise<void> {
 				// この分岐に来る時点で instance.emailRequiredForSignup は必ず false
 				// (true の場合は上の if で email 確認フローに分岐済み)なので、
 				// メールアドレスは収集していない。承認結果をメールで知らせる旨は案内しない。
-				os.alert({
-					type: 'success',
-					title: i18n.ts._signup.almostThere,
+				// 代わりに確認コードをこの端末へ保存し、/signup-check でいつでも審査状況を確認できるようにする(JUICE)。
+				addSignupApprovalCheckCode(resJson.checkCode);
+				const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkSignupApprovalPendingDialog.vue')), {
 					text: i18n.ts._signup.pendingApprovalNoEmail,
+					code: resJson.checkCode,
+				}, {
+					closed: () => dispose(),
 				});
 				emit('signupPendingApproval');
 			} else {

@@ -1672,7 +1672,8 @@ describe('Endpoints', () => {
 				reason: 'よろしくお願いします',
 			});
 			assert.strictEqual(res.status, 200);
-			assert.deepStrictEqual(res.body, { pendingApproval: true });
+			assert.strictEqual((res.body as any).pendingApproval, true);
+			assert.strictEqual(typeof (res.body as any).checkCode, 'string');
 		});
 
 		test('未承認ユーザーはサインインできない', async () => {
@@ -1757,7 +1758,59 @@ describe('Endpoints', () => {
 			// used_username に残らず、同じユーザー名で再度登録申請できる
 			const retryRes = await api('signup', { username, password: 'test', reason: 'test again' });
 			assert.strictEqual(retryRes.status, 200);
-			assert.deepStrictEqual(retryRes.body, { pendingApproval: true });
+			assert.strictEqual((retryRes.body as any).pendingApproval, true);
+			assert.strictEqual(typeof (retryRes.body as any).checkCode, 'string');
+		});
+
+		test('signup-check-status: 発行直後はpendingを返す', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'test' });
+			assert.strictEqual(signupRes.status, 200);
+			const checkCode = (signupRes.body as any).checkCode as string;
+
+			const res = await api('juice/signup-check-status', { code: checkCode });
+			assert.strictEqual(res.status, 200);
+			assert.deepStrictEqual(res.body, { status: 'pending' });
+		});
+
+		test('signup-check-status: 承認するとapprovedになる', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'test' });
+			assert.strictEqual(signupRes.status, 200);
+			const checkCode = (signupRes.body as any).checkCode as string;
+
+			const list = await api('admin/juice/pending-signups', {}, alice);
+			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
+			assert.ok(target);
+			const approveRes = await api('admin/juice/approve-signup', { userId: target.id }, alice);
+			assert.strictEqual(approveRes.status, 204);
+
+			const res = await api('juice/signup-check-status', { code: checkCode });
+			assert.strictEqual(res.status, 200);
+			assert.deepStrictEqual(res.body, { status: 'approved' });
+		});
+
+		test('signup-check-status: 却下してユーザーが削除された後もdeclinedを確認できる', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'test' });
+			assert.strictEqual(signupRes.status, 200);
+			const checkCode = (signupRes.body as any).checkCode as string;
+
+			const list = await api('admin/juice/pending-signups', {}, alice);
+			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
+			assert.ok(target);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
+			assert.strictEqual(declineRes.status, 204);
+
+			const res = await api('juice/signup-check-status', { code: checkCode });
+			assert.strictEqual(res.status, 200);
+			assert.deepStrictEqual(res.body, { status: 'declined' });
+		});
+
+		test('signup-check-status: 存在しないコードはnotFoundを返す', async () => {
+			const res = await api('juice/signup-check-status', { code: 'no-such-code' });
+			assert.strictEqual(res.status, 200);
+			assert.deepStrictEqual(res.body, { status: 'notFound' });
 		});
 
 		test('juice/public-settings は無認証で現在の設定を反映する', async () => {
@@ -1767,6 +1820,8 @@ describe('Endpoints', () => {
 				approvalRequiredForSignup: true,
 				signupReasonRequired: true,
 				signupReasonMaxLength: 4096,
+				emojiRequestEnabled: false,
+				relayTimelineEnabled: false,
 			});
 		});
 
