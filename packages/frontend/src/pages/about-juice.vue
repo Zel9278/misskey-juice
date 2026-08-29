@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_spacer" style="--MI_SPACER-w: 600px; --MI_SPACER-min: 20px;">
 			<div class="_gaps_m">
 				<div v-panel :class="$style.banner">
-					<img src="/static-assets/icons/192.png" alt="" :class="$style.bannerIcon"/>
+					<img src="/client-assets/juice-icon-transparent.png" alt="" :class="$style.bannerIcon"/>
 					<div :class="$style.bannerName">misskey-juice</div>
 					<div :class="$style.bannerVersion">v{{ version }}</div>
 				</div>
@@ -107,8 +107,6 @@ definePage(() => ({
 .bannerIcon {
 	width: 72px;
 	height: 72px;
-	border-radius: 20%;
-	box-shadow: 0px 4px 32px var(--MI_THEME-shadow);
 }
 
 .bannerName {
