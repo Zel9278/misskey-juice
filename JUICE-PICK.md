@@ -299,7 +299,20 @@ CherryPick には、希望している「承認式登録」にかなり近い実
 
 ## 10. ロードマップ外の追加実装
 
-このロードマップの策定後、承認式新規登録(1.)の実装過程で見つかった課題への対応として、当初計画には無かった以下の機能を追加実装した。
+このロードマップの策定後、承認式新規登録(1.)の実装過程で見つかった課題への対応として、当初計画には無かった以下の機能を追加実装した。あわせて、ロードマップ策定より前の1.0リリース時にmisskey-artから移植済みの機能・修正のうち、本ロードマップの複数項目から前例として直接参照しているものも記録として残す(詳細な移植経緯は`PORTING_STATUS.md`を参照)。
+
+### お知らせリアクション機能の移植(misskey-art PR #68、2026-08-24)
+
+- misskey-art (`art/main`) から移植した機能。JUICE独自実装ではなく、本ロードマップの策定・項目0(JUICE設定基盤)より前の1.0リリース時に移植済み。
+- ノートと同じ感覚でお知らせにリアクションを付けられる。1ユーザーが複数のリアクションを付けられる、カスタム絵文字とUnicode絵文字の両方に対応、ローカル専用(リモートのカスタム絵文字は受け付けない)、リアクションしたユーザー一覧を表示可能。ユニーク制約は`(userId, announcementId, reaction)`。
+- 新規ファイル: `AnnouncementReaction.ts`/`AnnouncementReactionEntityService.ts`/`AnnouncementReactionService.ts`/`announcements/reactions.ts`/`announcements/reactions/{create,delete}.ts`/`MkAnnouncementReactions.vue`/`MkAnnouncementReactedUsersDialog.vue`など。
+- 本ロードマップの項目3(絵文字申請)・7(ウィジェット並び順、設定ページでの一覧UIの参照パターンとして)・8(お知らせの投票機能)は、いずれもこの機能が持つ「ユーザー×お知らせ」中間テーブルパターン(`(userId, announcementId, 識別子)`ユニーク複合インデックス)を直接のテンプレートとして参照・踏襲している。
+
+### センシティブ画像のぼかし表示バグ修正の移植(misskey-art PR #67、2026-08-24)
+
+- 本家Misskey 2026.7.0系に存在した不具合で、CW(Content Warning)を開いた後やタブ切替時にセンシティブ画像のblurhashぼかしが正しく描画されないバグを、misskey-artの修正ごと移植した。JUICE独自の不具合ではない。
+- 原因: 対象要素が`display: none`の状態でマウントされると`clientWidth`/`clientHeight`が0になり、blurhashの描画サイズ計算が崩れていた。
+- 修正内容: `MkBlurhash.vue`(`ResizeObserver`による動的サイズ再計算)、`MkImgWithBlurhash.vue`(CW内でのblurhash描画修正)、`MkMediaImage.vue`(センシティブ画像の表示ロジック改善)。あわせて`reset-db.ts`の開発用DB誤削除防止ガードも同じコミット群で移植済み(この既存ガードに残っていた別経路の穴を、本ロードマップの「開発用DB誤消去バグの修正(2026-08-29)」で追加で塞いだ)。
 
 ### 承認式新規登録まわりの修正
 
