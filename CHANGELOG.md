@@ -52,6 +52,7 @@
 - Fix: 絵文字申請の承認・却下結果メールが、メールアドレス未確認(`emailVerified: false`)のユーザーにも送信されてしまう不具合を修正
 - Feat: メールアドレスを収集しない承認式新規登録でも審査状況を確認できるよう、申請時に確認コードを発行する仕組み(JUICE独自実装)を追加。新規エンティティ`signup_approval_check`に申請ごとの状態(pending/approved/declined)を記録し、ユーザー行が却下により削除された後もコードから状態を確認できる。公開エンドポイント`juice/signup-check-status`を新設し、`signup`/`signup-pending`のレスポンスに`checkCode`を追加
 - Feat: JUICE独自のAboutページ(`/about-juice`)を追加。開発者情報・ソースコード/ライセンス・JUICE独自機能の一覧を掲載する。「このサーバーについて」ページと、コントロールパネル以外のユーザー向けメニューからリンクしている
+- Enhance: サイト全体の既定アイコン(favicon・起動時スプラッシュ・PWAアイコン・インスタンスアイコン未設定時のフォールバック・システムメールのロゴ)をMisskeyの「Mi」マスコットからJUICE独自の雫アイコンに差し替え
 
 ## 2026.7.0-juice+1.0
 
