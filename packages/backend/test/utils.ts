@@ -16,6 +16,7 @@ import { DataSource } from 'typeorm';
 import Fastify from 'fastify';
 import { entities } from '@/postgres.js';
 import { loadConfig } from '@/config.js';
+import { assertTestDatabase } from '@/misc/reset-db.js';
 import type * as misskey from 'misskey-js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/validator.js';
@@ -611,6 +612,13 @@ export async function initTestDb(justBorrow = false, initEntities?: any[]) {
 		dropSchema: !justBorrow,
 		entities: initEntities ?? entities,
 	});
+
+	// dropSchema/synchronizeは開発用DBを丸ごと消しうるため、接続先が本当にtest用DBかを確認する(JUICE)。
+	// built/.config.jsonはNODE_ENVによってdefault.yml/test.ymlどちらからでも生成されるため、
+	// process.env.NODE_ENVのチェックだけでは設定と実際の接続先がズレたときに防げない。
+	if (!justBorrow) {
+		assertTestDatabase(db);
+	}
 
 	await db.initialize();
 

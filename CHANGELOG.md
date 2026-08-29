@@ -45,6 +45,7 @@
 - Feat: Driveファイル単位の`isAIGenerated`フラグをActivityPubで連合するように(添付画像のDocument/ImageオブジェクトにJUICE独自の`_juice_isAIGenerated`プロパティを付与)。ノート単位のフラグとは独立して、添付ファイルごとに連合先へ伝わる
 - Fix: リモートユーザーが以前federateした画像と同一内容(md5一致)のファイルを再度AI生成物としてfederateしても、既存ファイルの`isAIGenerated`が追従して更新されない不具合を修正(`isSensitive`は元々追従していたが`isAIGenerated`は対象外だった)
 - Feat: リレータイムライン機能(JUICE独自実装)を追加。`notes/relay-timeline`(REST)と`relayTimeline`(stream channel)を新設し、登録済みリレー経由でAnnounceとして届いた公開ノートのみを返す。受信時にどのリレー経由か(`note.relayId`)を記録し、複数リレーから同じノートが届いた場合は最初に処理した1件のみを採用する(first-writer-wins)。過去ノートへの遡及付与はしない。機能の有効・無効は`admin/juice/settings` / `admin/juice/update-settings`の`relayTimelineEnabled`から設定可能(既定は無効)
+- Fix: `NODE_ENV=test`かつ`built/.config.json`が実際にはdefault.yml由来(開発用DB)のまま、という設定ズレの状態でアプリを起動すると、`createPostgresDataSource`が無条件に`synchronize`/`dropSchema`を有効化し、開発用DBのスキーマを丸ごと削除・再作成してしまう不具合を修正。接続先DB名に`test`を含むことを確認してから有効化するように(以前`reset-db`にのみ追加されたガードと同種の穴が、DataSource生成本体と`test/utils.ts`の`initTestDb`・`test/unit/chart.ts`には残っていた)
 
 ## 2026.7.0-juice+1.0
 

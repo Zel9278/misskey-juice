@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, test } from 'vitest';
-import { resetDb } from '@/misc/reset-db.js';
+import { assertTestDatabaseName, resetDb } from '@/misc/reset-db.js';
 import type { DataSource } from 'typeorm';
 
 /**
@@ -32,5 +32,23 @@ describe('resetDb', () => {
 
 	test('DB名がテスト用でなければリセットを拒否する', async () => {
 		await expect(resetDb(fakeDataSource('production'))).rejects.toThrow(/refusing to reset/);
+	});
+});
+
+describe('assertTestDatabaseName', () => {
+	test('DB名にtestを含めば許可する', () => {
+		expect(() => assertTestDatabaseName('test-misskey', 'createPostgresDataSource')).not.toThrow();
+	});
+
+	test('DB名にtestを含まなければ拒否する(createPostgresDataSourceがsynchronize/dropSchemaを有効化する経路の再発防止)', () => {
+		expect(() => assertTestDatabaseName('misskey', 'createPostgresDataSource')).toThrow(/refusing to reset\/sync/);
+	});
+
+	test('DB名が未設定なら拒否する', () => {
+		expect(() => assertTestDatabaseName(undefined, 'createPostgresDataSource')).toThrow(/refusing to reset\/sync/);
+	});
+
+	test('エラーメッセージに呼び出し元のcontextが含まれる', () => {
+		expect(() => assertTestDatabaseName('misskey', 'createPostgresDataSource')).toThrow(/^createPostgresDataSource:/);
 	});
 });
