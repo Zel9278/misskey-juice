@@ -8994,6 +8994,58 @@ export interface Locale extends ILocale {
          */
         "createKey": string;
     };
+    "_aboutJuice": {
+        /**
+         * JUICEについて
+         */
+        "title": string;
+        /**
+         * JUICEとは
+         */
+        "description": string;
+        /**
+         * misskey-juiceは、c30 (Zel9278)が開発しているMisskeyの独自フォークです。本家Misskeyから移植した機能に加えて、承認式新規登録・AI生成物フラグ・絵文字申請・ユーザーランキング・リレータイムラインなど、JUICE独自の機能を追加しています。
+         */
+        "descriptionText": string;
+        /**
+         * 開発者
+         */
+        "developer": string;
+        /**
+         * ソースコード・ライセンス
+         */
+        "sourceAndLicense": string;
+        /**
+         * JUICE独自の主な機能
+         */
+        "features": string;
+        "_features": {
+            /**
+             * 承認式新規登録(登録理由の入力・モデレーターによる承認/却下・メール未収集でも審査状況を確認できる確認コード)
+             */
+            "approvalSignup": string;
+            /**
+             * 投稿・添付ファイルのAI生成物フラグ表示(ActivityPub連合対応)
+             */
+            "aiGenerated": string;
+            /**
+             * 一般ユーザーによる絵文字申請機能
+             */
+            "emojiRequest": string;
+            /**
+             * 投稿数・リアクション数のユーザーランキング
+             */
+            "ranking": string;
+            /**
+             * 登録済みリレー経由のノートだけを表示するリレータイムライン
+             */
+            "relayTimeline": string;
+            /**
+             * システムメールのユーザーごとの受信言語設定
+             */
+            "emailI18n": string;
+        };
+    };
     "_aboutMisskey": {
         /**
          * Misskeyはsyuiloによって2014年から開発されている、オープンソースのソフトウェアです。

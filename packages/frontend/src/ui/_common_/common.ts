@@ -177,6 +177,11 @@ export function openInstanceMenu(ev: PointerEvent) {
 		type: 'link',
 		text: i18n.ts.aboutMisskey,
 		to: '/about-misskey',
+	}, {
+		type: 'link',
+		text: i18n.ts._aboutJuice.title,
+		icon: 'ti ti-droplet',
+		to: '/about-juice',
 	});
 
 	os.popupMenu(menuItems, ev.currentTarget ?? ev.target, {
