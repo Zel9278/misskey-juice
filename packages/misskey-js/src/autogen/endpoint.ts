@@ -152,6 +152,7 @@ import type {
 	AdminUpdateUserNoteRequest,
 	AnnouncementsRequest,
 	AnnouncementsResponse,
+	AnnouncementsPollsVoteRequest,
 	AnnouncementsReactionsRequest,
 	AnnouncementsReactionsResponse,
 	AnnouncementsReactionsCreateRequest,
@@ -807,6 +808,7 @@ export type Endpoints = {
 	'admin/update-proxy-account': { req: AdminUpdateProxyAccountRequest; res: AdminUpdateProxyAccountResponse };
 	'admin/update-user-note': { req: AdminUpdateUserNoteRequest; res: EmptyResponse };
 	'announcements': { req: AnnouncementsRequest; res: AnnouncementsResponse };
+	'announcements/polls/vote': { req: AnnouncementsPollsVoteRequest; res: EmptyResponse };
 	'announcements/reactions': { req: AnnouncementsReactionsRequest; res: AnnouncementsReactionsResponse };
 	'announcements/reactions/create': { req: AnnouncementsReactionsCreateRequest; res: EmptyResponse };
 	'announcements/reactions/delete': { req: AnnouncementsReactionsDeleteRequest; res: EmptyResponse };

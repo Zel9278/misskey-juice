@@ -55,6 +55,11 @@ export interface BroadcastTypes {
 		reaction: string;
 		userId: MiUser['id'];
 	};
+	announcementPollVoted: {
+		announcementId: MiAnnouncement['id'];
+		choice: number;
+		userId: MiUser['id'];
+	};
 }
 
 export interface MainEventTypes {

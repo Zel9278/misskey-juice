@@ -1013,6 +1013,15 @@ export type paths = {
          */
         post: operations['announcements'];
     };
+    '/announcements/polls/vote': {
+        /**
+         * announcements/polls/vote
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:votes*
+         */
+        post: operations['announcements___polls___vote'];
+    };
     '/announcements/reactions': {
         /**
          * announcements/reactions
@@ -4622,6 +4631,16 @@ export type components = {
                 [key: string]: number;
             };
             myReactions: string[];
+            poll: {
+                /** Format: date-time */
+                expiresAt: string | null;
+                multiple: boolean;
+                choices: {
+                    isVoted: boolean;
+                    text: string;
+                    votes: number;
+                }[];
+            } | null;
         };
         AnnouncementReaction: {
             /** Format: id */
@@ -6920,6 +6939,16 @@ export interface operations {
                      * @default null
                      */
                     userId?: string | null;
+                    /** @default null */
+                    poll?: {
+                        choices: string[];
+                        /** @default false */
+                        multiple?: boolean;
+                        /** @default null */
+                        expiresAt?: number | null;
+                        /** @default null */
+                        expiredAfter?: number | null;
+                    } | null;
                 };
             };
         };
@@ -6943,6 +6972,16 @@ export interface operations {
                         title: string;
                         text: string;
                         imageUrl: string | null;
+                        poll: {
+                            /** Format: date-time */
+                            expiresAt: string | null;
+                            multiple: boolean;
+                            choices: {
+                                isVoted: boolean;
+                                text: string;
+                                votes: number;
+                            }[];
+                        } | null;
                     };
                 };
             };
@@ -7108,6 +7147,15 @@ export interface operations {
                         userId: string | null;
                         imageUrl: string | null;
                         reads: number;
+                        poll: {
+                            /** Format: date-time */
+                            expiresAt: string | null;
+                            multiple: boolean;
+                            choices: {
+                                text: string;
+                                votes: number;
+                            }[];
+                        } | null;
                     }[];
                 };
             };
@@ -10072,6 +10120,7 @@ export interface operations {
                         emojiRequestEnabled: boolean;
                         rankingAggregationPeriodHours: number;
                         relayTimelineEnabled: boolean;
+                        latexEnabled: boolean;
                     };
                 };
             };
@@ -10133,6 +10182,7 @@ export interface operations {
                     emojiRequestEnabled?: boolean;
                     rankingAggregationPeriodHours?: number;
                     relayTimelineEnabled?: boolean;
+                    latexEnabled?: boolean;
                 };
             };
         };
@@ -14076,6 +14126,70 @@ export interface operations {
                 };
                 content: {
                     'application/json': components['schemas']['Announcement'][];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    announcements___polls___vote: {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    announcementId: string;
+                    choice: number;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
                 };
             };
             /** @description Client error */
@@ -30145,6 +30259,7 @@ export interface operations {
                         signupReasonMaxLength: number;
                         emojiRequestEnabled: boolean;
                         relayTimelineEnabled: boolean;
+                        latexEnabled: boolean;
                     };
                 };
             };

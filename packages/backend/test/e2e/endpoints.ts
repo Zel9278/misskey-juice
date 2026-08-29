@@ -1335,6 +1335,138 @@ describe('Endpoints', () => {
 		});
 	});
 
+	describe('お知らせ投票', () => {
+		let userAnnouncementId: string;
+
+		beforeAll(async () => {
+			const res = await api('admin/announcements/create', {
+				title: 'user announcement (poll)',
+				text: 'for bob only',
+				imageUrl: null,
+				userId: bob.id,
+			}, alice);
+			userAnnouncementId = res.body.id;
+		});
+
+		test('個人宛てのお知らせには投票を追加できない', async () => {
+			const res = await api('admin/announcements/create', {
+				title: 'user announcement with poll',
+				text: 'should be rejected',
+				imageUrl: null,
+				userId: bob.id,
+				poll: { choices: ['A', 'B'] },
+			}, alice);
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'POLL_NOT_ALLOWED');
+		});
+
+		test('宛先本人でも個人宛てお知らせには投票できない', async () => {
+			const res = await api('announcements/polls/vote', {
+				announcementId: userAnnouncementId,
+				choice: 0,
+			}, bob);
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'POLL_NOT_ALLOWED');
+		});
+
+		test('無関係な第三者は個人宛てお知らせに投票できない', async () => {
+			const res = await api('announcements/polls/vote', {
+				announcementId: userAnnouncementId,
+				choice: 0,
+			}, carol);
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_ANNOUNCEMENT');
+		});
+
+		test('選択肢付きの全体お知らせを作成し、投票できる', async () => {
+			const created = await api('admin/announcements/create', {
+				title: 'global announcement with poll',
+				text: 'vote please',
+				imageUrl: null,
+				poll: { choices: ['A', 'B', 'C'] },
+			}, alice);
+			assert.strictEqual(created.status, 200);
+			assert.notStrictEqual(created.body.poll, null);
+			assert.deepStrictEqual(created.body.poll!.choices.map((c: { text: string }) => c.text), ['A', 'B', 'C']);
+
+			const announcementId = created.body.id;
+
+			const vote = await api('announcements/polls/vote', {
+				announcementId,
+				choice: 1,
+			}, bob);
+			assert.strictEqual(vote.status, 204);
+
+			const list = await api('admin/announcements/list', {}, alice);
+			const packed = list.body.find((a: { id: string }) => a.id === announcementId);
+			assert.notStrictEqual(packed, undefined);
+			assert.notStrictEqual(packed!.poll, null);
+			assert.strictEqual(packed!.poll!.choices[1].votes, 1);
+		});
+
+		test('不正な選択肢IDには投票できない', async () => {
+			const created = await api('admin/announcements/create', {
+				title: 'global announcement with poll 2',
+				text: 'vote please',
+				imageUrl: null,
+				poll: { choices: ['A', 'B'] },
+			}, alice);
+			const announcementId = created.body.id;
+
+			const res = await api('announcements/polls/vote', {
+				announcementId,
+				choice: 5,
+			}, bob);
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'INVALID_CHOICE');
+		});
+
+		test('単一選択の投票に同じユーザーが二重投票できない', async () => {
+			const created = await api('admin/announcements/create', {
+				title: 'global announcement with poll 3',
+				text: 'vote please',
+				imageUrl: null,
+				poll: { choices: ['A', 'B'] },
+			}, alice);
+			const announcementId = created.body.id;
+
+			const first = await api('announcements/polls/vote', {
+				announcementId,
+				choice: 0,
+			}, bob);
+			assert.strictEqual(first.status, 204);
+
+			const second = await api('announcements/polls/vote', {
+				announcementId,
+				choice: 1,
+			}, bob);
+			assert.strictEqual(second.status, 400);
+			assert.strictEqual(castAsError(second.body as any).error.code, 'ALREADY_VOTED');
+		});
+
+		test('複数選択可の投票では同じユーザーが複数の選択肢に投票できる', async () => {
+			const created = await api('admin/announcements/create', {
+				title: 'global announcement with multiple poll',
+				text: 'vote please',
+				imageUrl: null,
+				poll: { choices: ['A', 'B'], multiple: true },
+			}, alice);
+			const announcementId = created.body.id;
+
+			const first = await api('announcements/polls/vote', {
+				announcementId,
+				choice: 0,
+			}, bob);
+			assert.strictEqual(first.status, 204);
+
+			const second = await api('announcements/polls/vote', {
+				announcementId,
+				choice: 1,
+			}, bob);
+			assert.strictEqual(second.status, 204);
+		});
+	});
+
 	describe('admin/juice', () => {
 		test('管理者は設定を取得できる', async () => {
 			const res = await api('admin/juice/settings', {}, alice);
@@ -1347,6 +1479,7 @@ describe('Endpoints', () => {
 				emojiRequestEnabled: false,
 				rankingAggregationPeriodHours: 12,
 				relayTimelineEnabled: false,
+				latexEnabled: true,
 			});
 		});
 
@@ -1822,6 +1955,7 @@ describe('Endpoints', () => {
 				signupReasonMaxLength: 4096,
 				emojiRequestEnabled: false,
 				relayTimelineEnabled: false,
+				latexEnabled: true,
 			});
 		});
 

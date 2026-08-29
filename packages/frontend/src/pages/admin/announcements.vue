@@ -76,6 +76,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkSwitch v-model="announcement.needConfirmationToRead" :helpText="i18n.ts._announcement.needConfirmationToReadDescription">
 							{{ i18n.ts._announcement.needConfirmationToRead }}
 						</MkSwitch>
+						<template v-if="announcement.id == null">
+							<MkSwitch :modelValue="announcement._pollEnabled ?? false" @update:modelValue="(v) => { announcement._pollEnabled = v; onPollEnabledChange(announcement); }">
+								{{ i18n.ts._juice.enablePoll }}
+								<template #caption>{{ i18n.ts._juice.enablePollCaption }}</template>
+							</MkSwitch>
+							<MkPollEditor v-if="announcement._pollEnabled && announcement._pollDraft" v-model="announcement._pollDraft"/>
+						</template>
+						<p v-else-if="announcement.poll">{{ i18n.tsx._poll.totalVotes({ n: pollTotalVotes(announcement.poll) }) }}</p>
 						<p v-if="announcement.reads">{{ i18n.tsx.nUsersRead({ n: announcement.reads }) }}</p>
 					</div>
 				</MkFolder>
@@ -104,6 +112,8 @@ import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import MkFolder from '@/components/MkFolder.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
+import MkPollEditor from '@/components/MkPollEditor.vue';
+import type { PollEditorModelValue } from '@/components/MkPollEditor.vue';
 import { genId } from '@/utility/id.js';
 import { useMkSelect } from '@/composables/use-mkselect.js';
 
@@ -126,7 +136,25 @@ const announcements = ref<(Omit<Misskey.entities.AdminAnnouncementsListResponse[
 	_id?: string;
 	isActive?: Misskey.entities.AdminAnnouncementsListResponse[number]['isActive'];
 	reads?: Misskey.entities.AdminAnnouncementsListResponse[number]['reads'];
+	// 投票は新規作成時にのみ設定でき、作成後は編集できない(投票済みデータとのインデックス対応が崩れるため)
+	_pollEnabled?: boolean;
+	_pollDraft?: PollEditorModelValue;
 })[]>([]);
+
+function pollTotalVotes(poll: { choices: { votes: number }[] }): number {
+	return poll.choices.reduce((acc, choice) => acc + choice.votes, 0);
+}
+
+function onPollEnabledChange(announcement: (typeof announcements)['value'][number]) {
+	if (announcement._pollEnabled && announcement._pollDraft == null) {
+		announcement._pollDraft = {
+			choices: ['', ''],
+			multiple: false,
+			expiresAt: null,
+			expiredAfter: null,
+		};
+	}
+}
 
 watch(announcementsStatus, (to) => {
 	loading.value = true;
@@ -151,6 +179,8 @@ function add() {
 		silence: false,
 		needConfirmationToRead: false,
 		userId: null,
+		poll: null,
+		_pollEnabled: false,
 	});
 }
 
@@ -169,7 +199,7 @@ async function del(announcement: (typeof announcements)['value'][number]) {
 
 async function archive(announcement: (typeof announcements)['value'][number]) {
 	if (announcement.id == null) return;
-	const { _id, ...data } = announcement; // _idを消す
+	const { _id, _pollEnabled, _pollDraft, poll, ...data } = announcement; // _idと投票関連(不変・作成専用)を消す
 	await os.apiWithDialog('admin/announcements/update', {
 		...data,
 		id: announcement.id, // TSを黙らすため
@@ -180,7 +210,7 @@ async function archive(announcement: (typeof announcements)['value'][number]) {
 
 async function unarchive(announcement: (typeof announcements)['value'][number]) {
 	if (announcement.id == null) return;
-	const { _id, ...data } = announcement; // _idを消す
+	const { _id, _pollEnabled, _pollDraft, poll, ...data } = announcement; // _idと投票関連(不変・作成専用)を消す
 	await os.apiWithDialog('admin/announcements/update', {
 		...data,
 		id: announcement.id, // TSを黙らすため
@@ -190,9 +220,12 @@ async function unarchive(announcement: (typeof announcements)['value'][number]) 
 }
 
 async function save(announcement: (typeof announcements)['value'][number]) {
-	const { _id, ...data } = announcement; // _idを消す
+	const { _id, _pollEnabled, _pollDraft, poll, ...data } = announcement; // _idと投票関連(不変・作成専用)を消す
 	if (announcement.id == null) {
-		await os.apiWithDialog('admin/announcements/create', data);
+		await os.apiWithDialog('admin/announcements/create', {
+			...data,
+			poll: _pollEnabled && _pollDraft ? _pollDraft : null,
+		});
 		refresh();
 	} else {
 		os.apiWithDialog('admin/announcements/update', {

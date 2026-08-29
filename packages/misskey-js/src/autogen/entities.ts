@@ -155,6 +155,7 @@ export type AdminUpdateProxyAccountResponse = operations['admin___update-proxy-a
 export type AdminUpdateUserNoteRequest = operations['admin___update-user-note']['requestBody']['content']['application/json'];
 export type AnnouncementsRequest = operations['announcements']['requestBody']['content']['application/json'];
 export type AnnouncementsResponse = operations['announcements']['responses']['200']['content']['application/json'];
+export type AnnouncementsPollsVoteRequest = operations['announcements___polls___vote']['requestBody']['content']['application/json'];
 export type AnnouncementsReactionsRequest = operations['announcements___reactions']['requestBody']['content']['application/json'];
 export type AnnouncementsReactionsResponse = operations['announcements___reactions']['responses']['200']['content']['application/json'];
 export type AnnouncementsReactionsCreateRequest = operations['announcements___reactions___create']['requestBody']['content']['application/json'];

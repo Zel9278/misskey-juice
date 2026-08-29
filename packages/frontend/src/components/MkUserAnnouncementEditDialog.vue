@@ -70,7 +70,8 @@ import MkTextarea from '@/components/MkTextarea.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkRadios from '@/components/MkRadios.vue';
 
-type AdminAnnouncementType = Misskey.entities.AdminAnnouncementsCreateRequest & { id: string; };
+// 個人宛てのお知らせには投票を付けられないため、pollは扱わない
+type AdminAnnouncementType = Omit<Misskey.entities.AdminAnnouncementsCreateRequest, 'poll'> & { id: string; };
 
 const props = defineProps<{
 	user: Misskey.entities.User,

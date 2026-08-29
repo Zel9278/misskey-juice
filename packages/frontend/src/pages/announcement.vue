@@ -35,6 +35,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 						{{ i18n.ts.updatedAt }}: <MkTime :time="announcement.updatedAt" mode="detail"/>
 					</div>
 				</div>
+				<div v-if="!announcement.forYou && announcement.poll" :class="$style.poll">
+					<MkAnnouncementPoll
+						:announcementId="announcement.id"
+						:multiple="announcement.poll.multiple"
+						:expiresAt="announcement.poll.expiresAt"
+						:choices="announcement.poll.choices"
+						@update="onPollUpdate"
+					/>
+				</div>
 				<div v-if="!announcement.forYou" :class="$style.reactions">
 					<MkAnnouncementReactions
 						:announcementId="announcement.id"
@@ -59,6 +68,7 @@ import { ref, computed, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkButton from '@/components/MkButton.vue';
 import MkAnnouncementReactions from '@/components/MkAnnouncementReactions.vue';
+import MkAnnouncementPoll from '@/components/MkAnnouncementPoll.vue';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
@@ -115,6 +125,18 @@ function onReactionsUpdate(reactions: Record<string, number>, myReactions: strin
 	};
 }
 
+function onPollUpdate(choices: NonNullable<Misskey.entities.Announcement['poll']>['choices']) {
+	if (announcement.value == null || announcement.value.poll == null) return;
+
+	announcement.value = {
+		...announcement.value,
+		poll: {
+			...announcement.value.poll,
+			choices,
+		},
+	};
+}
+
 watch(() => path.value, _fetch_, { immediate: true });
 const headerActions = computed(() => []);
 
@@ -161,6 +183,10 @@ definePage(() => ({
 		max-height: 300px;
 		max-width: 100%;
 	}
+}
+
+.poll {
+	margin-top: 16px;
 }
 
 .reactions {

@@ -54,6 +54,7 @@ import { PushNotificationService } from './PushNotificationService.js';
 import { QueryService } from './QueryService.js';
 import { ReactionService } from './ReactionService.js';
 import { AnnouncementReactionService } from './AnnouncementReactionService.js';
+import { AnnouncementPollService } from './AnnouncementPollService.js';
 import { ReactionsBufferingService } from './ReactionsBufferingService.js';
 import { RelayService } from './RelayService.js';
 import { RoleService } from './RoleService.js';
@@ -205,6 +206,7 @@ const $PushNotificationService: Provider = { provide: 'PushNotificationService',
 const $QueryService: Provider = { provide: 'QueryService', useExisting: QueryService };
 const $ReactionService: Provider = { provide: 'ReactionService', useExisting: ReactionService };
 const $AnnouncementReactionService: Provider = { provide: 'AnnouncementReactionService', useExisting: AnnouncementReactionService };
+const $AnnouncementPollService: Provider = { provide: 'AnnouncementPollService', useExisting: AnnouncementPollService };
 const $ReactionsBufferingService: Provider = { provide: 'ReactionsBufferingService', useExisting: ReactionsBufferingService };
 const $RelayService: Provider = { provide: 'RelayService', useExisting: RelayService };
 const $RoleService: Provider = { provide: 'RoleService', useExisting: RoleService };
@@ -363,6 +365,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		QueryService,
 		ReactionService,
 		AnnouncementReactionService,
+		AnnouncementPollService,
 		ReactionsBufferingService,
 		RelayService,
 		RoleService,
@@ -519,6 +522,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$QueryService,
 		$ReactionService,
 		$AnnouncementReactionService,
+		$AnnouncementPollService,
 		$ReactionsBufferingService,
 		$RelayService,
 		$RoleService,
@@ -675,6 +679,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		QueryService,
 		ReactionService,
 		AnnouncementReactionService,
+		AnnouncementPollService,
 		ReactionsBufferingService,
 		RelayService,
 		RoleService,
@@ -830,6 +835,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$QueryService,
 		$ReactionService,
 		$AnnouncementReactionService,
+		$AnnouncementPollService,
 		$ReactionsBufferingService,
 		$RelayService,
 		$RoleService,

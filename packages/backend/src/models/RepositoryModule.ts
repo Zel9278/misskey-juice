@@ -13,6 +13,8 @@ import {
 	MiAnnouncement,
 	MiAnnouncementRead,
 	MiAnnouncementReaction,
+	MiAnnouncementPoll,
+	MiAnnouncementPollVote,
 	MiAntenna,
 	MiApp,
 	MiAuthSession,
@@ -118,6 +120,18 @@ const $announcementReadsRepository: Provider = {
 const $announcementReactionsRepository: Provider = {
 	provide: DI.announcementReactionsRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiAnnouncementReaction).extend(miRepository as MiRepository<MiAnnouncementReaction>),
+	inject: [DI.db],
+};
+
+const $announcementPollsRepository: Provider = {
+	provide: DI.announcementPollsRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiAnnouncementPoll).extend(miRepository as MiRepository<MiAnnouncementPoll>),
+	inject: [DI.db],
+};
+
+const $announcementPollVotesRepository: Provider = {
+	provide: DI.announcementPollVotesRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiAnnouncementPollVote).extend(miRepository as MiRepository<MiAnnouncementPollVote>),
 	inject: [DI.db],
 };
 
@@ -573,6 +587,8 @@ const $reversiGamesRepository: Provider = {
 		$announcementsRepository,
 		$announcementReadsRepository,
 		$announcementReactionsRepository,
+		$announcementPollsRepository,
+		$announcementPollVotesRepository,
 		$appsRepository,
 		$avatarDecorationsRepository,
 		$noteFavoritesRepository,
@@ -654,6 +670,8 @@ const $reversiGamesRepository: Provider = {
 		$announcementsRepository,
 		$announcementReadsRepository,
 		$announcementReactionsRepository,
+		$announcementPollsRepository,
+		$announcementPollVotesRepository,
 		$appsRepository,
 		$avatarDecorationsRepository,
 		$noteFavoritesRepository,

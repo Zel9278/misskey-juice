@@ -125,6 +125,7 @@ export * as 'announcements/show' from './endpoints/announcements/show.js';
 export * as 'announcements/reactions' from './endpoints/announcements/reactions.js';
 export * as 'announcements/reactions/create' from './endpoints/announcements/reactions/create.js';
 export * as 'announcements/reactions/delete' from './endpoints/announcements/reactions/delete.js';
+export * as 'announcements/polls/vote' from './endpoints/announcements/polls/vote.js';
 export * as 'antennas/create' from './endpoints/antennas/create.js';
 export * as 'antennas/delete' from './endpoints/antennas/delete.js';
 export * as 'antennas/list' from './endpoints/antennas/list.js';

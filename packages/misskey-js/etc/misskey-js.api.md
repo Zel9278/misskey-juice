@@ -502,6 +502,9 @@ type AnnouncementCreated = {
 type AnnouncementReaction = components['schemas']['AnnouncementReaction'];
 
 // @public (undocumented)
+type AnnouncementsPollsVoteRequest = operations['announcements___polls___vote']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type AnnouncementsReactionsCreateRequest = operations['announcements___reactions___create']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1762,6 +1765,7 @@ declare namespace entities {
         AdminUpdateUserNoteRequest,
         AnnouncementsRequest,
         AnnouncementsResponse,
+        AnnouncementsPollsVoteRequest,
         AnnouncementsReactionsRequest,
         AnnouncementsReactionsResponse,
         AnnouncementsReactionsCreateRequest,
