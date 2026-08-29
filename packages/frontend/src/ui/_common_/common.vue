@@ -53,7 +53,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 >
 	<div v-if="widgetsShowing" :class="$style.widgetsDrawer">
 		<button class="_button" :class="$style.widgetsCloseButton" @click="widgetsShowing = false"><i class="ti ti-x"></i></button>
-		<XWidgets/>
+		<XWidgets sortByPlace placeEditable/>
 	</div>
 </Transition>
 

@@ -22,6 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		>
 			<template #default="{ item }">
 				<div :class="[$style.widget, $style.customizeContainer]" data-testid="customize-container">
+					<button v-if="placeEditable" :class="$style.customizeContainerPlace" data-testid="customize-container-place" class="_button" :title="widgetPlace(item) === 'left' ? i18n.ts._juice.widgetPlaceLeft : i18n.ts._juice.widgetPlaceRight" @click.prevent.stop="togglePlace(item)"><i :class="widgetPlace(item) === 'left' ? 'ti ti-arrow-bar-to-left' : 'ti ti-arrow-bar-to-right'"></i></button>
 					<button :class="$style.customizeContainerConfig" class="_button" @click.prevent.stop="configWidget(item.id)"><i class="ti ti-settings"></i></button>
 					<button :class="$style.customizeContainerRemove" data-testid="customize-container-remove" class="_button" @click.prevent.stop="removeWidget(item)"><i class="ti ti-x"></i></button>
 					<component :is="`widget-${item.name}`" :ref="(el: any) => widgetRefs[item.id] = el" :class="$style.customizeContainerHandleWidget" :widget="item" @updateProps="updateWidget(item.id, $event)"/>
@@ -61,6 +62,10 @@ import { useMkSelect } from '@/composables/use-mkselect.js';
 const props = defineProps<{
 	widgets: Widget[];
 	edit: boolean;
+	// true = 表示時(編集モード以外)にplace: leftのウィジェットを先頭に寄せる(モバイルドロワー等の単一カラム表示向け)。
+	// 編集モードのドラッグ並び替え・place切り替えは、この並び替えとは独立して常に props.widgets の元の順序を基準に保存する。
+	sortByPlace?: boolean;
+	placeEditable?: boolean;
 }>();
 
 const _widgetDefs = computed(() => {
@@ -71,7 +76,11 @@ const _widgetDefs = computed(() => {
 	}
 });
 
-const _widgets = computed(() => props.widgets.filter(x => _widgetDefs.value.includes(x.name as any)));
+const _widgets = computed(() => {
+	const filtered = props.widgets.filter(x => _widgetDefs.value.includes(x.name as any));
+	if (!props.sortByPlace) return filtered;
+	return [...filtered].sort((a, b) => (widgetPlace(a) === 'left' ? 0 : 1) - (widgetPlace(b) === 'left' ? 0 : 1));
+});
 
 const emit = defineEmits<{
 	(ev: 'updateWidgets', widgets: Widget[]): void;
@@ -109,6 +118,15 @@ function addWidget() {
 
 function removeWidget(widget: Widget) {
 	emit('removeWidget', widget);
+}
+
+function widgetPlace(widget: Widget): string | null {
+	return (widget as DefaultStoredWidget).place ?? null;
+}
+
+function togglePlace(widget: Widget) {
+	const next = widgetPlace(widget) === 'left' ? 'right' : 'left';
+	emit('updateWidgets', props.widgets.map(w => w.id === widget.id ? { ...w, place: next } : w));
 }
 
 function updateWidget(id: Widget['id'], data: Widget['data']) {
@@ -158,6 +176,7 @@ function onContextmenu(widget: Widget, ev: PointerEvent) {
 	position: relative;
 	cursor: move;
 
+	&Place,
 	&Config,
 	&Remove {
 		position: absolute;
@@ -168,6 +187,10 @@ function onContextmenu(widget: Widget, ev: PointerEvent) {
 		color: #fff;
 		background: rgba(#000, 0.7);
 		border-radius: 4px;
+	}
+
+	&Place {
+		right: 8px + 8px + 32px + 8px + 32px;
 	}
 
 	&Config {

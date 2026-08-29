@@ -13888,6 +13888,14 @@ export interface Locale extends ILocale {
          * 登録したリレー経由で届いた公開ノートだけを集めたタイムラインです。無効にすると、タイムラインの導線・API・stream配信のすべてが利用できなくなります。
          */
         "relayTimelineEnabledCaption": string;
+        /**
+         * 左寄せ(モバイル表示で先頭に固定)
+         */
+        "widgetPlaceLeft": string;
+        /**
+         * 右寄せ(モバイル表示で末尾に固定)
+         */
+        "widgetPlaceRight": string;
     };
     "_juiceApprovals": {
         /**
