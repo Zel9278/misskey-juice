@@ -94,13 +94,16 @@ definePage(() => ({
 .banner {
 	position: relative;
 	border-radius: var(--MI-radius);
-	text-align: center;
 	padding: 32px 16px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
 }
 
 .bannerIcon {
-	display: block;
 	font-size: 48px;
+	line-height: 1;
 	color: var(--MI_THEME-accent);
 }
 
