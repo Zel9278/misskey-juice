@@ -12,7 +12,7 @@
 
 ## 進捗ステータス
 
-最終更新: 2026-08-28
+最終更新: 2026-08-29
 
 | # | 機能 | 状態 |
 |---|---|---|
@@ -22,7 +22,7 @@
 | 3 | 絵文字申請ページ | ✅ 完了 |
 | 4 | ユーザーランキング | ✅ 完了 |
 | 5 | リレー TL | ✅ 完了 |
-| 6 | JUICE 専用 About ページ | ⬜ 未着手 |
+| 6 | JUICE 専用 About ページ | ✅ 完了 |
 | 7 | モバイル表示時のウィジェット並び順設定 | ⬜ 未着手 |
 | 8 | お知らせの投票機能 | ⬜ 未着手 |
 
@@ -278,12 +278,19 @@ JUICE 独自実装として、さらに小さく分割して進める。
 - 公開ノートのみを対象にし、REST API と WebSocket / stream の両方に対応する。
 - Social / Global の近くに導線を追加し、機能の有効・無効を「JUICE」項目から設定できるようにする。
 
-### 6. JUICE About ページ ⬜ 未着手
+### 6. JUICE About ページ ✅ 完了
 
 - JUICE 独自ページとして実装する。
 - `c30 (Zel9278)`、JUICE の概要、独自機能、ライセンスを掲載する。
 - GitHub リポジトリ `https://github.com/Zel9278/misskey-juice` へのリンクを掲載する。
 - 詳細な紹介文は後から確定してもよいため、他機能の実装完了後に作成する。
+
+#### 実装結果(2026-08-29)
+
+- `/about-juice` を新設(`packages/frontend/src/pages/about-juice.vue`)。開発者情報(GitHubリンク)・ソースコード/ライセンス(AGPL-3.0-only)・JUICE独自機能一覧(アイコン付きカードグリッド)を掲載。
+- `/about-misskey` は本家Misskeyの説明ページとしてそのまま残置し、CherryPickの実装は移植していない。
+- 導線: 「このサーバーについて」ページ(`about.overview.vue`)と、コントロールパネル以外のユーザー向けメインメニュー(`ui/_common_/common.ts`)の両方から `/about-juice` へのリンクを追加。
+- 追加で、サイト全体の既定アイコン(favicon・起動スプラッシュ・PWAアイコン・`instance.iconUrl`未設定時のフォールバック・システムメールのロゴ)をMisskeyの「Mi」マスコットからJUICE独自の雫アイコン(オレンジ系グラデーション、tabler-icons droplet-filled形状)に差し替えた。Playwright経由の実機スクリーンショットで見た目を確認済み。透過背景版(`packages/frontend/assets/juice-icon-transparent.png`)も別途用意し、About JUICEページのバナーと未ログイン時トップページのロゴ(`MkVisitorDashboard.vue`)にはこちらを使っている。
 
 ### 7. モバイル表示時のウィジェット並び順設定 ⬜ 未着手
 
@@ -341,3 +348,24 @@ JUICE 独自実装として、さらに小さく分割して進める。
 - `EmailI18nService` を新設し、`packages/i18n` の `locales` と `misc/i18n.ts` の `I18n` クラスを接続。
 - `ja-JP.yml` に `_email.*` ブロック(11テンプレート)を追加。他言語ロケールファイルはCrowdin管理のため手動編集していない。
 - 翻訳が存在しない言語(ja-JP以外はすべて該当)向けに、日本語ではなく英語にフォールバックするようJUICE側で英訳テーブルを保持(`EmailI18nService.ts` 内 `emailFallbackLocaleEnUS`)。将来Crowdinで実際に翻訳されれば、そちらへ委ねてこのフォールバックは撤去できる設計。
+
+### 絵文字申請(3.)まわりの修正(2026-08-29)
+
+- 絵文字申請の承認・却下結果メールを受け取るかどうかをユーザーごとに設定できるように、`UserProfile.receiveEmojiRequestResultEmail`(既定`true`)を追加。設定の「JUICE」項目からトグルできる。
+- `admin/emoji-requests/approve` / `reject` のメール送信条件が `profile.email != null` しか見ておらず、`emailVerified: false` のユーザーにもメールを送信してしまっていた不具合を修正(他の送信箇所は元々`emailVerified`を確認していた)。
+
+### 承認式新規登録(1.)まわりの追加: 審査状況確認コード(2026-08-29)
+
+- メールアドレスを収集しない(メール必須ではない)サーバーでは、承認式新規登録の申請後に審査状況を確認する手段が一切無かったため、申請時に確認コードを発行する仕組みを追加。
+- 新規エンティティ `signup_approval_check` に申請ごとの状態(pending/approved/declined)を記録。ユーザー行が却下により物理削除された後も、コード自体は別テーブルに残るため状態を確認できる(FKは`ON DELETE SET NULL`)。
+- 公開エンドポイント `juice/signup-check-status` を新設し、`signup` / `signup-pending` のレスポンスに `checkCode` を追加。
+- フロントエンドでは確認コードをこの端末のlocalStorageに配列で保存(1端末から複数アカウント分申請するケースに対応)し、新設の `/signup-check` ページで一覧確認・手動追加・個別削除ができる。登録完了時の案内はコピーボタン付きの専用ダイアログ(`MkSignupApprovalPendingDialog.vue`)で表示。未ログイン時のトップページからは画面右からスライドインするパネル(狭い画面では全画面表示、`MkSignupCheckPanel.vue`)で開く。
+
+### 開発用DB誤消去バグの修正(2026-08-29)
+
+- `NODE_ENV=test`かつ`built/.config.json`が実際には`default.yml`由来(開発用DB向け)のまま、という設定ズレの状態でアプリを起動すると、`createPostgresDataSource`が無条件に`synchronize`/`dropSchema`を有効化し、開発用DBのスキーマを丸ごと削除・再作成してしまう不具合があった(実際にこの事故で開発環境のDBを一度消失した)。
+- 以前`packages/backend/src/misc/reset-db.ts`にのみ追加されていた「接続先DB名に`test`を含むかを確認する」ガードを、`createPostgresDataSource`本体・`test/utils.ts`の`initTestDb`・`test/unit/chart.ts`にも追加し、同種の穴を塞いだ。
+
+### リレータイムライン(5.)のタブ表示名短縮(2026-08-29)
+
+- Home/Local/Social/Global等の他タブラベルが2〜5文字程度なのに対し「リレータイムライン」だけ長かったため、タブ表示専用のi18nキー(`_juice.relayTimelineTab`、表示は「リレー」)を分離した。設定画面の見出しは引き続き「リレータイムライン」のまま。
