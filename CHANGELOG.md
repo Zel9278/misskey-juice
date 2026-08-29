@@ -26,6 +26,7 @@
 - Feat: 探索ページに「ユーザーランキング」タブを追加。投稿数(リノートを除く)・リアクション数(受け取った数)それぞれの上位3人を表示する
 - Feat: コントロールパネルの JUICE 設定に、ユーザーランキングの集計期間(時間単位、既定12時間)を設定する項目を追加
 - Feat: タイムラインに「リレータイムライン」を追加。登録済みリレー経由で届いた公開ノートだけを表示する。コントロールパネルの JUICE 設定で有効化した場合のみ、Social/Global の近くにタブとして表示される
+- Feat: 設定の「JUICE」項目の絵文字申請セクションに、審査結果メールを受け取るかどうかの切り替えを追加(既定は受け取る)
 
 ### Server
 - Feat: JUICE 独自機能の設定を取得・更新する `admin/juice/settings` / `admin/juice/update-settings` を追加
@@ -46,6 +47,8 @@
 - Fix: リモートユーザーが以前federateした画像と同一内容(md5一致)のファイルを再度AI生成物としてfederateしても、既存ファイルの`isAIGenerated`が追従して更新されない不具合を修正(`isSensitive`は元々追従していたが`isAIGenerated`は対象外だった)
 - Feat: リレータイムライン機能(JUICE独自実装)を追加。`notes/relay-timeline`(REST)と`relayTimeline`(stream channel)を新設し、登録済みリレー経由でAnnounceとして届いた公開ノートのみを返す。受信時にどのリレー経由か(`note.relayId`)を記録し、複数リレーから同じノートが届いた場合は最初に処理した1件のみを採用する(first-writer-wins)。過去ノートへの遡及付与はしない。機能の有効・無効は`admin/juice/settings` / `admin/juice/update-settings`の`relayTimelineEnabled`から設定可能(既定は無効)
 - Fix: `NODE_ENV=test`かつ`built/.config.json`が実際にはdefault.yml由来(開発用DB)のまま、という設定ズレの状態でアプリを起動すると、`createPostgresDataSource`が無条件に`synchronize`/`dropSchema`を有効化し、開発用DBのスキーマを丸ごと削除・再作成してしまう不具合を修正。接続先DB名に`test`を含むことを確認してから有効化するように(以前`reset-db`にのみ追加されたガードと同種の穴が、DataSource生成本体と`test/utils.ts`の`initTestDb`・`test/unit/chart.ts`には残っていた)
+- Feat: 絵文字申請の承認・却下結果メールを受け取るかどうかをユーザーごとに設定できるように。`i/update`に`receiveEmojiRequestResultEmail`パラメータを追加(既定は`true`)
+- Fix: 絵文字申請の承認・却下結果メールが、メールアドレス未確認(`emailVerified: false`)のユーザーにも送信されてしまう不具合を修正
 
 ## 2026.7.0-juice+1.0
 

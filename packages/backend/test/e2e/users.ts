@@ -120,6 +120,7 @@ describe('ユーザー', () => {
 			isAdmin: user.isAdmin,
 			injectFeaturedNote: user.injectFeaturedNote,
 			receiveAnnouncementEmail: user.receiveAnnouncementEmail,
+			receiveEmojiRequestResultEmail: user.receiveEmojiRequestResultEmail,
 			alwaysMarkNsfw: user.alwaysMarkNsfw,
 			autoSensitive: user.autoSensitive,
 			carefulBot: user.carefulBot,
@@ -362,6 +363,7 @@ describe('ユーザー', () => {
 		assert.strictEqual(response.isAdmin, false);
 		assert.strictEqual(response.injectFeaturedNote, true);
 		assert.strictEqual(response.receiveAnnouncementEmail, true);
+		assert.strictEqual(response.receiveEmojiRequestResultEmail, true);
 		assert.strictEqual(response.alwaysMarkNsfw, false);
 		assert.strictEqual(response.autoSensitive, false);
 		assert.strictEqual(response.carefulBot, false);
@@ -460,6 +462,8 @@ describe('ユーザー', () => {
 		{ parameters: () => ({ injectFeaturedNote: false }) },
 		{ parameters: () => ({ receiveAnnouncementEmail: true }) },
 		{ parameters: () => ({ receiveAnnouncementEmail: false }) },
+		{ parameters: () => ({ receiveEmojiRequestResultEmail: true }) },
+		{ parameters: () => ({ receiveEmojiRequestResultEmail: false }) },
 		{ parameters: () => ({ alwaysMarkNsfw: true }) },
 		{ parameters: () => ({ alwaysMarkNsfw: false }) },
 		{ parameters: () => ({ autoSensitive: true }) },

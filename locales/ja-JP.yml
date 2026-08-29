@@ -3682,6 +3682,8 @@ _juice:
   muteAIGeneratedNotesDescription: "AI生成物としてマークされたノートの扱いを選択してください。"
   muteAIGeneratedNotesMute: "ミュート(折りたたんで表示)"
   muteAIGeneratedNotesHardMute: "ハードミュート(完全に非表示)"
+  receiveEmojiRequestResultEmail: "絵文字申請の審査結果をメールで受け取る"
+  receiveEmojiRequestResultEmailCaption: "自分が申請した絵文字が承認・却下されたときに、その結果をメールで通知します。"
   emojiRequest: "絵文字申請"
   emojiRequestEnabled: "絵文字申請機能を有効にする"
   emojiRequestEnabledCaption: "無効にすると、一般ユーザーの申請ページ・APIの両方が利用できなくなります。"

@@ -479,6 +479,10 @@ export const packedMeDetailedOnlySchema = {
 			type: 'boolean',
 			nullable: false, optional: false,
 		},
+		receiveEmojiRequestResultEmail: {
+			type: 'boolean',
+			nullable: false, optional: false,
+		},
 		alwaysMarkNsfw: {
 			type: 'boolean',
 			nullable: false, optional: false,

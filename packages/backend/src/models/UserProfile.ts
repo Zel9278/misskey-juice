@@ -113,6 +113,12 @@ export class MiUserProfile {
 
 	@Column('boolean', {
 		default: true,
+		comment: 'Whether to receive an email when own emoji request is approved/rejected (JUICE).',
+	})
+	public receiveEmojiRequestResultEmail: boolean;
+
+	@Column('boolean', {
+		default: true,
 	})
 	public publicReactions: boolean;
 

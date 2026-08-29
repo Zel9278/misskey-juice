@@ -13743,6 +13743,14 @@ export interface Locale extends ILocale {
          */
         "muteAIGeneratedNotesHardMute": string;
         /**
+         * 絵文字申請の審査結果をメールで受け取る
+         */
+        "receiveEmojiRequestResultEmail": string;
+        /**
+         * 自分が申請した絵文字が承認・却下されたときに、その結果をメールで通知します。
+         */
+        "receiveEmojiRequestResultEmailCaption": string;
+        /**
          * 絵文字申請
          */
         "emojiRequest": string;

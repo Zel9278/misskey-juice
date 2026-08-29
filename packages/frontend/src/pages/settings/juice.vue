@@ -31,7 +31,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<SearchMarker :keywords="['emoji', 'request']">
 			<FormSection>
 				<template #label><SearchLabel>{{ i18n.ts._juice.emojiRequest }}</SearchLabel></template>
-				<FormLink to="/emoji-request">{{ i18n.ts._emojiRequestPage.newRequest }}</FormLink>
+				<div class="_gaps_s">
+					<FormLink to="/emoji-request">{{ i18n.ts._emojiRequestPage.newRequest }}</FormLink>
+					<SearchMarker :keywords="['emoji', 'request', 'email']">
+						<MkSwitch :modelValue="$i.receiveEmojiRequestResultEmail" @update:modelValue="onChangeReceiveEmojiRequestResultEmail">
+							<template #label><SearchLabel>{{ i18n.ts._juice.receiveEmojiRequestResultEmail }}</SearchLabel></template>
+							<template #caption>{{ i18n.ts._juice.receiveEmojiRequestResultEmailCaption }}</template>
+						</MkSwitch>
+					</SearchMarker>
+				</div>
 			</FormSection>
 		</SearchMarker>
 	</div>
@@ -46,7 +54,9 @@ import FormSection from '@/components/form/section.vue';
 import FormLink from '@/components/form/link.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkSelect from '@/components/MkSelect.vue';
+import MkSwitch from '@/components/MkSwitch.vue';
 import MkDisableSection from '@/components/MkDisableSection.vue';
+import { misskeyApi } from '@/utility/misskey-api.js';
 import * as os from '@/os.js';
 import { ensureSignin } from '@/i.js';
 import { i18n } from '@/i18n.js';
@@ -76,6 +86,12 @@ function saveMuteAIGeneratedNotes() {
 	os.apiWithDialog('i/juice/update-mute-ai-generated', {
 		// MkSelect の items 型が緩い string のため、送信時にエンドポイント側の厳密な enum 型へ合わせる
 		muteAIGeneratedNotes: muteAIGeneratedNotes.value as Misskey.entities.IJuiceUpdateMuteAiGeneratedRequest['muteAIGeneratedNotes'],
+	});
+}
+
+function onChangeReceiveEmojiRequestResultEmail(v: boolean) {
+	misskeyApi('i/update', {
+		receiveEmojiRequestResultEmail: v,
 	});
 }
 

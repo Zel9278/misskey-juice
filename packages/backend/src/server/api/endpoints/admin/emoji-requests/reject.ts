@@ -94,7 +94,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			const profile = await this.userProfilesRepository.findOneBy({ userId: request.userId });
-			if (profile?.email != null) {
+			if (profile?.email != null && profile.emailVerified && profile.receiveEmojiRequestResultEmail) {
 				const lang = await this.emailI18nService.resolveLang(profile.emailLang);
 				const i18n = this.emailI18nService.getI18n(lang);
 				this.emailService.sendEmail(profile.email, i18n.t('_email.emojiRequestRejected.subject', { name: request.name }),
