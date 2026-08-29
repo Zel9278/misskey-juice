@@ -287,7 +287,7 @@ const headerTabs = computed(() => [...(prefer.r.pinnedUserLists.value.map(l => (
 	iconOnly: true,
 })), ...(relayTimelineEnabled.value ? [{
 	key: 'relay',
-	title: i18n.ts._juice.relayTimeline,
+	title: i18n.ts._juice.relayTimelineTab,
 	icon: 'ti ti-broadcast',
 	iconOnly: true,
 }] : []), {
@@ -314,7 +314,7 @@ const headerTabsWhenNotLogin = computed(() => [...availableBasicTimelines().map(
 	iconOnly: true,
 })), ...(relayTimelineEnabled.value ? [{
 	key: 'relay',
-	title: i18n.ts._juice.relayTimeline,
+	title: i18n.ts._juice.relayTimelineTab,
 	icon: 'ti ti-broadcast',
 	iconOnly: true,
 }] : [])] as Tab[]);

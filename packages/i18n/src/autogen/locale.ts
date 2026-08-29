@@ -13775,6 +13775,10 @@ export interface Locale extends ILocale {
          */
         "relayTimeline": string;
         /**
+         * リレー
+         */
+        "relayTimelineTab": string;
+        /**
          * リレータイムライン機能を有効にする
          */
         "relayTimelineEnabled": string;

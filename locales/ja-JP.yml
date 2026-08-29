@@ -3690,6 +3690,7 @@ _juice:
   ranking: "ユーザーランキング"
   rankingPeriodHours: "集計期間(時間)"
   relayTimeline: "リレータイムライン"
+  relayTimelineTab: "リレー"
   relayTimelineEnabled: "リレータイムライン機能を有効にする"
   relayTimelineEnabledCaption: "登録したリレー経由で届いた公開ノートだけを集めたタイムラインです。無効にすると、タイムラインの導線・API・stream配信のすべてが利用できなくなります。"
 
