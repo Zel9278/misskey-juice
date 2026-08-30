@@ -28,7 +28,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</FormSection>
 		</SearchMarker>
 
-		<SearchMarker :keywords="['widget', 'mobile', 'place', 'left', 'right', 'order']">
+		<SearchMarker :keywords="['widget', 'mobile', 'place', 'left', 'right']">
 			<FormSection>
 				<template #label><SearchLabel>{{ i18n.ts._juice.widgetPlace }}</SearchLabel></template>
 				<div class="_gaps_s">
@@ -42,6 +42,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 							@update:modelValue="(v) => onChangeWidgetPlace(widget.id, v)"
 						>
 							<template #label>{{ i18n.ts._widgets[widget.name as typeof widgetDefs[number]] }}</template>
+						</MkSwitch>
+					</template>
+				</div>
+			</FormSection>
+		</SearchMarker>
+
+		<SearchMarker v-if="relayTimelineEnabled" :keywords="['relay', 'timeline', 'filter']">
+			<FormSection>
+				<template #label><SearchLabel>{{ i18n.ts._juice.relayTimelineFilter }}</SearchLabel></template>
+				<div class="_gaps_s">
+					<MkInfo v-if="relays.length === 0">{{ i18n.ts._juice.relayTimelineFilterEmpty }}</MkInfo>
+					<template v-else>
+						<MkInfo>{{ i18n.ts._juice.relayTimelineFilterCaption }}</MkInfo>
+						<MkSwitch
+							v-for="relay in relays"
+							:key="relay.id"
+							:modelValue="isRelaySelected(relay.id)"
+							@update:modelValue="(v) => onChangeRelayFilter(relay.id, v)"
+						>
+							<template #label>{{ relay.host }}</template>
 						</MkSwitch>
 					</template>
 				</div>
@@ -91,11 +111,34 @@ import { definePage } from '@/page.js';
 import { instance } from '@/instance.js';
 import { prefer } from '@/preferences.js';
 import { widgets as widgetDefs } from '@/widgets/index.js';
+import { juicePublicSettingsCache, juiceRelaysCache } from '@/cache.js';
 
 const $i = ensureSignin();
 
 const emailLang = ref($i.emailLang ?? 'ja-JP');
 const muteAIGeneratedNotes = ref($i.muteAIGeneratedNotes ?? 'none');
+
+// JUICE: リレータイムラインの絞り込み設定(機能自体が無効なインスタンスでは項目を出さない)
+const relayTimelineEnabled = ref(false);
+const relays = ref<Misskey.entities.JuiceRelaysResponse>([]);
+juicePublicSettingsCache.fetch().then(res => {
+	relayTimelineEnabled.value = res.relayTimelineEnabled;
+	if (relayTimelineEnabled.value) {
+		juiceRelaysCache.fetch().then(r => {
+			relays.value = r;
+		});
+	}
+});
+
+function isRelaySelected(id: string): boolean {
+	return prefer.r.relayTimelineFilter.value.includes(id);
+}
+
+function onChangeRelayFilter(id: string, checked: boolean) {
+	prefer.commit('relayTimelineFilter', checked
+		? [...prefer.s.relayTimelineFilter, id]
+		: prefer.s.relayTimelineFilter.filter(x => x !== id));
+}
 
 // ウィジェット編集モード(MkWidgets.vue)のplace切り替えボタンと同じく、
 // 既に配置済みのウィジェットは連合無効化などで一時的に選択肢から外れていても編集対象からは外さない

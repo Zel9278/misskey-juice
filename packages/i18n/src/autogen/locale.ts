@@ -9037,13 +9037,25 @@ export interface Locale extends ILocale {
              */
             "ranking": string;
             /**
-             * 登録済みリレー経由のノートだけを表示するリレータイムライン
+             * 登録済みリレー経由のノートだけを表示するリレータイムライン(特定のリレーだけに絞り込むフィルタ付き)
              */
             "relayTimeline": string;
             /**
              * システムメールのユーザーごとの受信言語設定
              */
             "emailI18n": string;
+            /**
+             * モバイル表示時のウィジェット表示位置(左右)設定
+             */
+            "widgetPlace": string;
+            /**
+             * お知らせの投票機能
+             */
+            "announcementPoll": string;
+            /**
+             * LaTeX(数式)表示機能
+             */
+            "latex": string;
         };
     };
     "_aboutMisskey": {
@@ -13893,9 +13905,13 @@ export interface Locale extends ILocale {
          */
         "relayTimelineFilter": string;
         /**
-         * すべてのリレー
+         * チェックしたリレー経由のノートだけをリレータイムラインに表示します。1つもチェックしない場合は、すべてのリレーのノートを表示します。
          */
-        "relayTimelineFilterAll": string;
+        "relayTimelineFilterCaption": string;
+        /**
+         * 絞り込めるリレーがありません。
+         */
+        "relayTimelineFilterEmpty": string;
         /**
          * 左寄せ(モバイル表示で先頭に固定)
          */
@@ -13905,11 +13921,11 @@ export interface Locale extends ILocale {
          */
         "widgetPlaceRight": string;
         /**
-         * モバイルウィジェットの並び順
+         * モバイルウィジェットの表示位置(左右)
          */
         "widgetPlace": string;
         /**
-         * ONにしたウィジェットは、モバイル表示のウィジェットドロワーで先頭にまとまって表示されます。
+         * モバイル表示のウィジェットドロワーで、ウィジェットを左右どちらに表示するかを設定します。ONにしたウィジェットは左寄せになり、ドロワー内で先頭にまとまって表示されます。ウィジェット同士の並び順は、ウィジェット編集モードのドラッグ&ドロップで変更できます。
          */
         "widgetPlaceCaption": string;
         /**

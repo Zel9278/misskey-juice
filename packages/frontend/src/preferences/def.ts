@@ -99,6 +99,12 @@ export const PREF_DEF = definePreferences({
 		default: [] as DeckProfile[],
 	},
 
+	// JUICE: リレータイムラインを絞り込むリレーIDの一覧(空 = 絞り込みなし、全リレーを表示)
+	relayTimelineFilter: {
+		accountDependent: true,
+		default: [] as string[],
+	},
+
 	emojiPalettes: {
 		serverDependent: true,
 		default: () => [{

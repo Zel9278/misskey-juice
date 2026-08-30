@@ -114,7 +114,7 @@ export type Channels = {
 		params: {
 			withRenotes?: boolean;
 			withFiles?: boolean;
-			relayId?: string;
+			relayIds?: string[];
 		};
 		events: {
 			note: (payload: Note) => void;

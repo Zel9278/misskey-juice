@@ -1602,7 +1602,7 @@ describe('Endpoints', () => {
 			assert.strictEqual(reset.status, 204);
 		});
 
-		test('relayIdパラメータを指定すると、該当リレー経由のノートのみに絞り込める', async () => {
+		test('relayIdsパラメータを指定すると、該当する複数リレー経由のノートのみに絞り込める', async () => {
 			const enable = await api('admin/juice/update-settings', {
 				relayTimelineEnabled: true,
 			}, alice);
@@ -1614,6 +1614,7 @@ describe('Endpoints', () => {
 
 			const noteA = (await api('notes/create', { text: 'via relay A (JUICE test)' }, alice)).body.createdNote;
 			const noteB = (await api('notes/create', { text: 'via relay B (JUICE test)' }, alice)).body.createdNote;
+			const noteC = (await api('notes/create', { text: 'via relay C (JUICE test)' }, alice)).body.createdNote;
 
 			const relayA = await Relays.save(Relays.create({
 				id: randomString(),
@@ -1625,18 +1626,27 @@ describe('Endpoints', () => {
 				inbox: `https://relay-b.example.com/${randomString()}/inbox`,
 				status: 'accepted',
 			}));
+			const relayC = await Relays.save(Relays.create({
+				id: randomString(),
+				inbox: `https://relay-c.example.com/${randomString()}/inbox`,
+				status: 'accepted',
+			}));
 			await Notes.update({ id: noteA.id }, { relayId: relayA.id });
 			await Notes.update({ id: noteB.id }, { relayId: relayB.id });
+			await Notes.update({ id: noteC.id }, { relayId: relayC.id });
 
-			const res = await api('notes/relay-timeline', { relayId: relayA.id });
+			// 複数(2件)を選択した場合は、その両方が含まれ、選択していないものは除外される
+			const res = await api('notes/relay-timeline', { relayIds: [relayA.id, relayB.id] });
 			assert.strictEqual(res.status, 200);
 			const ids = (res.body as misskey.entities.Note[]).map(n => n.id);
 			assert.strictEqual(ids.includes(noteA.id), true);
-			assert.strictEqual(ids.includes(noteB.id), false);
+			assert.strictEqual(ids.includes(noteB.id), true);
+			assert.strictEqual(ids.includes(noteC.id), false);
 
 			// 他のテストに影響しないよう元に戻す
 			await Relays.delete({ id: relayA.id });
 			await Relays.delete({ id: relayB.id });
+			await Relays.delete({ id: relayC.id });
 			const reset = await api('admin/juice/update-settings', {
 				relayTimelineEnabled: false,
 			}, alice);

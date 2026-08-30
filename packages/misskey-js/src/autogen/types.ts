@@ -32768,11 +32768,8 @@ export interface operations {
                     withFiles?: boolean;
                     /** @default true */
                     withRenotes?: boolean;
-                    /**
-                     * Format: misskey:id
-                     * @default null
-                     */
-                    relayId?: string | null;
+                    /** @default null */
+                    relayIds?: string[] | null;
                     /** @default 10 */
                     limit?: number;
                     /** Format: misskey:id */

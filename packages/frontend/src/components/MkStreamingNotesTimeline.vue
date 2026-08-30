@@ -85,7 +85,7 @@ const props = withDefaults(defineProps<{
 	antenna?: string;
 	channel?: string;
 	role?: string;
-	relay?: string | null;
+	relays?: string[] | null;
 	sound?: boolean;
 	customSound?: SoundStore | null;
 	withRenotes?: boolean;
@@ -187,7 +187,7 @@ if (props.src === 'antenna') {
 		computedParams: computed(() => ({
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
-			relayId: props.relay ?? undefined,
+			relayIds: props.relays && props.relays.length > 0 ? props.relays : undefined,
 		})),
 		useShallowRef: true,
 	}));
@@ -398,7 +398,7 @@ function connectChannel() {
 		connections.relayTimeline = stream.useChannel('relayTimeline', {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
-			relayId: props.relay ?? undefined,
+			relayIds: props.relays && props.relays.length > 0 ? props.relays : undefined,
 		});
 		connections.relayTimeline.on('note', prepend);
 	}
@@ -418,7 +418,7 @@ if (store.s.realtimeMode) {
 	connectChannel();
 }
 
-watch(() => [props.list, props.antenna, props.channel, props.role, props.relay, props.withRenotes], () => {
+watch(() => [props.list, props.antenna, props.channel, props.role, props.relays, props.withRenotes], () => {
 	if (store.s.realtimeMode) {
 		disconnectChannel();
 		connectChannel();

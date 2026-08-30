@@ -12,11 +12,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkPostForm v-if="prefer.r.showFixedPostForm.value" :class="$style.postForm" class="_panel" fixed style="margin-bottom: var(--MI-margin);"/>
 		<MkStreamingNotesTimeline
 			ref="tlComponent"
-			:key="src + withRenotes + withReplies + onlyFiles + withSensitive + selectedRelayId"
+			:key="src + withRenotes + withReplies + onlyFiles + withSensitive + relayTimelineFilter.join(',')"
 			:class="$style.tl"
 			:src="(src.split(':')[0] as (BasicTimelineType | 'list' | 'relay'))"
 			:list="src.split(':')[1]"
-			:relay="src === 'relay' ? selectedRelayId : undefined"
+			:relays="src === 'relay' ? relayTimelineFilter : undefined"
 			:withRenotes="withRenotes"
 			:withReplies="withReplies"
 			:withSensitive="withSensitive"
@@ -41,28 +41,37 @@ import { store } from '@/store.js';
 import { i18n } from '@/i18n.js';
 import { $i } from '@/i.js';
 import { definePage } from '@/page.js';
-import { antennasCache, userListsCache, favoritedChannelsCache } from '@/cache.js';
+import { antennasCache, userListsCache, favoritedChannelsCache, juicePublicSettingsCache, juiceRelaysCache } from '@/cache.js';
 import { deviceKind } from '@/utility/device-kind.js';
 import { deepMerge } from '@/utility/merge.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
 import { prefer } from '@/preferences.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
 
 const tlComponent = useTemplateRef('tlComponent');
 
 // JUICE: リレーTLが有効なインスタンスでのみタブに出す
 const relayTimelineEnabled = ref(false);
-// JUICE: リレーTLを特定のリレーだけに絞り込むための一覧とその選択状態(ページ内のみで保持し、永続化はしない)
+// JUICE: リレーTLを特定のリレーだけに絞り込むための一覧。選択状態はJUICE設定(prefer.s.relayTimelineFilter)に永続化する
 const relays = ref<Misskey.entities.JuiceRelaysResponse>([]);
-const selectedRelayId = ref<string | null>(null);
-misskeyApi('juice/public-settings').then(res => {
+const relayTimelineFilter = computed(() => prefer.r.relayTimelineFilter.value);
+
+function relaySelectedRef(id: string) {
+	return computed<boolean>({
+		get: () => prefer.r.relayTimelineFilter.value.includes(id),
+		set: (checked) => prefer.commit('relayTimelineFilter', checked
+			? [...prefer.s.relayTimelineFilter, id]
+			: prefer.s.relayTimelineFilter.filter(x => x !== id)),
+	});
+}
+
+juicePublicSettingsCache.fetch().then(res => {
 	relayTimelineEnabled.value = res.relayTimelineEnabled;
 	// 取得前に選択されていた場合や、無効化された後に古い選択が残っていた場合に備えて再チェックする
 	switchTlIfNeeded();
 
 	if (relayTimelineEnabled.value) {
-		misskeyApi('juice/relays').then(res => {
+		juiceRelaysCache.fetch().then(res => {
 			relays.value = res;
 		});
 	}
@@ -250,17 +259,17 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 				});
 			}
 
-			// JUICE: リレーTL表示中のみ、絞り込み先リレーを選べるようにする
+			// JUICE: リレーTL表示中のみ、絞り込み先リレーを選べるようにする(複数選択可、未選択=すべてのリレーを表示)
 			if (src.value === 'relay' && relays.value.length > 0) {
 				menuItems.push({
-					type: 'radio',
+					type: 'parent',
 					icon: 'ti ti-broadcast',
 					text: i18n.ts._juice.relayTimelineFilter,
-					ref: selectedRelayId,
-					options: [
-						{ label: i18n.ts._juice.relayTimelineFilterAll, value: null },
-						...relays.value.map(relay => ({ label: relay.host, value: relay.id })),
-					],
+					children: () => relays.value.map(relay => ({
+						type: 'switch',
+						text: relay.host,
+						ref: relaySelectedRef(relay.id),
+					})),
 				});
 			}
 
