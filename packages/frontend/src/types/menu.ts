@@ -34,7 +34,7 @@ interface TextMenuBase extends MenuBase {
 	text: Text;
 	caption?: Text | null | undefined | ComputedRef<null | undefined>;
 	icon?: string;
-	/** JUICE: 本家に無いJUICE独自のメニュー項目であることを示すバッジを表示する(現状MkMenu.vueではtype: 'parent'のみ描画に対応) */
+	/** JUICE: 本家に無いJUICE独自のメニュー項目であることを示すバッジを表示する(現状MkMenu.vueではtype: 'parent'/'link'のみ描画に対応) */
 	badge?: boolean;
 }
 

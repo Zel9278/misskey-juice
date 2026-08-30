@@ -183,6 +183,7 @@ export function openInstanceMenu(ev: PointerEvent) {
 		text: i18n.ts._aboutJuice.title,
 		icon: 'ti ti-droplet',
 		to: '/about-juice',
+		badge: true,
 	});
 
 	os.popupMenu(menuItems, ev.currentTarget ?? ev.target, {
