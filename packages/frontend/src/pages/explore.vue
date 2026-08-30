@@ -55,6 +55,7 @@ const headerTabs = computed(() => [{
 	key: 'ranking',
 	icon: 'ti ti-trophy',
 	title: i18n.ts._juice.ranking,
+	badge: true,
 }]);
 
 definePage(() => ({

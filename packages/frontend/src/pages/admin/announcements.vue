@@ -78,7 +78,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkSwitch>
 						<template v-if="announcement.id == null">
 							<MkSwitch :modelValue="announcement._pollEnabled ?? false" @update:modelValue="(v) => { announcement._pollEnabled = v; onPollEnabledChange(announcement); }">
-								{{ i18n.ts._juice.enablePoll }}
+								{{ i18n.ts._juice.enablePoll }}<span class="_juice">JUICE</span>
 								<template #caption>{{ i18n.ts._juice.enablePollCaption }}</template>
 							</MkSwitch>
 							<MkPollEditor v-if="announcement._pollEnabled && announcement._pollDraft" v-model="announcement._pollDraft"/>

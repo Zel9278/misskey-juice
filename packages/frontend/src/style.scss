@@ -454,6 +454,17 @@ rt {
 	vertical-align: top;
 }
 
+// JUICE: 本家(upstream)画面に混ざったJUICE独自の設定・タブ・メニュー項目であることを示すバッジ
+._juice {
+	margin-left: 0.7em;
+	font-size: 65%;
+	padding: 2px 3px;
+	color: var(--MI_THEME-success);
+	border: solid 1px var(--MI_THEME-success);
+	border-radius: 4px;
+	vertical-align: top;
+}
+
 ._table {
 	> ._row {
 		display: flex;

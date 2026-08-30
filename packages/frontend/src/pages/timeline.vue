@@ -265,6 +265,7 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 					type: 'parent',
 					icon: 'ti ti-broadcast',
 					text: i18n.ts._juice.relayTimelineFilter,
+					badge: true,
 					children: () => relays.value.map(relay => ({
 						type: 'switch',
 						text: relay.host,
@@ -324,6 +325,7 @@ const headerTabs = computed(() => [...(prefer.r.pinnedUserLists.value.map(l => (
 	title: i18n.ts._juice.relayTimelineTab,
 	icon: 'ti ti-broadcast',
 	iconOnly: true,
+	badge: true,
 }] : []), {
 	icon: 'ti ti-list',
 	title: i18n.ts.lists,
@@ -351,6 +353,7 @@ const headerTabsWhenNotLogin = computed(() => [...availableBasicTimelines().map(
 	title: i18n.ts._juice.relayTimelineTab,
 	icon: 'ti ti-broadcast',
 	iconOnly: true,
+	badge: true,
 }] : [])] as Tab[]);
 
 definePage(() => ({

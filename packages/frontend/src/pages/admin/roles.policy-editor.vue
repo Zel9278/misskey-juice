@@ -399,7 +399,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</XFolder>
 
 		<XFolder v-if="matchQuery([i18n.ts._role._options.emojiRequestLimit, 'emojiRequestLimit'])" v-model:policyMeta="policyMetaModel.emojiRequestLimit" :isBaseRole="isBaseRole" :readonly="readonly">
-			<template #label>{{ i18n.ts._role._options.emojiRequestLimit }}</template>
+			<template #label>{{ i18n.ts._role._options.emojiRequestLimit }}<span class="_juice">JUICE</span></template>
 			<template #valueText>{{ valuesModel.emojiRequestLimit }}</template>
 			<template #default="{ disabled }">
 				<MkInput v-model="valuesModel.emojiRequestLimit" type="number" :disabled="disabled" :min="0">
