@@ -104,6 +104,7 @@ export function openInstanceMenu(ev: PointerEvent) {
 			text: i18n.ts._juice.emojiRequest,
 			icon: 'ti ti-mood-plus',
 			to: '/emoji-request',
+			badge: true,
 		});
 	}
 
