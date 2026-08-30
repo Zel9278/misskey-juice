@@ -8,10 +8,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div style="overflow: clip;">
 		<div class="_spacer" style="--MI_SPACER-w: 600px; --MI_SPACER-min: 20px;">
 			<div class="_gaps_m">
-				<div v-panel :class="$style.banner">
-					<img src="/client-assets/juice-icon-transparent.png" alt="" :class="$style.bannerIcon"/>
+				<div v-panel :class="$style.banner" :style="{ '--rain-angle': `${rainAngle}deg` }">
+					<img
+						src="/client-assets/juice-icon-transparent.png" alt=""
+						:class="$style.bannerIcon" draggable="false"
+						role="button" tabindex="0"
+						@click="startRain"
+						@keydown.enter="startRain"
+						@keydown.space.prevent="startRain"
+					/>
 					<div :class="$style.bannerName">misskey-juice</div>
 					<div :class="$style.bannerVersion">v{{ version }}</div>
+					<span
+						v-for="drop in rainDrops"
+						:key="drop.id"
+						:class="$style.rainDrop"
+						:style="{ left: `${drop.left}%`, animationDelay: `${drop.delay}s`, animationDuration: `${drop.duration}s` }"
+					></span>
 				</div>
 
 				<MkKeyValue>
@@ -63,7 +76,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 import { version } from '@@/js/config.js';
 import FormLink from '@/components/form/link.vue';
 import FormSection from '@/components/form/section.vue';
@@ -84,6 +97,41 @@ const features = [
 	{ icon: 'ti ti-math-function', text: i18n.ts._aboutJuice._features.latex },
 ];
 
+// JUICE: アイコンクリックでオレンジの雨が降るイースターエッグ
+const RAIN_DROP_COUNT = 40;
+// delay(最大0.4s)+duration(最大0.9s)より確実に長くする(アニメ完了前に消去されて欠けて見えるのを防ぐ)
+const RAIN_DURATION_MS = 2000;
+const RAIN_MAX_ANGLE = 25; // 度、左右にこの範囲でランダムに傾く
+
+const rainDrops = ref<{ id: string; left: number; delay: number; duration: number }[]>([]);
+const rainAngle = ref(0);
+let rainTimeoutId: number | undefined;
+// クリックのたびに要素を確実に再マウントさせてアニメーションを最初から再生させるためのバースト番号
+let rainBurstId = 0;
+
+function startRain() {
+	if (rainTimeoutId != null) window.clearTimeout(rainTimeoutId);
+
+	rainAngle.value = (Math.random() * 2 - 1) * RAIN_MAX_ANGLE;
+	rainBurstId++;
+
+	rainDrops.value = Array.from({ length: RAIN_DROP_COUNT }, (_, i) => ({
+		id: `${rainBurstId}-${i}`,
+		left: Math.random() * 100,
+		delay: Math.random() * 0.4,
+		duration: 0.5 + Math.random() * 0.4,
+	}));
+
+	rainTimeoutId = window.setTimeout(() => {
+		rainDrops.value = [];
+		rainTimeoutId = undefined;
+	}, RAIN_DURATION_MS);
+}
+
+onBeforeUnmount(() => {
+	if (rainTimeoutId != null) window.clearTimeout(rainTimeoutId);
+});
+
 const headerActions = computed(() => []);
 
 const headerTabs = computed(() => []);
@@ -95,8 +143,12 @@ definePage(() => ({
 </script>
 
 <style lang="scss" module>
+// JUICEブランドカラー(テーマの--MI_THEME-accent等はユーザー設定で変わるため、雨の色は固定にする)
+$juice-rain-color: #f2841f;
+
 .banner {
 	position: relative;
+	overflow: hidden;
 	border-radius: var(--MI-radius);
 	padding: 32px 16px;
 	display: flex;
@@ -108,16 +160,50 @@ definePage(() => ({
 .bannerIcon {
 	width: 72px;
 	height: 72px;
+	position: relative;
+	z-index: 1;
+	cursor: pointer;
 }
 
 .bannerName {
 	margin-top: 0.5em;
 	font-weight: bold;
 	font-size: 1.2em;
+	position: relative;
+	z-index: 1;
 }
 
 .bannerVersion {
 	opacity: 0.5;
+	position: relative;
+	z-index: 1;
+}
+
+// JUICE: アイコンクリックで降らせるオレンジの雨(細い線)。--rain-angleはクリックのたびにランダムに変わる
+.rainDrop {
+	position: absolute;
+	top: -100px;
+	width: 2px;
+	height: 90px;
+	background: linear-gradient(to bottom, transparent, $juice-rain-color, transparent);
+	pointer-events: none;
+	animation-name: juiceRain;
+	animation-timing-function: linear;
+	animation-fill-mode: forwards;
+}
+
+@keyframes juiceRain {
+	0% {
+		transform: rotate(var(--rain-angle)) translateY(0);
+		opacity: 0;
+	}
+	15% {
+		opacity: 1;
+	}
+	100% {
+		transform: rotate(var(--rain-angle)) translateY(340px);
+		opacity: 0;
+	}
 }
 
 .developer {
