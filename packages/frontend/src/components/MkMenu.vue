@@ -749,6 +749,11 @@ function guardMouseMove(ev: MouseEvent) {
 .item_content_text_title {
 	text-overflow: ellipsis;
 	overflow: hidden;
+
+	// JUICE: ._juiceの既定のvertical-align: topだとメニュー行の高さの都合で浮いて見えるため、ここだけ中央寄せにする
+	:global(._juice) {
+		vertical-align: middle;
+	}
 }
 
 .item_content_text_caption {
