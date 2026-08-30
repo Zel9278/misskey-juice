@@ -93,6 +93,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 				</SearchMarker>
 
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.latex }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="latexEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.latexEnabled }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.latexEnabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
 				<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 			</div>
 		</SearchMarker>
@@ -122,6 +137,7 @@ const defaultEmailLang = ref(settings.defaultEmailLang);
 const emojiRequestEnabled = ref(settings.emojiRequestEnabled);
 const rankingAggregationPeriodHours = ref(settings.rankingAggregationPeriodHours);
 const relayTimelineEnabled = ref(settings.relayTimelineEnabled);
+const latexEnabled = ref(settings.latexEnabled);
 
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
@@ -132,6 +148,7 @@ function save() {
 		emojiRequestEnabled: emojiRequestEnabled.value,
 		rankingAggregationPeriodHours: rankingAggregationPeriodHours.value,
 		relayTimelineEnabled: relayTimelineEnabled.value,
+		latexEnabled: latexEnabled.value,
 	});
 }
 

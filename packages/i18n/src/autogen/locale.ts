@@ -13921,6 +13921,18 @@ export interface Locale extends ILocale {
          */
         "widgetsSideCaption": string;
         /**
+         * LaTeX(数式)
+         */
+        "latex": string;
+        /**
+         * LaTeX(数式)表示機能を有効にする
+         */
+        "latexEnabled": string;
+        /**
+         * 無効にすると、ノートなどに含まれる数式は整形されず、ソースがそのままコードとして表示されます。
+         */
+        "latexEnabledCaption": string;
+        /**
          * 投票を追加
          */
         "enablePoll": string;

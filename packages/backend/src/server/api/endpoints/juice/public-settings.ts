@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveEmojiRequestSettings, resolveRelayTimelineSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveEmojiRequestSettings, resolveRelayTimelineSettings, resolveLatexSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['meta'],
@@ -37,6 +37,10 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			latexEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 		},
 	},
 } as const;
@@ -57,6 +61,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...resolveSignupApprovalSettings(settings),
 				...resolveEmojiRequestSettings(settings),
 				...resolveRelayTimelineSettings(settings),
+				...resolveLatexSettings(settings),
 			};
 		});
 	}

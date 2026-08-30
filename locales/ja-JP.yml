@@ -3730,6 +3730,9 @@ _juice:
   relayTimelineFilterEmpty: "絞り込めるリレーがありません。"
   widgetsSide: "ウィジェットの表示位置"
   widgetsSideCaption: "デスクトップの常設ウィジェットパネル、モバイル表示のウィジェットドロワーを画面の左右どちらから表示するかを設定します。"
+  latex: "LaTeX(数式)"
+  latexEnabled: "LaTeX(数式)表示機能を有効にする"
+  latexEnabledCaption: "無効にすると、ノートなどに含まれる数式は整形されず、ソースがそのままコードとして表示されます。"
   enablePoll: "投票を追加"
   enablePollCaption: "作成後に選択肢や期限を変更することはできません。"
 

@@ -86,6 +86,7 @@ const props = withDefaults(defineProps<{
 		signupReasonMaxLength: 4096,
 		emojiRequestEnabled: false,
 		relayTimelineEnabled: false,
+		latexEnabled: true,
 	}),
 });
 
