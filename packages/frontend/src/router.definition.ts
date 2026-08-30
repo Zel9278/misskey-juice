@@ -608,6 +608,11 @@ export const ROUTE_DEF = [{
 	component: page(() => import('@/pages/drop-and-fusion.vue')),
 	loginRequired: true,
 }, {
+	// JUICE: 盆栽を育てるゲーム
+	path: '/bonsai',
+	component: page(() => import('@/pages/bonsai.vue')),
+	loginRequired: true,
+}, {
 	path: '/reversi',
 	component: page(() => import('@/pages/reversi/index.vue')),
 	loginRequired: false,

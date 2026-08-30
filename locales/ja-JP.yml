@@ -2377,6 +2377,25 @@ _aboutJuice:
     announcementPoll: "お知らせの投票機能"
     latex: "LaTeX(数式)表示機能"
 
+_bonsai:
+  title: "盆栽"
+  health: "体力"
+  growth: "成長"
+  maxGrown: "これ以上は大きくならないみたい。ずっと眺めていよう。"
+  water: "水をあげる"
+  untilNextWatering: "次の水やりまで"
+  witherCount: "これまでに{n}回、水やりを忘れて枯れかけている。"
+  flavorThriving: "元気いっぱいに育っている。"
+  flavorGood: "まずまず元気そう。"
+  flavorLow: "すこし元気が無いかも。水をあげよう。"
+  flavorDying: "枯れかけている…早く水をあげて!"
+  _stages:
+    seed: "種"
+    sprout: "芽"
+    sapling: "若木"
+    bonsai: "盆栽"
+    matureBonsai: "立派な盆栽"
+
 _aboutMisskey:
   about: "Misskeyはsyuiloによって2014年から開発されている、オープンソースのソフトウェアです。"
   contributors: "コントリビューター"

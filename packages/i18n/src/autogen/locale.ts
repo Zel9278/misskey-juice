@@ -9072,6 +9072,74 @@ export interface Locale extends ILocale {
             "latex": string;
         };
     };
+    "_bonsai": {
+        /**
+         * 盆栽
+         */
+        "title": string;
+        /**
+         * 体力
+         */
+        "health": string;
+        /**
+         * 成長
+         */
+        "growth": string;
+        /**
+         * これ以上は大きくならないみたい。ずっと眺めていよう。
+         */
+        "maxGrown": string;
+        /**
+         * 水をあげる
+         */
+        "water": string;
+        /**
+         * 次の水やりまで
+         */
+        "untilNextWatering": string;
+        /**
+         * これまでに{n}回、水やりを忘れて枯れかけている。
+         */
+        "witherCount": ParameterizedString<"n">;
+        /**
+         * 元気いっぱいに育っている。
+         */
+        "flavorThriving": string;
+        /**
+         * まずまず元気そう。
+         */
+        "flavorGood": string;
+        /**
+         * すこし元気が無いかも。水をあげよう。
+         */
+        "flavorLow": string;
+        /**
+         * 枯れかけている…早く水をあげて!
+         */
+        "flavorDying": string;
+        "_stages": {
+            /**
+             * 種
+             */
+            "seed": string;
+            /**
+             * 芽
+             */
+            "sprout": string;
+            /**
+             * 若木
+             */
+            "sapling": string;
+            /**
+             * 盆栽
+             */
+            "bonsai": string;
+            /**
+             * 立派な盆栽
+             */
+            "matureBonsai": string;
+        };
+    };
     "_aboutMisskey": {
         /**
          * Misskeyはsyuiloによって2014年から開発されている、オープンソースのソフトウェアです。
