@@ -279,11 +279,6 @@ onUnmounted(() => {
 	&.animate {
 		transition: width .15s linear, padding-left .15s linear;
 	}
-
-	// JUICE: ._juiceの既定のvertical-align: topだとタブの行の高さの都合で浮いて見えるため、ここだけ中央寄せにする
-	:global(._juice) {
-		vertical-align: middle;
-	}
 }
 
 .tabHighlight {

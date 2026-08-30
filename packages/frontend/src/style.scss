@@ -462,7 +462,8 @@ rt {
 	color: var(--MI_THEME-success);
 	border: solid 1px var(--MI_THEME-success);
 	border-radius: 4px;
-	vertical-align: top;
+	// JUICE: topだとMkCondensedLine(inline-block)やflexな行(タブ/メニュー)の中で浮いて見えるためmiddleにする
+	vertical-align: middle;
 }
 
 ._table {
