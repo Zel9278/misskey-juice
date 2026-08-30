@@ -4,9 +4,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
+<!-- JUICE: MkModalのzPriority既定値'low'のままだと、独自のMkSignupCheckPanel('high'優先度で固定オーバーレイを出す)から開いた場合に裏へ隠れてしまうため、他の重要ダイアログ(MkDialog等)と同じ'high'を明示する -->
 <MkModal
 	ref="modal"
 	:preferType="'dialog'"
+	:zPriority="'high'"
 	@click="onClose"
 	@closed="emit('closed')"
 >
