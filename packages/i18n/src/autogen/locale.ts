@@ -9045,9 +9045,9 @@ export interface Locale extends ILocale {
              */
             "emailI18n": string;
             /**
-             * モバイル表示時のウィジェット表示位置(左右)設定
+             * ウィジェットパネル・ドロワーの表示位置(左右)を切り替え可能
              */
-            "widgetPlace": string;
+            "widgetsSide": string;
             /**
              * お知らせの投票機能
              */
@@ -13913,25 +13913,13 @@ export interface Locale extends ILocale {
          */
         "relayTimelineFilterEmpty": string;
         /**
-         * 左寄せ(モバイル表示で先頭に固定)
+         * ウィジェットの表示位置
          */
-        "widgetPlaceLeft": string;
+        "widgetsSide": string;
         /**
-         * 右寄せ(モバイル表示で末尾に固定)
+         * デスクトップの常設ウィジェットパネル、モバイル表示のウィジェットドロワーを画面の左右どちらから表示するかを設定します。
          */
-        "widgetPlaceRight": string;
-        /**
-         * モバイルウィジェットの表示位置(左右)
-         */
-        "widgetPlace": string;
-        /**
-         * モバイル表示のウィジェットドロワーで、ウィジェットを左右どちらに表示するかを設定します。ONにしたウィジェットは左寄せになり、ドロワー内で先頭にまとまって表示されます。ウィジェット同士の並び順は、ウィジェット編集モードのドラッグ&ドロップで変更できます。
-         */
-        "widgetPlaceCaption": string;
-        /**
-         * 設定できるウィジェットがありません。ホーム画面のウィジェットドロワーからウィジェットを追加してください。
-         */
-        "widgetPlaceEmpty": string;
+        "widgetsSideCaption": string;
         /**
          * 投票を追加
          */

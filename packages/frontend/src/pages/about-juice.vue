@@ -81,7 +81,7 @@ const features = [
 	{ icon: 'ti ti-trophy', text: i18n.ts._aboutJuice._features.ranking },
 	{ icon: 'ti ti-broadcast', text: i18n.ts._aboutJuice._features.relayTimeline },
 	{ icon: 'ti ti-language', text: i18n.ts._aboutJuice._features.emailI18n },
-	{ icon: 'ti ti-arrow-bar-to-left', text: i18n.ts._aboutJuice._features.widgetPlace },
+	{ icon: 'ti ti-arrow-bar-to-left', text: i18n.ts._aboutJuice._features.widgetsSide },
 	{ icon: 'ti ti-list-check', text: i18n.ts._aboutJuice._features.announcementPoll },
 	{ icon: 'ti ti-math-function', text: i18n.ts._aboutJuice._features.latex },
 ];

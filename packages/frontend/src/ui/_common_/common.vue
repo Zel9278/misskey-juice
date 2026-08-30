@@ -48,12 +48,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 <Transition
 	:enterActiveClass="prefer.s.animation ? $style.transition_widgetsDrawer_enterActive : ''"
 	:leaveActiveClass="prefer.s.animation ? $style.transition_widgetsDrawer_leaveActive : ''"
-	:enterFromClass="prefer.s.animation ? $style.transition_widgetsDrawer_enterFrom : ''"
-	:leaveToClass="prefer.s.animation ? $style.transition_widgetsDrawer_leaveTo : ''"
+	:enterFromClass="prefer.s.animation ? (widgetsOnLeft ? $style.transition_widgetsDrawer_enterFrom_left : $style.transition_widgetsDrawer_enterFrom_right) : ''"
+	:leaveToClass="prefer.s.animation ? (widgetsOnLeft ? $style.transition_widgetsDrawer_leaveTo_left : $style.transition_widgetsDrawer_leaveTo_right) : ''"
 >
-	<div v-if="widgetsShowing" :class="$style.widgetsDrawer">
+	<div v-if="widgetsShowing" :class="[$style.widgetsDrawer, widgetsOnLeft ? $style.widgetsDrawerLeft : $style.widgetsDrawerRight]">
 		<button class="_button" :class="$style.widgetsCloseButton" @click="widgetsShowing = false"><i class="ti ti-x"></i></button>
-		<XWidgets sortByPlace placeEditable/>
+		<XWidgets/>
 	</div>
 </Transition>
 
@@ -102,7 +102,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, ref, TransitionGroup } from 'vue';
+import { computed, defineAsyncComponent, ref, TransitionGroup } from 'vue';
 import * as Misskey from 'misskey-js';
 import { swInject } from './sw-inject.js';
 import XNotification from './notification.vue';
@@ -125,6 +125,9 @@ const XWidgets = defineAsyncComponent(() => import('./widgets.vue'));
 
 const drawerMenuShowing = defineModel<boolean>('drawerMenuShowing');
 const widgetsShowing = defineModel<boolean>('widgetsShowing');
+
+// JUICE: ウィジェットドロワーを画面のどちら側から出すか
+const widgetsOnLeft = computed(() => prefer.r.widgetsSide.value === 'left');
 
 const dev = _DEV_;
 
@@ -211,10 +214,15 @@ if ($i) {
 	transform: translateX(0);
 	transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
 }
-.transition_widgetsDrawer_enterFrom,
-.transition_widgetsDrawer_leaveTo {
+.transition_widgetsDrawer_enterFrom_left,
+.transition_widgetsDrawer_leaveTo_left {
 	opacity: 0;
 	transform: translateX(-240px);
+}
+.transition_widgetsDrawer_enterFrom_right,
+.transition_widgetsDrawer_leaveTo_right {
+	opacity: 0;
+	transform: translateX(240px);
 }
 
 .transition_notification_move,
@@ -250,7 +258,6 @@ if ($i) {
 .widgetsDrawer {
 	position: fixed;
 	top: 0;
-	left: 0;
 	z-index: 1001;
 	width: 310px;
 	height: 100dvh;
@@ -259,6 +266,14 @@ if ($i) {
 	overflow: auto;
 	overscroll-behavior: contain;
 	background: var(--MI_THEME-bg);
+}
+
+.widgetsDrawerLeft {
+	left: 0;
+}
+
+.widgetsDrawerRight {
+	right: 0;
 }
 
 .widgetsCloseButton {

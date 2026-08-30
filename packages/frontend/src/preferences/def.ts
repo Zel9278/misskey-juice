@@ -402,6 +402,10 @@ export const PREF_DEF = definePreferences({
 	showTitlebar: {
 		default: false,
 	},
+	// JUICE: ウィジェットパネル(デスクトップ)/ウィジェットドロワー(モバイル)を画面のどちら側に表示するか
+	widgetsSide: {
+		default: 'right' as 'left' | 'right',
+	},
 	showAvailableReactionsFirstInNote: {
 		default: false,
 	},

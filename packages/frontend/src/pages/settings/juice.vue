@@ -28,23 +28,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</FormSection>
 		</SearchMarker>
 
-		<SearchMarker :keywords="['widget', 'mobile', 'place', 'left', 'right']">
+		<SearchMarker :keywords="['widget', 'side', 'left', 'right']">
 			<FormSection>
-				<template #label><SearchLabel>{{ i18n.ts._juice.widgetPlace }}</SearchLabel></template>
-				<div class="_gaps_s">
-					<MkInfo v-if="widgets.length === 0">{{ i18n.ts._juice.widgetPlaceEmpty }}</MkInfo>
-					<template v-else>
-						<MkInfo>{{ i18n.ts._juice.widgetPlaceCaption }}</MkInfo>
-						<MkSwitch
-							v-for="widget in widgets"
-							:key="widget.id"
-							:modelValue="widget.place === 'left'"
-							@update:modelValue="(v) => onChangeWidgetPlace(widget.id, v)"
-						>
-							<template #label>{{ i18n.ts._widgets[widget.name as typeof widgetDefs[number]] }}</template>
-						</MkSwitch>
-					</template>
-				</div>
+				<template #label><SearchLabel>{{ i18n.ts._juice.widgetsSide }}</SearchLabel></template>
+				<MkRadios v-model="widgetsSide" :options="[{ value: 'right', label: i18n.ts.right }, { value: 'left', label: i18n.ts.left }]">
+					<template #caption>{{ i18n.ts._juice.widgetsSideCaption }}</template>
+				</MkRadios>
 			</FormSection>
 		</SearchMarker>
 
@@ -102,6 +91,7 @@ import FormLink from '@/components/form/link.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
+import MkRadios from '@/components/MkRadios.vue';
 import MkDisableSection from '@/components/MkDisableSection.vue';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import * as os from '@/os.js';
@@ -110,7 +100,6 @@ import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { instance } from '@/instance.js';
 import { prefer } from '@/preferences.js';
-import { widgets as widgetDefs } from '@/widgets/index.js';
 import { juicePublicSettingsCache, juiceRelaysCache } from '@/cache.js';
 
 const $i = ensureSignin();
@@ -140,16 +129,8 @@ function onChangeRelayFilter(id: string, checked: boolean) {
 		: prefer.s.relayTimelineFilter.filter(x => x !== id));
 }
 
-// ウィジェット編集モード(MkWidgets.vue)のplace切り替えボタンと同じく、
-// 既に配置済みのウィジェットは連合無効化などで一時的に選択肢から外れていても編集対象からは外さない
-const widgets = computed(() => prefer.r.widgets.value);
-
-function onChangeWidgetPlace(id: string, isLeft: boolean) {
-	prefer.commit('widgets', prefer.s.widgets.map(w => w.id === id ? {
-		...w,
-		place: isLeft ? 'left' : 'right',
-	} : w));
-}
+// JUICE: ウィジェットパネル/ドロワーを画面のどちら側に表示するか
+const widgetsSide = prefer.model('widgetsSide');
 
 const muteAIGeneratedNotesItems = [
 	{ label: i18n.ts.none, value: 'none' },

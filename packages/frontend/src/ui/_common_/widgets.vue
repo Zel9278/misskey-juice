@@ -8,8 +8,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<XWidgets
 		:edit="editMode"
 		:widgets="widgets"
-		:sortByPlace="sortByPlace"
-		:placeEditable="placeEditable"
 		@addWidget="addWidget"
 		@removeWidget="removeWidget"
 		@updateWidget="updateWidget"
@@ -38,14 +36,8 @@ const props = withDefaults(defineProps<{
 	// left = place: leftだけを表示
 	// right = rightとnullを表示
 	place?: 'left' | null | 'right';
-	// true = 表示時にplace: leftのウィジェットを先頭に寄せる(モバイルドロワー等の単一カラム表示向け)
-	sortByPlace?: boolean;
-	// true = ウィジェットごとに左寄せ/右寄せを切り替えるボタンを編集UIに表示する
-	placeEditable?: boolean;
 }>(), {
 	place: null,
-	sortByPlace: false,
-	placeEditable: false,
 });
 
 const widgets = computed(() => {
