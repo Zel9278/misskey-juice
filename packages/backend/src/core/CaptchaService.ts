@@ -197,6 +197,42 @@ export class CaptchaService {
 		}
 	}
 
+	/**
+	 * JUICE: Signup/Signin以外の通常のEndpointからcaptchaを検証するための共有ヘルパー。
+	 * 有効になっているプロバイダの分だけ順に検証し、失敗した場合はverifyXxx側がCaptchaErrorを投げる。
+	 */
+	@bindThis
+	public async verifyRequestCaptcha(meta: MiMeta, response: {
+		hcaptcha?: string | null;
+		mcaptcha?: string | null;
+		recaptcha?: string | null;
+		turnstile?: string | null;
+		testcaptcha?: string | null;
+	}): Promise<void> {
+		// Signup/Signinと同じく、テスト実行時はこの機構が障害となるため無効にする
+		if (process.env.NODE_ENV === 'test') return;
+
+		if (meta.enableHcaptcha && meta.hcaptchaSecretKey) {
+			await this.verifyHcaptcha(meta.hcaptchaSecretKey, response.hcaptcha);
+		}
+
+		if (meta.enableMcaptcha && meta.mcaptchaSecretKey && meta.mcaptchaSitekey && meta.mcaptchaInstanceUrl) {
+			await this.verifyMcaptcha(meta.mcaptchaSecretKey, meta.mcaptchaSitekey, meta.mcaptchaInstanceUrl, response.mcaptcha);
+		}
+
+		if (meta.enableRecaptcha && meta.recaptchaSecretKey) {
+			await this.verifyRecaptcha(meta.recaptchaSecretKey, response.recaptcha);
+		}
+
+		if (meta.enableTurnstile && meta.turnstileSecretKey) {
+			await this.verifyTurnstile(meta.turnstileSecretKey, response.turnstile);
+		}
+
+		if (meta.enableTestcaptcha) {
+			await this.verifyTestcaptcha(response.testcaptcha);
+		}
+	}
+
 	@bindThis
 	public async get(): Promise<CaptchaSetting> {
 		const meta = await this.metaService.fetch(true);

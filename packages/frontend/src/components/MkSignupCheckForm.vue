@@ -33,7 +33,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkInput v-model="newCode" type="text">
 				<template #label>{{ i18n.ts._signupCheck.codeLabel }}</template>
 			</MkInput>
-			<MkButton gradate large rounded :disabled="adding || newCode === ''" style="margin: 0 auto;" @click="addAndCheck()">
+			<MkCaptcha v-if="instance.enableHcaptcha" ref="hcaptcha" v-model="hCaptchaResponse" provider="hcaptcha" :sitekey="instance.hcaptchaSiteKey"/>
+			<MkCaptcha v-if="instance.enableMcaptcha" ref="mcaptcha" v-model="mCaptchaResponse" provider="mcaptcha" :sitekey="instance.mcaptchaSiteKey" :instanceUrl="instance.mcaptchaInstanceUrl"/>
+			<MkCaptcha v-if="instance.enableRecaptcha" ref="recaptcha" v-model="reCaptchaResponse" provider="recaptcha" :sitekey="instance.recaptchaSiteKey"/>
+			<MkCaptcha v-if="instance.enableTurnstile" ref="turnstile" v-model="turnstileResponse" provider="turnstile" :sitekey="instance.turnstileSiteKey"/>
+			<MkCaptcha v-if="instance.enableTestcaptcha" ref="testcaptcha" v-model="testcaptchaResponse" provider="testcaptcha" :sitekey="null"/>
+			<MkButton gradate large rounded :disabled="shouldDisableAdding" style="margin: 0 auto;" @click="addAndCheck()">
 				{{ adding ? i18n.ts.processing : i18n.ts._signupCheck.check }}<MkEllipsis v-if="adding"/>
 			</MkButton>
 		</div>
@@ -42,13 +47,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import FormSection from '@/components/form/section.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkInfo from '@/components/MkInfo.vue';
+import type { Captcha } from '@/components/MkCaptcha.vue';
+import MkCaptcha from '@/components/MkCaptcha.vue';
 import { i18n } from '@/i18n.js';
 import * as os from '@/os.js';
+import { instance } from '@/instance.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { pleaseLogin } from '@/utility/please-login.js';
 import { addSignupApprovalCheckCode, getSignupApprovalCheckCodes, removeSignupApprovalCheckCode } from '@/utility/signup-approval-check-codes.js';
@@ -65,11 +73,49 @@ const entries = ref<Entry[]>([]);
 const newCode = ref('');
 const adding = ref(false);
 
+// JUICE: 新規コード追加時のみcaptchaを必須にする(保存済みコードの自動再確認では要求しない)
+const hcaptcha = ref<Captcha | undefined>();
+const mcaptcha = ref<Captcha | undefined>();
+const recaptcha = ref<Captcha | undefined>();
+const turnstile = ref<Captcha | undefined>();
+const testcaptcha = ref<Captcha | undefined>();
+const hCaptchaResponse = ref<string | null>(null);
+const mCaptchaResponse = ref<string | null>(null);
+const reCaptchaResponse = ref<string | null>(null);
+const turnstileResponse = ref<string | null>(null);
+const testcaptchaResponse = ref<string | null>(null);
+
+const shouldDisableAdding = computed((): boolean => {
+	return adding.value || newCode.value === '' ||
+		instance.enableHcaptcha && !hCaptchaResponse.value ||
+		instance.enableMcaptcha && !mCaptchaResponse.value ||
+		instance.enableRecaptcha && !reCaptchaResponse.value ||
+		instance.enableTurnstile && !turnstileResponse.value ||
+		instance.enableTestcaptcha && !testcaptchaResponse.value;
+});
+
+function resetCaptchas() {
+	hcaptcha.value?.reset?.();
+	mcaptcha.value?.reset?.();
+	recaptcha.value?.reset?.();
+	turnstile.value?.reset?.();
+	testcaptcha.value?.reset?.();
+}
+
 // リスト内の全エントリを一括で再確認する際に、通信エラーのたびにos.alertが積み上がるのを避けるため、
 // ここでは例外を投げずに'error'ステータスとして返し、呼び出し側でインライン表示させる(JUICE)。
-async function checkStatus(code: string): Promise<Status> {
+// captchaはisNewSubmission(新規コード追加時)のみ送る(JUICE)。
+async function checkStatus(code: string, isNewSubmission = false): Promise<Status> {
 	try {
-		const res = await misskeyApi('juice/signup-check-status', { code });
+		const res = await misskeyApi('juice/signup-check-status', {
+			code,
+			isNewSubmission,
+			'hcaptcha-response': isNewSubmission ? hCaptchaResponse.value : undefined,
+			'm-captcha-response': isNewSubmission ? mCaptchaResponse.value : undefined,
+			'g-recaptcha-response': isNewSubmission ? reCaptchaResponse.value : undefined,
+			'turnstile-response': isNewSubmission ? turnstileResponse.value : undefined,
+			'testcaptcha-response': isNewSubmission ? testcaptchaResponse.value : undefined,
+		});
 		return res.status;
 	} catch {
 		return 'error';
@@ -92,7 +138,7 @@ async function addAndCheck() {
 	const code = newCode.value;
 	adding.value = true;
 
-	const status = await checkStatus(code);
+	const status = await checkStatus(code, true);
 
 	if (status === 'error') {
 		os.alert({
@@ -116,6 +162,8 @@ async function addAndCheck() {
 		newCode.value = '';
 	}
 
+	// JUICE: captchaトークンは1回使い切りのため、結果によらず次回に備えてリセットする
+	resetCaptchas();
 	adding.value = false;
 }
 

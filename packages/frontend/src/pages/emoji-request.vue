@@ -51,7 +51,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #label>{{ i18n.ts._emojiRequestPage.deleteFileAfterReview }}</template>
 				</MkSwitch>
 
-				<MkButton primary rounded :disabled="!file || !name" @click="submit"><i class="ti ti-check"></i> {{ i18n.ts._emojiRequestPage.submit }}</MkButton>
+				<MkCaptcha v-if="instance.enableHcaptcha" ref="hcaptcha" v-model="hCaptchaResponse" provider="hcaptcha" :sitekey="instance.hcaptchaSiteKey"/>
+				<MkCaptcha v-if="instance.enableMcaptcha" ref="mcaptcha" v-model="mCaptchaResponse" provider="mcaptcha" :sitekey="instance.mcaptchaSiteKey" :instanceUrl="instance.mcaptchaInstanceUrl"/>
+				<MkCaptcha v-if="instance.enableRecaptcha" ref="recaptcha" v-model="reCaptchaResponse" provider="recaptcha" :sitekey="instance.recaptchaSiteKey"/>
+				<MkCaptcha v-if="instance.enableTurnstile" ref="turnstile" v-model="turnstileResponse" provider="turnstile" :sitekey="instance.turnstileSiteKey"/>
+				<MkCaptcha v-if="instance.enableTestcaptcha" ref="testcaptcha" v-model="testcaptchaResponse" provider="testcaptcha" :sitekey="null"/>
+
+				<MkButton primary rounded :disabled="shouldDisableSubmitting" @click="submit"><i class="ti ti-check"></i> {{ i18n.ts._emojiRequestPage.submit }}</MkButton>
 			</div>
 			<div v-else-if="tab === 'list'" class="_gaps">
 				<MkInfo v-if="paginator.items.value.length === 0 && !paginator.fetching.value">{{ i18n.ts._emojiRequestPage.noRequests }}</MkInfo>
@@ -75,6 +81,8 @@ import MkSwitch from '@/components/MkSwitch.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import MkEmojiRequestItem from '@/components/MkEmojiRequestItem.vue';
+import type { Captcha } from '@/components/MkCaptcha.vue';
+import MkCaptcha from '@/components/MkCaptcha.vue';
 import * as os from '@/os.js';
 import { selectFile } from '@/utility/drive.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
@@ -83,6 +91,7 @@ import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { Paginator } from '@/utility/paginator.js';
 import { ensureSignin } from '@/i.js';
+import { instance } from '@/instance.js';
 
 ensureSignin();
 
@@ -100,6 +109,27 @@ const license = ref('');
 const isSensitive = ref(false);
 const localOnly = ref(false);
 const deleteFileAfterReview = ref(false);
+
+// JUICE
+const hcaptcha = ref<Captcha | undefined>();
+const mcaptcha = ref<Captcha | undefined>();
+const recaptcha = ref<Captcha | undefined>();
+const turnstile = ref<Captcha | undefined>();
+const testcaptcha = ref<Captcha | undefined>();
+const hCaptchaResponse = ref<string | null>(null);
+const mCaptchaResponse = ref<string | null>(null);
+const reCaptchaResponse = ref<string | null>(null);
+const turnstileResponse = ref<string | null>(null);
+const testcaptchaResponse = ref<string | null>(null);
+
+const shouldDisableSubmitting = computed((): boolean => {
+	return !file.value || !name.value ||
+		instance.enableHcaptcha && !hCaptchaResponse.value ||
+		instance.enableMcaptcha && !mCaptchaResponse.value ||
+		instance.enableRecaptcha && !reCaptchaResponse.value ||
+		instance.enableTurnstile && !turnstileResponse.value ||
+		instance.enableTestcaptcha && !testcaptchaResponse.value;
+});
 
 const paginator = markRaw(new Paginator('emoji-requests/list', {
 	limit: 10,
@@ -130,6 +160,11 @@ function submit() {
 		isSensitive: isSensitive.value,
 		localOnly: localOnly.value,
 		deleteFileAfterReview: deleteFileAfterReview.value,
+		'hcaptcha-response': hCaptchaResponse.value,
+		'm-captcha-response': mCaptchaResponse.value,
+		'g-recaptcha-response': reCaptchaResponse.value,
+		'turnstile-response': turnstileResponse.value,
+		'testcaptcha-response': testcaptchaResponse.value,
 	}).then(request => {
 		paginator.prepend(request);
 		file.value = null;
@@ -141,6 +176,13 @@ function submit() {
 		localOnly.value = false;
 		deleteFileAfterReview.value = false;
 		tab.value = 'list';
+	}).catch(() => {
+		// JUICE: captcha検証失敗時などにウィジェットをリセットし、再送信できるようにする
+		hcaptcha.value?.reset?.();
+		mcaptcha.value?.reset?.();
+		recaptcha.value?.reset?.();
+		turnstile.value?.reset?.();
+		testcaptcha.value?.reset?.();
 	});
 }
 

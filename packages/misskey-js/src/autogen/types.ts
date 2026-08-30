@@ -22053,6 +22053,11 @@ export interface operations {
                     localOnly?: boolean;
                     /** @default false */
                     deleteFileAfterReview?: boolean;
+                    'hcaptcha-response'?: string | null;
+                    'g-recaptcha-response'?: string | null;
+                    'm-captcha-response'?: string | null;
+                    'turnstile-response'?: string | null;
+                    'testcaptcha-response'?: string | null;
                 };
             };
         };
@@ -30454,6 +30459,13 @@ export interface operations {
             content: {
                 'application/json': {
                     code: string;
+                    /** @default false */
+                    isNewSubmission?: boolean;
+                    'hcaptcha-response'?: string | null;
+                    'g-recaptcha-response'?: string | null;
+                    'm-captcha-response'?: string | null;
+                    'turnstile-response'?: string | null;
+                    'testcaptcha-response'?: string | null;
                 };
             };
         };
@@ -35031,6 +35043,11 @@ export interface operations {
                 'application/json': {
                     username: string;
                     email: string;
+                    'hcaptcha-response'?: string | null;
+                    'g-recaptcha-response'?: string | null;
+                    'm-captcha-response'?: string | null;
+                    'turnstile-response'?: string | null;
+                    'testcaptcha-response'?: string | null;
                 };
             };
         };

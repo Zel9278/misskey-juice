@@ -33,6 +33,8 @@
 - Feat: リレータイムラインを特定のリレーに絞り込むフィルタを追加(複数選択可、既定はすべてのリレー)。タイムラインヘッダーのオプションメニューと、設定の「JUICE」項目の両方から選択でき、選択状態はアカウントに保存される
 - Feat: 設定の「JUICE」項目に、デスクトップの常設ウィジェットパネル・モバイル表示のウィジェットドロワーを画面の左右どちらに表示するかを選べる項目を追加(既定は右)
 - Fix: `>`を並べただけのノートで引用の入れ子が際限なく積み重なり、画面が異常に縦長になる問題を修正。表示上のネスト段数に上限(5段)を設け、それ以上は枠を追加せず内容をそのまま展開するように
+- Enhance: パスワード再設定申請・絵文字申請・承認式新規登録の審査状況確認(新規コード追加時)にも、既存のcaptcha設定(hCaptcha/mCaptcha/reCAPTCHA/Turnstile/TestCaptcha)を適用するように(JUICE独自の追加保護)
+- Fix: captchaウィジェットの再解決(reset)後も、直前に消費済みの応答トークンが残ってしまい送信ボタンが誤って有効なままになる問題を修正
 
 ### Server
 - Feat: JUICE 独自機能の設定を取得・更新する `admin/juice/settings` / `admin/juice/update-settings` を追加
@@ -61,6 +63,7 @@
 - Feat: お知らせの投票機能(JUICE独自実装)を追加。既存のNote用Poll/PollVoteは拡張せず、専用エンティティ`announcement_poll`/`announcement_poll_vote`を新設した。`admin/announcements/create`に`poll`パラメータを追加し、投票用エンドポイント`announcements/polls/vote`を新設。個人宛てのお知らせには投票を付けられない
 - Feat: `admin/juice/settings` / `admin/juice/update-settings` / `juice/public-settings` に、LaTeX(数式)表示機能の有効・無効を切り替える`latexEnabled`を追加(既定は`true`)
 - Feat: `notes/relay-timeline`(REST)と`relayTimeline`(stream channel)に`relayIds`パラメータ(配列、複数指定可)を追加。指定したリレー経由のノートのみに絞り込める。フィルタの選択肢用に、受理済みリレーの一覧を返す`juice/relays`を新設
+- Feat: `request-reset-password` / `emoji-requests/create` / `juice/signup-check-status` にcaptcha検証を追加。`juice/signup-check-status`は端末保存済みコードの自動再確認では要求せず、新規コード追加時(`isNewSubmission: true`)のみ必須にする
 
 ## 2026.7.0-juice+1.0
 

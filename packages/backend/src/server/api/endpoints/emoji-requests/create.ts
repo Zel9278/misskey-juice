@@ -6,12 +6,13 @@
 import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { DriveFilesRepository, EmojiRequestsRepository } from '@/models/_.js';
+import type { DriveFilesRepository, EmojiRequestsRepository, MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
 import { resolveEmojiRequestSettings } from '@/models/JuiceSettings.js';
+import { CaptchaService } from '@/core/CaptchaService.js';
 import { FILE_TYPE_IMAGE } from '@/const.js';
 import { ApiError } from '@/server/api/error.js';
 
@@ -53,6 +54,12 @@ export const meta = {
 			code: 'TOO_MANY_PENDING_REQUESTS',
 			id: '12d24713-d080-458f-b80f-0c1905d96fb9',
 		},
+		// JUICE
+		captchaFailed: {
+			message: 'Captcha verification failed.',
+			code: 'CAPTCHA_FAILED',
+			id: 'e8f67388-909b-407a-851c-52311ed47c97',
+		},
 	},
 
 	res: {
@@ -73,6 +80,12 @@ export const paramDef = {
 		isSensitive: { type: 'boolean', default: false },
 		localOnly: { type: 'boolean', default: false },
 		deleteFileAfterReview: { type: 'boolean', default: false },
+		// JUICE
+		'hcaptcha-response': { type: 'string', nullable: true },
+		'g-recaptcha-response': { type: 'string', nullable: true },
+		'm-captcha-response': { type: 'string', nullable: true },
+		'turnstile-response': { type: 'string', nullable: true },
+		'testcaptcha-response': { type: 'string', nullable: true },
 	},
 	required: ['fileId', 'name'],
 } as const;
@@ -80,6 +93,9 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
+		@Inject(DI.meta)
+		private serverSettings: MiMeta,
+
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
@@ -89,8 +105,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 		private roleService: RoleService,
 		private juiceSettingsService: JuiceSettingsService,
+		private captchaService: CaptchaService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			// JUICE
+			await this.captchaService.verifyRequestCaptcha(this.serverSettings, {
+				hcaptcha: ps['hcaptcha-response'],
+				mcaptcha: ps['m-captcha-response'],
+				recaptcha: ps['g-recaptcha-response'],
+				turnstile: ps['turnstile-response'],
+				testcaptcha: ps['testcaptcha-response'],
+			}).catch(err => {
+				throw new ApiError(meta.errors.captchaFailed, { message: err.message });
+			});
+
 			const { emojiRequestEnabled } = resolveEmojiRequestSettings(await this.juiceSettingsService.fetch());
 			if (!emojiRequestEnabled) throw new ApiError(meta.errors.functionDisabled);
 

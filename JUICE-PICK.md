@@ -369,3 +369,17 @@ CherryPick には、希望している「承認式登録」にかなり近い実
 
 - 機能一覧に、これまで掲載していなかった「お知らせへの複数リアクション」(misskey-artからの移植機能、`10.`参照)を追加。リレータイムラインの説明文も単一リレー選択の名残りだった「特定のリレーだけに絞り込むフィルタ付き」から、実際の仕様(複数選択可)に合わせて「複数選択可能な絞り込みフィルタ付き」に修正した。
 - 開発者情報のセクションを、`FormLink`によるテキストリンク1行から、`/about-misskey`の「Project Members」セクションと同じ見た目(アバター画像+名前をカード状に配置)のカードに変更。GitHubアバターは`https://github.com/<username>.png`形式のショートカットURLを利用し、数値のGitHubユーザーIDを調べる必要をなくした。
+
+### 既存フォーム3箇所へのcaptcha追加(JUICE独自の追加保護、2026-08-30)
+
+- Misskeyには既にcaptcha機構(hCaptcha/mCaptcha/reCAPTCHA/Turnstile/TestCaptcha、`CaptchaService`)があり、サインイン(`SigninApiService.ts`)とサインアップ(`SignupApiService.ts`、承認式申請もこの同じフォーム経由なので既にカバー済み)には既に適用されていた。ユーザーからの指摘を受け、それ以外にcaptcha保護すべき箇所を調査し、以下3箇所に追加した。
+  - パスワード再設定申請(`request-reset-password`) — 未認証で誰でも叩けるメール送信トリガーだったため。
+  - 絵文字申請(`emoji-requests/create`) — `requireCredential: true`だが、JUICE独自の追加保護としてユーザーの希望で追加(本家の他の認証済みアクションに前例が無い構成だが、意図的な選択)。
+  - 承認式登録の審査状況確認(`juice/signup-check-status`)。
+- `CaptchaService`に、Signup/Signinの生Fastifyルートが持つ「各プロバイダの有効判定→対応する`verifyXxx`呼び出し」という重複ロジック(既存2箇所)をこれ以上増やさないよう、通常の`Endpoint`から使える共有ヘルパー`verifyRequestCaptcha(meta, response)`を新設した。既存の`verifyHcaptcha`等・Signup/Signinの生ルート自体は無改修。
+- 3エンドポイントとも、Signup/Signinと同じフィールド名(`'hcaptcha-response'`等)のcaptcha応答パラメータを追加し、ハンドラの最初(他のガードより前)で検証するようにした。エラーはエンドポイントごとに新規UUIDの`captchaFailed`とした。
+- `juice/signup-check-status`は`MkSignupCheckForm.vue`が画面表示のたびに保存済み全コードを自動で無言リフレッシュする作りのため、captcha必須にすると自動リフレッシュのたびにcaptchaを解かされてしまう。ユーザーと相談の上、新規パラメータ`isNewSubmission`(既定`false`)を追加し、**新規コード追加時のみcaptcha必須**とし、自動リフレッシュ経路(`isNewSubmission`省略)はcaptcha無しのまま維持する方針にした。この設計上、この経路はbotが`isNewSubmission`を省略すれば回避できてしまう点は、既知のトレードオフとして許容している。
+- フロントエンド3ファイル(`MkForgotPassword.vue`/`emoji-request.vue`/`MkSignupCheckForm.vue`)は、いずれも既存の`MkSignupDialog.form.vue`のcaptcha実装パターン(5プロバイダ分の条件付き`<MkCaptcha>`、`shouldDisableSubmitting`相当の送信ボタン無効化、失敗時の`.reset?.()`)をそのまま踏襲した。
+  - レビューで指摘: `MkCaptcha.vue`の`reset()`はウィジェットの表示状態(vendor SDK側のwidget、テスト用captchaの入力欄等)をリセットするだけで、`v-model`で親に渡している応答トークン自体はクリアしていなかった。そのため`.reset?.()`を呼んでも親側の`xxxResponse`refには直前の(既に使用済みの)トークンが残り続け、見た目は「未解決」なのに送信ボタンが誤って有効なままになり、再送信すると古いトークンのままcaptcha検証に失敗する不具合があった(特に`MkSignupCheckForm.vue`の「コードを間違えて再度追加し直す」という典型的な再試行フローで顕在化する)。個別の呼び出し元3箇所を直すのではなく、`MkCaptcha.vue`の`reset()`自体に`emit('update:modelValue', null)`を追加して根本修正した(既存の`MkSignupDialog.form.vue`も同じ潜在バグを持っていたが、サインアップは基本1回限りのフローのため表面化していなかった)。
+  - レビューで指摘: `CaptchaService`に新設した`verifyRequestCaptcha`に対する単体テストが無かったため、`test/unit/CaptchaService.ts`に既存の`describe('verifyXxx', ...)`群と同じスタイル(`testCaptchaError`ヘルパー再利用)でテストを追加した。この関数は`NODE_ENV==='test'`で早期returnする仕様(Signup/Signinの生ルートと同じ、e2eテストが実際のcaptcha設定を要求されないようにするための既存の仕組み)のため、テスト内で一時的に`process.env.NODE_ENV`を上書きして実際の検証ロジックを通している。
+  - `juice/signup-check-status`の`isNewSubmission`によるcaptcha分岐自体は、e2eテストでは検証できない。Signup/Signinの既存captchaロジック同様、e2e実行時は`NODE_ENV==='test'`により`verifyRequestCaptcha`が常に早期returnするため、captchaを実際に要求させて失敗させるテストが原理的に書けない(この制約はJUICE固有ではなく、既存のSignup/Signinのcaptcha検証も同じ理由でe2eテストが無い)。
