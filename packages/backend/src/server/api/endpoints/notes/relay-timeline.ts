@@ -42,6 +42,7 @@ export const paramDef = {
 	properties: {
 		withFiles: { type: 'boolean', default: false },
 		withRenotes: { type: 'boolean', default: true },
+		relayId: { type: 'string', format: 'misskey:id', nullable: true, default: null },
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
@@ -76,6 +77,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('note.renote', 'renote')
 				.leftJoinAndSelect('reply.user', 'replyUser')
 				.leftJoinAndSelect('renote.user', 'renoteUser');
+
+			if (ps.relayId != null) {
+				query.andWhere('note.relayId = :relayId', { relayId: ps.relayId });
+			}
 
 			this.queryService.generateBaseNoteFilteringQuery(query, me);
 			if (me) this.queryService.generateMutedUserRenotesQueryForNotes(query, me);

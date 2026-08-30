@@ -1601,6 +1601,93 @@ describe('Endpoints', () => {
 			}, alice);
 			assert.strictEqual(reset.status, 204);
 		});
+
+		test('relayIdパラメータを指定すると、該当リレー経由のノートのみに絞り込める', async () => {
+			const enable = await api('admin/juice/update-settings', {
+				relayTimelineEnabled: true,
+			}, alice);
+			assert.strictEqual(enable.status, 204);
+
+			const connection = await initTestDb(true);
+			const Notes = connection.getRepository(MiNote);
+			const Relays = connection.getRepository(MiRelay);
+
+			const noteA = (await api('notes/create', { text: 'via relay A (JUICE test)' }, alice)).body.createdNote;
+			const noteB = (await api('notes/create', { text: 'via relay B (JUICE test)' }, alice)).body.createdNote;
+
+			const relayA = await Relays.save(Relays.create({
+				id: randomString(),
+				inbox: `https://relay-a.example.com/${randomString()}/inbox`,
+				status: 'accepted',
+			}));
+			const relayB = await Relays.save(Relays.create({
+				id: randomString(),
+				inbox: `https://relay-b.example.com/${randomString()}/inbox`,
+				status: 'accepted',
+			}));
+			await Notes.update({ id: noteA.id }, { relayId: relayA.id });
+			await Notes.update({ id: noteB.id }, { relayId: relayB.id });
+
+			const res = await api('notes/relay-timeline', { relayId: relayA.id });
+			assert.strictEqual(res.status, 200);
+			const ids = (res.body as misskey.entities.Note[]).map(n => n.id);
+			assert.strictEqual(ids.includes(noteA.id), true);
+			assert.strictEqual(ids.includes(noteB.id), false);
+
+			// 他のテストに影響しないよう元に戻す
+			await Relays.delete({ id: relayA.id });
+			await Relays.delete({ id: relayB.id });
+			const reset = await api('admin/juice/update-settings', {
+				relayTimelineEnabled: false,
+			}, alice);
+			assert.strictEqual(reset.status, 204);
+		});
+	});
+
+	describe('juice/relays', () => {
+		test('機能が無効な間はfunctionDisabledで弾かれる', async () => {
+			const res = await api('juice/relays', {});
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'FUNCTION_DISABLED');
+		});
+
+		test('status:accepted のリレーのみを{id,host}で返す', async () => {
+			const enable = await api('admin/juice/update-settings', {
+				relayTimelineEnabled: true,
+			}, alice);
+			assert.strictEqual(enable.status, 204);
+
+			const connection = await initTestDb(true);
+			const Relays = connection.getRepository(MiRelay);
+
+			const accepted = await Relays.save(Relays.create({
+				id: randomString(),
+				inbox: `https://relay-accepted.example.com/${randomString()}/inbox`,
+				status: 'accepted',
+			}));
+			const requesting = await Relays.save(Relays.create({
+				id: randomString(),
+				inbox: `https://relay-requesting.example.com/${randomString()}/inbox`,
+				status: 'requesting',
+			}));
+
+			const res = await api('juice/relays', {});
+			assert.strictEqual(res.status, 200);
+			const ids = (res.body as { id: string, host: string }[]).map(r => r.id);
+			assert.strictEqual(ids.includes(accepted.id), true);
+			assert.strictEqual(ids.includes(requesting.id), false);
+
+			const found = (res.body as { id: string, host: string }[]).find(r => r.id === accepted.id);
+			assert.strictEqual(found?.host, 'relay-accepted.example.com');
+
+			// 他のテストに影響しないよう元に戻す
+			await Relays.delete({ id: accepted.id });
+			await Relays.delete({ id: requesting.id });
+			const reset = await api('admin/juice/update-settings', {
+				relayTimelineEnabled: false,
+			}, alice);
+			assert.strictEqual(reset.status, 204);
+		});
 	});
 
 	describe('i/juice/update-email-lang', () => {

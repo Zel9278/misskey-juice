@@ -23,6 +23,7 @@ export class RelayTimelineChannel extends Channel {
 	public static requireCredential = false as const;
 	private withRenotes: boolean;
 	private withFiles: boolean;
+	private relayId: string | null;
 
 	constructor(
 		@Inject(REQUEST)
@@ -42,6 +43,7 @@ export class RelayTimelineChannel extends Channel {
 
 		this.withRenotes = !!(params.withRenotes ?? true);
 		this.withFiles = !!(params.withFiles ?? false);
+		this.relayId = typeof params.relayId === 'string' ? params.relayId : null;
 
 		// Subscribe events
 		this.subscriber.on('relayTimelineStream', this.onNote);
@@ -53,6 +55,7 @@ export class RelayTimelineChannel extends Channel {
 
 		if (note.visibility !== 'public') return;
 		if (note.relayId == null) return;
+		if (this.relayId != null && note.relayId !== this.relayId) return;
 		if (note.user.requireSigninToViewContents && this.user == null) return;
 		if (note.renote && note.renote.user.requireSigninToViewContents && this.user == null) return;
 		if (note.reply && note.reply.user.requireSigninToViewContents && this.user == null) return;

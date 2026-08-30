@@ -12,10 +12,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkPostForm v-if="prefer.r.showFixedPostForm.value" :class="$style.postForm" class="_panel" fixed style="margin-bottom: var(--MI-margin);"/>
 		<MkStreamingNotesTimeline
 			ref="tlComponent"
-			:key="src + withRenotes + withReplies + onlyFiles + withSensitive"
+			:key="src + withRenotes + withReplies + onlyFiles + withSensitive + selectedRelayId"
 			:class="$style.tl"
 			:src="(src.split(':')[0] as (BasicTimelineType | 'list' | 'relay'))"
 			:list="src.split(':')[1]"
+			:relay="src === 'relay' ? selectedRelayId : undefined"
 			:withRenotes="withRenotes"
 			:withReplies="withReplies"
 			:withSensitive="withSensitive"
@@ -28,6 +29,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { computed, watch, provide, useTemplateRef, ref, onMounted, onActivated } from 'vue';
+import * as Misskey from 'misskey-js';
 import type { Tab } from '@/components/global/MkPageHeader.tabs.vue';
 import type { MenuItem } from '@/types/menu.js';
 import type { BasicTimelineType } from '@/timelines.js';
@@ -51,10 +53,19 @@ const tlComponent = useTemplateRef('tlComponent');
 
 // JUICE: リレーTLが有効なインスタンスでのみタブに出す
 const relayTimelineEnabled = ref(false);
+// JUICE: リレーTLを特定のリレーだけに絞り込むための一覧とその選択状態(ページ内のみで保持し、永続化はしない)
+const relays = ref<Misskey.entities.JuiceRelaysResponse>([]);
+const selectedRelayId = ref<string | null>(null);
 misskeyApi('juice/public-settings').then(res => {
 	relayTimelineEnabled.value = res.relayTimelineEnabled;
 	// 取得前に選択されていた場合や、無効化された後に古い選択が残っていた場合に備えて再チェックする
 	switchTlIfNeeded();
+
+	if (relayTimelineEnabled.value) {
+		misskeyApi('juice/relays').then(res => {
+			relays.value = res;
+		});
+	}
 });
 
 type TimelinePageSrc = BasicTimelineType | 'relay' | `list:${string}`;
@@ -236,6 +247,20 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 					text: i18n.ts.showRepliesToOthersInTimeline,
 					ref: withReplies,
 					disabled: onlyFiles,
+				});
+			}
+
+			// JUICE: リレーTL表示中のみ、絞り込み先リレーを選べるようにする
+			if (src.value === 'relay' && relays.value.length > 0) {
+				menuItems.push({
+					type: 'radio',
+					icon: 'ti ti-broadcast',
+					text: i18n.ts._juice.relayTimelineFilter,
+					ref: selectedRelayId,
+					options: [
+						{ label: i18n.ts._juice.relayTimelineFilterAll, value: null },
+						...relays.value.map(relay => ({ label: relay.host, value: relay.id })),
+					],
 				});
 			}
 

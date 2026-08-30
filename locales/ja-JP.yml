@@ -3722,6 +3722,8 @@ _juice:
   signupCheck: "登録審査状況の確認"
   relayTimelineEnabled: "リレータイムライン機能を有効にする"
   relayTimelineEnabledCaption: "登録したリレー経由で届いた公開ノートだけを集めたタイムラインです。無効にすると、タイムラインの導線・API・stream配信のすべてが利用できなくなります。"
+  relayTimelineFilter: "表示するリレー"
+  relayTimelineFilterAll: "すべてのリレー"
   widgetPlaceLeft: "左寄せ(モバイル表示で先頭に固定)"
   widgetPlaceRight: "右寄せ(モバイル表示で末尾に固定)"
   widgetPlace: "モバイルウィジェットの並び順"

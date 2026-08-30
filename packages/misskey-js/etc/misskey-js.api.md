@@ -787,6 +787,7 @@ export type Channels = {
         params: {
             withRenotes?: boolean;
             withFiles?: boolean;
+            relayId?: string;
         };
         events: {
             note: (payload: Note) => void;
@@ -2117,6 +2118,7 @@ declare namespace entities {
         InviteListResponse,
         JuicePublicSettingsResponse,
         JuiceRankingResponse,
+        JuiceRelaysResponse,
         JuiceSignupCheckStatusRequest,
         JuiceSignupCheckStatusResponse,
         MetaRequest,
@@ -2974,6 +2976,9 @@ type JuicePublicSettingsResponse = operations['juice___public-settings']['respon
 
 // @public (undocumented)
 type JuiceRankingResponse = operations['juice___ranking']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type JuiceRelaysResponse = operations['juice___relays']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type JuiceSignupCheckStatusRequest = operations['juice___signup-check-status']['requestBody']['content']['application/json'];
@@ -3921,8 +3926,8 @@ type VerifyEmailRequest = operations['verify-email']['requestBody']['content']['
 // Warnings were encountered during analysis:
 //
 // src/streaming.ts:57:3 - (ae-forgotten-export) The symbol "ReconnectingWebSocket" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:237:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:252:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
+// src/streaming.types.ts:238:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
+// src/streaming.types.ts:253:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

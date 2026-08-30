@@ -13889,6 +13889,14 @@ export interface Locale extends ILocale {
          */
         "relayTimelineEnabledCaption": string;
         /**
+         * 表示するリレー
+         */
+        "relayTimelineFilter": string;
+        /**
+         * すべてのリレー
+         */
+        "relayTimelineFilterAll": string;
+        /**
          * 左寄せ(モバイル表示で先頭に固定)
          */
         "widgetPlaceLeft": string;

@@ -324,6 +324,7 @@ export * as 'invite/limit' from './endpoints/invite/limit.js';
 export * as 'invite/list' from './endpoints/invite/list.js';
 export * as 'juice/public-settings' from './endpoints/juice/public-settings.js';
 export * as 'juice/ranking' from './endpoints/juice/ranking.js';
+export * as 'juice/relays' from './endpoints/juice/relays.js';
 export * as 'juice/signup-check-status' from './endpoints/juice/signup-check-status.js';
 export * as 'meta' from './endpoints/meta.js';
 export * as 'miauth/gen-token' from './endpoints/miauth/gen-token.js';

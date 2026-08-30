@@ -3100,6 +3100,15 @@ export type paths = {
          */
         post: operations['juice___ranking'];
     };
+    '/juice/relays': {
+        /**
+         * juice/relays
+         * @description No description provided.
+         *
+         *     **Credential required**: *No*
+         */
+        post: operations['juice___relays'];
+    };
     '/juice/signup-check-status': {
         /**
          * juice/signup-check-status
@@ -30378,6 +30387,68 @@ export interface operations {
             };
         };
     };
+    juice___relays: {
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /** Format: id */
+                        id: string;
+                        host: string;
+                    }[];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'juice___signup-check-status': {
         requestBody: {
             content: {
@@ -32697,6 +32768,11 @@ export interface operations {
                     withFiles?: boolean;
                     /** @default true */
                     withRenotes?: boolean;
+                    /**
+                     * Format: misskey:id
+                     * @default null
+                     */
+                    relayId?: string | null;
                     /** @default 10 */
                     limit?: number;
                     /** Format: misskey:id */
