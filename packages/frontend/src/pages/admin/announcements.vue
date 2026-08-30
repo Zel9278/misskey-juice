@@ -83,7 +83,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</MkSwitch>
 							<MkPollEditor v-if="announcement._pollEnabled && announcement._pollDraft" v-model="announcement._pollDraft"/>
 						</template>
-						<p v-else-if="announcement.poll">{{ i18n.tsx._poll.totalVotes({ n: pollTotalVotes(announcement.poll) }) }}</p>
+						<p v-else-if="announcement.poll">{{ i18n.tsx._poll.totalVotes({ n: pollTotalVotes(announcement.poll) }) }}<span class="_juice">JUICE</span></p>
 						<p v-if="announcement.reads">{{ i18n.tsx.nUsersRead({ n: announcement.reads }) }}</p>
 					</div>
 				</MkFolder>
