@@ -83,6 +83,7 @@ import FormSection from '@/components/form/section.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
+import { claimAchievement } from '@/utility/achievements.js';
 
 const features = [
 	{ icon: 'ti ti-user-check', text: i18n.ts._aboutJuice._features.approvalSignup },
@@ -110,6 +111,8 @@ let rainTimeoutId: number | undefined;
 let rainBurstId = 0;
 
 function startRain() {
+	claimAchievement('juiceRain');
+
 	if (rainTimeoutId != null) window.clearTimeout(rainTimeoutId);
 
 	rainAngle.value = (Math.random() * 2 - 1) * RAIN_MAX_ANGLE;

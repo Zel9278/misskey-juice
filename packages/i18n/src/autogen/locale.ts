@@ -7989,6 +7989,16 @@ export interface Locale extends ILocale {
                  */
                 "flavor": string;
             };
+            "_juiceRain": {
+                /**
+                 * JUICEの雨
+                 */
+                "title": string;
+                /**
+                 * JUICE専用Aboutページのアイコンをクリックして雨を降らせた
+                 */
+                "description": string;
+            };
         };
     };
     "_role": {

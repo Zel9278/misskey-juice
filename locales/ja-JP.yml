@@ -2073,6 +2073,9 @@ _achievements:
       title: "ダブル🤯"
       description: "バブルゲームで最も大きいモノを2つ同時に出した"
       flavor: "これくらいの　おべんとばこに　🤯　🤯　ちょっとつめて"
+    _juiceRain:
+      title: "JUICEの雨"
+      description: "JUICE専用Aboutページのアイコンをクリックして雨を降らせた"
 
 _role:
   new: "ロールの作成"

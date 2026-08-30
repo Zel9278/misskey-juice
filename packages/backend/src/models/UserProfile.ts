@@ -396,4 +396,5 @@ export const ACHIEVEMENT_TYPES = [
 	'tutorialCompleted',
 	'bubbleGameExplodingHead',
 	'bubbleGameDoubleExplodingHead',
+	'juiceRain', // JUICE: JUICE専用AboutページのアイコンをクリックしてJUICEの雨を降らせた
 ] as const;
