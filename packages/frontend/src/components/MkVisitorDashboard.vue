@@ -27,14 +27,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div class="_gaps_s" :class="$style.mainActions">
 				<template v-if="instance.disableRegistration && juicePublicSettings.approvalRequiredForSignup">
 					<MkButton :class="$style.mainAction" full rounded gradate data-testid="signup-invitation" style="margin-right: 12px;" @click="signup('invitation')">{{ i18n.ts._juice.registerWithInvitation }}</MkButton>
-					<MkButton :class="$style.mainAction" full rounded gradate data-testid="signup-application" style="margin-right: 12px;" @click="signup('application')">{{ i18n.ts._juice.applyToJoin }}</MkButton>
+					<MkButton :class="$style.mainAction" full rounded gradate data-testid="signup-application" style="margin-right: 12px;" @click="signup('application')">{{ i18n.ts._juice.applyToJoin }}<span class="_juice">JUICE</span></MkButton>
 				</template>
-				<MkButton v-else :class="$style.mainAction" full rounded gradate data-testid="signup" style="margin-right: 12px;" @click="signup()">{{ juicePublicSettings.approvalRequiredForSignup ? i18n.ts._juice.applyToJoin : i18n.ts.joinThisServer }}</MkButton>
+				<MkButton v-else :class="$style.mainAction" full rounded gradate data-testid="signup" style="margin-right: 12px;" @click="signup()">{{ juicePublicSettings.approvalRequiredForSignup ? i18n.ts._juice.applyToJoin : i18n.ts.joinThisServer }}<span v-if="juicePublicSettings.approvalRequiredForSignup" class="_juice">JUICE</span></MkButton>
 				<MkButton :class="$style.mainAction" full rounded type="a" target="_blank" rel="noopener" href="https://misskey-hub.net/servers/">{{ i18n.ts.exploreOtherServers }}</MkButton>
 				<MkButton :class="$style.mainAction" full rounded data-testid="signin" @click="signin()">{{ i18n.ts.login }}</MkButton>
 			</div>
 			<div v-if="juicePublicSettings.approvalRequiredForSignup" :class="$style.mainSignupCheck">
-				<MkButton :class="$style.mainAction" full rounded data-testid="signup-check" @click="openSignupCheck()">{{ i18n.ts._juice.signupCheck }}</MkButton>
+				<MkButton :class="$style.mainAction" full rounded data-testid="signup-check" @click="openSignupCheck()">{{ i18n.ts._juice.signupCheck }}<span class="_juice">JUICE</span></MkButton>
 			</div>
 		</div>
 	</div>
