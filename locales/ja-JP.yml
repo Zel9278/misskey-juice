@@ -2229,7 +2229,7 @@ _signupCheck:
   statusApproved: "承認されました。サインインできます。"
   statusDeclined: "この申請は却下されました。"
   statusNotFound: "該当する申請が見つかりませんでした。コードが正しいか確認してください。"
-  goToSignin: "サインインする"
+  goToSignin: "サインイン画面を開く"
   openPage: "確認ページを開く"
 
 _accountDelete:
