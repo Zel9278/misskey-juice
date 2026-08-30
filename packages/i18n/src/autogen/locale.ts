@@ -8575,7 +8575,7 @@ export interface Locale extends ILocale {
          */
         "statusNotFound": string;
         /**
-         * サインインする
+         * サインイン画面を開く
          */
         "goToSignin": string;
         /**
