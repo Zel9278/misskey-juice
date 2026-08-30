@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkInfo v-if="entry.status === 'pending'" warn>{{ i18n.ts._signupCheck.statusPending }}</MkInfo>
 				<MkInfo v-else-if="entry.status === 'approved'">
 					{{ i18n.ts._signupCheck.statusApproved }}
-					<MkButton style="margin-top: 8px;" @click="pleaseLogin()">{{ i18n.ts._signupCheck.goToSignin }}</MkButton>
+					<MkButton style="margin-top: 8px;" @click="openSignin()">{{ i18n.ts._signupCheck.goToSignin }}</MkButton>
 				</MkInfo>
 				<MkInfo v-else-if="entry.status === 'declined'" warn>{{ i18n.ts._signupCheck.statusDeclined }}</MkInfo>
 				<MkInfo v-else-if="entry.status === 'notFound'" warn>{{ i18n.ts._signupCheck.statusNotFound }}</MkInfo>
@@ -54,11 +54,11 @@ import MkInput from '@/components/MkInput.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import type { Captcha } from '@/components/MkCaptcha.vue';
 import MkCaptcha from '@/components/MkCaptcha.vue';
+import XSigninDialog from '@/components/MkSigninDialog.vue';
 import { i18n } from '@/i18n.js';
 import * as os from '@/os.js';
 import { instance } from '@/instance.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
-import { pleaseLogin } from '@/utility/please-login.js';
 import { addSignupApprovalCheckCode, getSignupApprovalCheckCodes, removeSignupApprovalCheckCode } from '@/utility/signup-approval-check-codes.js';
 
 type Status = 'pending' | 'approved' | 'declined' | 'notFound' | 'error';
@@ -120,6 +120,16 @@ async function checkStatus(code: string, isNewSubmission = false): Promise<Statu
 	} catch {
 		return 'error';
 	}
+}
+
+// JUICE: pleaseLogin()は既にログイン中(≠承認されたこのアカウント)だと何もせず即returnしてしまい、
+// 別アカウントでログイン中にこのボタンを押しても無反応に見えるため、常にダイアログを開くMkSigninDialogを直接使う
+function openSignin() {
+	const { dispose } = os.popup(XSigninDialog, {
+		autoSet: true,
+	}, {
+		closed: () => dispose(),
+	});
 }
 
 async function refreshEntry(entry: Entry) {
