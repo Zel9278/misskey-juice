@@ -9037,7 +9037,7 @@ export interface Locale extends ILocale {
              */
             "ranking": string;
             /**
-             * 登録済みリレー経由のノートだけを表示するリレータイムライン(特定のリレーだけに絞り込むフィルタ付き)
+             * 登録済みリレー経由のノートだけを表示するリレータイムライン(複数選択可能な絞り込みフィルタ付き)
              */
             "relayTimeline": string;
             /**
@@ -9048,6 +9048,10 @@ export interface Locale extends ILocale {
              * ウィジェットパネル・ドロワーの表示位置(左右)を切り替え可能
              */
             "widgetsSide": string;
+            /**
+             * お知らせへの複数リアクション
+             */
+            "announcementReaction": string;
             /**
              * お知らせの投票機能
              */

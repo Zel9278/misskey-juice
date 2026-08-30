@@ -21,13 +21,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<FormSection>
 					<template #label>{{ i18n.ts._aboutJuice.developer }}</template>
-					<div class="_gaps_s">
-						<FormLink to="https://github.com/Zel9278" external>
-							<template #icon><i class="ti ti-user"></i></template>
-							c30 (Zel9278)
-							<template #suffix>GitHub</template>
-						</FormLink>
-					</div>
+					<a href="https://github.com/Zel9278" target="_blank" :class="$style.developer">
+						<img src="https://github.com/Zel9278.png" :class="$style.developerAvatar"/>
+						<span :class="$style.developerName">c30 (Zel9278)</span>
+					</a>
 				</FormSection>
 
 				<FormSection>
@@ -82,6 +79,7 @@ const features = [
 	{ icon: 'ti ti-broadcast', text: i18n.ts._aboutJuice._features.relayTimeline },
 	{ icon: 'ti ti-language', text: i18n.ts._aboutJuice._features.emailI18n },
 	{ icon: 'ti ti-arrow-bar-to-left', text: i18n.ts._aboutJuice._features.widgetsSide },
+	{ icon: 'ti ti-mood-happy', text: i18n.ts._aboutJuice._features.announcementReaction },
 	{ icon: 'ti ti-list-check', text: i18n.ts._aboutJuice._features.announcementPoll },
 	{ icon: 'ti ti-math-function', text: i18n.ts._aboutJuice._features.latex },
 ];
@@ -120,6 +118,30 @@ definePage(() => ({
 
 .bannerVersion {
 	opacity: 0.5;
+}
+
+.developer {
+	display: flex;
+	align-items: center;
+	padding: 12px;
+	background: var(--MI_THEME-buttonBg);
+	border-radius: 8px;
+
+	&:hover {
+		text-decoration: none;
+		background: var(--MI_THEME-buttonHoverBg);
+	}
+}
+
+.developerAvatar {
+	width: 42px;
+	height: 42px;
+	border-radius: 100%;
+}
+
+.developerName {
+	margin-left: 12px;
+	font-weight: bold;
 }
 
 .features {
