@@ -331,6 +331,24 @@ export class WebhookTestService {
 				send('inactiveModeratorsInvitationOnlyChanged', {});
 				break;
 			}
+			// JUICE
+			case 'emojiRequestCreated': {
+				send('emojiRequestCreated', {
+					id: 'dummy-emoji-request-1',
+					name: 'dummy_emoji',
+					category: null,
+					requester: await this.toPackedUserLite(dummyUser1),
+				});
+				break;
+			}
+			// JUICE
+			case 'signupApplicationCreated': {
+				send('signupApplicationCreated', {
+					applicant: await this.toPackedUserLite(dummyUser1),
+					reason: 'This is a dummy signup application reason for testing purposes.',
+				});
+				break;
+			}
 			default: {
 				const _exhaustiveAssertion: never = params.type;
 				return;

@@ -11,6 +11,7 @@ import {
 	AbuseReportNotificationRecipientEntityService,
 } from '@/core/entities/AbuseReportNotificationRecipientEntityService.js';
 import { AbuseReportNotificationService } from '@/core/AbuseReportNotificationService.js';
+import { JuiceAdminNotificationService } from '@/core/JuiceAdminNotificationService.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserSearchService } from '@/core/UserSearchService.js';
 import { WebhookTestService } from '@/core/WebhookTestService.js';
@@ -327,6 +328,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		LoggerService,
 		AbuseReportService,
 		AbuseReportNotificationService,
+		JuiceAdminNotificationService,
 		AccountMoveService,
 		AccountUpdateService,
 		AiService,
@@ -641,6 +643,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		LoggerService,
 		AbuseReportService,
 		AbuseReportNotificationService,
+		JuiceAdminNotificationService,
 		AccountMoveService,
 		AccountUpdateService,
 		AiService,

@@ -989,6 +989,7 @@ recentNHours: "直近{n}時間"
 recentNDays: "直近{n}日"
 noEmailServerWarning: "メールサーバーの設定がされていません。"
 thereIsUnresolvedAbuseReportWarning: "未対応の通報があります。"
+newAbuseReportToast: "新しい通報があります。"
 recommended: "推奨"
 check: "チェック"
 driveCapOverrideLabel: "このユーザーのドライブ容量上限を変更"
@@ -3157,6 +3158,8 @@ _webhookSettings:
     userCreated: "ユーザーが作成されたとき"
     inactiveModeratorsWarning: "モデレーターが一定期間非アクティブになったとき"
     inactiveModeratorsInvitationOnlyChanged: "モデレーターが一定期間非アクティブだったため、システムにより招待制へと変更されたとき"
+    emojiRequestCreated: "絵文字申請があったとき(JUICE)"
+    signupApplicationCreated: "承認式登録の申請があったとき(JUICE)"
   deleteConfirm: "Webhookを削除しますか？"
   testRemarks: "スイッチの右にあるボタンをクリックするとダミーのデータを使用したテスト用Webhookを送信できます。"
 
@@ -3768,6 +3771,10 @@ _juice:
   latexEnabledCaption: "無効にすると、ノートなどに含まれる数式は整形されず、ソースがそのままコードとして表示されます。"
   enablePoll: "投票を追加"
   enablePollCaption: "作成後に選択肢や期限を変更することはできません。"
+  thereArePendingEmojiRequestsWarning: "未対応の絵文字申請があります。"
+  thereArePendingSignupApplicationsWarning: "未対応の承認式登録の申請があります。"
+  newEmojiRequestToast: "新しい絵文字申請があります。"
+  newSignupApplicationToast: "新しい承認式登録の申請があります。"
 
 _juiceApprovals:
   title: "承認待ちユーザー"

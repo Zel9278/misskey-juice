@@ -41,6 +41,7 @@
 - Fix: ロゴメニューの「絵文字申請」項目が、管理者がJUICE設定で絵文字申請機能自体を無効化していても表示されたままになっていた不具合を修正
 - Enhance: JUICE専用Aboutページ(`/about-juice`)のアイコンをクリック(またはEnter/Spaceキー)すると、オレンジの雨が降るイースターエッグを追加。クリックのたびに雨の角度がランダムに変わる。初回の雨で実績「JUICEの雨」が解除される
 - Feat: Misskey Gamesに「盆栽を育てるゲーム」を追加(JUICE独自実装)。1日1回水をあげて盆栽を育て、放置すると徐々に弱って退行する。セーブデータは`i/registry`にアカウント単位で保存される。初めての水やり・最終段階まで育てる・枯らしてしまう、の3つの実績も追加した
+- Feat: コントロールパネルに、絵文字申請・承認式登録の新規申請があったことを知らせる警告バナーを、通報と同様に追加。あわせて、コントロールパネルを開いている間はリアルタイムでトースト通知が届くように(通報・絵文字申請・承認式登録の3種類。通報についても今回初めてこのリアルタイム通知に対応した)
 
 ### Server
 - Feat: JUICE 独自機能の設定を取得・更新する `admin/juice/settings` / `admin/juice/update-settings` を追加
@@ -70,6 +71,8 @@
 - Feat: `admin/juice/settings` / `admin/juice/update-settings` / `juice/public-settings` に、LaTeX(数式)表示機能の有効・無効を切り替える`latexEnabled`を追加(既定は`true`)
 - Feat: `notes/relay-timeline`(REST)と`relayTimeline`(stream channel)に`relayIds`パラメータ(配列、複数指定可)を追加。指定したリレー経由のノートのみに絞り込める。フィルタの選択肢用に、受理済みリレーの一覧を返す`juice/relays`を新設
 - Feat: `request-reset-password` / `emoji-requests/create` / `juice/signup-check-status` にcaptcha検証を追加。`juice/signup-check-status`は端末保存済みコードの自動再確認では要求せず、新規コード追加時(`isNewSubmission: true`)のみ必須にする
+- Feat: 実績に`juiceRain`(JUICEの雨)・`bonsaiFirstWater`・`bonsaiFullyGrown`・`bonsaiWithered`を追加
+- Feat: 絵文字申請・承認式登録の新規申請時に、モデレータへリアルタイム通知(adminストリーム)・SystemWebhookを送信するように。SystemWebhookのイベント種別に`emojiRequestCreated`・`signupApplicationCreated`を追加した。あわせて通報(`abuseReport`)のadminストリーム通知も、今回新設したフロントエンド側の購読処理で初めて実際に利用されるようになった
 
 ## 2026.7.0-juice+1.0
 

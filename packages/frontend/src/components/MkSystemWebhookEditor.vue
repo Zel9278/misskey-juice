@@ -67,6 +67,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 								</MkSwitch>
 								<MkButton v-show="mode === 'edit'" transparent :class="$style.testButton" :disabled="!(isActive && events.inactiveModeratorsInvitationOnlyChanged)" @click="test('inactiveModeratorsInvitationOnlyChanged')"><i class="ti ti-send"></i></MkButton>
 							</div>
+							<div :class="$style.switchBox">
+								<MkSwitch v-model="events.emojiRequestCreated" :disabled="disabledEvents.emojiRequestCreated">
+									<template #label>{{ i18n.ts._webhookSettings._systemEvents.emojiRequestCreated }}</template>
+								</MkSwitch>
+								<MkButton v-show="mode === 'edit'" transparent :class="$style.testButton" :disabled="!(isActive && events.emojiRequestCreated)" @click="test('emojiRequestCreated')"><i class="ti ti-send"></i></MkButton>
+							</div>
+							<div :class="$style.switchBox">
+								<MkSwitch v-model="events.signupApplicationCreated" :disabled="disabledEvents.signupApplicationCreated">
+									<template #label>{{ i18n.ts._webhookSettings._systemEvents.signupApplicationCreated }}</template>
+								</MkSwitch>
+								<MkButton v-show="mode === 'edit'" transparent :class="$style.testButton" :disabled="!(isActive && events.signupApplicationCreated)" @click="test('signupApplicationCreated')"><i class="ti ti-send"></i></MkButton>
+							</div>
 						</div>
 
 						<div v-show="mode === 'edit'" :class="$style.description">
@@ -114,6 +126,9 @@ type EventType = {
 	userCreated: boolean;
 	inactiveModeratorsWarning: boolean;
 	inactiveModeratorsInvitationOnlyChanged: boolean;
+	// JUICE
+	emojiRequestCreated: boolean;
+	signupApplicationCreated: boolean;
 };
 
 const emit = defineEmits<{
@@ -139,6 +154,9 @@ const events = ref<EventType>({
 	userCreated: true,
 	inactiveModeratorsWarning: true,
 	inactiveModeratorsInvitationOnlyChanged: true,
+	// JUICE
+	emojiRequestCreated: true,
+	signupApplicationCreated: true,
 });
 const isActive = ref<boolean>(true);
 
@@ -148,6 +166,9 @@ const disabledEvents = ref<EventType>({
 	userCreated: false,
 	inactiveModeratorsWarning: false,
 	inactiveModeratorsInvitationOnlyChanged: false,
+	// JUICE
+	emojiRequestCreated: false,
+	signupApplicationCreated: false,
 });
 
 const disableSubmitButton = computed(() => {

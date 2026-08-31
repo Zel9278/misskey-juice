@@ -41,11 +41,29 @@ export type InactiveModeratorsWarningPayload = {
 	remainingTime: ModeratorInactivityRemainingTime;
 };
 
+// JUICE: 絵文字申請が作成された時のWebhookペイロード
+export type EmojiRequestCreatedPayload = {
+	id: string;
+	name: string;
+	category: string | null;
+	requester: Packed<'UserLite'>;
+};
+
+// JUICE: 承認式登録の申請が作成された時のWebhookペイロード
+// checkCode(未認証の状態照会用トークン)はモデレータ操作(承認/却下)にもフロントの
+// トースト表示にも使われず、外部Webhook先に渡す必要性が無いため意図的に含めない。
+export type SignupApplicationCreatedPayload = {
+	applicant: Packed<'UserLite'>;
+	reason: string | null;
+};
+
 export type SystemWebhookPayload<T extends SystemWebhookEventType> =
 	T extends 'abuseReport' | 'abuseReportResolved' ? AbuseReportPayload :
 	T extends 'userCreated' ? Packed<'UserLite'> :
 	T extends 'inactiveModeratorsWarning' ? InactiveModeratorsWarningPayload :
 	T extends 'inactiveModeratorsInvitationOnlyChanged' ? Record<string, never> :
+	T extends 'emojiRequestCreated' ? EmojiRequestCreatedPayload :
+	T extends 'signupApplicationCreated' ? SignupApplicationCreatedPayload :
 		never;
 
 @Injectable()

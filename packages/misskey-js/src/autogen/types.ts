@@ -5873,7 +5873,7 @@ export type components = {
             latestSentAt: string | null;
             latestStatus: number | null;
             name: string;
-            on: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged')[];
+            on: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated')[];
             url: string;
             secret: string;
         };
@@ -13051,7 +13051,7 @@ export interface operations {
                 'application/json': {
                     isActive: boolean;
                     name: string;
-                    on: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged')[];
+                    on: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated')[];
                     url: string;
                     /** @default  */
                     secret?: string;
@@ -13183,7 +13183,7 @@ export interface operations {
             content: {
                 'application/json': {
                     isActive?: boolean;
-                    on?: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged')[];
+                    on?: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated')[];
                 };
             };
         };
@@ -13317,7 +13317,7 @@ export interface operations {
                     /** Format: misskey:id */
                     webhookId: string;
                     /** @enum {string} */
-                    type: 'abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged';
+                    type: 'abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated';
                     override?: {
                         url?: string;
                         secret?: string;
@@ -13396,7 +13396,7 @@ export interface operations {
                     id: string;
                     isActive: boolean;
                     name: string;
-                    on: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged')[];
+                    on: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated')[];
                     url: string;
                     /** @default  */
                     secret?: string;

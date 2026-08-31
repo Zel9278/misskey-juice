@@ -176,6 +176,18 @@ export interface AdminEventTypes {
 		reporterId: MiUser['id'],
 		comment: string;
 	};
+	// JUICE: 絵文字申請が作成された時のリアルタイム通知
+	newEmojiRequest: {
+		id: string;
+		name: string;
+		category: string | null;
+		requester: Packed<'UserLite'>;
+	};
+	// JUICE: 承認式登録の申請が作成された時のリアルタイム通知
+	newSignupApplication: {
+		applicant: Packed<'UserLite'>;
+		reason: string | null;
+	};
 }
 
 export interface ChatEventTypes {

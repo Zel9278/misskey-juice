@@ -3969,6 +3969,10 @@ export interface Locale extends ILocale {
      */
     "thereIsUnresolvedAbuseReportWarning": string;
     /**
+     * 新しい通報があります。
+     */
+    "newAbuseReportToast": string;
+    /**
      * 推奨
      */
     "recommended": string;
@@ -11886,6 +11890,14 @@ export interface Locale extends ILocale {
              * モデレーターが一定期間非アクティブだったため、システムにより招待制へと変更されたとき
              */
             "inactiveModeratorsInvitationOnlyChanged": string;
+            /**
+             * 絵文字申請があったとき(JUICE)
+             */
+            "emojiRequestCreated": string;
+            /**
+             * 承認式登録の申請があったとき(JUICE)
+             */
+            "signupApplicationCreated": string;
         };
         /**
          * Webhookを削除しますか？
@@ -14056,6 +14068,22 @@ export interface Locale extends ILocale {
          * 作成後に選択肢や期限を変更することはできません。
          */
         "enablePollCaption": string;
+        /**
+         * 未対応の絵文字申請があります。
+         */
+        "thereArePendingEmojiRequestsWarning": string;
+        /**
+         * 未対応の承認式登録の申請があります。
+         */
+        "thereArePendingSignupApplicationsWarning": string;
+        /**
+         * 新しい絵文字申請があります。
+         */
+        "newEmojiRequestToast": string;
+        /**
+         * 新しい承認式登録の申請があります。
+         */
+        "newSignupApplicationToast": string;
     };
     "_juiceApprovals": {
         /**

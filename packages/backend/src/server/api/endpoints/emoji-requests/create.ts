@@ -13,6 +13,8 @@ import { RoleService } from '@/core/RoleService.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
 import { resolveEmojiRequestSettings } from '@/models/JuiceSettings.js';
 import { CaptchaService } from '@/core/CaptchaService.js';
+import { JuiceAdminNotificationService } from '@/core/JuiceAdminNotificationService.js';
+import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { FILE_TYPE_IMAGE } from '@/const.js';
 import { ApiError } from '@/server/api/error.js';
 
@@ -106,6 +108,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 		private juiceSettingsService: JuiceSettingsService,
 		private captchaService: CaptchaService,
+		private juiceAdminNotificationService: JuiceAdminNotificationService,
+		private userEntityService: UserEntityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// JUICE
@@ -143,6 +147,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				localOnly: ps.localOnly ?? false,
 				status: 'pending',
 				deleteFileAfterReview: ps.deleteFileAfterReview ?? false,
+			});
+
+			// JUICE: モデレータへ新規申請をリアルタイム通知(admin stream + SystemWebhook)
+			await this.juiceAdminNotificationService.notifyNewEmojiRequest({
+				id: request.id,
+				name: request.name,
+				category: request.category,
+				requester: await this.userEntityService.pack(me, null, { schema: 'UserLite' }),
 			});
 
 			return {

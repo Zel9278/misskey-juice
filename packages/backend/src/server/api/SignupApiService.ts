@@ -16,6 +16,7 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { EmailService } from '@/core/EmailService.js';
 import { EmailI18nService } from '@/core/EmailI18nService.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { JuiceAdminNotificationService } from '@/core/JuiceAdminNotificationService.js';
 import { resolveSignupApprovalSettings } from '@/models/JuiceSettings.js';
 import { MiLocalUser } from '@/models/User.js';
 import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
@@ -59,6 +60,7 @@ export class SignupApiService {
 		private emailService: EmailService,
 		private emailI18nService: EmailI18nService,
 		private juiceSettingsService: JuiceSettingsService,
+		private juiceAdminNotificationService: JuiceAdminNotificationService,
 	) {
 	}
 
@@ -285,6 +287,11 @@ export class SignupApiService {
 
 				if (approvalRequiredForThisSignup) {
 					const checkCode = await this.issueApprovalCheckCode(account.id);
+					// JUICE: モデレータへ新規申請をリアルタイム通知(admin stream + SystemWebhook)
+					await this.juiceAdminNotificationService.notifyNewSignupApplication({
+						applicant: await this.userEntityService.pack(account, null, { schema: 'UserLite' }),
+						reason: reason ?? null,
+					});
 					return { pendingApproval: true, checkCode } as const;
 				}
 
@@ -358,6 +365,11 @@ export class SignupApiService {
 					i18n.t('_email.signupPendingApproval.text'));
 
 				const checkCode = await this.issueApprovalCheckCode(account.id);
+				// JUICE: モデレータへ新規申請をリアルタイム通知(admin stream + SystemWebhook)
+				await this.juiceAdminNotificationService.notifyNewSignupApplication({
+					applicant: await this.userEntityService.pack(account, null, { schema: 'UserLite' }),
+					reason: pendingUser.reason ?? null,
+				});
 				return { pendingApproval: true, checkCode } as const;
 			}
 
