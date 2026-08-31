@@ -153,9 +153,14 @@ describe('SigninApiService', () => {
 
 		expect(res.statusCode).toBe(403);
 
-		await flushImmediate();
-		expect(createNotificationSpy).toHaveBeenCalledWith(username, 'loginFailed', {});
-		expect(sendEmailSpy).toHaveBeenCalled();
+		// EmailI18nServiceは実インスタンスなので、resolveLang()が実際にDBへ問い合わせる分の
+		// 遅延がある。setImmediateを1回挟むだけでは足りないことがあるため、両方の呼び出しが
+		// 揃うまでポーリングする(そうしないと、このテストの完了を待たずに次のテストへ進んでしまい、
+		// 遅れて発火したsendEmail呼び出しが次のテストのspyに誤って記録されることがある)
+		await vi.waitFor(() => {
+			expect(createNotificationSpy).toHaveBeenCalledWith(username, 'loginFailed', {});
+			expect(sendEmailSpy).toHaveBeenCalled();
+		});
 	});
 
 	it('確認済みメールアドレスが無い場合はメールを送らない', async () => {
@@ -165,8 +170,12 @@ describe('SigninApiService', () => {
 		const res = new DummyFastifyReply() as unknown as FastifyReply;
 		await signinApiService.signin(req, res);
 
-		await flushImmediate();
-		expect(createNotificationSpy).toHaveBeenCalledWith(username, 'loginFailed', {});
+		// createNotificationはメール送信可否のチェックより前で同期的に呼ばれるため、これが
+		// 呼ばれた時点でfail()内の処理はメール送信の分岐まで到達している(emailVerified: falseなので
+		// そのままメール送信をスキップして完了する経路)
+		await vi.waitFor(() => {
+			expect(createNotificationSpy).toHaveBeenCalledWith(username, 'loginFailed', {});
+		});
 		expect(sendEmailSpy).not.toHaveBeenCalled();
 	});
 
