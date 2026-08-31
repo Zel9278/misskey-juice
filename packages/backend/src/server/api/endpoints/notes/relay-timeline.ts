@@ -8,6 +8,7 @@ import { Brackets } from 'typeorm';
 import type { NotesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import ActiveUsersChart from '@/core/chart/charts/active-users.js';
 import { DI } from '@/di-symbols.js';
@@ -33,6 +34,12 @@ export const meta = {
 			message: 'The relay timeline feature is currently disabled.',
 			code: 'FUNCTION_DISABLED',
 			id: 'f5c1e2f3-7d4d-4a3c-9b3e-3d5c7a3a5b1e',
+		},
+
+		gtlDisabled: {
+			message: 'Global timeline has been disabled.',
+			code: 'GTL_DISABLED',
+			id: 'c820d67a-0b17-4fe0-a322-08a68e623c23',
 		},
 	},
 } as const;
@@ -67,12 +74,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
+		private roleService: RoleService,
 		private juiceSettingsService: JuiceSettingsService,
 		private activeUsersChart: ActiveUsersChart,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const { relayTimelineEnabled } = resolveRelayTimelineSettings(await this.juiceSettingsService.fetch());
 			if (!relayTimelineEnabled) throw new ApiError(meta.errors.functionDisabled);
+
+			// 公開ノート閲覧経路の制限ポリシーはGTLと共通(gtlAvailable)
+			const policies = await this.roleService.getUserPolicies(me ? me.id : null);
+			if (!policies.gtlAvailable) throw new ApiError(meta.errors.gtlDisabled);
 
 			//#region Construct query
 			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'),
