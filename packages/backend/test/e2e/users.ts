@@ -88,6 +88,7 @@ describe('ユーザー', () => {
 			canChat: user.canChat,
 			roles: user.roles,
 			memo: user.memo,
+			nickname: user.nickname, // JUICE
 		});
 	};
 
