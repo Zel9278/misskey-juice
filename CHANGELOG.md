@@ -43,6 +43,7 @@
 - Feat: Misskey Gamesに「盆栽を育てるゲーム」を追加(JUICE独自実装)。1日1回水をあげて盆栽を育て、放置すると徐々に弱って退行する。セーブデータは`i/registry`にアカウント単位で保存される。初めての水やり・最終段階まで育てる・枯らしてしまう、の3つの実績も追加した
 - Feat: コントロールパネルに、絵文字申請・承認式登録の新規申請があったことを知らせる警告バナーを、通報と同様に追加。あわせて、コントロールパネルを開いている間はリアルタイムでトースト通知が届くように(通報・絵文字申請・承認式登録の3種類。通報についても今回初めてこのリアルタイム通知に対応した)
 - Feat: JUICE専用Aboutページ(`/about-juice`)に、参考にしたプロジェクトとしてCherryPickへのGitHubリンクを追加
+- Enhance: 未ログイン時トップページの「他のサーバーを探す」リンク先を、本家Misskeyの`misskey-hub.net/servers`から`servers.misskey.ink`に変更
 
 ### Server
 - Feat: JUICE 独自機能の設定を取得・更新する `admin/juice/settings` / `admin/juice/update-settings` を追加
@@ -74,6 +75,7 @@
 - Feat: `request-reset-password` / `emoji-requests/create` / `juice/signup-check-status` にcaptcha検証を追加。`juice/signup-check-status`は端末保存済みコードの自動再確認では要求せず、新規コード追加時(`isNewSubmission: true`)のみ必須にする
 - Feat: 実績に`juiceRain`(JUICEの雨)・`bonsaiFirstWater`・`bonsaiFullyGrown`・`bonsaiWithered`を追加
 - Feat: 絵文字申請・承認式登録の新規申請時に、モデレータへリアルタイム通知(adminストリーム)・SystemWebhookを送信するように。SystemWebhookのイベント種別に`emojiRequestCreated`・`signupApplicationCreated`を追加した。あわせて通報(`abuseReport`)のadminストリーム通知も、今回新設したフロントエンド側の購読処理で初めて実際に利用されるようになった
+- Enhance: `repositoryUrl` / `feedbackUrl`の既定値を、本家Misskeyのリポジトリからこのフォーク自身のリポジトリに変更(JUICEは本家のフォークであるため)。既存インストールでも、値が本家の既定値のままだった場合はあわせて更新される
 
 ## 2026.7.0-juice+1.0
 

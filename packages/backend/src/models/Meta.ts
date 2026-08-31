@@ -385,16 +385,18 @@ export class MiMeta {
 	})
 	public termsOfServiceUrl: string | null;
 
+	// JUICE: 本家Misskeyのフォークなので、既定のリポジトリURLをこのフォーク自身に変更
 	@Column('varchar', {
 		length: 1024,
-		default: 'https://github.com/misskey-dev/misskey',
+		default: 'https://github.com/Zel9278/misskey-juice',
 		nullable: true,
 	})
 	public repositoryUrl: string | null;
 
+	// JUICE: 本家Misskeyのフォークなので、既定のフィードバックURLをこのフォーク自身に変更
 	@Column('varchar', {
 		length: 1024,
-		default: 'https://github.com/misskey-dev/misskey/issues/new',
+		default: 'https://github.com/Zel9278/misskey-juice/issues/new',
 		nullable: true,
 	})
 	public feedbackUrl: string | null;
