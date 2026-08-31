@@ -75,10 +75,11 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		fileId: { type: 'string', format: 'misskey:id' },
-		name: { type: 'string', pattern: '^[a-zA-Z0-9_]+$' },
-		category: { type: 'string', nullable: true },
-		aliases: { type: 'array', items: { type: 'string' }, default: [] },
-		license: { type: 'string', nullable: true },
+		// 各上限はemoji_requestテーブルの列定義に合わせる
+		name: { type: 'string', pattern: '^[a-zA-Z0-9_]+$', maxLength: 128 },
+		category: { type: 'string', nullable: true, maxLength: 128 },
+		aliases: { type: 'array', items: { type: 'string', maxLength: 128 }, maxItems: 100, default: [] },
+		license: { type: 'string', nullable: true, maxLength: 1024 },
 		isSensitive: { type: 'boolean', default: false },
 		localOnly: { type: 'boolean', default: false },
 		deleteFileAfterReview: { type: 'boolean', default: false },
