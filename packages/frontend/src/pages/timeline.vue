@@ -40,6 +40,7 @@ import * as os from '@/os.js';
 import { store } from '@/store.js';
 import { i18n } from '@/i18n.js';
 import { $i } from '@/i.js';
+import { instance } from '@/instance.js';
 import { definePage } from '@/page.js';
 import { antennasCache, userListsCache, favoritedChannelsCache, juicePublicSettingsCache, juiceRelaysCache } from '@/cache.js';
 import { deviceKind } from '@/utility/device-kind.js';
@@ -52,6 +53,8 @@ const tlComponent = useTemplateRef('tlComponent');
 
 // JUICE: リレーTLが有効なインスタンスでのみタブに出す
 const relayTimelineEnabled = ref(false);
+// 表示可否はGTLと共通のgtlAvailableポリシーにも従う
+const relayTimelineAvailable = computed(() => relayTimelineEnabled.value && ($i != null ? $i.policies.gtlAvailable : instance.policies.gtlAvailable));
 // JUICE: リレーTLを特定のリレーだけに絞り込むための一覧。選択状態はJUICE設定(prefer.s.relayTimelineFilter)に永続化する
 const relays = ref<Misskey.entities.JuiceRelaysResponse>([]);
 const relayTimelineFilter = computed(() => prefer.r.relayTimelineFilter.value);
@@ -70,7 +73,7 @@ juicePublicSettingsCache.fetch().then(res => {
 	// 取得前に選択されていた場合や、無効化された後に古い選択が残っていた場合に備えて再チェックする
 	switchTlIfNeeded();
 
-	if (relayTimelineEnabled.value) {
+	if (relayTimelineAvailable.value) {
 		juiceRelaysCache.fetch().then(res => {
 			relays.value = res;
 		});
@@ -223,7 +226,7 @@ function saveTlFilter(key: keyof typeof store.s.tl.filter, newValue: boolean) {
 function switchTlIfNeeded() {
 	if (isBasicTimeline(src.value) && !isAvailableBasicTimeline(src.value)) {
 		src.value = availableBasicTimelines()[0];
-	} else if (src.value === 'relay' && !relayTimelineEnabled.value) {
+	} else if (src.value === 'relay' && !relayTimelineAvailable.value) {
 		src.value = availableBasicTimelines()[0];
 	}
 }
@@ -320,7 +323,7 @@ const headerTabs = computed(() => [...(prefer.r.pinnedUserLists.value.map(l => (
 	title: i18n.ts._timelines[tl],
 	icon: basicTimelineIconClass(tl),
 	iconOnly: true,
-})), ...(relayTimelineEnabled.value ? [{
+})), ...(relayTimelineAvailable.value ? [{
 	key: 'relay',
 	title: i18n.ts._juice.relayTimelineTab,
 	icon: 'ti ti-broadcast',
@@ -348,7 +351,7 @@ const headerTabsWhenNotLogin = computed(() => [...availableBasicTimelines().map(
 	title: i18n.ts._timelines[tl],
 	icon: basicTimelineIconClass(tl),
 	iconOnly: true,
-})), ...(relayTimelineEnabled.value ? [{
+})), ...(relayTimelineAvailable.value ? [{
 	key: 'relay',
 	title: i18n.ts._juice.relayTimelineTab,
 	icon: 'ti ti-broadcast',

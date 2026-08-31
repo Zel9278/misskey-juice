@@ -9,6 +9,7 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { NoteStreamingHidingService } from '../NoteStreamingHidingService.js';
 import { bindThis } from '@/decorators.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { resolveRelayTimelineSettings } from '@/models/JuiceSettings.js';
 import { isRenotePacked, isQuotePacked } from '@/misc/is-renote.js';
 import type { JsonObject } from '@/misc/json-value.js';
@@ -30,6 +31,7 @@ export class RelayTimelineChannel extends Channel {
 		request: ChannelRequest,
 
 		private juiceSettingsService: JuiceSettingsService,
+		private roleService: RoleService,
 		private noteEntityService: NoteEntityService,
 		private noteStreamingHidingService: NoteStreamingHidingService,
 	) {
@@ -40,6 +42,10 @@ export class RelayTimelineChannel extends Channel {
 	public async init(params: JsonObject) {
 		const { relayTimelineEnabled } = resolveRelayTimelineSettings(await this.juiceSettingsService.fetch());
 		if (!relayTimelineEnabled) return;
+
+		// 公開ノート閲覧経路の制限ポリシーはGTLと共通(gtlAvailable)
+		const policies = await this.roleService.getUserPolicies(this.user ? this.user.id : null);
+		if (!policies.gtlAvailable) return;
 
 		this.withRenotes = !!(params.withRenotes ?? true);
 		this.withFiles = !!(params.withFiles ?? false);

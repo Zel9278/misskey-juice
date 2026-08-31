@@ -6,6 +6,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { EmojiRequestsRepository, DriveFilesRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
+import type { MiDriveFile } from '@/models/DriveFile.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
@@ -47,6 +48,11 @@ export const meta = {
 			message: 'An emoji with this name already exists.',
 			code: 'DUPLICATE_NAME',
 			id: '0c9df859-d222-46df-a548-f24997667eac',
+		},
+		fileCopyFailed: {
+			message: 'Failed to copy the attached file.',
+			code: 'FILE_COPY_FAILED',
+			id: 'd420533b-5ceb-4425-bfd2-b4d4c56063a2',
 		},
 	},
 } as const;
@@ -94,10 +100,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const requester = await this.usersRepository.findOneByOrFail({ id: request.userId });
 
+			// システム所有の複製を登録(申請者ファイル削除の影響回避)
+			let emojiFile: MiDriveFile;
+			try {
+				emojiFile = await this.driveService.uploadFromUrl({ url: driveFile.url, user: null, force: true, sensitive: driveFile.isSensitive });
+			} catch {
+				throw new ApiError(meta.errors.fileCopyFailed);
+			}
+
 			const emoji = await this.customEmojiService.add({
-				originalUrl: driveFile.url,
-				publicUrl: driveFile.webpublicUrl ?? driveFile.url,
-				fileType: driveFile.webpublicType ?? driveFile.type,
+				originalUrl: emojiFile.url,
+				publicUrl: emojiFile.webpublicUrl ?? emojiFile.url,
+				fileType: emojiFile.webpublicType ?? emojiFile.type,
 				name: request.name,
 				category: request.category,
 				aliases: request.aliases,
