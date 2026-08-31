@@ -12,6 +12,7 @@ import type Logger from '@/logger.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { StatusError } from '@/misc/status-error.js';
 import { bindThis } from '@/decorators.js';
+import { isDiscordWebhookUrl, formatSystemWebhookForDiscord } from '@/misc/discord-webhook-format.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import { SystemWebhookDeliverJobData } from '../types.js';
 
@@ -37,6 +38,18 @@ export class SystemWebhookDeliverProcessorService {
 		try {
 			this.logger.debug(`delivering ${job.data.webhookId}`);
 
+			// JUICE: 送信先がDiscordのWebhook URLなら、生ペイロードではなくDiscord Embed形式で送る
+			const body = isDiscordWebhookUrl(job.data.to)
+				? formatSystemWebhookForDiscord(job.data.type, job.data.content, this.config.url)
+				: {
+					server: this.config.url,
+					hookId: job.data.webhookId,
+					eventId: job.data.eventId,
+					createdAt: job.data.createdAt,
+					type: job.data.type,
+					body: job.data.content,
+				};
+
 			const res = await this.httpRequestService.send(job.data.to, {
 				method: 'POST',
 				headers: {
@@ -46,14 +59,7 @@ export class SystemWebhookDeliverProcessorService {
 					'X-Misskey-Hook-Secret': job.data.secret,
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({
-					server: this.config.url,
-					hookId: job.data.webhookId,
-					eventId: job.data.eventId,
-					createdAt: job.data.createdAt,
-					type: job.data.type,
-					body: job.data.content,
-				}),
+				body: JSON.stringify(body),
 			});
 
 			this.systemWebhooksRepository.update({ id: job.data.webhookId }, {
