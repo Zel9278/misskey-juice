@@ -1,3 +1,14 @@
+## Unreleased
+
+### General
+-
+
+### Client
+-
+
+### Server
+- Fix: pgroongaでの検索(`fulltextSearch.provider: sqlPgroonga`)が、`OR`や`-`等の記号を含む単語でPGroongaのクエリ構文パースエラーになり検索自体が失敗する問題を修正(JUICE独自)。クエリ構文をパースする`&@~`演算子ではなく、キーワードごとに単純な「含む」判定の`&@`演算子をAND連結する方式に変更し、構文パースを経由しないようにした
+
 ## 2026.7.0-juice+2.1
 
 ### Client
