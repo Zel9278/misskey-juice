@@ -8862,6 +8862,20 @@ export interface Locale extends ILocale {
              */
             "text": string;
         };
+        "newLoginFailed": {
+            /**
+             * ログインに失敗しました
+             */
+            "subject": string;
+            /**
+             * アカウントへのログイン試行に失敗しました(IPアドレス: {ip})。この試行に心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を確認してください。
+             */
+            "html": ParameterizedString<"ip">;
+            /**
+             * アカウントへのログイン試行に失敗しました(IPアドレス: {ip})。この試行に心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を確認してください。
+             */
+            "text": ParameterizedString<"ip">;
+        };
         "accountDeleted": {
             /**
              * アカウントが削除されました
@@ -11506,6 +11520,10 @@ export interface Locale extends ILocale {
          */
         "login": string;
         /**
+         * ログインに失敗しました
+         */
+        "loginFailed": string;
+        /**
          * アクセストークンが作成されました
          */
         "createToken": string;
@@ -11586,6 +11604,10 @@ export interface Locale extends ILocale {
              * ログイン
              */
             "login": string;
+            /**
+             * ログイン失敗
+             */
+            "loginFailed": string;
             /**
              * アクセストークンの作成
              */

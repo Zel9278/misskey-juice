@@ -217,6 +217,13 @@ async function composeNotification(data: PushNotificationDataMap[keyof PushNotif
 						data,
 					}];
 
+				case 'loginFailed':
+					// JUICE: 専用バッジ画像が無いため、login-2を流用(タイトル文言で失敗であることは伝わる)
+					return [i18n.ts._notification.loginFailed, {
+						badge: iconUrl('login-2'),
+						data,
+					}];
+
 				case 'exportCompleted': {
 					const entityName = {
 						antenna: i18n.ts.antennas,

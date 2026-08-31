@@ -109,6 +109,11 @@ export type MiNotification = {
 	id: string;
 	createdAt: string;
 } | {
+	// JUICE: misskey-tempuraを参考に追加
+	type: 'loginFailed';
+	id: string;
+	createdAt: string;
+} | {
 	type: 'createToken';
 	id: string;
 	createdAt: string;

@@ -45,6 +45,7 @@
 - Feat: JUICE専用Aboutページ(`/about-juice`)に、参考にしたプロジェクトとしてCherryPickへのGitHubリンクを追加
 - Enhance: 未ログイン時トップページの「他のサーバーを探す」リンク先を、本家Misskeyの`misskey-hub.net/servers`から`servers.misskey.ink`に変更
 - Feat: JUICE専用Aboutページ(`/about-juice`)の「参考にしたプロジェクト」に、misskey-tempuraへのGitHubリンクを追加
+- Feat: ログインに失敗したとき、アカウント本人へ通知(アプリ内通知・確認済みメールアドレスがあればメール)を送るように(misskey-tempuraを参考)
 
 ### Server
 - Feat: JUICE 独自機能の設定を取得・更新する `admin/juice/settings` / `admin/juice/update-settings` を追加
@@ -78,6 +79,7 @@
 - Feat: 絵文字申請・承認式登録の新規申請時に、モデレータへリアルタイム通知(adminストリーム)・SystemWebhookを送信するように。SystemWebhookのイベント種別に`emojiRequestCreated`・`signupApplicationCreated`を追加した。あわせて通報(`abuseReport`)のadminストリーム通知も、今回新設したフロントエンド側の購読処理で初めて実際に利用されるようになった
 - Enhance: `repositoryUrl` / `feedbackUrl`の既定値を、本家Misskeyのリポジトリからこのフォーク自身のリポジトリに変更(JUICEは本家のフォークであるため)。既存インストールでも、値が本家の既定値のままだった場合はあわせて更新される
 - Enhance: ノート本文の文字数上限を3000字からDB上の格納可能上限である8192字まで拡大(misskey-tempuraを参考)
+- Feat: ログイン試行の失敗時に、アカウント本人へ通知種別`loginFailed`(JUICE)でアプリ内通知を送信し、確認済みメールアドレスがあればメールも送るように(misskey-tempuraを参考)。パスワード/TOTP/セキュリティキーいずれかでの認証失敗が対象
 
 ## 2026.7.0-juice+1.0
 

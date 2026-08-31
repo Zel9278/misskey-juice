@@ -25,6 +25,9 @@ import { WebAuthnService } from '@/core/WebAuthnService.js';
 import { UserAuthService } from '@/core/UserAuthService.js';
 import { CaptchaService } from '@/core/CaptchaService.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import { NotificationService } from '@/core/NotificationService.js';
+import { EmailService } from '@/core/EmailService.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
 import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
 import { RateLimiterService } from './RateLimiterService.js';
 import { SigninService } from './SigninService.js';
@@ -61,6 +64,9 @@ export class SigninApiService {
 		private userAuthService: UserAuthService,
 		private webAuthnService: WebAuthnService,
 		private captchaService: CaptchaService,
+		private notificationService: NotificationService,
+		private emailService: EmailService,
+		private emailI18nService: EmailI18nService,
 	) {
 		this.logger = this.loggerService.getLogger('Signin');
 	}
@@ -181,6 +187,20 @@ export class SigninApiService {
 				ip: request.ip,
 				headers: request.headers as any,
 				success: false,
+			});
+
+			// JUICE: ログイン失敗をアカウント本人へ通知する(misskey-tempuraを参考)。
+			// レスポンスを遅延させないよう、成功時のSigninService.signin()と同様にsetImmediateで非同期実行する
+			setImmediate(async () => {
+				this.notificationService.createNotification(user.id, 'loginFailed', {});
+
+				if (profile.email && profile.emailVerified) {
+					const lang = await this.emailI18nService.resolveLang(profile.emailLang);
+					const i18n = this.emailI18nService.getI18n(lang);
+					this.emailService.sendEmail(profile.email, i18n.t('_email.newLoginFailed.subject'),
+						i18n.t('_email.newLoginFailed.html', { ip: request.ip }),
+						i18n.t('_email.newLoginFailed.text', { ip: request.ip }));
+				}
 			});
 
 			return error(status ?? 500, failure ?? { id: '4e30e80c-e338-45a0-8c8f-44455efa3b76' });

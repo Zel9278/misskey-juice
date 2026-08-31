@@ -21,6 +21,7 @@
  * achievementEarned - 実績を獲得
  * exportCompleted - エクスポートが完了
  * login - ログイン
+ * loginFailed - ログイン試行に失敗した(JUICE)
  * createToken - トークン作成
  * app - アプリ通知
  * test - テスト通知（サーバー側）
@@ -43,6 +44,8 @@ export const notificationTypes = [
 	'achievementEarned',
 	'exportCompleted',
 	'login',
+	// JUICE: misskey-tempuraを参考に追加
+	'loginFailed',
 	'createToken',
 	'app',
 	'test',

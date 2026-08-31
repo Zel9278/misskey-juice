@@ -67,6 +67,11 @@ const emailFallbackLocaleEnUS = {
 		html: 'A new sign-in to your account was detected. If this wasn\'t you, please update your account security, such as changing your password.',
 		text: 'A new sign-in to your account was detected. If this wasn\'t you, please update your account security, such as changing your password.',
 	},
+	newLoginFailed: {
+		subject: 'Failed sign-in attempt',
+		html: 'A failed sign-in attempt to your account was detected (IP address: {ip}). If this wasn\'t you, please review your account security, such as changing your password.',
+		text: 'A failed sign-in attempt to your account was detected (IP address: {ip}). If this wasn\'t you, please review your account security, such as changing your password.',
+	},
 	accountDeleted: {
 		subject: 'Your account has been deleted',
 		html: 'Your account has been deleted.',
