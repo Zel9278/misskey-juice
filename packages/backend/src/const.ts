@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-export const MAX_NOTE_TEXT_LENGTH = 3000;
+// JUICE: 本文の文字数上限をDB上の格納可能上限(DB_MAX_NOTE_TEXT_LENGTH)まで拡大(misskey-tempuraを参考)
+export const MAX_NOTE_TEXT_LENGTH = 8192;
 
 export const USER_ONLINE_THRESHOLD = 1000 * 60 * 10; // 10min
 export const USER_ACTIVE_THRESHOLD = 1000 * 60 * 60 * 24 * 3; // 3days

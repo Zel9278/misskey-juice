@@ -77,6 +77,7 @@
 - Feat: 実績に`juiceRain`(JUICEの雨)・`bonsaiFirstWater`・`bonsaiFullyGrown`・`bonsaiWithered`を追加
 - Feat: 絵文字申請・承認式登録の新規申請時に、モデレータへリアルタイム通知(adminストリーム)・SystemWebhookを送信するように。SystemWebhookのイベント種別に`emojiRequestCreated`・`signupApplicationCreated`を追加した。あわせて通報(`abuseReport`)のadminストリーム通知も、今回新設したフロントエンド側の購読処理で初めて実際に利用されるようになった
 - Enhance: `repositoryUrl` / `feedbackUrl`の既定値を、本家Misskeyのリポジトリからこのフォーク自身のリポジトリに変更(JUICEは本家のフォークであるため)。既存インストールでも、値が本家の既定値のままだった場合はあわせて更新される
+- Enhance: ノート本文の文字数上限を3000字からDB上の格納可能上限である8192字まで拡大(misskey-tempuraを参考)
 
 ## 2026.7.0-juice+1.0
 
