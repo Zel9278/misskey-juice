@@ -27,6 +27,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					></span>
 				</div>
 
+				<MkInfo warn>
+					{{ i18n.ts._aboutJuice.selfHostingNoticeWarning }} <a href="https://mq1.dev/entry/krpvl5itbr9h#h0cb67a7186" target="_blank" rel="noopener" class="_link">{{ i18n.ts._aboutJuice.selfHostingNoticeLinkText }}</a>
+				</MkInfo>
+
 				<MkKeyValue>
 					<template #key>{{ i18n.ts._aboutJuice.description }}</template>
 					<template #value>{{ i18n.ts._aboutJuice.descriptionText }}</template>
@@ -127,6 +131,7 @@ import FormLink from '@/components/form/link.vue';
 import FormSection from '@/components/form/section.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import MkFolder from '@/components/MkFolder.vue';
+import MkInfo from '@/components/MkInfo.vue';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { claimAchievement } from '@/utility/achievements.js';

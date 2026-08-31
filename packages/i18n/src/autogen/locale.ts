@@ -9062,6 +9062,14 @@ export interface Locale extends ILocale {
          */
         "title": string;
         /**
+         * このフォークで公開サーバーを立てる前に、運営の責任について書かれた以下のガイドをよく読んで検討してください。
+         */
+        "selfHostingNoticeWarning": string;
+        /**
+         * chan-maiさんによるMisskeyサーバー運用ガイド
+         */
+        "selfHostingNoticeLinkText": string;
+        /**
          * JUICEとは
          */
         "description": string;

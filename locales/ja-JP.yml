@@ -2375,6 +2375,8 @@ _registry:
 
 _aboutJuice:
   title: "JUICEについて"
+  selfHostingNoticeWarning: "このフォークで公開サーバーを立てる前に、運営の責任について書かれた以下のガイドをよく読んで検討してください。"
+  selfHostingNoticeLinkText: "chan-maiさんによるMisskeyサーバー運用ガイド"
   description: "JUICEとは"
   descriptionText: "misskey-juiceは、c30 (Zel9278)が開発しているMisskeyの独自フォークです。本家Misskeyから移植した機能に加えて、承認式新規登録・AI生成物フラグ・絵文字申請・ユーザーランキング・リレータイムラインなど、JUICE独自の機能を追加しています。"
   developer: "開発者"
