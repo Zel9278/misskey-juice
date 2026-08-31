@@ -11983,11 +11983,11 @@ export interface Locale extends ILocale {
              */
             "inactiveModeratorsInvitationOnlyChanged": string;
             /**
-             * 絵文字申請があったとき(JUICE)
+             * 絵文字申請があったとき
              */
             "emojiRequestCreated": string;
             /**
-             * 承認式登録の申請があったとき(JUICE)
+             * 承認式登録の申請があったとき
              */
             "signupApplicationCreated": string;
         };

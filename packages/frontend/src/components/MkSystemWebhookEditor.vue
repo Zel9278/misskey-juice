@@ -69,13 +69,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 							<div :class="$style.switchBox">
 								<MkSwitch v-model="events.emojiRequestCreated" :disabled="disabledEvents.emojiRequestCreated">
-									<template #label>{{ i18n.ts._webhookSettings._systemEvents.emojiRequestCreated }}</template>
+									<template #label>{{ i18n.ts._webhookSettings._systemEvents.emojiRequestCreated }}<span class="_juice">JUICE</span></template>
 								</MkSwitch>
 								<MkButton v-show="mode === 'edit'" transparent :class="$style.testButton" :disabled="!(isActive && events.emojiRequestCreated)" @click="test('emojiRequestCreated')"><i class="ti ti-send"></i></MkButton>
 							</div>
 							<div :class="$style.switchBox">
 								<MkSwitch v-model="events.signupApplicationCreated" :disabled="disabledEvents.signupApplicationCreated">
-									<template #label>{{ i18n.ts._webhookSettings._systemEvents.signupApplicationCreated }}</template>
+									<template #label>{{ i18n.ts._webhookSettings._systemEvents.signupApplicationCreated }}<span class="_juice">JUICE</span></template>
 								</MkSwitch>
 								<MkButton v-show="mode === 'edit'" transparent :class="$style.testButton" :disabled="!(isActive && events.signupApplicationCreated)" @click="test('signupApplicationCreated')"><i class="ti ti-send"></i></MkButton>
 							</div>

@@ -3182,8 +3182,8 @@ _webhookSettings:
     userCreated: "ユーザーが作成されたとき"
     inactiveModeratorsWarning: "モデレーターが一定期間非アクティブになったとき"
     inactiveModeratorsInvitationOnlyChanged: "モデレーターが一定期間非アクティブだったため、システムにより招待制へと変更されたとき"
-    emojiRequestCreated: "絵文字申請があったとき(JUICE)"
-    signupApplicationCreated: "承認式登録の申請があったとき(JUICE)"
+    emojiRequestCreated: "絵文字申請があったとき"
+    signupApplicationCreated: "承認式登録の申請があったとき"
   deleteConfirm: "Webhookを削除しますか？"
   testRemarks: "スイッチの右にあるボタンをクリックするとダミーのデータを使用したテスト用Webhookを送信できます。"
 
