@@ -2378,6 +2378,7 @@ _aboutJuice:
   description: "JUICEとは"
   descriptionText: "misskey-juiceは、c30 (Zel9278)が開発しているMisskeyの独自フォークです。本家Misskeyから移植した機能に加えて、承認式新規登録・AI生成物フラグ・絵文字申請・ユーザーランキング・リレータイムラインなど、JUICE独自の機能を追加しています。"
   developer: "開発者"
+  contributors: "コントリビューター"
   sourceAndLicense: "ソースコード・ライセンス"
   inspiredBy: "参考にしたプロジェクト"
   features: "JUICE独自の主な機能"

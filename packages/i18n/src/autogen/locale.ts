@@ -9074,6 +9074,10 @@ export interface Locale extends ILocale {
          */
         "developer": string;
         /**
+         * コントリビューター
+         */
+        "contributors": string;
+        /**
          * ソースコード・ライセンス
          */
         "sourceAndLicense": string;
