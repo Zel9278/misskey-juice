@@ -190,16 +190,26 @@ export class SigninApiService {
 			});
 
 			// JUICE: ログイン失敗をアカウント本人へ通知する(misskey-tempuraを参考)。
-			// レスポンスを遅延させないよう、成功時のSigninService.signin()と同様にsetImmediateで非同期実行する
+			// レスポンスを遅延させないよう、成功時のSigninService.signin()と同様にsetImmediateで非同期実行する。
+			// このfail()は未認証の第三者が何度でも任意に発火できるため、既存のIPベースのrate limit(攻撃者側の
+			// 制限)とは別に、被害者アカウント宛の通知・メールが連打されないようuserId単位でも間引く
+			// (同一アカウントへは5分に1回まで)。
 			setImmediate(async () => {
-				this.notificationService.createNotification(user.id, 'loginFailed', {});
+				try {
+					const notifyRateLimit = await this.rateLimiterService.limit({ key: 'loginFailedNotify', duration: 1000 * 60 * 5, max: 1 }, user.id);
+					if (notifyRateLimit != null) return;
 
-				if (profile.email && profile.emailVerified) {
-					const lang = await this.emailI18nService.resolveLang(profile.emailLang);
-					const i18n = this.emailI18nService.getI18n(lang);
-					this.emailService.sendEmail(profile.email, i18n.t('_email.newLoginFailed.subject'),
-						i18n.t('_email.newLoginFailed.html', { ip: request.ip }),
-						i18n.t('_email.newLoginFailed.text', { ip: request.ip }));
+					this.notificationService.createNotification(user.id, 'loginFailed', {});
+
+					if (profile.email && profile.emailVerified) {
+						const lang = await this.emailI18nService.resolveLang(profile.emailLang);
+						const i18n = this.emailI18nService.getI18n(lang);
+						this.emailService.sendEmail(profile.email, i18n.t('_email.newLoginFailed.subject'),
+							i18n.t('_email.newLoginFailed.html', { ip: request.ip }),
+							i18n.t('_email.newLoginFailed.text', { ip: request.ip }));
+					}
+				} catch (err) {
+					this.logger.error('Failed to notify loginFailed', { stack: err });
 				}
 			});
 
