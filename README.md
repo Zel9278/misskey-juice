@@ -1,32 +1,20 @@
 <div align="center">
-<a href="https://misskey-hub.net">
-	<img src="./assets/title_float.svg" alt="Misskey logo" style="border-radius:50%" width="300"/>
-</a>
+<img src="./packages/frontend/assets/juice-icon-transparent.png" alt="misskey-juice logo" width="160"/>
 
-**🌎 **Misskey** is an open source, federated social media platform that's free forever! 🚀**
+# misskey-juice
 
-[Learn more](https://misskey-hub.net/)
+**🧃 [Misskey](https://misskey-hub.net/)をベースに、承認式の新規登録・絵文字申請・AI生成物フラグなどの独自機能を追加した個人開発フォークです。**
+
+developed by [c30 (Zel9278)](https://github.com/Zel9278)
 
 ---
 
-<a href="https://misskey-hub.net/servers/">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/find_an-instance-acea31?logoColor=acea31&style=for-the-badge&logo=misskey&labelColor=363B40" alt="find an instance"/></a>
-
-<a href="https://misskey-hub.net/docs/for-admin/install/guides/">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/create_an-instance-FBD53C?logoColor=FBD53C&style=for-the-badge&logo=server&labelColor=363B40" alt="create an instance"/></a>
-
-<a href="./CONTRIBUTING.md">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/become_a-contributor-A371F7?logoColor=A371F7&style=for-the-badge&logo=git-merge&labelColor=363B40" alt="become a contributor"/></a>
-
-<a href="https://discord.gg/Wp8gVStHW3">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/join_the-community-5865F2?logoColor=5865F2&style=for-the-badge&logo=discord&labelColor=363B40" alt="join the community"/></a>
-
-<a href="https://www.patreon.com/syuilo">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/become_a-patron-F96854?logoColor=F96854&style=for-the-badge&logo=patreon&labelColor=363B40" alt="become a patron"/></a>
-
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/misskey-dev/misskey)
-
-<a href="https://flatt.tech/oss/gmo/trampoline" target="_blank"><img src="https://flatt.tech/assets/images/badges/gmo-oss.svg" height="24px"/></a>
+[![Source Code](https://img.shields.io/badge/source-GitHub-f2841f?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Zel9278/misskey-juice)
+[![diff.md](https://img.shields.io/badge/独自機能-diff.md-f2841f?style=for-the-badge&logo=git&logoColor=white)](./diff.md)
+[![CHANGELOG.md](https://img.shields.io/badge/変更履歴-CHANGELOG.md-f2841f?style=for-the-badge&logo=keepachangelog&logoColor=white)](./CHANGELOG.md)
+[![become a contributor](https://img.shields.io/badge/become_a-contributor-A371F7?style=for-the-badge&logo=git&logoColor=white)](./CONTRIBUTING.md)
+[![License: AGPL-3.0-only](https://img.shields.io/badge/license-AGPL--3.0--only-blue?style=for-the-badge)](./LICENSE)
+[![base: Misskey](https://img.shields.io/badge/base-Misskey-acea31?style=for-the-badge&logo=misskey&logoColor=white)](https://misskey-hub.net/)
 
 </div>
 
@@ -58,6 +46,6 @@ Thanks to [Docker](https://hub.docker.com/) for providing the container platform
 	
 Support us with a ⭐ !
 
-[![Star History Chart](https://api.star-history.com/svg?repos=misskey-dev/misskey&type=Date)](https://star-history.com/#misskey-dev/misskey&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=Zel9278/misskey-juice&type=Date)](https://star-history.com/#Zel9278/misskey-juice&Date)
 
 </div>
