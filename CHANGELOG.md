@@ -44,6 +44,7 @@
 - Feat: コントロールパネルに、絵文字申請・承認式登録の新規申請があったことを知らせる警告バナーを、通報と同様に追加。あわせて、コントロールパネルを開いている間はリアルタイムでトースト通知が届くように(通報・絵文字申請・承認式登録の3種類。通報についても今回初めてこのリアルタイム通知に対応した)
 - Feat: JUICE専用Aboutページ(`/about-juice`)に、参考にしたプロジェクトとしてCherryPickへのGitHubリンクを追加
 - Enhance: 未ログイン時トップページの「他のサーバーを探す」リンク先を、本家Misskeyの`misskey-hub.net/servers`から`servers.misskey.ink`に変更
+- Feat: JUICE専用Aboutページ(`/about-juice`)の「参考にしたプロジェクト」に、misskey-tempuraへのGitHubリンクを追加
 
 ### Server
 - Feat: JUICE 独自機能の設定を取得・更新する `admin/juice/settings` / `admin/juice/update-settings` を追加

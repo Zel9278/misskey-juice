@@ -57,11 +57,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<FormSection>
 					<template #label>{{ i18n.ts._aboutJuice.inspiredBy }}</template>
-					<FormLink to="https://github.com/kokonect-link/cherrypick" external>
-						<template #icon><i class="ti ti-bulb"></i></template>
-						CherryPick
-						<template #suffix>GitHub</template>
-					</FormLink>
+					<div class="_gaps_s">
+						<FormLink to="https://github.com/kokonect-link/cherrypick" external>
+							<template #icon><i class="ti ti-bulb"></i></template>
+							CherryPick
+							<template #suffix>GitHub</template>
+						</FormLink>
+						<FormLink to="https://github.com/lqvp/misskey-tempura" external>
+							<template #icon><i class="ti ti-bulb"></i></template>
+							misskey-tempura
+							<template #suffix>GitHub</template>
+						</FormLink>
+					</div>
 				</FormSection>
 
 				<FormSection>
