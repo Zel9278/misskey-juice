@@ -1,10 +1,4 @@
-## Unreleased
-
-### General
--
-
-### Client
--
+## 2026.7.0-juice+2.3
 
 ### Server
 - Feat: System Webhook・Webhookの送信先がDiscordのWebhook URL(`discord.com`/`discordapp.com`の`/api/webhooks/...`)の場合、自動検出してDiscordのEmbed形式に整形して送信するように(JUICE独自)。通報・新規ユーザー登録・絵文字申請・承認式登録申請等の管理者向けイベントと、ノート・返信・リノート・メンション・フォロー等のユーザー向けイベントの両方に対応。外部の変換プロキシを用意しなくても、WebhookのURLをDiscordのWebhook URLに設定するだけで見やすい通知が届くようになる。メッセージの言語は「メールの受信言語」の既定値設定(JUICE設定)を流用し、ja-JP以外はすべて英語で送信される
