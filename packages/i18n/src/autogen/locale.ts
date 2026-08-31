@@ -9135,6 +9135,44 @@ export interface Locale extends ILocale {
              */
             "loginFailedNotification": string;
         };
+        /**
+         * どういう経路で実装されたか
+         */
+        "route": string;
+        "_route": {
+            /**
+             * 本家Misskey
+             */
+            "base": string;
+            /**
+             * syuiloが開発するMisskeyをベースにしているフォーク
+             */
+            "baseDesc": string;
+            /**
+             * misskey-artからの移植
+             */
+            "misskeyArt": string;
+            /**
+             * 1.0リリース時に、お知らせへのリアクション機能やセンシティブ画像のぼかし表示の修正などを移植
+             */
+            "misskeyArtDesc": string;
+            /**
+             * JUICEロードマップの実装
+             */
+            "roadmap": string;
+            /**
+             * 承認式新規登録・AI生成物フラグ・絵文字申請・ユーザーランキング・リレータイムラインなど、計画していたJUICE独自機能を追加
+             */
+            "roadmapDesc": string;
+            /**
+             * ロードマップ外の追加実装
+             */
+            "additional": string;
+            /**
+             * ロードマップの実装過程で見つかった課題への対応や、CherryPick・misskey-tempura等の他フォークを参考にした機能(ニックネーム機能・ログイン失敗通知など)を追加
+             */
+            "additionalDesc": string;
+        };
     };
     "_bonsai": {
         /**

@@ -81,6 +81,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</FormSection>
 
+				<MkFolder>
+					<template #icon><i class="ti ti-route"></i></template>
+					<template #label>{{ i18n.ts._aboutJuice.route }}</template>
+					<ol :class="$style.route">
+						<li v-for="step in routeSteps" :key="step.title" :class="$style.routeStep">
+							<div :class="$style.routeStepBody">
+								<div :class="$style.routeStepTitle">{{ step.title }}</div>
+								<div :class="$style.routeStepDesc">{{ step.desc }}</div>
+							</div>
+						</li>
+					</ol>
+				</MkFolder>
+
 				<FormLink to="/about-misskey">
 					<template #icon><i class="ti ti-info-circle"></i></template>
 					{{ i18n.ts.aboutMisskey }}
@@ -97,6 +110,7 @@ import { version } from '@@/js/config.js';
 import FormLink from '@/components/form/link.vue';
 import FormSection from '@/components/form/section.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
+import MkFolder from '@/components/MkFolder.vue';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { claimAchievement } from '@/utility/achievements.js';
@@ -114,6 +128,14 @@ const features = [
 	{ icon: 'ti ti-math-function', text: i18n.ts._aboutJuice._features.latex },
 	{ icon: 'ti ti-tag', text: i18n.ts._aboutJuice._features.nickname },
 	{ icon: 'ti ti-shield-exclamation', text: i18n.ts._aboutJuice._features.loginFailedNotification },
+];
+
+// JUICE: この一覧に載っている機能が、どういう経路で実装されたかをざっくり示す
+const routeSteps = [
+	{ title: i18n.ts._aboutJuice._route.base, desc: i18n.ts._aboutJuice._route.baseDesc },
+	{ title: i18n.ts._aboutJuice._route.misskeyArt, desc: i18n.ts._aboutJuice._route.misskeyArtDesc },
+	{ title: i18n.ts._aboutJuice._route.roadmap, desc: i18n.ts._aboutJuice._route.roadmapDesc },
+	{ title: i18n.ts._aboutJuice._route.additional, desc: i18n.ts._aboutJuice._route.additionalDesc },
 ];
 
 // JUICE: アイコンクリックでオレンジの雨が降るイースターエッグ
@@ -271,5 +293,53 @@ $juice-rain-color: #f2841f;
 	flex-shrink: 0;
 	font-size: 20px;
 	color: var(--MI_THEME-accent);
+}
+
+// JUICE: 「どういう経路で実装されたか」の折りたたみ表示
+.route {
+	counter-reset: route-step;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.routeStep {
+	display: flex;
+	gap: 8px;
+	word-break: break-word;
+
+	&::before {
+		flex-shrink: 0;
+		display: flex;
+		counter-increment: route-step;
+		content: counter(route-step);
+		width: 28px;
+		height: 28px;
+		line-height: 28px;
+		background-color: var(--MI_THEME-accentedBg);
+		color: var(--MI_THEME-accent);
+		font-size: 13px;
+		font-weight: bold;
+		align-items: center;
+		justify-content: center;
+		border-radius: 999px;
+	}
+}
+
+.routeStepBody {
+	padding-top: 2px;
+}
+
+.routeStepTitle {
+	font-weight: bold;
+}
+
+.routeStepDesc {
+	margin-top: 2px;
+	font-size: 0.9em;
+	opacity: 0.75;
 }
 </style>

@@ -2394,6 +2394,16 @@ _aboutJuice:
     latex: "LaTeX(数式)表示機能"
     nickname: "他ユーザーに対する自分専用のニックネーム設定(プロフィールページ・ユーザーホバープレビューに表示)"
     loginFailedNotification: "ログイン試行の失敗をアカウント本人へ通知(アプリ内通知・メール)"
+  route: "どういう経路で実装されたか"
+  _route:
+    base: "本家Misskey"
+    baseDesc: "syuiloが開発するMisskeyをベースにしているフォーク"
+    misskeyArt: "misskey-artからの移植"
+    misskeyArtDesc: "1.0リリース時に、お知らせへのリアクション機能やセンシティブ画像のぼかし表示の修正などを移植"
+    roadmap: "JUICEロードマップの実装"
+    roadmapDesc: "承認式新規登録・AI生成物フラグ・絵文字申請・ユーザーランキング・リレータイムラインなど、計画していたJUICE独自機能を追加"
+    additional: "ロードマップ外の追加実装"
+    additionalDesc: "ロードマップの実装過程で見つかった課題への対応や、CherryPick・misskey-tempura等の他フォークを参考にした機能(ニックネーム機能・ログイン失敗通知など)を追加"
 
 _bonsai:
   title: "盆栽"
