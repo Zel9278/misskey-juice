@@ -46,6 +46,7 @@
 - Enhance: 未ログイン時トップページの「他のサーバーを探す」リンク先を、本家Misskeyの`misskey-hub.net/servers`から`servers.misskey.ink`に変更
 - Feat: JUICE専用Aboutページ(`/about-juice`)の「参考にしたプロジェクト」に、misskey-tempuraへのGitHubリンクを追加
 - Feat: ログインに失敗したとき、アカウント本人へ通知(アプリ内通知・確認済みメールアドレスがあればメール)を送るように(misskey-tempuraを参考)
+- Feat: 他ユーザーに対して自分だけに見えるニックネームを設定できるように(misskey-tempuraを参考)。プロフィールページから設定でき、プロフィールページとユーザーホバープレビューの表示名がニックネームに置き換わる(意図的にこの2箇所限定。フォロー/フォロワー一覧やタイムライン・通知等、本来の表示名を使う既存の一覧表示には影響しない)
 
 ### Server
 - Feat: JUICE 独自機能の設定を取得・更新する `admin/juice/settings` / `admin/juice/update-settings` を追加
@@ -80,6 +81,7 @@
 - Enhance: `repositoryUrl` / `feedbackUrl`の既定値を、本家Misskeyのリポジトリからこのフォーク自身のリポジトリに変更(JUICEは本家のフォークであるため)。既存インストールでも、値が本家の既定値のままだった場合はあわせて更新される
 - Enhance: ノート本文の文字数上限を3000字からDB上の格納可能上限である8192字まで拡大(misskey-tempuraを参考)
 - Feat: ログイン試行の失敗時に、アカウント本人へ通知種別`loginFailed`(JUICE)でアプリ内通知を送信し、確認済みメールアドレスがあればメールも送るように(misskey-tempuraを参考)。パスワード/TOTP/セキュリティキーいずれかでの認証失敗が対象。第三者による連続した失敗試行で通知・メールが連打されないよう、同一アカウントへは5分に1回までに制限している
+- Feat: 他ユーザーに対する自分専用のニックネーム機能(JUICE独自実装、misskey-tempuraを参考)を追加。新規エンティティ`user_nickname`(既存の`user_memo`と同じ`(userId, targetUserId)`構成)を新設し、`users/update-nickname`エンドポイントで設定できる。`nickname`はUserDetailedスキーマ(自分が閲覧しているとき)にのみ含まれ、`memo`と同じ条件でパックされる
 
 ## 2026.7.0-juice+1.0
 

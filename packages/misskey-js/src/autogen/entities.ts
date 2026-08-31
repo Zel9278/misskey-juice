@@ -695,6 +695,7 @@ export type UsersSearchByUsernameAndHostResponse = operations['users___search-by
 export type UsersShowRequest = operations['users___show']['requestBody']['content']['application/json'];
 export type UsersShowResponse = operations['users___show']['responses']['200']['content']['application/json'];
 export type UsersUpdateMemoRequest = operations['users___update-memo']['requestBody']['content']['application/json'];
+export type UsersUpdateNicknameRequest = operations['users___update-nickname']['requestBody']['content']['application/json'];
 export type V2AdminEmojiListRequest = operations['v2___admin___emoji___list']['requestBody']['content']['application/json'];
 export type V2AdminEmojiListResponse = operations['v2___admin___emoji___list']['responses']['200']['content']['application/json'];
 export type VerifyEmailRequest = operations['verify-email']['requestBody']['content']['application/json'];

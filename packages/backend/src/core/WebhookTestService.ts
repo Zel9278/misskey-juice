@@ -493,6 +493,7 @@ export class WebhookTestService {
 			securityKeys: false,
 			roles: [],
 			memo: null,
+			nickname: null, // JUICE
 			moderationNote: undefined,
 			isFollowing: false,
 			isFollowed: false,

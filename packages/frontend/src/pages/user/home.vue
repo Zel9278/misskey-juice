@@ -22,13 +22,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<div class="banner" :style="style"></div>
 							<div class="fade"></div>
 							<div class="title">
-								<MkUserName class="name" :user="user" :nowrap="true"/>
+								<MkUserName class="name" :user="user" :nowrap="true" respectNickname/>
 								<div class="bottom">
 									<span class="username"><MkAcct :user="user" :detail="true"/></span>
 									<span v-if="user.isLocked"><i class="ti ti-lock"></i></span>
 									<span v-if="user.isBot"><i class="ti ti-robot"></i></span>
 									<button v-if="$i && !isEditingMemo && !memoDraft" class="_button add-note-button" @click="showMemoTextarea">
 										<i class="ti ti-edit"></i> {{ i18n.ts.addMemo }}
+									</button>
+									<button v-if="$i && !isEditingNickname && !nicknameDraft" class="_button add-note-button" @click="showNicknameTextarea">
+										<i class="ti ti-edit"></i> {{ i18n.ts._juice.addNickname }}
 									</button>
 								</div>
 							</div>
@@ -40,7 +43,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 						<MkAvatar class="avatar" :user="user" indicator/>
 						<div class="title">
-							<MkUserName :user="user" :nowrap="false" class="name"/>
+							<MkUserName :user="user" :nowrap="false" class="name" respectNickname/>
 							<div class="bottom">
 								<span class="username"><MkAcct :user="user" :detail="true"/></span>
 								<span v-if="user.isLocked"><i class="ti ti-lock"></i></span>
@@ -79,6 +82,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 								@focus="isEditingMemo = true"
 								@blur="updateMemo"
 								@input="adjustMemoTextarea"
+							></textarea>
+						</div>
+						<div v-if="isEditingNickname || nicknameDraft" class="memo" :class="{'no-memo': !nicknameDraft}">
+							<div class="heading">{{ i18n.ts._juice.nickname }}</div>
+							<textarea
+								ref="nicknameTextareaEl"
+								v-model="nicknameDraft"
+								rows="1"
+								maxlength="128"
+								@focus="isEditingNickname = true"
+								@blur="updateNickname"
+								@input="adjustNicknameTextarea"
 							></textarea>
 						</div>
 						<div class="description">
@@ -228,6 +243,10 @@ const bannerEl = useTemplateRef('bannerEl');
 const memoTextareaEl = useTemplateRef('memoTextareaEl');
 const memoDraft = ref(props.user.memo);
 const isEditingMemo = ref(false);
+// JUICE
+const nicknameTextareaEl = useTemplateRef('nicknameTextareaEl');
+const nicknameDraft = ref(props.user.nickname);
+const isEditingNickname = ref(false);
 const moderationNote = ref(props.user.moderationNote ?? '');
 const editModerationNote = ref(false);
 
@@ -278,8 +297,35 @@ async function updateMemo() {
 	isEditingMemo.value = false;
 }
 
+// JUICE
+function showNicknameTextarea() {
+	isEditingNickname.value = true;
+	nextTick(() => {
+		nicknameTextareaEl.value?.focus();
+	});
+}
+
+function adjustNicknameTextarea() {
+	if (!nicknameTextareaEl.value) return;
+	nicknameTextareaEl.value.style.height = '0px';
+	nicknameTextareaEl.value.style.height = `${nicknameTextareaEl.value.scrollHeight}px`;
+}
+
+async function updateNickname() {
+	await misskeyApi('users/update-nickname', {
+		nickname: nicknameDraft.value,
+		userId: props.user.id,
+	});
+	// JUICE: ヘッダーの表示名(user.value経由でMkUserNameへ渡している)をその場で更新する。
+	// nicknameDraftをv-modelで直接束縛しているtextarea自身はこの更新が無くても問題ないmemoと異なり、
+	// nicknameは別箇所(ヘッダー)にも表示があるため、保存直後に同期しないとリロードするまで反映されない
+	user.value.nickname = nicknameDraft.value === '' ? null : nicknameDraft.value;
+	isEditingNickname.value = false;
+}
+
 watch([props.user], () => {
 	memoDraft.value = props.user.memo;
+	nicknameDraft.value = props.user.nickname; // JUICE
 });
 
 async function reload() {
@@ -329,6 +375,7 @@ onMounted(() => {
 	nextTick(() => {
 		calcBannerParallax();
 		adjustMemoTextarea();
+		adjustNicknameTextarea(); // JUICE
 	});
 
 	initCalcBannerParallax();

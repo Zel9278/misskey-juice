@@ -88,6 +88,8 @@ export const DI = {
 	flashsRepository: Symbol('flashsRepository'),
 	flashLikesRepository: Symbol('flashLikesRepository'),
 	userMemosRepository: Symbol('userMemosRepository'),
+	// JUICE
+	userNicknamesRepository: Symbol('userNicknamesRepository'),
 	chatMessagesRepository: Symbol('chatMessagesRepository'),
 	chatApprovalsRepository: Symbol('chatApprovalsRepository'),
 	chatRoomsRepository: Symbol('chatRoomsRepository'),

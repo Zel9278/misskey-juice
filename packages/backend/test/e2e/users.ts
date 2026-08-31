@@ -8,7 +8,7 @@ process.env.NODE_ENV = 'test';
 import * as assert from 'assert';
 import { beforeAll, beforeEach, describe, test } from 'vitest';
 import { inspect } from 'node:util';
-import { api, post, role, signup, successfulApiCall, uploadFile } from '../utils.js';
+import { api, failedApiCall, post, role, signup, successfulApiCall, uploadFile } from '../utils.js';
 import type * as misskey from 'misskey-js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 
@@ -566,6 +566,41 @@ describe('ユーザー', () => {
 		await successfulApiCall({ endpoint: 'users/update-memo', parameters, user: alice });
 		const response = await show(bob.id, alice);
 		assert.deepStrictEqual(response, expected);
+	});
+
+	//#endregion
+	//#region ニックネームの更新(users/update-nickname、JUICE)
+
+	test.each([
+		{ label: '最大長', nickname: 'x'.repeat(128) },
+		{ label: '空文字', nickname: '', expects: null },
+		{ label: 'null', nickname: null },
+	])('を書き換えることができる(ニックネームを$labelに)', async ({ nickname, expects }) => {
+		const expected = { ...await show(bob.id, alice), nickname: expects === undefined ? nickname : expects };
+		const parameters = { userId: bob.id, nickname };
+		await successfulApiCall({ endpoint: 'users/update-nickname', parameters, user: alice });
+		const response = await show(bob.id, alice);
+		assert.deepStrictEqual(response, expected);
+	});
+
+	test('を設定しても、他のユーザーからは見えない', async () => {
+		await successfulApiCall({ endpoint: 'users/update-nickname', parameters: { userId: bob.id, nickname: 'alice-only-nickname' }, user: alice });
+		const asAlice = await show(bob.id, alice);
+		const asCarol = await show(bob.id, carol);
+		assert.strictEqual(asAlice.nickname, 'alice-only-nickname');
+		assert.strictEqual(asCarol.nickname, null);
+	});
+
+	test('存在しないユーザーに対しては invalid-params 400 が返る', async () => {
+		await failedApiCall({
+			endpoint: 'users/update-nickname',
+			parameters: { userId: 'xxxxxxxxxxxxxxxxxxxxxxxxxx', nickname: 'foo' },
+			user: alice,
+		}, {
+			status: 400,
+			code: 'NO_SUCH_USER',
+			id: '19f569ae-bb6c-457d-844d-e286b7bf2b90',
+		});
 	});
 
 	//#endregion

@@ -2314,6 +2314,7 @@ declare namespace entities {
         UsersShowRequest,
         UsersShowResponse,
         UsersUpdateMemoRequest,
+        UsersUpdateNicknameRequest,
         V2AdminEmojiListRequest,
         V2AdminEmojiListResponse,
         VerifyEmailRequest,
@@ -3920,6 +3921,9 @@ type UsersShowResponse = operations['users___show']['responses']['200']['content
 
 // @public (undocumented)
 type UsersUpdateMemoRequest = operations['users___update-memo']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type UsersUpdateNicknameRequest = operations['users___update-nickname']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type UserWebhook = components['schemas']['UserWebhook'];

@@ -26,7 +26,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkAvatar :class="$style.avatar" :user="user" indicator/>
 			</MkA>
 			<div :class="$style.title">
-				<MkA :class="$style.name" :to="userPage(user)"><MkUserName :user="user" :nowrap="false"/></MkA>
+				<MkA :class="$style.name" :to="userPage(user)"><MkUserName :user="user" :nowrap="false" respectNickname/></MkA>
 				<div :class="$style.username"><MkAcct :user="user"/></div>
 			</div>
 			<div :class="$style.description">

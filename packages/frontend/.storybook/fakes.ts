@@ -315,6 +315,7 @@ export function userDetailed(id = 'someuserid', username = 'miskist', host: enti
 		alsoKnownAs: null,
 		notify: 'none',
 		memo: null,
+		nickname: null, // JUICE
 		canChat: true,
 		chatScope: 'everyone',
 	};

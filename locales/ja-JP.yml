@@ -3782,6 +3782,8 @@ _juice:
   thereArePendingSignupApplicationsWarning: "未対応の承認式登録の申請があります。"
   newEmojiRequestToast: "新しい絵文字申請があります。"
   newSignupApplicationToast: "新しい承認式登録の申請があります。"
+  nickname: "ニックネーム"
+  addNickname: "ニックネームを設定"
 
 _juiceApprovals:
   title: "承認待ちユーザー"

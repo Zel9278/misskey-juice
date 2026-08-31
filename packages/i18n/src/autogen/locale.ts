@@ -14110,6 +14110,14 @@ export interface Locale extends ILocale {
          * 新しい承認式登録の申請があります。
          */
         "newSignupApplicationToast": string;
+        /**
+         * ニックネーム
+         */
+        "nickname": string;
+        /**
+         * ニックネームを設定
+         */
+        "addNickname": string;
     };
     "_juiceApprovals": {
         /**

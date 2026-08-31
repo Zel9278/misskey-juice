@@ -78,6 +78,7 @@ import {
 	MiUserListFavorite,
 	MiUserListMembership,
 	MiUserMemo,
+	MiUserNickname,
 	MiUserNotePining,
 	MiUserPending,
 	MiUserProfile,
@@ -537,6 +538,13 @@ const $userMemosRepository: Provider = {
 	inject: [DI.db],
 };
 
+// JUICE
+const $userNicknamesRepository: Provider = {
+	provide: DI.userNicknamesRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiUserNickname).extend(miRepository as MiRepository<MiUserNickname>),
+	inject: [DI.db],
+};
+
 const $chatMessagesRepository: Provider = {
 	provide: DI.chatMessagesRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiChatMessage).extend(miRepository as MiRepository<MiChatMessage>),
@@ -656,6 +664,7 @@ const $reversiGamesRepository: Provider = {
 		$flashsRepository,
 		$flashLikesRepository,
 		$userMemosRepository,
+		$userNicknamesRepository,
 		$chatMessagesRepository,
 		$chatRoomsRepository,
 		$chatRoomMembershipsRepository,
@@ -739,6 +748,7 @@ const $reversiGamesRepository: Provider = {
 		$flashsRepository,
 		$flashLikesRepository,
 		$userMemosRepository,
+		$userNicknamesRepository,
 		$chatMessagesRepository,
 		$chatRoomsRepository,
 		$chatRoomMembershipsRepository,

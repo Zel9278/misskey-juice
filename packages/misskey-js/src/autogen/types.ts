@@ -4176,6 +4176,15 @@ export type paths = {
          */
         post: operations['users___update-memo'];
     };
+    '/users/update-nickname': {
+        /**
+         * users/update-nickname
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:account*
+         */
+        post: operations['users___update-nickname'];
+    };
     '/v2/admin/emoji/list': {
         /**
          * v2/admin/emoji/list
@@ -4315,6 +4324,7 @@ export type components = {
             roles: components['schemas']['RoleLite'][];
             followedMessage?: string | null;
             memo: string | null;
+            nickname: string | null;
             moderationNote?: string;
             twoFactorEnabled?: boolean;
             usePasswordLessLogin?: boolean;
@@ -38883,6 +38893,71 @@ export interface operations {
                     userId: string;
                     /** @description A personal memo for the target user. If null or empty, delete the memo. */
                     memo: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'users___update-nickname': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    userId: string;
+                    /** @description A personal nickname for the target user. If null or empty, delete the nickname. */
+                    nickname: string | null;
                 };
             };
         };

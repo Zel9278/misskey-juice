@@ -384,6 +384,11 @@ export const packedUserDetailedNotMeOnlySchema = {
 			type: 'string',
 			nullable: true, optional: false,
 		},
+		// JUICE: 自分が設定したニックネーム(misskey-tempuraを参考)
+		nickname: {
+			type: 'string',
+			nullable: true, optional: false,
+		},
 		moderationNote: {
 			type: 'string',
 			nullable: false, optional: true,
