@@ -13,6 +13,8 @@ import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { StatusError } from '@/misc/status-error.js';
 import { bindThis } from '@/decorators.js';
 import { isDiscordWebhookUrl, formatSystemWebhookForDiscord } from '@/misc/discord-webhook-format.js';
+import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { resolveEmailSettings } from '@/models/JuiceSettings.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import { SystemWebhookDeliverJobData } from '../types.js';
 
@@ -29,6 +31,7 @@ export class SystemWebhookDeliverProcessorService {
 
 		private httpRequestService: HttpRequestService,
 		private queueLoggerService: QueueLoggerService,
+		private juiceSettingsService: JuiceSettingsService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('webhook');
 	}
@@ -39,8 +42,14 @@ export class SystemWebhookDeliverProcessorService {
 			this.logger.debug(`delivering ${job.data.webhookId}`);
 
 			// JUICE: 送信先がDiscordのWebhook URLなら、生ペイロードではなくDiscord Embed形式で送る
+			// (文言の言語はJuiceSettings.defaultEmailLang、EmailI18nServiceと同じ設定を流用)
 			const body = isDiscordWebhookUrl(job.data.to)
-				? formatSystemWebhookForDiscord(job.data.type, job.data.content, this.config.url)
+				? formatSystemWebhookForDiscord(
+					job.data.type,
+					job.data.content,
+					this.config.url,
+					resolveEmailSettings(await this.juiceSettingsService.fetch()).defaultEmailLang,
+				)
 				: {
 					server: this.config.url,
 					hookId: job.data.webhookId,

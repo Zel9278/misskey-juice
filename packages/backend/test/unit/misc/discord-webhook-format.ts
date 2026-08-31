@@ -116,4 +116,29 @@ describe('misc:discord-webhook-format', () => {
 			expect(result.embeds[0].description).toContain('reaction');
 		});
 	});
+
+	// JuiceSettings.defaultEmailLang(EmailI18nServiceと同じ設定)をそのまま流用しているため、
+	// ja-JP以外はすべて英語にフォールバックする(EmailI18nService.getI18n()と同じ方式)
+	describe('lang', () => {
+		test('defaults to Japanese when lang is omitted', () => {
+			const result = formatSystemWebhookForDiscord('userCreated', user, server);
+			expect(result.embeds[0].title).toBe('👤 新規ユーザー登録');
+		});
+
+		test('uses Japanese strings explicitly for ja-JP', () => {
+			const result = formatSystemWebhookForDiscord('userCreated', user, server, 'ja-JP');
+			expect(result.embeds[0].title).toBe('👤 新規ユーザー登録');
+		});
+
+		test('falls back to English for any non-ja-JP lang (system webhook)', () => {
+			const result = formatSystemWebhookForDiscord('userCreated', user, server, 'en-US');
+			expect(result.embeds[0].title).toBe('👤 New user registered');
+			expect(result.embeds[0].fields?.[0].name).toBe('User ID');
+		});
+
+		test('falls back to English for any non-ja-JP lang (user webhook)', () => {
+			const result = formatUserWebhookForDiscord('followed', { user }, server, 'en-US');
+			expect(result.embeds[0].title).toBe('👋 New follower');
+		});
+	});
 });
