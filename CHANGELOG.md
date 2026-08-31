@@ -1,4 +1,4 @@
-## Unreleased
+## 2026.7.0-juice+2.0
 
 ### Client
 - Feat: コントロールパネルに JUICE 独自機能設定用の新セクション「JUICE」を追加
