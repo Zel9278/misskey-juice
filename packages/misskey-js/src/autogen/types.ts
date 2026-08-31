@@ -259,6 +259,15 @@ export type paths = {
          */
         post: operations['admin___drive___files'];
     };
+    '/admin/drive/find-orphaned-object-storage-files': {
+        /**
+         * admin/drive/find-orphaned-object-storage-files
+         * @description Find (and optionally delete) object storage objects that are no longer referenced by any drive file. Deletion is immediate and irreversible, so `dryRun` defaults to true.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:admin:drive*
+         */
+        post: operations['admin___drive___find-orphaned-object-storage-files'];
+    };
     '/admin/drive/show-file': {
         /**
          * admin/drive/show-file
@@ -8033,6 +8042,81 @@ export interface operations {
                 };
                 content: {
                     'application/json': components['schemas']['DriveFile'][];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'admin___drive___find-orphaned-object-storage-files': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** @default true */
+                    dryRun?: boolean;
+                    /** @default 1000 */
+                    limit?: number;
+                    continuationToken?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        scanned: number;
+                        orphanedKeys: string[];
+                        deletedKeys: string[];
+                        failedKeys: string[];
+                        nextContinuationToken: string | null;
+                    };
                 };
             };
             /** @description Client error */

@@ -41,6 +41,8 @@ import type {
 	AdminDeleteAllFilesOfAUserRequest,
 	AdminDriveFilesRequest,
 	AdminDriveFilesResponse,
+	AdminDriveFindOrphanedObjectStorageFilesRequest,
+	AdminDriveFindOrphanedObjectStorageFilesResponse,
 	AdminDriveShowFileRequest,
 	AdminDriveShowFileResponse,
 	AdminEmojiRequestsApproveRequest,
@@ -727,6 +729,7 @@ export type Endpoints = {
 	'admin/drive/clean-remote-files': { req: EmptyRequest; res: EmptyResponse };
 	'admin/drive/cleanup': { req: EmptyRequest; res: EmptyResponse };
 	'admin/drive/files': { req: AdminDriveFilesRequest; res: AdminDriveFilesResponse };
+	'admin/drive/find-orphaned-object-storage-files': { req: AdminDriveFindOrphanedObjectStorageFilesRequest; res: AdminDriveFindOrphanedObjectStorageFilesResponse };
 	'admin/drive/show-file': { req: AdminDriveShowFileRequest; res: AdminDriveShowFileResponse };
 	'admin/emoji-requests/approve': { req: AdminEmojiRequestsApproveRequest; res: EmptyResponse };
 	'admin/emoji-requests/list': { req: AdminEmojiRequestsListRequest; res: AdminEmojiRequestsListResponse };

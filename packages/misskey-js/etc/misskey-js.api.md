@@ -164,6 +164,12 @@ type AdminDriveFilesRequest = operations['admin___drive___files']['requestBody']
 type AdminDriveFilesResponse = operations['admin___drive___files']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type AdminDriveFindOrphanedObjectStorageFilesRequest = operations['admin___drive___find-orphaned-object-storage-files']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminDriveFindOrphanedObjectStorageFilesResponse = operations['admin___drive___find-orphaned-object-storage-files']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminDriveShowFileRequest = operations['admin___drive___show-file']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1665,6 +1671,8 @@ declare namespace entities {
         AdminDeleteAllFilesOfAUserRequest,
         AdminDriveFilesRequest,
         AdminDriveFilesResponse,
+        AdminDriveFindOrphanedObjectStorageFilesRequest,
+        AdminDriveFindOrphanedObjectStorageFilesResponse,
         AdminDriveShowFileRequest,
         AdminDriveShowFileResponse,
         AdminEmojiRequestsApproveRequest,

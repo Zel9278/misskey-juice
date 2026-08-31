@@ -37,6 +37,8 @@ export * as 'admin/delete-account' from './endpoints/admin/delete-account.js';
 export * as 'admin/delete-all-files-of-a-user' from './endpoints/admin/delete-all-files-of-a-user.js';
 export * as 'admin/drive/clean-remote-files' from './endpoints/admin/drive/clean-remote-files.js';
 export * as 'admin/drive/cleanup' from './endpoints/admin/drive/cleanup.js';
+// JUICE
+export * as 'admin/drive/find-orphaned-object-storage-files' from './endpoints/admin/drive/find-orphaned-object-storage-files.js';
 export * as 'admin/drive/files' from './endpoints/admin/drive/files.js';
 export * as 'admin/drive/show-file' from './endpoints/admin/drive/show-file.js';
 export * as 'admin/emoji/add' from './endpoints/admin/emoji/add.js';

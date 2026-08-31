@@ -65,7 +65,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.accessDenied);
 			}
 
-			await this.driveService.deleteFile(file, false, me);
+			// JUICE: オブジェクトストレージ利用時、キューへの登録だけして返す非同期削除ではなく、
+			// 実際の削除完了を待ってから応答する(misskey-tempuraの「ドライブファイル即時削除」を参考)。
+			// アカウント削除・リモートファイル期限切れ等のバックグラウンド処理は元々deleteFileSyncを
+			// 使っており、それらと同じ確実性をユーザー操作からの単発削除にも揃える
+			await this.driveService.deleteFileSync(file, false, me);
 		});
 	}
 }

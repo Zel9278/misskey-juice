@@ -143,6 +143,8 @@ export const moderationLogTypes = [
 	'declineSignup',
 	'approveEmojiRequest',
 	'rejectEmojiRequest',
+	// JUICE
+	'cleanupOrphanedObjectStorageFiles',
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -439,6 +441,14 @@ export type ModerationLogPayloads = {
 		requesterHost: string | null;
 		requestedName: string;
 		reason: string;
+	};
+	// JUICE
+	cleanupOrphanedObjectStorageFiles: {
+		dryRun: boolean;
+		scanned: number;
+		deletedCount: number;
+		deletedKeys: string[];
+		failedKeys: string[];
 	};
 };
 
