@@ -9064,6 +9064,10 @@ export interface Locale extends ILocale {
          */
         "sourceAndLicense": string;
         /**
+         * 参考にしたプロジェクト
+         */
+        "inspiredBy": string;
+        /**
          * JUICE独自の主な機能
          */
         "features": string;

@@ -56,6 +56,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</FormSection>
 
 				<FormSection>
+					<template #label>{{ i18n.ts._aboutJuice.inspiredBy }}</template>
+					<FormLink to="https://github.com/kokonect-link/cherrypick" external>
+						<template #icon><i class="ti ti-bulb"></i></template>
+						CherryPick
+						<template #suffix>GitHub</template>
+					</FormLink>
+				</FormSection>
+
+				<FormSection>
 					<template #label>{{ i18n.ts._aboutJuice.features }}</template>
 					<div :class="$style.features">
 						<div v-for="feature in features" :key="feature.text" :class="$style.feature">
