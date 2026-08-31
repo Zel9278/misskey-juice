@@ -1,13 +1,7 @@
-## Unreleased
-
-### General
--
+## 2026.7.0-juice+2.1
 
 ### Client
 - Feat: JUICEについてページにコントリビューター欄を追加(現在: chan-mai)
-
-### Server
--
 
 ## 2026.7.0-juice+2.0
 
