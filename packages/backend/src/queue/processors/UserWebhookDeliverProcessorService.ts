@@ -12,6 +12,9 @@ import type Logger from '@/logger.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { StatusError } from '@/misc/status-error.js';
 import { bindThis } from '@/decorators.js';
+import { isDiscordWebhookUrl, formatUserWebhookForDiscord } from '@/misc/discord-webhook-format.js';
+import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { resolveEmailSettings } from '@/models/JuiceSettings.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import { UserWebhookDeliverJobData } from '../types.js';
 
@@ -28,6 +31,7 @@ export class UserWebhookDeliverProcessorService {
 
 		private httpRequestService: HttpRequestService,
 		private queueLoggerService: QueueLoggerService,
+		private juiceSettingsService: JuiceSettingsService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('webhook');
 	}
@@ -36,6 +40,25 @@ export class UserWebhookDeliverProcessorService {
 	public async process(job: Bull.Job<UserWebhookDeliverJobData>): Promise<string> {
 		try {
 			this.logger.debug(`delivering ${job.data.webhookId}`);
+
+			// JUICE: 送信先がDiscordのWebhook URLなら、生ペイロードではなくDiscord Embed形式で送る
+			// (文言の言語はJuiceSettings.defaultEmailLang、EmailI18nServiceと同じ設定を流用)
+			const body = isDiscordWebhookUrl(job.data.to)
+				? formatUserWebhookForDiscord(
+					job.data.type,
+					job.data.content,
+					this.config.url,
+					resolveEmailSettings(await this.juiceSettingsService.fetch()).defaultEmailLang,
+				)
+				: {
+					server: this.config.url,
+					hookId: job.data.webhookId,
+					userId: job.data.userId,
+					eventId: job.data.eventId,
+					createdAt: job.data.createdAt,
+					type: job.data.type,
+					body: job.data.content,
+				};
 
 			const res = await this.httpRequestService.send(job.data.to, {
 				method: 'POST',
@@ -46,15 +69,7 @@ export class UserWebhookDeliverProcessorService {
 					'X-Misskey-Hook-Secret': job.data.secret,
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({
-					server: this.config.url,
-					hookId: job.data.webhookId,
-					userId: job.data.userId,
-					eventId: job.data.eventId,
-					createdAt: job.data.createdAt,
-					type: job.data.type,
-					body: job.data.content,
-				}),
+				body: JSON.stringify(body),
 			});
 
 			this.webhooksRepository.update({ id: job.data.webhookId }, {
