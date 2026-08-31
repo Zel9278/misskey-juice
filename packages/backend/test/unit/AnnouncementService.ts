@@ -13,6 +13,7 @@ import { GlobalModule } from '@/GlobalModule.js';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
 import { AnnouncementEntityService } from '@/core/entities/AnnouncementEntityService.js';
 import { AnnouncementReactionService } from '@/core/AnnouncementReactionService.js';
+import { AnnouncementPollService } from '@/core/AnnouncementPollService.js';
 import type {
 	AnnouncementReadsRepository,
 	AnnouncementsRepository,
@@ -87,6 +88,12 @@ describe('AnnouncementService', () => {
 					return {
 						getCounts: vi.fn().mockResolvedValue(new Map()),
 						getMyReactions: vi.fn().mockResolvedValue(new Map()),
+					};
+				} else if (token === AnnouncementPollService) {
+					// JUICE: pack時に投票を引くため、Mapを返すモックが必要(AnnouncementReactionServiceと同様)
+					return {
+						getPolls: vi.fn().mockResolvedValue(new Map()),
+						getMyVotes: vi.fn().mockResolvedValue(new Map()),
 					};
 				} else if (typeof token === 'function') {
 					return mockDeep<typeof token>();

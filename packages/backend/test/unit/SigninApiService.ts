@@ -4,7 +4,7 @@
  */
 
 import { IncomingHttpHeaders } from 'node:http';
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockDeep } from 'vitest-mock-extended';
 import { Test, TestingModule } from '@nestjs/testing';
 import { FastifyReply, FastifyRequest } from 'fastify';
@@ -21,7 +21,6 @@ import { RateLimiterService } from '@/server/api/RateLimiterService.js';
 import { SigninService } from '@/server/api/SigninService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { EmailService } from '@/core/EmailService.js';
-import { EmailI18nService } from '@/core/EmailI18nService.js';
 
 class FakeLimiter {
 	public async limit() {
@@ -32,23 +31,6 @@ class FakeLimiter {
 class FakeSigninService {
 	public signin(..._args: any): any {
 		return { finished: true, id: 'dummy', i: 'dummy-token' };
-	}
-}
-
-class FakeNotificationService {
-	public createNotification = vi.fn();
-}
-
-class FakeEmailService {
-	public sendEmail = vi.fn();
-}
-
-class FakeEmailI18nService {
-	public async resolveLang() {
-		return 'ja-JP';
-	}
-	public getI18n() {
-		return { t: (_key: string) => 'dummy' };
 	}
 }
 
@@ -87,8 +69,10 @@ describe('SigninApiService', () => {
 	let usersRepository: UsersRepository;
 	let userProfilesRepository: UserProfilesRepository;
 	let idService: IdService;
-	let notificationService: FakeNotificationService;
-	let emailService: FakeEmailService;
+	let notificationService: NotificationService;
+	let emailService: EmailService;
+	let createNotificationSpy: ReturnType<typeof vi.spyOn>;
+	let sendEmailSpy: ReturnType<typeof vi.spyOn>;
 
 	const rawPassword = 'correct-password';
 	let passwordHash: string;
@@ -111,9 +95,6 @@ describe('SigninApiService', () => {
 				SigninApiService,
 				{ provide: RateLimiterService, useClass: FakeLimiter },
 				{ provide: SigninService, useClass: FakeSigninService },
-				{ provide: NotificationService, useClass: FakeNotificationService },
-				{ provide: EmailService, useClass: FakeEmailService },
-				{ provide: EmailI18nService, useClass: FakeEmailI18nService },
 			],
 		}).useMocker((token) => {
 			if (typeof token === 'function') {
@@ -125,13 +106,17 @@ describe('SigninApiService', () => {
 		usersRepository = app.get<UsersRepository>(DI.usersRepository);
 		userProfilesRepository = app.get<UserProfilesRepository>(DI.userProfilesRepository);
 		idService = app.get<IdService>(IdService);
-		notificationService = app.get<NotificationService>(NotificationService) as unknown as FakeNotificationService;
-		emailService = app.get<EmailService>(EmailService) as unknown as FakeEmailService;
+		// JUICE: NotificationService/EmailServiceはCoreModuleが提供する実インスタンスを取得し、
+		// SigninWithPasskeyApiService.tsのテストのwebAuthnServiceと同じくvi.spyOnでメソッドだけ
+		// 差し替える(useClassでのprovider上書きはCoreModule経由の依存関係では効かなかったため)。
+		// EmailI18nServiceは副作用が無いテンプレート整形だけなので実インスタンスのまま使う。
+		notificationService = app.get<NotificationService>(NotificationService);
+		emailService = app.get<EmailService>(EmailService);
 	});
 
 	beforeEach(async () => {
-		notificationService.createNotification.mockClear();
-		emailService.sendEmail.mockClear();
+		createNotificationSpy = vi.spyOn(notificationService, 'createNotification').mockImplementation(() => {});
+		sendEmailSpy = vi.spyOn(emailService, 'sendEmail').mockImplementation(async () => {});
 
 		const uid = idService.gen();
 		username = uid;
@@ -146,6 +131,10 @@ describe('SigninApiService', () => {
 		};
 		await createUser(dummyUser);
 		await createUserProfile(dummyProfile);
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	afterAll(async () => {
@@ -165,8 +154,8 @@ describe('SigninApiService', () => {
 		expect(res.statusCode).toBe(403);
 
 		await flushImmediate();
-		expect(notificationService.createNotification).toHaveBeenCalledWith(username, 'loginFailed', {});
-		expect(emailService.sendEmail).toHaveBeenCalled();
+		expect(createNotificationSpy).toHaveBeenCalledWith(username, 'loginFailed', {});
+		expect(sendEmailSpy).toHaveBeenCalled();
 	});
 
 	it('確認済みメールアドレスが無い場合はメールを送らない', async () => {
@@ -177,8 +166,8 @@ describe('SigninApiService', () => {
 		await signinApiService.signin(req, res);
 
 		await flushImmediate();
-		expect(notificationService.createNotification).toHaveBeenCalledWith(username, 'loginFailed', {});
-		expect(emailService.sendEmail).not.toHaveBeenCalled();
+		expect(createNotificationSpy).toHaveBeenCalledWith(username, 'loginFailed', {});
+		expect(sendEmailSpy).not.toHaveBeenCalled();
 	});
 
 	it('パスワードが正しければloginFailed通知は飛ばない', async () => {
@@ -187,7 +176,7 @@ describe('SigninApiService', () => {
 		await signinApiService.signin(req, res);
 
 		await flushImmediate();
-		expect(notificationService.createNotification).not.toHaveBeenCalled();
-		expect(emailService.sendEmail).not.toHaveBeenCalled();
+		expect(createNotificationSpy).not.toHaveBeenCalled();
+		expect(sendEmailSpy).not.toHaveBeenCalled();
 	});
 });
