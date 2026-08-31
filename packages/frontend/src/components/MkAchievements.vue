@@ -23,7 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 			<div :class="$style.body">
 				<div :class="$style.header">
-					<span :class="$style.title">{{ i18n.ts._achievements._types[`_${achievement.name}`].title }}</span>
+					<span :class="$style.title">{{ i18n.ts._achievements._types[`_${achievement.name}`].title }}<span v-if="JUICE_ACHIEVEMENT_TYPES.includes(achievement.name)" class="_juice">JUICE</span></span>
 					<span :class="$style.time">
 						<time v-tooltip="new Date(achievement.unlockedAt).toLocaleString()">{{ new Date(achievement.unlockedAt).getFullYear() }}/{{ new Date(achievement.unlockedAt).getMonth() + 1 }}/{{ new Date(achievement.unlockedAt).getDate() }}</time>
 					</span>
@@ -56,7 +56,7 @@ import * as Misskey from 'misskey-js';
 import { onMounted, ref, computed } from 'vue';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
-import { ACHIEVEMENT_TYPES, ACHIEVEMENT_BADGES, claimAchievement } from '@/utility/achievements.js';
+import { ACHIEVEMENT_TYPES, ACHIEVEMENT_BADGES, JUICE_ACHIEVEMENT_TYPES, claimAchievement } from '@/utility/achievements.js';
 
 const props = withDefaults(defineProps<{
 	user: Misskey.entities.User;

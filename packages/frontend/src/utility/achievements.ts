@@ -86,7 +86,18 @@ export const ACHIEVEMENT_TYPES = [
 	'bubbleGameExplodingHead',
 	'bubbleGameDoubleExplodingHead',
 	'juiceRain', // JUICE: JUICE専用AboutページのアイコンをクリックしてJUICEの雨を降らせた
+	'bonsaiFirstWater', // JUICE: 盆栽ゲームで初めて水をあげた
+	'bonsaiFullyGrown', // JUICE: 盆栽ゲームで盆栽を最終段階まで育てた
+	'bonsaiWithered', // JUICE: 盆栽ゲームで水やりを忘れて盆栽を枯らした
 ] as const;
+
+// JUICE: 本家に無いJUICE独自の実績であることを示すバッジ(_juiceクラス)を出す対象
+export const JUICE_ACHIEVEMENT_TYPES: readonly (typeof ACHIEVEMENT_TYPES[number])[] = [
+	'juiceRain',
+	'bonsaiFirstWater',
+	'bonsaiFullyGrown',
+	'bonsaiWithered',
+];
 
 export const ACHIEVEMENT_BADGES = {
 	'notes1': {
@@ -482,6 +493,21 @@ export const ACHIEVEMENT_BADGES = {
 	'juiceRain': {
 		img: '/fluent-emoji/1f34a.png',
 		bg: 'linear-gradient(0deg, rgb(242 132 31), rgb(255 200 100))',
+		frame: 'bronze',
+	},
+	'bonsaiFirstWater': {
+		img: '/fluent-emoji/1f4a7.png',
+		bg: 'linear-gradient(0deg, rgb(58 231 198), rgb(37 194 255))',
+		frame: 'bronze',
+	},
+	'bonsaiFullyGrown': {
+		img: '/fluent-emoji/1f333.png',
+		bg: 'linear-gradient(0deg, rgb(59 187 116), rgb(199 211 102))',
+		frame: 'gold',
+	},
+	'bonsaiWithered': {
+		img: '/fluent-emoji/1f940.png',
+		bg: 'linear-gradient(0deg, rgb(220 223 225), rgb(172 192 207))',
 		frame: 'bronze',
 	},
 /* @see <https://github.com/misskey-dev/misskey/pull/10365#discussion_r1155511107>

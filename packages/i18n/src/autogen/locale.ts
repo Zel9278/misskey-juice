@@ -7999,6 +7999,40 @@ export interface Locale extends ILocale {
                  */
                 "description": string;
             };
+            "_bonsaiFirstWater": {
+                /**
+                 * はじめての水やり
+                 */
+                "title": string;
+                /**
+                 * 盆栽ゲームで初めて水をあげた
+                 */
+                "description": string;
+            };
+            "_bonsaiFullyGrown": {
+                /**
+                 * 立派な盆栽
+                 */
+                "title": string;
+                /**
+                 * 盆栽ゲームで盆栽を最終段階まで育てた
+                 */
+                "description": string;
+            };
+            "_bonsaiWithered": {
+                /**
+                 * 水やり、忘れてました
+                 */
+                "title": string;
+                /**
+                 * 盆栽ゲームで水やりを忘れて盆栽を枯らした
+                 */
+                "description": string;
+                /**
+                 * 盆栽は逃げない。水やりを忘れずに。
+                 */
+                "flavor": string;
+            };
         };
     };
     "_role": {

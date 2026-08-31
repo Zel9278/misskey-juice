@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div class="_panel" :class="$style.link">
 				<MkA to="/bonsai" :class="$style.bonsaiLink">
 					<span :class="$style.bonsaiEmoji">🪴</span>
-					<span>{{ i18n.ts._bonsai.title }}</span>
+					<span>{{ i18n.ts._bonsai.title }}<span class="_juice">JUICE</span></span>
 				</MkA>
 			</div>
 		</div>

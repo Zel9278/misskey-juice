@@ -2076,6 +2076,16 @@ _achievements:
     _juiceRain:
       title: "JUICEの雨"
       description: "JUICE専用Aboutページのアイコンをクリックして雨を降らせた"
+    _bonsaiFirstWater:
+      title: "はじめての水やり"
+      description: "盆栽ゲームで初めて水をあげた"
+    _bonsaiFullyGrown:
+      title: "立派な盆栽"
+      description: "盆栽ゲームで盆栽を最終段階まで育てた"
+    _bonsaiWithered:
+      title: "水やり、忘れてました"
+      description: "盆栽ゲームで水やりを忘れて盆栽を枯らした"
+      flavor: "盆栽は逃げない。水やりを忘れずに。"
 
 _role:
   new: "ロールの作成"

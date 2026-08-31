@@ -397,4 +397,7 @@ export const ACHIEVEMENT_TYPES = [
 	'bubbleGameExplodingHead',
 	'bubbleGameDoubleExplodingHead',
 	'juiceRain', // JUICE: JUICE専用AboutページのアイコンをクリックしてJUICEの雨を降らせた
+	'bonsaiFirstWater', // JUICE: 盆栽ゲームで初めて水をあげた
+	'bonsaiFullyGrown', // JUICE: 盆栽ゲームで盆栽を最終段階まで育てた
+	'bonsaiWithered', // JUICE: 盆栽ゲームで水やりを忘れて盆栽を枯らした
 ] as const;

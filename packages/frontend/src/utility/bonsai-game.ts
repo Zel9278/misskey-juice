@@ -5,6 +5,7 @@
 
 import { ref, computed } from 'vue';
 import { misskeyApi } from '@/utility/misskey-api.js';
+import { claimAchievement } from '@/utility/achievements.js';
 
 // JUICE: Misskey Gamesに追加した「盆栽を育てるゲーム」のセーブデータ管理。
 // clicker-game.tsと同じくi/registryをスコープ付きキーバリューストアとして使い、
@@ -64,6 +65,7 @@ function applyNeglect(data: SaveData): SaveData {
 		data.waterCount = 0;
 		data.witherCount += 1;
 		health = 50;
+		claimAchievement('bonsaiWithered');
 	}
 
 	data.health = Math.max(0, Math.min(100, health));
@@ -120,6 +122,10 @@ export function water() {
 	if (data == null) return;
 	if (!canWaterNow(data)) return;
 
+	if (data.lastWateredAt == null) {
+		claimAchievement('bonsaiFirstWater');
+	}
+
 	data.lastWateredAt = Date.now();
 	data.health = Math.min(100, data.health + 10);
 
@@ -128,6 +134,9 @@ export function water() {
 		if (data.waterCount >= WATERINGS_PER_STAGE) {
 			data.waterCount = 0;
 			data.stage += 1;
+			if (data.stage === STAGE_COUNT - 1) {
+				claimAchievement('bonsaiFullyGrown');
+			}
 		}
 	}
 
