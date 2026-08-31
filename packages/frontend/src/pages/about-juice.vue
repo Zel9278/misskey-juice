@@ -28,7 +28,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 
 				<MkInfo warn>
-					{{ i18n.ts._aboutJuice.selfHostingNoticeWarning }} <a href="https://mq1.dev/entry/krpvl5itbr9h#h0cb67a7186" target="_blank" rel="noopener" class="_link">{{ i18n.ts._aboutJuice.selfHostingNoticeLinkText }}</a>
+					<div class="_gaps_s">
+						<div>{{ i18n.ts._aboutJuice.selfHostingNoticeWarning }}</div>
+						<div :class="$style.selfHostingNoticeLinks">
+							<a href="https://mq1.dev/entry/krpvl5itbr9h#h0cb67a7186" target="_blank" rel="noopener" class="_link">{{ i18n.ts._aboutJuice.selfHostingNoticeLinkText }}</a>
+							<a href="https://misskey-hub.net/ja/docs/for-admin/install/guides/" target="_blank" rel="noopener" class="_link">{{ i18n.ts._aboutJuice.selfHostingNoticeOfficialGuideLinkText }}</a>
+						</div>
+						<div>{{ i18n.ts._aboutJuice.selfHostingNoticeGeneralApplicability }}</div>
+					</div>
 				</MkInfo>
 
 				<MkKeyValue>
@@ -273,6 +280,12 @@ $juice-rain-color: #f2841f;
 		transform: rotate(var(--rain-angle)) translateY(340px);
 		opacity: 0;
 	}
+}
+
+.selfHostingNoticeLinks {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
 }
 
 .developer {

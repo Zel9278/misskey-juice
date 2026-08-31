@@ -9070,6 +9070,14 @@ export interface Locale extends ILocale {
          */
         "selfHostingNoticeLinkText": string;
         /**
+         * 公式のインストールガイド
+         */
+        "selfHostingNoticeOfficialGuideLinkText": string;
+        /**
+         * この注意はJUICEに限らず、Misskeyフォーク・Misskey自体全般に当てはまります。
+         */
+        "selfHostingNoticeGeneralApplicability": string;
+        /**
          * JUICEとは
          */
         "description": string;
