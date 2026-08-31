@@ -306,6 +306,15 @@ function onSigninApiError(err?: any): void {
 			showSuspendedDialog();
 			break;
 		}
+		case '9f2f084b-af33-4f06-93cf-8a7fe04c6786': {
+			// JUICE: 承認待ちアカウント
+			os.alert({
+				type: 'error',
+				title: i18n.ts.accountNotApproved,
+				text: i18n.ts.accountNotApprovedDescription,
+			});
+			break;
+		}
 		case '22d05606-fbcf-421a-a2db-b32610dcfd1b': {
 			os.alert({
 				type: 'error',

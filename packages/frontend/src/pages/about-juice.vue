@@ -27,6 +27,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 					></span>
 				</div>
 
+				<MkInfo warn>
+					<div class="_gaps_s">
+						<div>{{ i18n.ts._aboutJuice.selfHostingNoticeWarning }}</div>
+						<div :class="$style.selfHostingNoticeLinks">
+							<a href="https://mq1.dev/entry/krpvl5itbr9h#h0cb67a7186" target="_blank" rel="noopener" class="_link">{{ i18n.ts._aboutJuice.selfHostingNoticeLinkText }}</a>
+							<a href="https://misskey-hub.net/ja/docs/for-admin/install/guides/" target="_blank" rel="noopener" class="_link">{{ i18n.ts._aboutJuice.selfHostingNoticeOfficialGuideLinkText }}</a>
+						</div>
+						<div>{{ i18n.ts._aboutJuice.selfHostingNoticeGeneralApplicability }}</div>
+					</div>
+				</MkInfo>
+
 				<MkKeyValue>
 					<template #key>{{ i18n.ts._aboutJuice.description }}</template>
 					<template #value>{{ i18n.ts._aboutJuice.descriptionText }}</template>
@@ -35,9 +46,25 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<FormSection>
 					<template #label>{{ i18n.ts._aboutJuice.developer }}</template>
 					<a href="https://github.com/Zel9278" target="_blank" :class="$style.developer">
-						<img src="https://github.com/Zel9278.png" :class="$style.developerAvatar"/>
+						<img src="https://github.com/Zel9278.png" alt="" :class="$style.developerAvatar"/>
 						<span :class="$style.developerName">c30 (Zel9278)</span>
 					</a>
+				</FormSection>
+
+				<FormSection>
+					<template #label>{{ i18n.ts._aboutJuice.contributors }}</template>
+					<div :class="$style.contributors">
+						<a
+							v-for="contributor in contributors"
+							:key="contributor.name"
+							:href="contributor.url"
+							target="_blank"
+							:class="$style.developer"
+						>
+							<img :src="contributor.avatar" alt="" :class="$style.developerAvatar"/>
+							<span :class="$style.developerName">{{ contributor.name }}</span>
+						</a>
+					</div>
 				</FormSection>
 
 				<FormSection>
@@ -111,9 +138,15 @@ import FormLink from '@/components/form/link.vue';
 import FormSection from '@/components/form/section.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import MkFolder from '@/components/MkFolder.vue';
+import MkInfo from '@/components/MkInfo.vue';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { claimAchievement } from '@/utility/achievements.js';
+
+// JUICE: PRを送ってくれたコントリビューター一覧(開発者本人は上の developer セクションで別掲)
+const contributors = [
+	{ name: 'chan-mai', url: 'https://github.com/chan-mai', avatar: 'https://github.com/chan-mai.png' },
+];
 
 const features = [
 	{ icon: 'ti ti-user-check', text: i18n.ts._aboutJuice._features.approvalSignup },
@@ -249,6 +282,12 @@ $juice-rain-color: #f2841f;
 	}
 }
 
+.selfHostingNoticeLinks {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
 .developer {
 	display: flex;
 	align-items: center;
@@ -271,6 +310,12 @@ $juice-rain-color: #f2841f;
 .developerName {
 	margin-left: 12px;
 	font-weight: bold;
+}
+
+.contributors {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	grid-gap: 12px;
 }
 
 .features {

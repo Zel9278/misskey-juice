@@ -44,7 +44,10 @@ services:
 
   db:
     restart: unless-stopped
-    image: postgres:18-alpine
+    # pgroonga検索プロバイダのテスト用に、公式postgres:18-alpineをFROMにしたpgroonga同梱イメージへ変更
+    # (https://github.com/pgroonga/docker)。データディレクトリ形式は同じpostgres 18のため
+    # 既存のpostgres-dataボリュームはそのまま使える。
+    image: groonga/pgroonga:latest-alpine-18
     networks:
       - internal_network
     environment:

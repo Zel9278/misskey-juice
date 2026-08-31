@@ -9062,6 +9062,22 @@ export interface Locale extends ILocale {
          */
         "title": string;
         /**
+         * このフォークで公開サーバーを立てる前に、運営の責任について書かれた以下のガイドをよく読んで検討してください。
+         */
+        "selfHostingNoticeWarning": string;
+        /**
+         * chan-maiさんによるMisskeyサーバー運用ガイド
+         */
+        "selfHostingNoticeLinkText": string;
+        /**
+         * 公式のインストールガイド
+         */
+        "selfHostingNoticeOfficialGuideLinkText": string;
+        /**
+         * この注意はJUICEに限らず、Misskeyフォーク・Misskey自体全般に当てはまります。
+         */
+        "selfHostingNoticeGeneralApplicability": string;
+        /**
          * JUICEとは
          */
         "description": string;
@@ -9073,6 +9089,10 @@ export interface Locale extends ILocale {
          * 開発者
          */
         "developer": string;
+        /**
+         * コントリビューター
+         */
+        "contributors": string;
         /**
          * ソースコード・ライセンス
          */

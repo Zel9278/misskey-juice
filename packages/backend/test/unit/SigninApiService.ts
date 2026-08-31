@@ -188,4 +188,31 @@ describe('SigninApiService', () => {
 		expect(createNotificationSpy).not.toHaveBeenCalled();
 		expect(sendEmailSpy).not.toHaveBeenCalled();
 	});
+
+	it('承認待ちアカウントはパスワードが正しい場合のみ403(承認待ち)が返る', async () => {
+		await usersRepository.update({ id: username }, { approved: false });
+
+		const req = new DummyFastifyRequest({ username, password: rawPassword }) as ApiFastifyRequestType;
+		const res = new DummyFastifyReply() as unknown as FastifyReply;
+		const result = await signinApiService.signin(req, res);
+
+		expect(res.statusCode).toBe(403);
+		expect((result as { error: { id: string } }).error.id).toBe('9f2f084b-af33-4f06-93cf-8a7fe04c6786');
+	});
+
+	it('承認待ちアカウントでもパスワードが違えば通常の失敗エラーになる(状態列挙防止)', async () => {
+		await usersRepository.update({ id: username }, { approved: false });
+
+		const req = new DummyFastifyRequest({ username, password: 'wrong-password' }) as ApiFastifyRequestType;
+		const res = new DummyFastifyReply() as unknown as FastifyReply;
+		const result = await signinApiService.signin(req, res);
+
+		expect(res.statusCode).toBe(403);
+		expect((result as { error: { id: string } }).error.id).toBe('932c904e-9460-45b7-9ce6-7ed33be7eb2c');
+
+		// fail()経路の非同期処理の完了を待機(次テストのspyへの混入防止)
+		await vi.waitFor(() => {
+			expect(createNotificationSpy).toHaveBeenCalledWith(username, 'loginFailed', {});
+		});
+	});
 });
