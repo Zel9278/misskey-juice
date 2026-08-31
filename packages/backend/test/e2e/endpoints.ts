@@ -1560,7 +1560,7 @@ describe('Endpoints', () => {
 		test('機能が無効な間はfunctionDisabledで弾かれる', async () => {
 			const res = await api('notes/relay-timeline', {});
 			assert.strictEqual(res.status, 400);
-			assert.strictEqual(castAsError(res.body).error.code, 'FUNCTION_DISABLED');
+			assert.strictEqual(castAsError(res.body as any).error.code, 'FUNCTION_DISABLED');
 		});
 
 		test('relayIdが付いた公開ノートのみを返す', async () => {
