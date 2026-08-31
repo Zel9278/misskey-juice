@@ -16,6 +16,7 @@ import { DataSource } from 'typeorm';
 import Fastify from 'fastify';
 import { entities } from '@/postgres.js';
 import { loadConfig } from '@/config.js';
+import { assertTestDatabase } from '@/misc/reset-db.js';
 import type * as misskey from 'misskey-js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/validator.js';
@@ -137,7 +138,7 @@ function timeoutPromise<T>(p: Promise<T>, timeout: number): Promise<T> {
 	]);
 }
 
-export const signup = async (params?: Partial<misskey.Endpoints['signup']['req']>): Promise<NonNullable<misskey.Endpoints['signup']['res']>> => {
+export const signup = async (params?: Partial<misskey.Endpoints['signup']['req']>): Promise<misskey.entities.SignupSuccessResponse> => {
 	const q = Object.assign({
 		username: randomString(),
 		password: 'test',
@@ -145,7 +146,11 @@ export const signup = async (params?: Partial<misskey.Endpoints['signup']['req']
 
 	const res = await api('signup', q);
 
-	return res.body;
+	if (res.body != null && 'pendingApproval' in res.body) {
+		throw new Error('signup() helper does not support the approval-pending flow; call api(\'signup\', ...) directly and narrow the response for that test case');
+	}
+
+	return res.body as misskey.entities.SignupSuccessResponse;
 };
 
 export const post = async (user: UserToken, params: misskey.Endpoints['notes/create']['req']): Promise<misskey.entities.Note> => {
@@ -607,6 +612,13 @@ export async function initTestDb(justBorrow = false, initEntities?: any[]) {
 		dropSchema: !justBorrow,
 		entities: initEntities ?? entities,
 	});
+
+	// dropSchema/synchronizeは開発用DBを丸ごと消しうるため、接続先が本当にtest用DBかを確認する(JUICE)。
+	// built/.config.jsonはNODE_ENVによってdefault.yml/test.ymlどちらからでも生成されるため、
+	// process.env.NODE_ENVのチェックだけでは設定と実際の接続先がズレたときに防げない。
+	if (!justBorrow) {
+		assertTestDatabase(db);
+	}
 
 	await db.initialize();
 

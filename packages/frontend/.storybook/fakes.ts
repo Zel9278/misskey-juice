@@ -137,6 +137,7 @@ export function file(isSensitive = false): entities.DriveFile {
 		md5: 'f6fc51c73dc21b1fb85ead2cdf57530a',
 		size: 77752,
 		isSensitive,
+		isAIGenerated: false,
 		blurhash: 'eQAmoa^-MH8w9ZIvNLSvo^$*MwRPbwtSxutRozjEiwR.RjWBoeozog',
 		properties: {
 			width: 1024,
@@ -235,6 +236,7 @@ export function note(id = 'somenoteid'): entities.Note {
 		userId: 'someuserid',
 		user: userLite(),
 		visibility: 'public',
+		isAIGenerated: false,
 		reactionAcceptance: 'nonSensitiveOnly',
 		reactionEmojis: {},
 		reactions: {},
@@ -313,6 +315,7 @@ export function userDetailed(id = 'someuserid', username = 'miskist', host: enti
 		alsoKnownAs: null,
 		notify: 'none',
 		memo: null,
+		nickname: null, // JUICE
 		canChat: true,
 		chatScope: 'everyone',
 	};

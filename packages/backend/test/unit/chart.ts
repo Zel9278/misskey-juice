@@ -21,6 +21,7 @@ import { entity as TestUniqueChartEntity } from '@/core/chart/charts/entities/te
 import { entity as TestIntersectionChartEntity } from '@/core/chart/charts/entities/test-intersection.js';
 import { loadConfig } from '@/config.js';
 import Logger from '@/logger.js';
+import { assertTestDatabase } from '@/misc/reset-db.js';
 
 describe('Chart', () => {
 	const config = loadConfig();
@@ -62,6 +63,9 @@ describe('Chart', () => {
 			],
 			migrations: ['../../migration/*.js'],
 		});
+
+		// dropSchema/synchronizeは開発用DBを丸ごと消しうるため、接続先が本当にtest用DBかを確認する(JUICE)。
+		assertTestDatabase(db);
 
 		await db.initialize();
 

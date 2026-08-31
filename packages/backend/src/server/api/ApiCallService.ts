@@ -362,6 +362,13 @@ export class ApiCallService implements OnApplicationShutdown {
 					kind: 'permission',
 					id: 'a8c724b3-6e9c-4b46-b1a8-bc3ed6258370',
 				});
+			} else if (!user!.approved) {
+				throw new ApiError({
+					message: 'Your account is not yet approved.',
+					code: 'YOUR_ACCOUNT_NOT_APPROVED',
+					kind: 'permission',
+					id: '3c25f403-6ed7-4b14-ba24-be9bb72a29e4',
+				});
 			}
 		}
 

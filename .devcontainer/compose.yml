@@ -1,17 +1,28 @@
 services:
   app:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
 
     ports:
-      - "3000:3000"
-      - "5173:5173"
-      - "5174:5174"
+      - "3001:3000"
+      - "5183:5173"
+      - "5184:5174"
+
+    environment:
+      VITE_HMR_CLIENT_PORT: "5183"
 
     volumes:
       - ../:/workspace:cached
       - node_modules:/workspace/node_modules
+
+    # rolldownのwatchモード(backend/frontend双方)がこのモノレポの規模だと
+    # デフォルトのnofile(1024)を超えて"Too many open files"でクラッシュするため引き上げる
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
 
     command: sleep infinity
 
@@ -44,6 +55,21 @@ services:
       - postgres-data:/var/lib/postgresql
     healthcheck:
       test: "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
+      interval: 5s
+      retries: 20
+
+  # ローカルでメール送信を確認するためのSMTPキャッチャー。実際には配送せず、
+  # 送信されたメールをWeb UI (http://localhost:8026) で確認できる。
+  mailpit:
+    restart: unless-stopped
+    image: axllent/mailpit:latest
+    networks:
+      - internal_network
+      - external_network
+    ports:
+      - "8026:8025"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8025/readyz"]
       interval: 5s
       retries: 20
 

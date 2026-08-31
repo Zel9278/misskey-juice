@@ -48,6 +48,25 @@ describe('Note', () => {
 			strictEqual(aliceInB.id, resolvedNote.userId);
 		});
 
+		test('Consistency of AI-generated flag (JUICE)', async () => {
+			const note = (await alice.client.request('notes/create', {
+				text: 'AI generated note',
+				isAIGenerated: true,
+			})).createdNote;
+
+			const resolvedNote = await resolveRemoteNote('a.test', note.id, bob);
+			strictEqual(resolvedNote.isAIGenerated, true);
+		});
+
+		test('isAIGenerated defaults to false when not set (JUICE)', async () => {
+			const note = (await alice.client.request('notes/create', {
+				text: 'normal note',
+			})).createdNote;
+
+			const resolvedNote = await resolveRemoteNote('a.test', note.id, bob);
+			strictEqual(resolvedNote.isAIGenerated, false);
+		});
+
 		test('Consistency of reply', async () => {
 			const _replyedNote = (await alice.client.request('notes/create', {
 				text: 'a',

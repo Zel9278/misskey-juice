@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { In } from 'typeorm';
+import { In, IsNull } from 'typeorm';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -306,8 +306,9 @@ export class ApInboxService {
 			return;
 		}
 
-		// リレーからのAnnounceかチェック
-		const fromRelay = await this.relayService.isRelayActor(actor);
+		// リレーからのAnnounceかチェック(JUICE: どのリレーかも特定する)
+		const matchedRelay = await this.relayService.getRelayForActor(actor);
+		const fromRelay = matchedRelay != null;
 		const uri = getApId(fromRelay ? target : activity);
 
 		// アナウンス先が許可されているかチェック
@@ -320,6 +321,15 @@ export class ApInboxService {
 			// 既に同じURIを持つものが登録されていないかチェック
 			const exist = await this.apNoteService.fetchNote(uri);
 			if (exist) {
+				// JUICE: 既に他経路(通常のフォロー配送等)で存在するノートでも、
+				// リレー経由のAnnounceだと確認できたなら、リレーTL用にrelayIdを追従させる。
+				// (matchedRelayはfromRelay===trueのときのみnon-null)
+				if (fromRelay && matchedRelay != null && exist.visibility === 'public') {
+					await this.notesRepository.update(
+						{ id: exist.id, relayId: IsNull() },
+						{ relayId: matchedRelay.id },
+					);
+				}
 				return;
 			}
 
@@ -342,8 +352,25 @@ export class ApInboxService {
 			// リレーからのAnnounceはリノートを作成せず、ノートを直接公開する
 			if (fromRelay) {
 				this.logger.info(`Publishing relay-delivered note: ${uri}`);
+
+				// JUICE: リレーTL用に、どのリレー経由で届いたかを記録する。
+				// 複数リレーから同じノートが届く場合はfirst-writer-winsで良いため、
+				// まだ未設定(IsNull)の場合のみ更新する。公開ノートのみが対象。
+				if (renote.visibility === 'public') {
+					const updateResult = await this.notesRepository.update(
+						{ id: renote.id, relayId: IsNull() },
+						{ relayId: matchedRelay.id },
+					);
+					if (updateResult.affected) {
+						renote.relayId = matchedRelay.id;
+					}
+				}
+
 				const noteObj = await this.noteEntityService.pack(renote, null, { skipHide: true, withReactionAndUserPairCache: true });
 				this.globalEventService.publishNotesStream(noteObj);
+				if (renote.relayId != null) {
+					this.globalEventService.publishRelayTimelineStream(noteObj);
+				}
 				return;
 			}
 

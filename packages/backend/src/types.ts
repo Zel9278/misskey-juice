@@ -21,6 +21,7 @@
  * achievementEarned - 実績を獲得
  * exportCompleted - エクスポートが完了
  * login - ログイン
+ * loginFailed - ログイン試行に失敗した(JUICE)
  * createToken - トークン作成
  * app - アプリ通知
  * test - テスト通知（サーバー側）
@@ -43,6 +44,8 @@ export const notificationTypes = [
 	'achievementEarned',
 	'exportCompleted',
 	'login',
+	// JUICE: misskey-tempuraを参考に追加
+	'loginFailed',
 	'createToken',
 	'app',
 	'test',
@@ -135,6 +138,13 @@ export const moderationLogTypes = [
 	'deleteGalleryPost',
 	'deleteChatRoom',
 	'updateProxyAccountDescription',
+	'updateJuiceSettings',
+	'approveSignup',
+	'declineSignup',
+	'approveEmojiRequest',
+	'rejectEmojiRequest',
+	// JUICE
+	'cleanupOrphanedObjectStorageFiles',
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -401,6 +411,44 @@ export type ModerationLogPayloads = {
 	updateProxyAccountDescription: {
 		before: string | null;
 		after: string | null;
+	};
+	updateJuiceSettings: {
+		before: any | null;
+		after: any | null;
+	};
+	approveSignup: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+	};
+	declineSignup: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+	};
+	approveEmojiRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		emojiId: string;
+		emojiName: string;
+	};
+	rejectEmojiRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		requestedName: string;
+		reason: string;
+	};
+	// JUICE
+	cleanupOrphanedObjectStorageFiles: {
+		dryRun: boolean;
+		scanned: number;
+		deletedCount: number;
+		deletedKeys: string[];
+		failedKeys: string[];
 	};
 };
 

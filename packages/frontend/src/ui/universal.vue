@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div :class="$style.nonTitlebarArea">
 		<XSidebar v-if="!isMobile" :class="$style.sidebar" :showWidgetButton="!showWidgetsSide" @widgetButtonClick="widgetsShowing = true"/>
 
-		<div :class="[$style.contents, !isMobile && prefer.r.showTitlebar.value ? $style.withSidebarAndTitlebar : null]" @contextmenu.stop="onContextmenu">
+		<div :class="[$style.contents, !isMobile && prefer.r.showTitlebar.value && !widgetsOnLeft ? $style.withSidebarAndTitlebar : null]" @contextmenu.stop="onContextmenu">
 			<div>
 				<XReloadSuggestion v-if="shouldSuggestReload"/>
 				<XPreferenceRestore v-if="shouldSuggestRestoreBackup"/>
@@ -23,7 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<XMobileFooterMenu v-if="isMobile" ref="navFooter" v-model:drawerMenuShowing="drawerMenuShowing" v-model:widgetsShowing="widgetsShowing"/>
 		</div>
 
-		<div v-if="showWidgetsSide && !pageMetadata?.needWideArea" :class="$style.widgets">
+		<div v-if="showWidgetsSide && !pageMetadata?.needWideArea" :class="[$style.widgets, widgetsOnLeft ? $style.widgetsLeft : null]">
 			<XWidgets/>
 		</div>
 	</div>
@@ -76,6 +76,9 @@ window.addEventListener('resize', () => {
 
 const pageMetadata = ref<null | PageMetadata>(null);
 const widgetsShowing = ref(false);
+
+// JUICE: ウィジェットパネルを画面のどちら側に表示するか
+const widgetsOnLeft = computed(() => prefer.r.widgetsSide.value === 'left');
 
 provide(DI.router, mainRouter);
 provideMetadataReceiver((metadataGetter) => {
@@ -143,6 +146,9 @@ $widgets-hide-threshold: 1090px;
 }
 
 .sidebar {
+	// JUICE: widgetsSide: 'left' 時、.widgetsLeftのorder:0とのDOM順によるタイブレークで
+	// サイドバーの直後にウィジェットパネルを割り込ませているため、暗黙のorder:0に依存している。変更時は注意。
+	order: 0;
 	border-right: solid 0.5px var(--MI_THEME-divider);
 }
 
@@ -152,6 +158,7 @@ $widgets-hide-threshold: 1090px;
 	flex: 1;
 	height: 100%;
 	min-width: 0;
+	order: 1;
 
 	&.withSidebarAndTitlebar {
 		background: var(--MI_THEME-navBg);
@@ -179,6 +186,13 @@ $widgets-hide-threshold: 1090px;
 	padding: var(--MI-margin) var(--MI-margin) calc(var(--MI-margin) + env(safe-area-inset-bottom, 0px));
 	border-left: solid 0.5px var(--MI_THEME-divider);
 	background: var(--MI_THEME-bg);
+	order: 2;
+
+	&.widgetsLeft {
+		order: 0;
+		border-left: none;
+		border-right: solid 0.5px var(--MI_THEME-divider);
+	}
 
 	@media (max-width: $widgets-hide-threshold) {
 		display: none;

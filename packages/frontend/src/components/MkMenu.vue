@@ -59,7 +59,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkAvatar v-if="item.avatar" :user="item.avatar" :class="$style.avatar"/>
 				<div :class="$style.item_content">
 					<div :class="$style.item_content_text">
-						<div :class="$style.item_content_text_title">{{ item.text }}</div>
+						<div :class="$style.item_content_text_title">{{ item.text }}<span v-if="item.badge" class="_juice">JUICE</span></div>
 						<div v-if="item.caption" :class="$style.item_content_text_caption">{{ item.caption }}</div>
 					</div>
 					<span v-if="item.indicate" :class="$style.indicator" class="_blink"><i class="_indicatorCircle"></i></span>
@@ -179,7 +179,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i v-if="item.icon" class="ti-fw" :class="[$style.icon, item.icon]" style="pointer-events: none;"></i>
 				<div :class="$style.item_content">
 					<div :class="$style.item_content_text" style="pointer-events: none;">
-						<div :class="$style.item_content_text_title">{{ item.text }}</div>
+						<div :class="$style.item_content_text_title">{{ item.text }}<span v-if="item.badge" class="_juice">JUICE</span></div>
 						<div v-if="item.caption" :class="$style.item_content_text_caption">{{ item.caption }}</div>
 					</div>
 					<span :class="$style.caret" style="pointer-events: none;"><i class="ti ti-chevron-right ti-fw"></i></span>

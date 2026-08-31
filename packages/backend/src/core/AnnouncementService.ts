@@ -14,6 +14,9 @@ import { IdService } from '@/core/IdService.js';
 import { AnnouncementEntityService } from '@/core/entities/AnnouncementEntityService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { AnnouncementPollService } from '@/core/AnnouncementPollService.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
+import type { IAnnouncementPoll } from '@/models/AnnouncementPoll.js';
 
 @Injectable()
 export class AnnouncementService {
@@ -31,6 +34,7 @@ export class AnnouncementService {
 		private globalEventService: GlobalEventService,
 		private moderationLogService: ModerationLogService,
 		private announcementEntityService: AnnouncementEntityService,
+		private announcementPollService: AnnouncementPollService,
 	) {
 	}
 
@@ -66,7 +70,12 @@ export class AnnouncementService {
 	}
 
 	@bindThis
-	public async create(values: Partial<MiAnnouncement>, moderator?: MiUser): Promise<{ raw: MiAnnouncement; packed: Packed<'Announcement'> }> {
+	public async create(values: Partial<MiAnnouncement>, moderator?: MiUser, poll?: IAnnouncementPoll | null): Promise<{ raw: MiAnnouncement; packed: Packed<'Announcement'> }> {
+		// 個人宛てのお知らせには投票を付けられない(投票は不特定多数のユーザーが対象であることが前提のため)
+		if (poll != null && values.userId != null) {
+			throw new IdentifiableError('7c5a15f4-6a91-4995-9030-fbe97b970a8e', 'Polls are not allowed on announcements addressed to a specific user.');
+		}
+
 		const announcement = await this.announcementsRepository.insertOne({
 			id: this.idService.gen(),
 			updatedAt: null,
@@ -80,6 +89,10 @@ export class AnnouncementService {
 			needConfirmationToRead: values.needConfirmationToRead,
 			userId: values.userId,
 		});
+
+		if (poll != null) {
+			await this.announcementPollService.create(announcement.id, poll);
+		}
 
 		const packed = await this.announcementEntityService.pack(announcement);
 

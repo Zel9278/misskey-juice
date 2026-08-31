@@ -384,6 +384,11 @@ export const packedUserDetailedNotMeOnlySchema = {
 			type: 'string',
 			nullable: true, optional: false,
 		},
+		// JUICE: 自分が設定したニックネーム(misskey-tempuraを参考)
+		nickname: {
+			type: 'string',
+			nullable: true, optional: false,
+		},
 		moderationNote: {
 			type: 'string',
 			nullable: false, optional: true,
@@ -476,6 +481,10 @@ export const packedMeDetailedOnlySchema = {
 			nullable: false, optional: false,
 		},
 		receiveAnnouncementEmail: {
+			type: 'boolean',
+			nullable: false, optional: false,
+		},
+		receiveEmojiRequestResultEmail: {
 			type: 'boolean',
 			nullable: false, optional: false,
 		},
@@ -619,6 +628,7 @@ export const packedMeDetailedOnlySchema = {
 				app: { optional: true, ...notificationRecieveConfig },
 				test: { optional: true, ...notificationRecieveConfig },
 				login: { optional: true, ...notificationRecieveConfig },
+				loginFailed: { optional: true, ...notificationRecieveConfig },
 				createToken: { optional: true, ...notificationRecieveConfig },
 				exportCompleted: { optional: true, ...notificationRecieveConfig },
 			},
@@ -670,6 +680,15 @@ export const packedMeDetailedOnlySchema = {
 		emailVerified: {
 			type: 'boolean',
 			nullable: true, optional: true,
+		},
+		emailLang: {
+			type: 'string',
+			nullable: true, optional: true,
+		},
+		muteAIGeneratedNotes: {
+			type: 'string',
+			nullable: false, optional: true,
+			enum: ['none', 'mute', 'hardMute'],
 		},
 		securityKeysList: {
 			type: 'array',

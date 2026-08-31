@@ -589,6 +589,22 @@ export interface Locale extends ILocale {
      */
     "unmarkAsSensitive": string;
     /**
+     * AI生成
+     */
+    "aiGenerated": string;
+    /**
+     * AI生成物のみ表示
+     */
+    "aiGeneratedOnly": string;
+    /**
+     * AI生成物としてマーク
+     */
+    "markAsAIGenerated": string;
+    /**
+     * AI生成物のマークを解除
+     */
+    "unmarkAsAIGenerated": string;
+    /**
      * ファイル名を入力
      */
     "enterFileName": string;
@@ -2561,6 +2577,14 @@ export interface Locale extends ILocale {
      */
     "accountDeletedDescription": string;
     /**
+     * アカウントが未承認です
+     */
+    "accountNotApproved": string;
+    /**
+     * このアカウントはまだ運営による承認を受けていません。承認されるまでサインインできません。
+     */
+    "accountNotApprovedDescription": string;
+    /**
      * メニュー
      */
     "menu": string;
@@ -3945,6 +3969,10 @@ export interface Locale extends ILocale {
      */
     "thereIsUnresolvedAbuseReportWarning": string;
     /**
+     * 新しい通報があります。
+     */
+    "newAbuseReportToast": string;
+    /**
      * 推奨
      */
     "recommended": string;
@@ -4965,6 +4993,10 @@ export interface Locale extends ILocale {
      */
     "externalServices": string;
     /**
+     * JUICE
+     */
+    "juice": string;
+    /**
      * ソースコード
      */
     "sourceCode": string;
@@ -5160,6 +5192,10 @@ export interface Locale extends ILocale {
      * {name}のセンシティブなファイルを含む投稿
      */
     "userSaysSomethingSensitive": ParameterizedString<"name">;
+    /**
+     * {name}はAI生成物を投稿しました
+     */
+    "userSaysSomethingAIGenerated": ParameterizedString<"name">;
     /**
      * スワイプしてタブを切り替える
      */
@@ -7957,6 +7993,50 @@ export interface Locale extends ILocale {
                  */
                 "flavor": string;
             };
+            "_juiceRain": {
+                /**
+                 * JUICEの雨
+                 */
+                "title": string;
+                /**
+                 * JUICE専用Aboutページのアイコンをクリックして雨を降らせた
+                 */
+                "description": string;
+            };
+            "_bonsaiFirstWater": {
+                /**
+                 * はじめての水やり
+                 */
+                "title": string;
+                /**
+                 * 盆栽ゲームで初めて水をあげた
+                 */
+                "description": string;
+            };
+            "_bonsaiFullyGrown": {
+                /**
+                 * 立派な盆栽
+                 */
+                "title": string;
+                /**
+                 * 盆栽ゲームで盆栽を最終段階まで育てた
+                 */
+                "description": string;
+            };
+            "_bonsaiWithered": {
+                /**
+                 * 水やり、忘れてました
+                 */
+                "title": string;
+                /**
+                 * 盆栽ゲームで水やりを忘れて盆栽を枯らした
+                 */
+                "description": string;
+                /**
+                 * 盆栽は逃げない。水やりを忘れずに。
+                 */
+                "flavor": string;
+            };
         };
     };
     "_role": {
@@ -8285,6 +8365,10 @@ export interface Locale extends ILocale {
              * ウォーターマーク機能の使用可否
              */
             "watermarkAvailable": string;
+            /**
+             * 同時に出せる絵文字申請数の上限
+             */
+            "emojiRequestLimit": string;
         };
         "_condition": {
             /**
@@ -8484,6 +8568,68 @@ export interface Locale extends ILocale {
          * 入力されたメールアドレス({email})宛に確認のメールが送信されました。メールに記載されたリンクにアクセスすると、アカウントの作成が完了します。メールに記載されているリンクの有効期限は30分です。
          */
         "emailSent": ParameterizedString<"email">;
+        /**
+         * 登録理由
+         */
+        "reason": string;
+        /**
+         * 運営が登録を承認するために確認します。他のユーザーには公開されません。(最大{max}文字)
+         */
+        "reasonCaption": ParameterizedString<"max">;
+        /**
+         * 登録ありがとうございます。運営による承認をお待ちください。承認結果はメールでお知らせします。
+         */
+        "pendingApproval": string;
+        /**
+         * 登録ありがとうございます。運営による承認をお待ちください。承認されるとサインインできるようになります。
+         */
+        "pendingApprovalNoEmail": string;
+    };
+    "_signupCheck": {
+        /**
+         * 登録審査状況の確認
+         */
+        "title": string;
+        /**
+         * この端末で申請した承認式新規登録の審査状況をまとめて確認できます。別の端末で申請した場合や、確認コードだけを知っている場合は下から追加してください。
+         */
+        "description": string;
+        /**
+         * 確認コードを追加
+         */
+        "addCode": string;
+        /**
+         * 確認コード
+         */
+        "codeLabel": string;
+        /**
+         * 確認する
+         */
+        "check": string;
+        /**
+         * 審査待ちです。運営による確認をお待ちください。
+         */
+        "statusPending": string;
+        /**
+         * 承認されました。サインインできます。
+         */
+        "statusApproved": string;
+        /**
+         * この申請は却下されました。
+         */
+        "statusDeclined": string;
+        /**
+         * 該当する申請が見つかりませんでした。コードが正しいか確認してください。
+         */
+        "statusNotFound": string;
+        /**
+         * サインイン画面を開く
+         */
+        "goToSignin": string;
+        /**
+         * 確認ページを開く
+         */
+        "openPage": string;
     };
     "_accountDelete": {
         /**
@@ -8589,6 +8735,211 @@ export interface Locale extends ILocale {
              * フォローリクエストを受け取りました
              */
             "title": string;
+        };
+        "resetPassword": {
+            /**
+             * パスワード再設定のリクエスト
+             */
+            "subject": string;
+            /**
+             * パスワードを再設定するには、こちらのリンクをクリックしてください:<br><a href="{link}">{link}</a>
+             */
+            "html": ParameterizedString<"link" | "link">;
+            /**
+             * パスワードを再設定するには、こちらのリンクをクリックしてください: {link}
+             */
+            "text": ParameterizedString<"link">;
+        };
+        "verifyEmail": {
+            /**
+             * メールアドレスの確認
+             */
+            "subject": string;
+            /**
+             * メールアドレスを確認するには、こちらのリンクをクリックしてください:<br><a href="{link}">{link}</a>
+             */
+            "html": ParameterizedString<"link" | "link">;
+            /**
+             * メールアドレスを確認するには、こちらのリンクをクリックしてください: {link}
+             */
+            "text": ParameterizedString<"link">;
+        };
+        "signupConfirm": {
+            /**
+             * 新規登録の確認
+             */
+            "subject": string;
+            /**
+             * 登録を完了するには、こちらのリンクをクリックしてください:<br><a href="{link}">{link}</a>
+             */
+            "html": ParameterizedString<"link" | "link">;
+            /**
+             * 登録を完了するには、こちらのリンクをクリックしてください: {link}
+             */
+            "text": ParameterizedString<"link">;
+        };
+        "signupPendingApproval": {
+            /**
+             * 登録の承認待ちです
+             */
+            "subject": string;
+            /**
+             * ご登録ありがとうございます。管理者の承認が完了するまでサインインできません。審査結果は追ってメールでお知らせします。
+             */
+            "html": string;
+            /**
+             * ご登録ありがとうございます。管理者の承認が完了するまでサインインできません。審査結果は追ってメールでお知らせします。
+             */
+            "text": string;
+        };
+        "signupApproved": {
+            /**
+             * 登録が承認されました
+             */
+            "subject": string;
+            /**
+             * アカウントの登録が承認されました。サインインできるようになりました。
+             */
+            "html": string;
+            /**
+             * アカウントの登録が承認されました。サインインできるようになりました。
+             */
+            "text": string;
+        };
+        "signupDeclined": {
+            /**
+             * 登録が却下されました
+             */
+            "subject": string;
+            /**
+             * アカウントの登録申請は却下されました。
+             */
+            "html": string;
+            /**
+             * アカウントの登録申請は却下されました。
+             */
+            "text": string;
+        };
+        "emojiRequestApproved": {
+            /**
+             * 絵文字申請が承認されました
+             */
+            "subject": string;
+            /**
+             * 申請した絵文字「{name}」が承認され、カスタム絵文字として登録されました。
+             */
+            "html": ParameterizedString<"name">;
+            /**
+             * 申請した絵文字「{name}」が承認され、カスタム絵文字として登録されました。
+             */
+            "text": ParameterizedString<"name">;
+        };
+        "emojiRequestRejected": {
+            /**
+             * 絵文字申請が却下されました
+             */
+            "subject": string;
+            /**
+             * 申請した絵文字「{name}」は却下されました。理由: {reason}
+             */
+            "html": ParameterizedString<"name" | "reason">;
+            /**
+             * 申請した絵文字「{name}」は却下されました。理由: {reason}
+             */
+            "text": ParameterizedString<"name" | "reason">;
+        };
+        "newLogin": {
+            /**
+             * ログインがありました
+             */
+            "subject": string;
+            /**
+             * 新しいログインがありました。このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を更新してください。
+             */
+            "html": string;
+            /**
+             * 新しいログインがありました。このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を更新してください。
+             */
+            "text": string;
+        };
+        "newLoginFailed": {
+            /**
+             * ログインに失敗しました
+             */
+            "subject": string;
+            /**
+             * アカウントへのログイン試行に失敗しました(IPアドレス: {ip})。この試行に心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を確認してください。
+             */
+            "html": ParameterizedString<"ip">;
+            /**
+             * アカウントへのログイン試行に失敗しました(IPアドレス: {ip})。この試行に心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を確認してください。
+             */
+            "text": ParameterizedString<"ip">;
+        };
+        "accountDeleted": {
+            /**
+             * アカウントが削除されました
+             */
+            "subject": string;
+            /**
+             * アカウントが削除されました。
+             */
+            "html": string;
+            /**
+             * アカウントが削除されました。
+             */
+            "text": string;
+        };
+        "moderatorInactivity": {
+            /**
+             * モデレーター不在の通知
+             */
+            "subject": string;
+            /**
+             * モデレーター各位<br><br>モデレーターが一定期間活動していないようです。あと{days}日活動していない状態が続くと招待制に切り替わります。<br>招待制に切り替わることを望まない場合は、Misskeyにログインして最終アクティブ日時を更新してください。
+             */
+            "htmlDays": ParameterizedString<"days">;
+            /**
+             * モデレーター各位
+             *
+             * モデレーターが一定期間活動していないようです。あと{days}日活動していない状態が続くと招待制に切り替わります。
+             * 招待制に切り替わることを望まない場合は、Misskeyにログインして最終アクティブ日時を更新してください。
+             */
+            "textDays": ParameterizedString<"days">;
+            /**
+             * モデレーター各位<br><br>モデレーターが一定期間活動していないようです。あと{hours}時間活動していない状態が続くと招待制に切り替わります。<br>招待制に切り替わることを望まない場合は、Misskeyにログインして最終アクティブ日時を更新してください。
+             */
+            "htmlHours": ParameterizedString<"hours">;
+            /**
+             * モデレーター各位
+             *
+             * モデレーターが一定期間活動していないようです。あと{hours}時間活動していない状態が続くと招待制に切り替わります。
+             * 招待制に切り替わることを望まない場合は、Misskeyにログインして最終アクティブ日時を更新してください。
+             */
+            "textHours": ParameterizedString<"hours">;
+        };
+        "invitationOnlyChanged": {
+            /**
+             * 招待制に変更されました
+             */
+            "subject": string;
+            /**
+             * モデレーター各位<br><br>モデレーターの活動が{days}日間検出されなかったため、招待制に変更されました。<br>招待制を解除するには、コントロールパネルにアクセスする必要があります。
+             */
+            "html": ParameterizedString<"days">;
+            /**
+             * モデレーター各位
+             *
+             * モデレーターの活動が{days}日間検出されなかったため、招待制に変更されました。
+             * 招待制を解除するには、コントロールパネルにアクセスする必要があります。
+             */
+            "text": ParameterizedString<"days">;
+        };
+        "newAbuseReport": {
+            /**
+             * 新しい通報があります
+             */
+            "subject": string;
         };
     };
     "_plugin": {
@@ -8704,6 +9055,192 @@ export interface Locale extends ILocale {
          * キーを作成
          */
         "createKey": string;
+    };
+    "_aboutJuice": {
+        /**
+         * JUICEについて
+         */
+        "title": string;
+        /**
+         * JUICEとは
+         */
+        "description": string;
+        /**
+         * misskey-juiceは、c30 (Zel9278)が開発しているMisskeyの独自フォークです。本家Misskeyから移植した機能に加えて、承認式新規登録・AI生成物フラグ・絵文字申請・ユーザーランキング・リレータイムラインなど、JUICE独自の機能を追加しています。
+         */
+        "descriptionText": string;
+        /**
+         * 開発者
+         */
+        "developer": string;
+        /**
+         * ソースコード・ライセンス
+         */
+        "sourceAndLicense": string;
+        /**
+         * 参考にしたプロジェクト
+         */
+        "inspiredBy": string;
+        /**
+         * JUICE独自の主な機能
+         */
+        "features": string;
+        "_features": {
+            /**
+             * 承認式新規登録(登録理由の入力・モデレーターによる承認/却下・メール未収集でも審査状況を確認できる確認コード)
+             */
+            "approvalSignup": string;
+            /**
+             * 投稿・添付ファイルのAI生成物フラグ表示(ActivityPub連合対応)
+             */
+            "aiGenerated": string;
+            /**
+             * 一般ユーザーによる絵文字申請機能
+             */
+            "emojiRequest": string;
+            /**
+             * 投稿数・リアクション数のユーザーランキング
+             */
+            "ranking": string;
+            /**
+             * 登録済みリレー経由のノートだけを表示するリレータイムライン(複数選択可能な絞り込みフィルタ付き)
+             */
+            "relayTimeline": string;
+            /**
+             * システムメールのユーザーごとの受信言語設定
+             */
+            "emailI18n": string;
+            /**
+             * ウィジェットパネル・ドロワーの表示位置(左右)を切り替え可能
+             */
+            "widgetsSide": string;
+            /**
+             * お知らせへの複数リアクション
+             */
+            "announcementReaction": string;
+            /**
+             * お知らせの投票機能
+             */
+            "announcementPoll": string;
+            /**
+             * LaTeX(数式)表示機能
+             */
+            "latex": string;
+            /**
+             * 他ユーザーに対する自分専用のニックネーム設定(プロフィールページ・ユーザーホバープレビューに表示)
+             */
+            "nickname": string;
+            /**
+             * ログイン試行の失敗をアカウント本人へ通知(アプリ内通知・メール)
+             */
+            "loginFailedNotification": string;
+        };
+        /**
+         * どういう経路で実装されたか
+         */
+        "route": string;
+        "_route": {
+            /**
+             * 本家Misskey
+             */
+            "base": string;
+            /**
+             * syuiloが開発するMisskeyをベースにしているフォーク
+             */
+            "baseDesc": string;
+            /**
+             * misskey-artからの移植
+             */
+            "misskeyArt": string;
+            /**
+             * 1.0リリース時に、お知らせへのリアクション機能やセンシティブ画像のぼかし表示の修正などを移植
+             */
+            "misskeyArtDesc": string;
+            /**
+             * JUICEロードマップの実装
+             */
+            "roadmap": string;
+            /**
+             * 承認式新規登録・AI生成物フラグ・絵文字申請・ユーザーランキング・リレータイムラインなど、計画していたJUICE独自機能を追加
+             */
+            "roadmapDesc": string;
+            /**
+             * ロードマップ外の追加実装
+             */
+            "additional": string;
+            /**
+             * ロードマップの実装過程で見つかった課題への対応や、CherryPick・misskey-tempura等の他フォークを参考にした機能(ニックネーム機能・ログイン失敗通知など)を追加
+             */
+            "additionalDesc": string;
+        };
+    };
+    "_bonsai": {
+        /**
+         * 盆栽
+         */
+        "title": string;
+        /**
+         * 体力
+         */
+        "health": string;
+        /**
+         * 成長
+         */
+        "growth": string;
+        /**
+         * これ以上は大きくならないみたい。ずっと眺めていよう。
+         */
+        "maxGrown": string;
+        /**
+         * 水をあげる
+         */
+        "water": string;
+        /**
+         * 次の水やりまで
+         */
+        "untilNextWatering": string;
+        /**
+         * これまでに{n}回、水やりを忘れて枯れかけている。
+         */
+        "witherCount": ParameterizedString<"n">;
+        /**
+         * 元気いっぱいに育っている。
+         */
+        "flavorThriving": string;
+        /**
+         * まずまず元気そう。
+         */
+        "flavorGood": string;
+        /**
+         * すこし元気が無いかも。水をあげよう。
+         */
+        "flavorLow": string;
+        /**
+         * 枯れかけている…早く水をあげて!
+         */
+        "flavorDying": string;
+        "_stages": {
+            /**
+             * 種
+             */
+            "seed": string;
+            /**
+             * 芽
+             */
+            "sprout": string;
+            /**
+             * 若木
+             */
+            "sapling": string;
+            /**
+             * 盆栽
+             */
+            "bonsai": string;
+            /**
+             * 立派な盆栽
+             */
+            "matureBonsai": string;
+        };
     };
     "_aboutMisskey": {
         /**
@@ -9563,6 +10100,14 @@ export interface Locale extends ILocale {
          */
         "write:flash-likes": string;
         /**
+         * 絵文字申請を見る
+         */
+        "read:emoji-requests": string;
+        /**
+         * 絵文字申請を操作する
+         */
+        "write:emoji-requests": string;
+        /**
          * ユーザーからの通報を見る
          */
         "read:admin:abuse-user-reports": string;
@@ -9638,6 +10183,38 @@ export interface Locale extends ILocale {
          * インスタンスのメタデータを操作する
          */
         "write:admin:meta": string;
+        /**
+         * JUICE独自機能の設定を見る
+         */
+        "read:admin:juice-settings": string;
+        /**
+         * JUICE独自機能の設定を操作する
+         */
+        "write:admin:juice-settings": string;
+        /**
+         * 承認待ちユーザーの一覧を見る
+         */
+        "read:admin:juice-pending-signups": string;
+        /**
+         * ユーザーの登録を承認する
+         */
+        "write:admin:juice-approve-signup": string;
+        /**
+         * ユーザーの登録を却下する
+         */
+        "write:admin:juice-decline-signup": string;
+        /**
+         * 絵文字申請の一覧を見る
+         */
+        "read:admin:emoji-requests": string;
+        /**
+         * 絵文字申請を承認する
+         */
+        "write:admin:emoji-requests-approve": string;
+        /**
+         * 絵文字申請を却下する
+         */
+        "write:admin:emoji-requests-reject": string;
         /**
          * モデレーションノートを操作する
          */
@@ -10989,6 +11566,10 @@ export interface Locale extends ILocale {
          */
         "login": string;
         /**
+         * ログインに失敗しました
+         */
+        "loginFailed": string;
+        /**
          * アクセストークンが作成されました
          */
         "createToken": string;
@@ -11069,6 +11650,10 @@ export interface Locale extends ILocale {
              * ログイン
              */
             "login": string;
+            /**
+             * ログイン失敗
+             */
+            "loginFailed": string;
             /**
              * アクセストークンの作成
              */
@@ -11377,6 +11962,14 @@ export interface Locale extends ILocale {
              * モデレーターが一定期間非アクティブだったため、システムにより招待制へと変更されたとき
              */
             "inactiveModeratorsInvitationOnlyChanged": string;
+            /**
+             * 絵文字申請があったとき(JUICE)
+             */
+            "emojiRequestCreated": string;
+            /**
+             * 承認式登録の申請があったとき(JUICE)
+             */
+            "signupApplicationCreated": string;
         };
         /**
          * Webhookを削除しますか？
@@ -11492,6 +12085,26 @@ export interface Locale extends ILocale {
          * サーバー設定更新
          */
         "updateServerSettings": string;
+        /**
+         * JUICE独自機能の設定更新
+         */
+        "updateJuiceSettings": string;
+        /**
+         * ユーザー登録を承認
+         */
+        "approveSignup": string;
+        /**
+         * ユーザー登録を却下
+         */
+        "declineSignup": string;
+        /**
+         * 絵文字申請を承認
+         */
+        "approveEmojiRequest": string;
+        /**
+         * 絵文字申請を却下
+         */
+        "rejectEmojiRequest": string;
         /**
          * ユーザーのモデレーションノート更新
          */
@@ -13369,5 +13982,311 @@ export interface Locale extends ILocale {
          * MFM
          */
         "mfm": string;
+    };
+    "_juice": {
+        /**
+         * 承認式新規登録
+         */
+        "approvalSignup": string;
+        /**
+         * 新規登録に承認を必須にする
+         */
+        "approvalRequiredForSignup": string;
+        /**
+         * 登録理由の入力を必須にする
+         */
+        "signupReasonRequired": string;
+        /**
+         * 登録理由の最大文字数
+         */
+        "signupReasonMaxLength": string;
+        /**
+         * 参加を申請する
+         */
+        "applyToJoin": string;
+        /**
+         * 参加申請
+         */
+        "applicationTitle": string;
+        /**
+         * 申請する
+         */
+        "apply": string;
+        /**
+         * 招待コードで登録
+         */
+        "registerWithInvitation": string;
+        /**
+         * このサーバーは承認式の新規登録です。登録後、モデレーターまたは管理者が承認するまでサインインできません。
+         */
+        "approvalSignupNotice": string;
+        /**
+         * メールの言語
+         */
+        "emailLanguage": string;
+        /**
+         * パスワード再設定や各種通知など、今後このアカウント宛に送信されるメールで使う言語を選択してください。
+         */
+        "emailLanguageCaption": string;
+        /**
+         * メールの既定の言語
+         */
+        "defaultEmailLang": string;
+        /**
+         * ユーザーがメールの言語を選択していない場合に使う既定の言語です。
+         */
+        "defaultEmailLangCaption": string;
+        /**
+         * AI生成物をミュート
+         */
+        "muteAIGeneratedNotes": string;
+        /**
+         * AI生成物としてマークされたノートの扱いを選択してください。
+         */
+        "muteAIGeneratedNotesDescription": string;
+        /**
+         * ミュート(折りたたんで表示)
+         */
+        "muteAIGeneratedNotesMute": string;
+        /**
+         * ハードミュート(完全に非表示)
+         */
+        "muteAIGeneratedNotesHardMute": string;
+        /**
+         * 絵文字申請の審査結果をメールで受け取る
+         */
+        "receiveEmojiRequestResultEmail": string;
+        /**
+         * 自分が申請した絵文字が承認・却下されたときに、その結果をメールで通知します。
+         */
+        "receiveEmojiRequestResultEmailCaption": string;
+        /**
+         * 絵文字申請
+         */
+        "emojiRequest": string;
+        /**
+         * 絵文字申請機能を有効にする
+         */
+        "emojiRequestEnabled": string;
+        /**
+         * 無効にすると、一般ユーザーの申請ページ・APIの両方が利用できなくなります。
+         */
+        "emojiRequestEnabledCaption": string;
+        /**
+         * ユーザーランキング
+         */
+        "ranking": string;
+        /**
+         * 集計期間(時間)
+         */
+        "rankingPeriodHours": string;
+        /**
+         * リレータイムライン
+         */
+        "relayTimeline": string;
+        /**
+         * リレー
+         */
+        "relayTimelineTab": string;
+        /**
+         * 登録審査状況の確認
+         */
+        "signupCheck": string;
+        /**
+         * リレータイムライン機能を有効にする
+         */
+        "relayTimelineEnabled": string;
+        /**
+         * 登録したリレー経由で届いた公開ノートだけを集めたタイムラインです。無効にすると、タイムラインの導線・API・stream配信のすべてが利用できなくなります。
+         */
+        "relayTimelineEnabledCaption": string;
+        /**
+         * 表示するリレー
+         */
+        "relayTimelineFilter": string;
+        /**
+         * チェックしたリレー経由のノートだけをリレータイムラインに表示します。1つもチェックしない場合は、すべてのリレーのノートを表示します。
+         */
+        "relayTimelineFilterCaption": string;
+        /**
+         * 絞り込めるリレーがありません。
+         */
+        "relayTimelineFilterEmpty": string;
+        /**
+         * ウィジェットの表示位置
+         */
+        "widgetsSide": string;
+        /**
+         * デスクトップの常設ウィジェットパネル、モバイル表示のウィジェットドロワーを画面の左右どちらから表示するかを設定します。
+         */
+        "widgetsSideCaption": string;
+        /**
+         * LaTeX(数式)
+         */
+        "latex": string;
+        /**
+         * LaTeX(数式)表示機能を有効にする
+         */
+        "latexEnabled": string;
+        /**
+         * 無効にすると、ノートなどに含まれる数式は整形されず、ソースがそのままコードとして表示されます。
+         */
+        "latexEnabledCaption": string;
+        /**
+         * 投票を追加
+         */
+        "enablePoll": string;
+        /**
+         * 作成後に選択肢や期限を変更することはできません。
+         */
+        "enablePollCaption": string;
+        /**
+         * 未対応の絵文字申請があります。
+         */
+        "thereArePendingEmojiRequestsWarning": string;
+        /**
+         * 未対応の承認式登録の申請があります。
+         */
+        "thereArePendingSignupApplicationsWarning": string;
+        /**
+         * 新しい絵文字申請があります。
+         */
+        "newEmojiRequestToast": string;
+        /**
+         * 新しい承認式登録の申請があります。
+         */
+        "newSignupApplicationToast": string;
+        /**
+         * ニックネーム
+         */
+        "nickname": string;
+        /**
+         * ニックネームを設定
+         */
+        "addNickname": string;
+    };
+    "_juiceApprovals": {
+        /**
+         * 承認待ちユーザー
+         */
+        "title": string;
+        /**
+         * 承認待ちのユーザーはいません。
+         */
+        "noPendingSignups": string;
+        /**
+         * 登録理由
+         */
+        "reason": string;
+        /**
+         * 承認
+         */
+        "approve": string;
+        /**
+         * 却下
+         */
+        "decline": string;
+        /**
+         * @{username} の登録を承認しますか？
+         */
+        "approveConfirm": ParameterizedString<"username">;
+        /**
+         * @{username} の登録を却下しますか？アカウントは削除されます。この操作は取り消せません。
+         */
+        "declineConfirm": ParameterizedString<"username">;
+    };
+    "_emojiRequestPage": {
+        /**
+         * 申請フォーム
+         */
+        "newRequest": string;
+        /**
+         * 自分の申請一覧
+         */
+        "myRequests": string;
+        /**
+         * この機能は現在無効になっています。
+         */
+        "disabled": string;
+        /**
+         * カテゴリ
+         */
+        "category": string;
+        /**
+         * ライセンス
+         */
+        "license": string;
+        /**
+         * 審査後にこの画像をDriveから削除する
+         */
+        "deleteFileAfterReview": string;
+        /**
+         * 申請する
+         */
+        "submit": string;
+        /**
+         * 申請はまだありません。
+         */
+        "noRequests": string;
+        /**
+         * 審査待ち
+         */
+        "statusPending": string;
+        /**
+         * 承認済み
+         */
+        "statusApproved": string;
+        /**
+         * 却下
+         */
+        "statusRejected": string;
+        /**
+         * 却下理由
+         */
+        "rejectReason": string;
+    };
+    "_emojiRequestApprovals": {
+        /**
+         * 絵文字申請
+         */
+        "title": string;
+        /**
+         * 審査待ちの絵文字申請はありません。
+         */
+        "noPendingRequests": string;
+        /**
+         * 承認
+         */
+        "approve": string;
+        /**
+         * 却下
+         */
+        "reject": string;
+        /**
+         * 「{name}」を絵文字として登録しますか？
+         */
+        "approveConfirm": ParameterizedString<"name">;
+        /**
+         * 却下理由を入力してください
+         */
+        "rejectReasonTitle": string;
+    };
+    "_juiceRanking": {
+        /**
+         * 集計期間: 直近{hours}時間ごと
+         */
+        "periodInfo": ParameterizedString<"hours">;
+        /**
+         * 投稿数ランキング
+         */
+        "posts": string;
+        /**
+         * リアクション数ランキング
+         */
+        "reactions": string;
+        /**
+         * まだランキングデータがありません。
+         */
+        "empty": string;
     };
 }

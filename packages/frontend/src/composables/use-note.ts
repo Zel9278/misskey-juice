@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { Ref } from 'vue';
 import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
@@ -13,6 +13,7 @@ import { host } from '@@/js/config.js';
 import { pleaseLogin } from '@/utility/please-login.js';
 import type { OpenOnRemoteOptions } from '@/utility/please-login.js';
 import { checkWordMute } from '@/utility/check-word-mute.js';
+import { checkAIGeneratedMute } from '@/utility/check-ai-generated-mute.js';
 import { misskeyApi, misskeyApiGet } from '@/utility/misskey-api.js';
 import * as sound from '@/utility/sound.js';
 import * as os from '@/os.js';
@@ -65,7 +66,7 @@ export interface UseNoteOptions {
 export function calculateMuteStatus<
 	CheckOnly extends boolean,
 	CheckForSensitiveMedia extends boolean,
-	ReturnTypeA = CheckOnly extends true ? boolean : Array<string | string[]> | false | 'sensitiveMute',
+	ReturnTypeA = CheckOnly extends true ? boolean : Array<string | string[]> | false | 'sensitiveMute' | 'aiGeneratedMute',
 	ReturnTypeB = CheckForSensitiveMedia extends true ? ReturnTypeA : Exclude<ReturnTypeA, 'sensitiveMute'>,
 >(
 	noteToCheck: Misskey.entities.Note,
@@ -145,8 +146,39 @@ export function useNote(
 	const translation = ref<Misskey.entities.NotesTranslateResponse | null>(null);
 
 	// ミュート判定
-	const muted = ref($i ? calculateMuteStatus(appearNote, $i, $i.mutedWords, inTimeline && !tl_withSensitive.value) : false);
-	const hardMuted = ref(props.withHardMute && $i ? calculateMuteStatus(appearNote, $i, $i.hardMutedWords, inTimeline && !tl_withSensitive.value, true) : false);
+	// JUICE: AI生成物ミュートはワードミュートとは独立した設定のため、calculateMuteStatusの外で判定する。
+	// 自分自身除外・設定値の解釈は check-ai-generated-mute.ts の checkAIGeneratedMute に一本化し、
+	// MkNoteSub.vue と実装がずれないようにする。
+	// ノートの isAIGenerated は投稿後にストリーム経由で変わりうる ($appearNote.isAIGenerated, aiGeneratedChanged
+	// イベント) ため、初期値の算出だけでなく watch でも追従させる(下記)。
+	const aiGeneratedMuteMode = computed(() => checkAIGeneratedMute({ userId: appearNote.userId, isAIGenerated: $appearNote.isAIGenerated }, $i));
+	const isAIGeneratedMuteTarget = computed(() => aiGeneratedMuteMode.value !== 'none');
+
+	const muted = ref(
+		aiGeneratedMuteMode.value === 'mute' ? 'aiGeneratedMute' as const :
+		$i ? calculateMuteStatus(appearNote, $i, $i.mutedWords, inTimeline && !tl_withSensitive.value) : false,
+	);
+	const hardMuted = ref(
+		aiGeneratedMuteMode.value === 'hardMute' ? true :
+		props.withHardMute && $i ? calculateMuteStatus(appearNote, $i, $i.hardMutedWords, inTimeline && !tl_withSensitive.value, true) : false,
+	);
+
+	// JUICE: AI生成物フラグが後から変わった場合(投稿者が notes/juice/update-ai-generated で切り替えた等)に
+	// ミュート判定もバッジ表示と同様に追従させる。ただし hardMuted は理由を持たない単一の真偽値なので、
+	// 別の理由(ワードハードミュート等)で既に true になっているケースを誤って解除しないよう、
+	// 「ミュート対象になった」方向のみ確実に反映し、「対象から外れた」方向は muted の理由が
+	// 'aiGeneratedMute' だったときだけ安全に戻す。
+	watch(isAIGeneratedMuteTarget, (isTarget) => {
+		if (isTarget) {
+			if (aiGeneratedMuteMode.value === 'hardMute') {
+				hardMuted.value = true;
+			} else if (aiGeneratedMuteMode.value === 'mute' && muted.value === false) {
+				muted.value = 'aiGeneratedMute';
+			}
+		} else if (muted.value === 'aiGeneratedMute') {
+			muted.value = false;
+		}
+	});
 
 	// 計算プロパティ (Computed)
 	const isMyRenote = computed(() => $i && ($i.id === rawNote.userId));

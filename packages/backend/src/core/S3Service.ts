@@ -7,7 +7,7 @@ import { URL } from 'node:url';
 import * as http from 'node:http';
 import * as https from 'node:https';
 import { Injectable } from '@nestjs/common';
-import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { NodeHttpHandler, NodeHttpHandlerOptions } from '@smithy/node-http-handler';
 import type { MiMeta } from '@/models/Meta.js';
@@ -67,5 +67,27 @@ export class S3Service {
 	public delete(meta: MiMeta, input: DeleteObjectCommandInput) {
 		const client = this.getS3Client(meta);
 		return client.send(new DeleteObjectCommand(input));
+	}
+
+	// JUICE: 孤立オブジェクトの自動クリーンアップ(misskey-tempuraを参考)で使う、
+	// バケット内のオブジェクト一覧を1ページ分取得するためのメソッド。
+	// lastModifiedを返すのは、アップロード直後(S3への書き込み完了後、DriveFile行の
+	// insertが完了するまでの窓)のオブジェクトを孤立候補から除外できるようにするため。
+	@bindThis
+	public async list(meta: MiMeta, params: { prefix?: string; continuationToken?: string; maxKeys?: number }): Promise<{ objects: { key: string; lastModified?: Date }[]; nextContinuationToken?: string }> {
+		const client = this.getS3Client(meta);
+		const res = await client.send(new ListObjectsV2Command({
+			Bucket: meta.objectStorageBucket ?? undefined,
+			Prefix: params.prefix,
+			ContinuationToken: params.continuationToken,
+			MaxKeys: params.maxKeys,
+		}));
+
+		return {
+			objects: (res.Contents ?? [])
+				.filter((o): o is typeof o & { Key: string } => o.Key != null)
+				.map(o => ({ key: o.Key, lastModified: o.LastModified })),
+			nextContinuationToken: res.NextContinuationToken,
+		};
 	}
 }

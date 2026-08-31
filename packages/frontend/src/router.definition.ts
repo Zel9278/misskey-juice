@@ -109,6 +109,10 @@ export const ROUTE_DEF = [{
 		name: 'email',
 		component: page(() => import('@/pages/settings/email.vue')),
 	}, {
+		path: '/juice',
+		name: 'juice',
+		component: page(() => import('@/pages/settings/juice.vue')),
+	}, {
 		path: '/security',
 		name: 'security',
 		component: page(() => import('@/pages/settings/security.vue')),
@@ -203,6 +207,9 @@ export const ROUTE_DEF = [{
 	path: '/signup-complete/:code',
 	component: page(() => import('@/pages/signup-complete.vue')),
 }, {
+	path: '/signup-check',
+	component: page(() => import('@/pages/signup-check.vue')),
+}, {
 	path: '/verify-email/:code',
 	component: page(() => import('@/pages/verify-email.vue')),
 }, {
@@ -221,6 +228,9 @@ export const ROUTE_DEF = [{
 }, {
 	path: '/about-misskey',
 	component: page(() => import('@/pages/about-misskey.vue')),
+}, {
+	path: '/about-juice',
+	component: page(() => import('@/pages/about-juice.vue')),
 }, {
 	path: '/invite',
 	name: 'invite',
@@ -356,6 +366,9 @@ export const ROUTE_DEF = [{
 }, {
 	path: '/custom-emojis-manager',
 	component: page(() => import('@/pages/custom-emojis-manager.vue')),
+}, {
+	path: '/emoji-request',
+	component: page(() => import('@/pages/emoji-request.vue')),
 }, {
 	path: '/avatar-decorations',
 	name: 'avatarDecorations',
@@ -495,6 +508,18 @@ export const ROUTE_DEF = [{
 		name: 'performance',
 		component: page(() => import('@/pages/admin/performance.vue')),
 	}, {
+		path: '/juice',
+		name: 'juice',
+		component: page(() => import('@/pages/admin/juice.vue')),
+	}, {
+		path: '/juice-approvals',
+		name: 'juice-approvals',
+		component: page(() => import('@/pages/admin/juice-approvals.vue')),
+	}, {
+		path: '/emoji-requests',
+		name: 'emoji-requests',
+		component: page(() => import('@/pages/admin/emoji-requests.vue')),
+	}, {
 		path: '/invites',
 		name: 'invites',
 		component: page(() => import('@/pages/admin/invites.vue')),
@@ -581,6 +606,11 @@ export const ROUTE_DEF = [{
 }, {
 	path: '/bubble-game',
 	component: page(() => import('@/pages/drop-and-fusion.vue')),
+	loginRequired: true,
+}, {
+	// JUICE: 盆栽を育てるゲーム
+	path: '/bonsai',
+	component: page(() => import('@/pages/bonsai.vue')),
 	loginRequired: true,
 }, {
 	path: '/reversi',

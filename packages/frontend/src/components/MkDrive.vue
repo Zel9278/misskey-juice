@@ -236,6 +236,7 @@ watch([selectedFolders, isRootSelected], () => {
 const fetching = ref(true);
 
 const sortModeSelect = ref<NonNullable<Misskey.entities.DriveFilesRequest['sort']>>('+createdAt');
+const onlyAIGenerated = ref(false);
 
 const filesPaginator = markRaw(new Paginator('drive/files', {
 	limit: 30,
@@ -243,6 +244,7 @@ const filesPaginator = markRaw(new Paginator('drive/files', {
 	params: () => ({ // 自動でリロードしたくないためcomputedParamsは使わない
 		folderId: folder.value ? folder.value.id : null,
 		type: props.type,
+		isAIGenerated: onlyAIGenerated.value || undefined,
 		sort: ['-createdAt', '+createdAt'].includes(sortModeSelect.value) ? null : sortModeSelect.value,
 	}),
 }));
@@ -269,6 +271,9 @@ const shouldBeGroupedByDate = computed(() => ['+createdAt', '-createdAt'].includ
 
 watch(folder, () => emit('cd', folder.value));
 watch(sortModeSelect, () => {
+	initialize();
+});
+watch(onlyAIGenerated, () => {
 	initialize();
 });
 
@@ -685,6 +690,11 @@ function getMenu() {
 		icon: 'ti ti-folder-plus',
 		action: () => { createFolder(); },
 	}, { type: 'divider' }, {
+		type: 'switch',
+		text: i18n.ts.aiGeneratedOnly,
+		icon: 'ti ti-sparkles',
+		ref: onlyAIGenerated,
+	}, {
 		type: 'switch',
 		text: i18n.ts.edit,
 		icon: 'ti ti-pointer',

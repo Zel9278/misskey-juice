@@ -3,8 +3,8 @@ name: Test (frontend)
 on:
   push:
     branches:
-      - master
-      - develop
+      - juice/main
+      - juice/dev
     paths:
       - packages/frontend/**
       # for permissions

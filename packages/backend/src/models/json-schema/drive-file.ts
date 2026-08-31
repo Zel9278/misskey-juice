@@ -42,6 +42,10 @@ export const packedDriveFileSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		isAIGenerated: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 		blurhash: {
 			type: 'string',
 			optional: false, nullable: true,

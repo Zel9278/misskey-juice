@@ -25,6 +25,7 @@ import { genEmbedCode } from '@/utility/get-embed-code.js';
 import { prefer } from '@/preferences.js';
 import { getPluginHandlers } from '@/plugin.js';
 import { globalEvents } from '@/events.js';
+import { noteEvents } from '@/composables/use-note-capture.js';
 
 const isInBrowserTranslationAvailable = (
 	'LanguageDetector' in window &&
@@ -258,6 +259,17 @@ export function getNoteMenu(props: {
 		});
 	}
 
+	function toggleAIGenerated(value: boolean): void {
+		os.apiWithDialog('notes/juice/update-ai-generated', {
+			noteId: appearNote.id,
+			isAIGenerated: value,
+		}).then(() => {
+			// react()と同じパターン: ストリームの受信を待たずローカルでも同じイベントを発火し、
+			// $appearNote (use-note-capture.ts) 経由でリアクティブに反映させる
+			noteEvents.emit(`aiGeneratedChanged:${appearNote.id}`, { isAIGenerated: value });
+		});
+	}
+
 	async function unclip(): Promise<void> {
 		if (!props.currentClip) return;
 		os.apiWithDialog('clips/remove-note', { clipId: props.currentClip.id, noteId: appearNote.id });
@@ -453,6 +465,12 @@ export function getNoteMenu(props: {
 					action: () => togglePin(true),
 				});
 			}
+
+			menuItems.push({
+				icon: 'ti ti-sparkles',
+				text: appearNote.isAIGenerated ? i18n.ts.unmarkAsAIGenerated : i18n.ts.markAsAIGenerated,
+				action: () => toggleAIGenerated(!appearNote.isAIGenerated),
+			});
 		}
 
 		menuItems.push({

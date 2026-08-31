@@ -98,13 +98,17 @@ export class RelayService {
 		}));
 	}
 
+	/**
+	 * 渡されたactorが登録済みリレーのものであれば、一致したMiRelayを返す(JUICE)。
+	 * リレーTL用にどのリレー経由で届いたかを特定するために使う。
+	 */
 	@bindThis
-	public async isRelayActor(actor: { inbox: string | null; sharedInbox: string | null }): Promise<boolean> {
+	public async getRelayForActor(actor: { inbox: string | null; sharedInbox: string | null }): Promise<MiRelay | null> {
 		const relays = await this.getAcceptedRelays();
-		return relays.some(relay =>
+		return relays.find(relay =>
 			(actor.inbox != null && relay.inbox === actor.inbox)
 			|| (actor.sharedInbox != null && relay.inbox === actor.sharedInbox),
-		);
+		) ?? null;
 	}
 
 	@bindThis

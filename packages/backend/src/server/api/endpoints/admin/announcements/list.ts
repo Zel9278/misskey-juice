@@ -10,6 +10,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { QueryService } from '@/core/QueryService.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
+import { AnnouncementPollService } from '@/core/AnnouncementPollService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -87,6 +88,39 @@ export const meta = {
 					type: 'number',
 					optional: false, nullable: false,
 				},
+				poll: {
+					type: 'object',
+					optional: false, nullable: true,
+					properties: {
+						expiresAt: {
+							type: 'string',
+							optional: false, nullable: true,
+							format: 'date-time',
+						},
+						multiple: {
+							type: 'boolean',
+							optional: false, nullable: false,
+						},
+						choices: {
+							type: 'array',
+							optional: false, nullable: false,
+							items: {
+								type: 'object',
+								optional: false, nullable: false,
+								properties: {
+									text: {
+										type: 'string',
+										optional: false, nullable: false,
+									},
+									votes: {
+										type: 'number',
+										optional: false, nullable: false,
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	},
@@ -117,6 +151,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private queryService: QueryService,
 		private idService: IdService,
+		private announcementPollService: AnnouncementPollService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.announcementsRepository.createQueryBuilder('announcement'), ps.sinceId, ps.untilId, ps.sinceDate, ps.untilDate);
@@ -143,6 +178,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}));
 			}
 
+			const polls = await this.announcementPollService.getPolls(announcements.map(a => a.id));
+
 			return announcements.map(announcement => ({
 				id: announcement.id,
 				createdAt: this.idService.parse(announcement.id).date.toISOString(),
@@ -158,6 +195,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				needConfirmationToRead: announcement.needConfirmationToRead,
 				userId: announcement.userId,
 				reads: reads.get(announcement)!,
+				poll: polls.has(announcement.id) ? {
+					multiple: polls.get(announcement.id)!.multiple,
+					expiresAt: polls.get(announcement.id)!.expiresAt?.toISOString() ?? null,
+					choices: polls.get(announcement.id)!.choices.map((text, i) => ({
+						text,
+						votes: polls.get(announcement.id)!.votes[i],
+					})),
+				} : null,
 			}));
 		});
 	}

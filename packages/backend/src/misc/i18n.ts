@@ -22,7 +22,7 @@ export class I18n<T extends Record<string, any>> {
 
 			if (args) {
 				for (const [k, v] of Object.entries(args)) {
-					str = str.replace(`{${k}}`, v);
+					str = str.replaceAll(`{${k}}`, v);
 				}
 			}
 			return str;

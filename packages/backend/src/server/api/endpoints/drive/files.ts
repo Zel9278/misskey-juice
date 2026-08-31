@@ -38,6 +38,7 @@ export const paramDef = {
 		untilDate: { type: 'integer' },
 		folderId: { type: 'string', format: 'misskey:id', nullable: true, default: null },
 		type: { type: 'string', nullable: true, pattern: /^[a-zA-Z\/\-*]+$/.toString().slice(1, -1) },
+		isAIGenerated: { type: 'boolean' },
 		sort: { type: 'string', nullable: true, enum: ['+createdAt', '-createdAt', '+name', '-name', '+size', '-size', null] },
 	},
 	required: [],
@@ -68,6 +69,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				} else {
 					query.andWhere('file.type = :type', { type: ps.type });
 				}
+			}
+
+			if (ps.isAIGenerated) {
+				query.andWhere('file.isAIGenerated = :isAIGenerated', { isAIGenerated: true });
 			}
 
 			switch (ps.sort) {

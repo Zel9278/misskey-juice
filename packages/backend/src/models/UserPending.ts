@@ -31,4 +31,14 @@ export class MiUserPending {
 		length: 128,
 	})
 	public password: string;
+
+	@Column('text', {
+		nullable: true,
+	})
+	public reason: string | null;
+
+	@Column('varchar', {
+		length: 32, nullable: true,
+	})
+	public emailLang: string | null;
 }

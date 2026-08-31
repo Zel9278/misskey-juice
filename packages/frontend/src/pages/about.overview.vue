@@ -31,6 +31,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #icon><i class="ti ti-info-circle"></i></template>
 				{{ i18n.ts.aboutMisskey }}
 			</FormLink>
+			<FormLink to="/about-juice">
+				<template #icon><i class="ti ti-droplet"></i></template>
+				{{ i18n.ts._aboutJuice.title }}<span class="_juice">JUICE</span>
+			</FormLink>
 			<FormLink v-if="instance.repositoryUrl || instance.providesTarball" :to="instance.repositoryUrl || `/tarball/misskey-${version}.tar.gz`" external>
 				<template #icon><i class="ti ti-code"></i></template>
 				{{ i18n.ts.sourceCode }}

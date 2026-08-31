@@ -11,6 +11,7 @@ import {
 	AbuseReportNotificationRecipientEntityService,
 } from '@/core/entities/AbuseReportNotificationRecipientEntityService.js';
 import { AbuseReportNotificationService } from '@/core/AbuseReportNotificationService.js';
+import { JuiceAdminNotificationService } from '@/core/JuiceAdminNotificationService.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserSearchService } from '@/core/UserSearchService.js';
 import { WebhookTestService } from '@/core/WebhookTestService.js';
@@ -38,6 +39,9 @@ import { IdService } from './IdService.js';
 import { ImageProcessingService } from './ImageProcessingService.js';
 import { SystemAccountService } from './SystemAccountService.js';
 import { InternalStorageService } from './InternalStorageService.js';
+import { JuiceSettingsService } from './JuiceSettingsService.js';
+import { JuiceUserRankingService } from './JuiceUserRankingService.js';
+import { EmailI18nService } from './EmailI18nService.js';
 import { MetaService } from './MetaService.js';
 import { MfmService } from './MfmService.js';
 import { ModerationLogService } from './ModerationLogService.js';
@@ -51,6 +55,7 @@ import { PushNotificationService } from './PushNotificationService.js';
 import { QueryService } from './QueryService.js';
 import { ReactionService } from './ReactionService.js';
 import { AnnouncementReactionService } from './AnnouncementReactionService.js';
+import { AnnouncementPollService } from './AnnouncementPollService.js';
 import { ReactionsBufferingService } from './ReactionsBufferingService.js';
 import { RelayService } from './RelayService.js';
 import { RoleService } from './RoleService.js';
@@ -185,6 +190,9 @@ const $HttpRequestService: Provider = { provide: 'HttpRequestService', useExisti
 const $IdService: Provider = { provide: 'IdService', useExisting: IdService };
 const $ImageProcessingService: Provider = { provide: 'ImageProcessingService', useExisting: ImageProcessingService };
 const $InternalStorageService: Provider = { provide: 'InternalStorageService', useExisting: InternalStorageService };
+const $JuiceSettingsService: Provider = { provide: 'JuiceSettingsService', useExisting: JuiceSettingsService };
+const $JuiceUserRankingService: Provider = { provide: 'JuiceUserRankingService', useExisting: JuiceUserRankingService };
+const $EmailI18nService: Provider = { provide: 'EmailI18nService', useExisting: EmailI18nService };
 const $MetaService: Provider = { provide: 'MetaService', useExisting: MetaService };
 const $MfmService: Provider = { provide: 'MfmService', useExisting: MfmService };
 const $ModerationLogService: Provider = { provide: 'ModerationLogService', useExisting: ModerationLogService };
@@ -199,6 +207,7 @@ const $PushNotificationService: Provider = { provide: 'PushNotificationService',
 const $QueryService: Provider = { provide: 'QueryService', useExisting: QueryService };
 const $ReactionService: Provider = { provide: 'ReactionService', useExisting: ReactionService };
 const $AnnouncementReactionService: Provider = { provide: 'AnnouncementReactionService', useExisting: AnnouncementReactionService };
+const $AnnouncementPollService: Provider = { provide: 'AnnouncementPollService', useExisting: AnnouncementPollService };
 const $ReactionsBufferingService: Provider = { provide: 'ReactionsBufferingService', useExisting: ReactionsBufferingService };
 const $RelayService: Provider = { provide: 'RelayService', useExisting: RelayService };
 const $RoleService: Provider = { provide: 'RoleService', useExisting: RoleService };
@@ -319,6 +328,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		LoggerService,
 		AbuseReportService,
 		AbuseReportNotificationService,
+		JuiceAdminNotificationService,
 		AccountMoveService,
 		AccountUpdateService,
 		AiService,
@@ -340,6 +350,9 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		IdService,
 		ImageProcessingService,
 		InternalStorageService,
+		JuiceSettingsService,
+		JuiceUserRankingService,
+		EmailI18nService,
 		MetaService,
 		MfmService,
 		ModerationLogService,
@@ -354,6 +367,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		QueryService,
 		ReactionService,
 		AnnouncementReactionService,
+		AnnouncementPollService,
 		ReactionsBufferingService,
 		RelayService,
 		RoleService,
@@ -493,6 +507,9 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$IdService,
 		$ImageProcessingService,
 		$InternalStorageService,
+		$JuiceSettingsService,
+		$JuiceUserRankingService,
+		$EmailI18nService,
 		$MetaService,
 		$MfmService,
 		$ModerationLogService,
@@ -507,6 +524,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$QueryService,
 		$ReactionService,
 		$AnnouncementReactionService,
+		$AnnouncementPollService,
 		$ReactionsBufferingService,
 		$RelayService,
 		$RoleService,
@@ -625,6 +643,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		LoggerService,
 		AbuseReportService,
 		AbuseReportNotificationService,
+		JuiceAdminNotificationService,
 		AccountMoveService,
 		AccountUpdateService,
 		AiService,
@@ -646,6 +665,9 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		IdService,
 		ImageProcessingService,
 		InternalStorageService,
+		JuiceSettingsService,
+		JuiceUserRankingService,
+		EmailI18nService,
 		MetaService,
 		MfmService,
 		ModerationLogService,
@@ -660,6 +682,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		QueryService,
 		ReactionService,
 		AnnouncementReactionService,
+		AnnouncementPollService,
 		ReactionsBufferingService,
 		RelayService,
 		RoleService,
@@ -798,6 +821,9 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$IdService,
 		$ImageProcessingService,
 		$InternalStorageService,
+		$JuiceSettingsService,
+		$JuiceUserRankingService,
+		$EmailI18nService,
 		$MetaService,
 		$MfmService,
 		$ModerationLogService,
@@ -812,6 +838,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$QueryService,
 		$ReactionService,
 		$AnnouncementReactionService,
+		$AnnouncementPollService,
 		$ReactionsBufferingService,
 		$RelayService,
 		$RoleService,

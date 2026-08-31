@@ -25,8 +25,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<img :class="$style.labelImg" src="/client-assets/label-red.svg"/>
 			<p :class="$style.labelText">{{ i18n.ts.sensitive }}</p>
 		</div>
-
 		<MkDriveFileThumbnail :class="$style.thumbnail" :file="file" fit="contain"/>
+
+		<div v-if="file.isAIGenerated" v-tooltip="i18n.ts.aiGenerated" :class="$style.aiGeneratedBadge" :aria-label="i18n.ts.aiGenerated" role="img"><i class="ti ti-sparkles"></i></div>
 
 		<p :class="$style.name">
 			<span>{{ file.name.lastIndexOf('.') != -1 ? file.name.substring(0, file.name.lastIndexOf('.')) : file.name }}</span>
@@ -217,6 +218,23 @@ function onDragend() {
 	width: 110px;
 	height: 110px;
 	margin: auto;
+}
+
+.aiGeneratedBadge {
+	position: absolute;
+	top: 96px;
+	right: calc(50% - 57px);
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: var(--MI_THEME-accent);
+	color: var(--MI_THEME-fgOnAccent);
+	font-size: 11px;
+	pointer-events: none;
 }
 
 .name {

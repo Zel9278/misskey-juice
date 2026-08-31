@@ -8,7 +8,7 @@ process.env.NODE_ENV = 'test';
 import * as assert from 'assert';
 import { beforeAll, beforeEach, describe, test } from 'vitest';
 import { inspect } from 'node:util';
-import { api, post, role, signup, successfulApiCall, uploadFile } from '../utils.js';
+import { api, failedApiCall, post, role, signup, successfulApiCall, uploadFile } from '../utils.js';
 import type * as misskey from 'misskey-js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 
@@ -53,7 +53,7 @@ describe('ユーザー', () => {
 	};
 
 	// UserDetailedNotMeのキーが過不足なく入っている？
-	const userDetailedNotMe = (user: misskey.entities.SignupResponse): Partial<misskey.entities.UserDetailedNotMe> => {
+	const userDetailedNotMe = (user: misskey.entities.SignupSuccessResponse): Partial<misskey.entities.UserDetailedNotMe> => {
 		return stripUndefined({
 			...userLite(user),
 			url: user.url,
@@ -88,11 +88,12 @@ describe('ユーザー', () => {
 			canChat: user.canChat,
 			roles: user.roles,
 			memo: user.memo,
+			nickname: user.nickname, // JUICE
 		});
 	};
 
 	// Relations関連のキーが過不足なく入っている？
-	const userDetailedNotMeWithRelations = (user: misskey.entities.SignupResponse): Partial<misskey.entities.UserDetailedNotMe> => {
+	const userDetailedNotMeWithRelations = (user: misskey.entities.SignupSuccessResponse): Partial<misskey.entities.UserDetailedNotMe> => {
 		return stripUndefined({
 			...userDetailedNotMe(user),
 			isFollowing: user.isFollowing ?? false,
@@ -110,7 +111,7 @@ describe('ユーザー', () => {
 	};
 
 	// MeDetailedのキーが過不足なく入っている？
-	const meDetailed = (user: misskey.entities.SignupResponse, security = false): Partial<misskey.entities.MeDetailed> => {
+	const meDetailed = (user: misskey.entities.SignupSuccessResponse, security = false): Partial<misskey.entities.MeDetailed> => {
 		return stripUndefined({
 			...userDetailedNotMe(user),
 			avatarId: user.avatarId,
@@ -120,6 +121,7 @@ describe('ユーザー', () => {
 			isAdmin: user.isAdmin,
 			injectFeaturedNote: user.injectFeaturedNote,
 			receiveAnnouncementEmail: user.receiveAnnouncementEmail,
+			receiveEmojiRequestResultEmail: user.receiveEmojiRequestResultEmail,
 			alwaysMarkNsfw: user.alwaysMarkNsfw,
 			autoSensitive: user.autoSensitive,
 			carefulBot: user.carefulBot,
@@ -156,50 +158,52 @@ describe('ユーザー', () => {
 			...(security ? {
 				email: user.email,
 				emailVerified: user.emailVerified,
+				emailLang: user.emailLang,
+				muteAIGeneratedNotes: user.muteAIGeneratedNotes,
 				securityKeysList: user.securityKeysList,
 			} : {}),
 		});
 	};
 
-	let root: misskey.entities.SignupResponse;
-	let alice: misskey.entities.SignupResponse;
+	let root: misskey.entities.SignupSuccessResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
 	let aliceNote: misskey.entities.Note;
 
-	let bob: misskey.entities.SignupResponse;
+	let bob: misskey.entities.SignupSuccessResponse;
 
 	// NOTE: これがないと落ちる（bob の updatedAt が null になってしまうため？）
 	let bobNote: misskey.entities.Note; // eslint-disable-line @typescript-eslint/no-unused-vars
 
-	let carol: misskey.entities.SignupResponse;
+	let carol: misskey.entities.SignupSuccessResponse;
 
-	let usersReplying: misskey.entities.SignupResponse[];
+	let usersReplying: misskey.entities.SignupSuccessResponse[];
 
-	let userNoNote: misskey.entities.SignupResponse;
-	let userNotExplorable: misskey.entities.SignupResponse;
-	let userLocking: misskey.entities.SignupResponse;
-	let userAdmin: misskey.entities.SignupResponse;
+	let userNoNote: misskey.entities.SignupSuccessResponse;
+	let userNotExplorable: misskey.entities.SignupSuccessResponse;
+	let userLocking: misskey.entities.SignupSuccessResponse;
+	let userAdmin: misskey.entities.SignupSuccessResponse;
 	let roleAdmin: misskey.entities.Role;
-	let userModerator: misskey.entities.SignupResponse;
+	let userModerator: misskey.entities.SignupSuccessResponse;
 	let roleModerator: misskey.entities.Role;
-	let userRolePublic: misskey.entities.SignupResponse;
+	let userRolePublic: misskey.entities.SignupSuccessResponse;
 	let rolePublic: misskey.entities.Role;
-	let userRoleBadge: misskey.entities.SignupResponse;
+	let userRoleBadge: misskey.entities.SignupSuccessResponse;
 	let roleBadge: misskey.entities.Role;
-	let userSilenced: misskey.entities.SignupResponse;
+	let userSilenced: misskey.entities.SignupSuccessResponse;
 	let roleSilenced: misskey.entities.Role;
-	let userSuspended: misskey.entities.SignupResponse;
-	let userDeletedBySelf: misskey.entities.SignupResponse;
-	let userDeletedByAdmin: misskey.entities.SignupResponse;
-	let userFollowingAlice: misskey.entities.SignupResponse;
-	let userFollowedByAlice: misskey.entities.SignupResponse;
-	let userBlockingAlice: misskey.entities.SignupResponse;
-	let userBlockedByAlice: misskey.entities.SignupResponse;
-	let userMutingAlice: misskey.entities.SignupResponse;
-	let userMutedByAlice: misskey.entities.SignupResponse;
-	let userRnMutingAlice: misskey.entities.SignupResponse;
-	let userRnMutedByAlice: misskey.entities.SignupResponse;
-	let userFollowRequesting: misskey.entities.SignupResponse;
-	let userFollowRequested: misskey.entities.SignupResponse;
+	let userSuspended: misskey.entities.SignupSuccessResponse;
+	let userDeletedBySelf: misskey.entities.SignupSuccessResponse;
+	let userDeletedByAdmin: misskey.entities.SignupSuccessResponse;
+	let userFollowingAlice: misskey.entities.SignupSuccessResponse;
+	let userFollowedByAlice: misskey.entities.SignupSuccessResponse;
+	let userBlockingAlice: misskey.entities.SignupSuccessResponse;
+	let userBlockedByAlice: misskey.entities.SignupSuccessResponse;
+	let userMutingAlice: misskey.entities.SignupSuccessResponse;
+	let userMutedByAlice: misskey.entities.SignupSuccessResponse;
+	let userRnMutingAlice: misskey.entities.SignupSuccessResponse;
+	let userRnMutedByAlice: misskey.entities.SignupSuccessResponse;
+	let userFollowRequesting: misskey.entities.SignupSuccessResponse;
+	let userFollowRequested: misskey.entities.SignupSuccessResponse;
 
 	beforeAll(async () => {
 		root = await signup({ username: 'root' });
@@ -218,7 +222,7 @@ describe('ユーザー', () => {
 			}
 
 			return (await acc).concat(u);
-		}, Promise.resolve([] as misskey.entities.SignupResponse[]));
+		}, Promise.resolve([] as misskey.entities.SignupSuccessResponse[]));
 
 		userNoNote = await signup({ username: 'userNoNote' });
 		userNotExplorable = await signup({ username: 'userNotExplorable' });
@@ -299,7 +303,7 @@ describe('ユーザー', () => {
 			endpoint: 'signup',
 			parameters: { username: 'zoe', password: 'password' },
 			user: undefined,
-		}) as unknown as misskey.entities.SignupResponse; // BUG MeDetailedに足りないキーがある
+		}) as unknown as misskey.entities.SignupSuccessResponse; // BUG MeDetailedに足りないキーがある
 
 		// signupの時はtokenが含まれる特別なMeDetailedが返ってくる
 		assert.match(response.token, /[a-zA-Z0-9]{16}/);
@@ -360,6 +364,7 @@ describe('ユーザー', () => {
 		assert.strictEqual(response.isAdmin, false);
 		assert.strictEqual(response.injectFeaturedNote, true);
 		assert.strictEqual(response.receiveAnnouncementEmail, true);
+		assert.strictEqual(response.receiveEmojiRequestResultEmail, true);
 		assert.strictEqual(response.alwaysMarkNsfw, false);
 		assert.strictEqual(response.autoSensitive, false);
 		assert.strictEqual(response.carefulBot, false);
@@ -458,6 +463,8 @@ describe('ユーザー', () => {
 		{ parameters: () => ({ injectFeaturedNote: false }) },
 		{ parameters: () => ({ receiveAnnouncementEmail: true }) },
 		{ parameters: () => ({ receiveAnnouncementEmail: false }) },
+		{ parameters: () => ({ receiveEmojiRequestResultEmail: true }) },
+		{ parameters: () => ({ receiveEmojiRequestResultEmail: false }) },
 		{ parameters: () => ({ alwaysMarkNsfw: true }) },
 		{ parameters: () => ({ alwaysMarkNsfw: false }) },
 		{ parameters: () => ({ autoSensitive: true }) },
@@ -560,6 +567,41 @@ describe('ユーザー', () => {
 		await successfulApiCall({ endpoint: 'users/update-memo', parameters, user: alice });
 		const response = await show(bob.id, alice);
 		assert.deepStrictEqual(response, expected);
+	});
+
+	//#endregion
+	//#region ニックネームの更新(users/update-nickname、JUICE)
+
+	test.each([
+		{ label: '最大長', nickname: 'x'.repeat(128) },
+		{ label: '空文字', nickname: '', expects: null },
+		{ label: 'null', nickname: null },
+	])('を書き換えることができる(ニックネームを$labelに)', async ({ nickname, expects }) => {
+		const expected = { ...await show(bob.id, alice), nickname: expects === undefined ? nickname : expects };
+		const parameters = { userId: bob.id, nickname };
+		await successfulApiCall({ endpoint: 'users/update-nickname', parameters, user: alice });
+		const response = await show(bob.id, alice);
+		assert.deepStrictEqual(response, expected);
+	});
+
+	test('を設定しても、他のユーザーからは見えない', async () => {
+		await successfulApiCall({ endpoint: 'users/update-nickname', parameters: { userId: bob.id, nickname: 'alice-only-nickname' }, user: alice });
+		const asAlice = await show(bob.id, alice);
+		const asCarol = await show(bob.id, carol);
+		assert.strictEqual(asAlice.nickname, 'alice-only-nickname');
+		assert.strictEqual(asCarol.nickname, null);
+	});
+
+	test('存在しないユーザーに対しては invalid-params 400 が返る', async () => {
+		await failedApiCall({
+			endpoint: 'users/update-nickname',
+			parameters: { userId: 'xxxxxxxxxxxxxxxxxxxxxxxxxx', nickname: 'foo' },
+			user: alice,
+		}, {
+			status: 400,
+			code: 'NO_SUCH_USER',
+			id: '19f569ae-bb6c-457d-844d-e286b7bf2b90',
+		});
 	});
 
 	//#endregion

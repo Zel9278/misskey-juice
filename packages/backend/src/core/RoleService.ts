@@ -73,6 +73,7 @@ export type RolePolicies = {
 	noteDraftLimit: number;
 	scheduledNoteLimit: number;
 	watermarkAvailable: boolean;
+	emojiRequestLimit: number;
 };
 
 export const DEFAULT_POLICIES: RolePolicies = {
@@ -121,6 +122,7 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	noteDraftLimit: 10,
 	scheduledNoteLimit: 1,
 	watermarkAvailable: true,
+	emojiRequestLimit: 3,
 };
 
 @Injectable()
@@ -452,6 +454,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			noteDraftLimit: calc('noteDraftLimit', vs => Math.max(...vs)),
 			scheduledNoteLimit: calc('scheduledNoteLimit', vs => Math.max(...vs)),
 			watermarkAvailable: calc('watermarkAvailable', vs => vs.some(v => v === true)),
+			emojiRequestLimit: calc('emojiRequestLimit', vs => Math.max(...vs)),
 		};
 	}
 

@@ -41,8 +41,14 @@ import type {
 	AdminDeleteAllFilesOfAUserRequest,
 	AdminDriveFilesRequest,
 	AdminDriveFilesResponse,
+	AdminDriveFindOrphanedObjectStorageFilesRequest,
+	AdminDriveFindOrphanedObjectStorageFilesResponse,
 	AdminDriveShowFileRequest,
 	AdminDriveShowFileResponse,
+	AdminEmojiRequestsApproveRequest,
+	AdminEmojiRequestsListRequest,
+	AdminEmojiRequestsListResponse,
+	AdminEmojiRequestsRejectRequest,
 	AdminEmojiAddRequest,
 	AdminEmojiAddResponse,
 	AdminEmojiAddAliasesBulkRequest,
@@ -73,6 +79,12 @@ import type {
 	AdminInviteCreateResponse,
 	AdminInviteListRequest,
 	AdminInviteListResponse,
+	AdminJuiceApproveSignupRequest,
+	AdminJuiceDeclineSignupRequest,
+	AdminJuicePendingSignupsRequest,
+	AdminJuicePendingSignupsResponse,
+	AdminJuiceSettingsResponse,
+	AdminJuiceUpdateSettingsRequest,
 	AdminMetaResponse,
 	AdminPromoCreateRequest,
 	AdminQueueClearRequest,
@@ -142,6 +154,7 @@ import type {
 	AdminUpdateUserNoteRequest,
 	AnnouncementsRequest,
 	AnnouncementsResponse,
+	AnnouncementsPollsVoteRequest,
 	AnnouncementsReactionsRequest,
 	AnnouncementsReactionsResponse,
 	AnnouncementsReactionsCreateRequest,
@@ -325,6 +338,10 @@ import type {
 	EmailAddressAvailableResponse,
 	EmojiRequest,
 	EmojiResponse,
+	EmojiRequestsCreateRequest,
+	EmojiRequestsCreateResponse,
+	EmojiRequestsListRequest,
+	EmojiRequestsListResponse,
 	EmojisResponse,
 	EndpointRequest,
 	EndpointResponse,
@@ -438,6 +455,8 @@ import type {
 	IImportFollowingRequest,
 	IImportMutingRequest,
 	IImportUserListsRequest,
+	IJuiceUpdateEmailLangRequest,
+	IJuiceUpdateMuteAiGeneratedRequest,
 	IMoveRequest,
 	IMoveResponse,
 	INotificationsRequest,
@@ -487,6 +506,11 @@ import type {
 	InviteLimitResponse,
 	InviteListRequest,
 	InviteListResponse,
+	JuicePublicSettingsResponse,
+	JuiceRankingResponse,
+	JuiceRelaysResponse,
+	JuiceSignupCheckStatusRequest,
+	JuiceSignupCheckStatusResponse,
 	MetaRequest,
 	MetaResponse,
 	MiauthGenTokenRequest,
@@ -524,6 +548,8 @@ import type {
 	NotesGlobalTimelineResponse,
 	NotesHybridTimelineRequest,
 	NotesHybridTimelineResponse,
+	NotesJuiceUpdateAiGeneratedRequest,
+	NotesJuiceUpdateAiGeneratedResponse,
 	NotesLocalTimelineRequest,
 	NotesLocalTimelineResponse,
 	NotesMentionsRequest,
@@ -535,6 +561,8 @@ import type {
 	NotesReactionsResponse,
 	NotesReactionsCreateRequest,
 	NotesReactionsDeleteRequest,
+	NotesRelayTimelineRequest,
+	NotesRelayTimelineResponse,
 	NotesRenotesRequest,
 	NotesRenotesResponse,
 	NotesRepliesRequest,
@@ -666,6 +694,7 @@ import type {
 	UsersShowRequest,
 	UsersShowResponse,
 	UsersUpdateMemoRequest,
+	UsersUpdateNicknameRequest,
 	V2AdminEmojiListRequest,
 	V2AdminEmojiListResponse,
 	VerifyEmailRequest,
@@ -700,7 +729,11 @@ export type Endpoints = {
 	'admin/drive/clean-remote-files': { req: EmptyRequest; res: EmptyResponse };
 	'admin/drive/cleanup': { req: EmptyRequest; res: EmptyResponse };
 	'admin/drive/files': { req: AdminDriveFilesRequest; res: AdminDriveFilesResponse };
+	'admin/drive/find-orphaned-object-storage-files': { req: AdminDriveFindOrphanedObjectStorageFilesRequest; res: AdminDriveFindOrphanedObjectStorageFilesResponse };
 	'admin/drive/show-file': { req: AdminDriveShowFileRequest; res: AdminDriveShowFileResponse };
+	'admin/emoji-requests/approve': { req: AdminEmojiRequestsApproveRequest; res: EmptyResponse };
+	'admin/emoji-requests/list': { req: AdminEmojiRequestsListRequest; res: AdminEmojiRequestsListResponse };
+	'admin/emoji-requests/reject': { req: AdminEmojiRequestsRejectRequest; res: EmptyResponse };
 	'admin/emoji/add': { req: AdminEmojiAddRequest; res: AdminEmojiAddResponse };
 	'admin/emoji/add-aliases-bulk': { req: AdminEmojiAddAliasesBulkRequest; res: EmptyResponse };
 	'admin/emoji/copy': { req: AdminEmojiCopyRequest; res: AdminEmojiCopyResponse };
@@ -724,6 +757,11 @@ export type Endpoints = {
 	'admin/get-user-ips': { req: AdminGetUserIpsRequest; res: AdminGetUserIpsResponse };
 	'admin/invite/create': { req: AdminInviteCreateRequest; res: AdminInviteCreateResponse };
 	'admin/invite/list': { req: AdminInviteListRequest; res: AdminInviteListResponse };
+	'admin/juice/approve-signup': { req: AdminJuiceApproveSignupRequest; res: EmptyResponse };
+	'admin/juice/decline-signup': { req: AdminJuiceDeclineSignupRequest; res: EmptyResponse };
+	'admin/juice/pending-signups': { req: AdminJuicePendingSignupsRequest; res: AdminJuicePendingSignupsResponse };
+	'admin/juice/settings': { req: EmptyRequest; res: AdminJuiceSettingsResponse };
+	'admin/juice/update-settings': { req: AdminJuiceUpdateSettingsRequest; res: EmptyResponse };
 	'admin/meta': { req: EmptyRequest; res: AdminMetaResponse };
 	'admin/promo/create': { req: AdminPromoCreateRequest; res: EmptyResponse };
 	'admin/queue/clear': { req: AdminQueueClearRequest; res: EmptyResponse };
@@ -775,6 +813,7 @@ export type Endpoints = {
 	'admin/update-proxy-account': { req: AdminUpdateProxyAccountRequest; res: AdminUpdateProxyAccountResponse };
 	'admin/update-user-note': { req: AdminUpdateUserNoteRequest; res: EmptyResponse };
 	'announcements': { req: AnnouncementsRequest; res: AnnouncementsResponse };
+	'announcements/polls/vote': { req: AnnouncementsPollsVoteRequest; res: EmptyResponse };
 	'announcements/reactions': { req: AnnouncementsReactionsRequest; res: AnnouncementsReactionsResponse };
 	'announcements/reactions/create': { req: AnnouncementsReactionsCreateRequest; res: EmptyResponse };
 	'announcements/reactions/delete': { req: AnnouncementsReactionsDeleteRequest; res: EmptyResponse };
@@ -885,6 +924,8 @@ export type Endpoints = {
 	'drive/stream': { req: DriveStreamRequest; res: DriveStreamResponse };
 	'email-address/available': { req: EmailAddressAvailableRequest; res: EmailAddressAvailableResponse };
 	'emoji': { req: EmojiRequest; res: EmojiResponse };
+	'emoji-requests/create': { req: EmojiRequestsCreateRequest; res: EmojiRequestsCreateResponse };
+	'emoji-requests/list': { req: EmojiRequestsListRequest; res: EmojiRequestsListResponse };
 	'emojis': { req: EmptyRequest; res: EmojisResponse };
 	'endpoint': { req: EndpointRequest; res: EndpointResponse };
 	'endpoints': { req: EmptyRequest; res: EndpointsResponse };
@@ -965,6 +1006,8 @@ export type Endpoints = {
 	'i/import-following': { req: IImportFollowingRequest; res: EmptyResponse };
 	'i/import-muting': { req: IImportMutingRequest; res: EmptyResponse };
 	'i/import-user-lists': { req: IImportUserListsRequest; res: EmptyResponse };
+	'i/juice/update-email-lang': { req: IJuiceUpdateEmailLangRequest; res: EmptyResponse };
+	'i/juice/update-mute-ai-generated': { req: IJuiceUpdateMuteAiGeneratedRequest; res: EmptyResponse };
 	'i/move': { req: IMoveRequest; res: IMoveResponse };
 	'i/notifications': { req: INotificationsRequest; res: INotificationsResponse };
 	'i/notifications-grouped': { req: INotificationsGroupedRequest; res: INotificationsGroupedResponse };
@@ -996,6 +1039,10 @@ export type Endpoints = {
 	'invite/delete': { req: InviteDeleteRequest; res: EmptyResponse };
 	'invite/limit': { req: EmptyRequest; res: InviteLimitResponse };
 	'invite/list': { req: InviteListRequest; res: InviteListResponse };
+	'juice/public-settings': { req: EmptyRequest; res: JuicePublicSettingsResponse };
+	'juice/ranking': { req: EmptyRequest; res: JuiceRankingResponse };
+	'juice/relays': { req: EmptyRequest; res: JuiceRelaysResponse };
+	'juice/signup-check-status': { req: JuiceSignupCheckStatusRequest; res: JuiceSignupCheckStatusResponse };
 	'meta': { req: MetaRequest; res: MetaResponse };
 	'miauth/gen-token': { req: MiauthGenTokenRequest; res: MiauthGenTokenResponse };
 	'mute/create': { req: MuteCreateRequest; res: EmptyResponse };
@@ -1018,6 +1065,7 @@ export type Endpoints = {
 	'notes/featured': { req: NotesFeaturedRequest; res: NotesFeaturedResponse };
 	'notes/global-timeline': { req: NotesGlobalTimelineRequest; res: NotesGlobalTimelineResponse };
 	'notes/hybrid-timeline': { req: NotesHybridTimelineRequest; res: NotesHybridTimelineResponse };
+	'notes/juice/update-ai-generated': { req: NotesJuiceUpdateAiGeneratedRequest; res: NotesJuiceUpdateAiGeneratedResponse };
 	'notes/local-timeline': { req: NotesLocalTimelineRequest; res: NotesLocalTimelineResponse };
 	'notes/mentions': { req: NotesMentionsRequest; res: NotesMentionsResponse };
 	'notes/polls/recommendation': { req: NotesPollsRecommendationRequest; res: NotesPollsRecommendationResponse };
@@ -1025,6 +1073,7 @@ export type Endpoints = {
 	'notes/reactions': { req: NotesReactionsRequest; res: NotesReactionsResponse };
 	'notes/reactions/create': { req: NotesReactionsCreateRequest; res: EmptyResponse };
 	'notes/reactions/delete': { req: NotesReactionsDeleteRequest; res: EmptyResponse };
+	'notes/relay-timeline': { req: NotesRelayTimelineRequest; res: NotesRelayTimelineResponse };
 	'notes/renotes': { req: NotesRenotesRequest; res: NotesRenotesResponse };
 	'notes/replies': { req: NotesRepliesRequest; res: NotesRepliesResponse };
 	'notes/search': { req: NotesSearchRequest; res: NotesSearchResponse };
@@ -1111,6 +1160,7 @@ export type Endpoints = {
 	'users/search-by-username-and-host': { req: UsersSearchByUsernameAndHostRequest; res: UsersSearchByUsernameAndHostResponse };
 	'users/show': { req: UsersShowRequest; res: UsersShowResponse };
 	'users/update-memo': { req: UsersUpdateMemoRequest; res: EmptyResponse };
+	'users/update-nickname': { req: UsersUpdateNicknameRequest; res: EmptyResponse };
 	'v2/admin/emoji/list': { req: V2AdminEmojiListRequest; res: V2AdminEmojiListResponse };
 	'verify-email': { req: VerifyEmailRequest; res: EmptyResponse };
 };

@@ -66,6 +66,8 @@ type AddFileArgs = {
 	uri?: string | null;
 	/** Mark file as sensitive */
 	sensitive?: boolean | null;
+	/** Mark file as AI-generated (JUICE) */
+	isAIGenerated?: boolean | null;
 	/** Extension to force */
 	ext?: string | null;
 
@@ -79,6 +81,7 @@ type UploadFromUrlArgs = {
 	folderId?: MiDriveFolder['id'] | null;
 	uri?: string | null;
 	sensitive?: boolean;
+	isAIGenerated?: boolean;
 	force?: boolean;
 	isLink?: boolean;
 	comment?: string | null;
@@ -454,6 +457,7 @@ export class DriveService {
 		url = null,
 		uri = null,
 		sensitive = null,
+		isAIGenerated = null,
 		requestIp = null,
 		requestHeaders = null,
 		ext = null,
@@ -510,6 +514,11 @@ export class DriveService {
 					// Therefore, update the file to sensitive.
 					await this.driveFilesRepository.update({ id: matched.id }, { isSensitive: true });
 					matched.isSensitive = true;
+				}
+				// JUICE: sensitiveと同様、AI生成物フラグも「今回はtrueだが以前はfalseだった」場合は追従させる
+				if (isAIGenerated && !matched.isAIGenerated) {
+					await this.driveFilesRepository.update({ id: matched.id }, { isAIGenerated: true });
+					matched.isAIGenerated = true;
 				}
 				return matched;
 			}
@@ -614,6 +623,8 @@ export class DriveService {
 		if (info.sensitive && profile!.autoSensitive) file.isSensitive = true;
 		if (info.sensitive && this.meta.setSensitiveFlagAutomatically) file.isSensitive = true;
 		if (userRoleNSFW) file.isSensitive = true;
+
+		file.isAIGenerated = isAIGenerated ?? false;
 
 		if (url !== null) {
 			file.src = url;
@@ -882,6 +893,7 @@ export class DriveService {
 		folderId = null,
 		uri = null,
 		sensitive = false,
+		isAIGenerated = false,
 		force = false,
 		isLink = false,
 		comment = null,
@@ -901,7 +913,7 @@ export class DriveService {
 				comment = null;
 			}
 
-			const driveFile = await this.addFile({ user, path, name, comment, folderId, force, isLink, url, uri, sensitive, requestIp, requestHeaders });
+			const driveFile = await this.addFile({ user, path, name, comment, folderId, force, isLink, url, uri, sensitive, isAIGenerated, requestIp, requestHeaders });
 			this.downloaderLogger.succ(`Got: ${driveFile.id}`);
 			return driveFile!;
 		} catch (err) {

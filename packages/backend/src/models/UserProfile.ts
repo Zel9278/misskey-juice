@@ -10,6 +10,9 @@ import { MiUser } from './User.js';
 import { MiPage } from './Page.js';
 import { MiUserList } from './UserList.js';
 
+// AI生成物としてマークされたノートの扱い(JUICE)。none: 通常表示、mute: 折りたたみ表示、hardMute: 完全に非表示
+export const aiGeneratedNoteMuteModes = ['none', 'mute', 'hardMute'] as const;
+
 // TODO: このテーブルで管理している情報すべてレジストリで管理するようにしても良いかも
 //       ただ、「emailVerified が true なユーザーを find する」のようなクエリは書けなくなるからウーン
 @Entity('user_profile')
@@ -70,6 +73,18 @@ export class MiUserProfile {
 	public lang: string | null;
 
 	@Column('varchar', {
+		length: 32, nullable: true,
+		comment: 'The language used for system emails sent to this user (JUICE). Falls back to the instance default when null.',
+	})
+	public emailLang: string | null;
+
+	@Column('varchar', {
+		length: 16, default: 'none',
+		comment: 'How to treat notes flagged as AI-generated (JUICE): none, mute (collapse), or hardMute (fully hide).',
+	})
+	public muteAIGeneratedNotes: typeof aiGeneratedNoteMuteModes[number];
+
+	@Column('varchar', {
 		length: 512, nullable: true,
 		comment: 'Remote URL of the user.',
 	})
@@ -95,6 +110,12 @@ export class MiUserProfile {
 		default: ['follow', 'receiveFollowRequest'],
 	})
 	public emailNotificationTypes: string[];
+
+	@Column('boolean', {
+		default: true,
+		comment: 'Whether to receive an email when own emoji request is approved/rejected (JUICE).',
+	})
+	public receiveEmojiRequestResultEmail: boolean;
 
 	@Column('boolean', {
 		default: true,
@@ -375,4 +396,8 @@ export const ACHIEVEMENT_TYPES = [
 	'tutorialCompleted',
 	'bubbleGameExplodingHead',
 	'bubbleGameDoubleExplodingHead',
+	'juiceRain', // JUICE: JUICE専用AboutページのアイコンをクリックしてJUICEの雨を降らせた
+	'bonsaiFirstWater', // JUICE: 盆栽ゲームで初めて水をあげた
+	'bonsaiFullyGrown', // JUICE: 盆栽ゲームで盆栽を最終段階まで育てた
+	'bonsaiWithered', // JUICE: 盆栽ゲームで水やりを忘れて盆栽を枯らした
 ] as const;

@@ -10,6 +10,7 @@ import * as os from '@/os.js';
 import { instance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 import { $i } from '@/i.js';
+import { juicePublicSettingsCache } from '@/cache.js';
 
 function toolsMenuItems(): MenuItem[] {
 	const items: MenuItem[] = [{
@@ -50,8 +51,19 @@ function toolsMenuItems(): MenuItem[] {
 	return items;
 }
 
-export function openInstanceMenu(ev: PointerEvent) {
+export async function openInstanceMenu(ev: PointerEvent) {
+	// JUICE: awaitを挟むとEvent.currentTargetはリスナー終了時にnullへリセットされるため、先に退避しておく
+	const anchorElement = ev.currentTarget ?? ev.target;
 	const menuItems: MenuItem[] = [];
+
+	// JUICE: 絵文字申請機能自体が無効化されているサーバーではメニューに出さない。設定取得に失敗した場合は
+	// メニュー全体が開かなくなるのを避けるため、フェイルオープン(従来通り表示する)にする
+	let emojiRequestEnabled = true;
+	try {
+		emojiRequestEnabled = (await juicePublicSettingsCache.fetch()).emojiRequestEnabled;
+	} catch (err) {
+		console.error('Failed to fetch juice public settings', err);
+	}
 
 	menuItems.push({
 		text: instance.name ?? host,
@@ -95,6 +107,16 @@ export function openInstanceMenu(ev: PointerEvent) {
 			to: '/invite',
 			text: i18n.ts.invite,
 			icon: 'ti ti-user-plus',
+		});
+	}
+
+	if ($i && emojiRequestEnabled) {
+		menuItems.push({
+			type: 'link',
+			text: i18n.ts._juice.emojiRequest,
+			icon: 'ti ti-mood-plus',
+			to: '/emoji-request',
+			badge: true,
 		});
 	}
 
@@ -168,9 +190,15 @@ export function openInstanceMenu(ev: PointerEvent) {
 		type: 'link',
 		text: i18n.ts.aboutMisskey,
 		to: '/about-misskey',
+	}, {
+		type: 'link',
+		text: i18n.ts._aboutJuice.title,
+		icon: 'ti ti-droplet',
+		to: '/about-juice',
+		badge: true,
 	});
 
-	os.popupMenu(menuItems, ev.currentTarget ?? ev.target, {
+	os.popupMenu(menuItems, anchorElement, {
 		align: 'left',
 	});
 }

@@ -34,6 +34,7 @@ import type {
 	MutingsRepository,
 	RenoteMutingsRepository,
 	UserMemoRepository,
+	UserNicknameRepository,
 	UserNotePiningsRepository,
 	UserProfilesRepository,
 	UserSecurityKeysRepository,
@@ -137,6 +138,10 @@ export class UserEntityService implements OnModuleInit {
 
 		@Inject(DI.userMemosRepository)
 		private userMemosRepository: UserMemoRepository,
+
+		// JUICE
+		@Inject(DI.userNicknamesRepository)
+		private userNicknamesRepository: UserNicknameRepository,
 	) {
 	}
 
@@ -411,6 +416,8 @@ export class UserEntityService implements OnModuleInit {
 			userProfile?: MiUserProfile,
 			userRelations?: Map<MiUser['id'], UserRelation>,
 			userMemos?: Map<MiUser['id'], string | null>,
+			// JUICE
+			userNicknames?: Map<MiUser['id'], string | null>,
 			pinNotes?: Map<MiUser['id'], MiUserNotePining[]>,
 		},
 	): Promise<Packed<S>> {
@@ -446,6 +453,17 @@ export class UserEntityService implements OnModuleInit {
 			} else {
 				memo = await this.userMemosRepository.findOneBy({ userId: meId, targetUserId: user.id })
 					.then(row => row?.memo ?? null);
+			}
+		}
+
+		// JUICE: 自分が設定したニックネームがあれば、memoと同じ条件でパックする
+		let nickname: string | null = null;
+		if (isDetailed && meId) {
+			if (opts.userNicknames) {
+				nickname = opts.userNicknames.get(user.id) ?? null;
+			} else {
+				nickname = await this.userNicknamesRepository.findOneBy({ userId: meId, targetUserId: user.id })
+					.then(row => row?.nickname ?? null);
 			}
 		}
 
@@ -571,6 +589,7 @@ export class UserEntityService implements OnModuleInit {
 					displayOrder: role.displayOrder,
 				}))),
 				memo: memo,
+				nickname: nickname, // JUICE
 				moderationNote: iAmModerator ? (profile!.moderationNote ?? '') : undefined,
 			} : {}),
 
@@ -590,6 +609,7 @@ export class UserEntityService implements OnModuleInit {
 				isAdmin: isAdmin,
 				injectFeaturedNote: profile!.injectFeaturedNote,
 				receiveAnnouncementEmail: profile!.receiveAnnouncementEmail,
+				receiveEmojiRequestResultEmail: profile!.receiveEmojiRequestResultEmail,
 				alwaysMarkNsfw: profile!.alwaysMarkNsfw,
 				autoSensitive: profile!.autoSensitive,
 				carefulBot: profile!.carefulBot,
@@ -624,6 +644,8 @@ export class UserEntityService implements OnModuleInit {
 			...(opts.includeSecrets ? {
 				email: profile!.email,
 				emailVerified: profile!.emailVerified,
+				emailLang: profile!.emailLang,
+				muteAIGeneratedNotes: profile!.muteAIGeneratedNotes,
 				securityKeysList: profile!.twoFactorEnabled
 					? this.userSecurityKeysRepository.find({
 						where: {
@@ -681,6 +703,7 @@ export class UserEntityService implements OnModuleInit {
 		let profilesMap: Map<MiUser['id'], MiUserProfile> = new Map();
 		let userRelations: Map<MiUser['id'], UserRelation> = new Map();
 		let userMemos: Map<MiUser['id'], string | null> = new Map();
+		let userNicknames: Map<MiUser['id'], string | null> = new Map(); // JUICE
 		let pinNotes: Map<MiUser['id'], MiUserNotePining[]> = new Map();
 
 		if (options?.schema !== 'UserLite') {
@@ -691,6 +714,10 @@ export class UserEntityService implements OnModuleInit {
 			if (meId) {
 				userMemos = await this.userMemosRepository.findBy({ userId: meId })
 					.then(memos => new Map(memos.map(memo => [memo.targetUserId, memo.memo])));
+
+				// JUICE
+				userNicknames = await this.userNicknamesRepository.findBy({ userId: meId })
+					.then(nicknames => new Map(nicknames.map(nickname => [nickname.targetUserId, nickname.nickname])));
 
 				if (_userIds.length > 0) {
 					userRelations = await this.getRelations(meId, _userIds);
@@ -724,6 +751,7 @@ export class UserEntityService implements OnModuleInit {
 					userProfile: profilesMap?.get(u.id),
 					userRelations: userRelations,
 					userMemos: userMemos,
+					userNicknames: userNicknames, // JUICE
 					pinNotes: pinNotes,
 				},
 			)),

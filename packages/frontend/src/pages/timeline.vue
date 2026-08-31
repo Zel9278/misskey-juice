@@ -12,10 +12,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkPostForm v-if="prefer.r.showFixedPostForm.value" :class="$style.postForm" class="_panel" fixed style="margin-bottom: var(--MI-margin);"/>
 		<MkStreamingNotesTimeline
 			ref="tlComponent"
-			:key="src + withRenotes + withReplies + onlyFiles + withSensitive"
+			:key="src + withRenotes + withReplies + onlyFiles + withSensitive + relayTimelineFilter.join(',')"
 			:class="$style.tl"
-			:src="(src.split(':')[0] as (BasicTimelineType | 'list'))"
+			:src="(src.split(':')[0] as (BasicTimelineType | 'list' | 'relay'))"
 			:list="src.split(':')[1]"
+			:relays="src === 'relay' ? relayTimelineFilter : undefined"
 			:withRenotes="withRenotes"
 			:withReplies="withReplies"
 			:withSensitive="withSensitive"
@@ -28,6 +29,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { computed, watch, provide, useTemplateRef, ref, onMounted, onActivated } from 'vue';
+import * as Misskey from 'misskey-js';
 import type { Tab } from '@/components/global/MkPageHeader.tabs.vue';
 import type { MenuItem } from '@/types/menu.js';
 import type { BasicTimelineType } from '@/timelines.js';
@@ -39,7 +41,7 @@ import { store } from '@/store.js';
 import { i18n } from '@/i18n.js';
 import { $i } from '@/i.js';
 import { definePage } from '@/page.js';
-import { antennasCache, userListsCache, favoritedChannelsCache } from '@/cache.js';
+import { antennasCache, userListsCache, favoritedChannelsCache, juicePublicSettingsCache, juiceRelaysCache } from '@/cache.js';
 import { deviceKind } from '@/utility/device-kind.js';
 import { deepMerge } from '@/utility/merge.js';
 import { miLocalStorage } from '@/local-storage.js';
@@ -48,7 +50,34 @@ import { prefer } from '@/preferences.js';
 
 const tlComponent = useTemplateRef('tlComponent');
 
-type TimelinePageSrc = BasicTimelineType | `list:${string}`;
+// JUICE: リレーTLが有効なインスタンスでのみタブに出す
+const relayTimelineEnabled = ref(false);
+// JUICE: リレーTLを特定のリレーだけに絞り込むための一覧。選択状態はJUICE設定(prefer.s.relayTimelineFilter)に永続化する
+const relays = ref<Misskey.entities.JuiceRelaysResponse>([]);
+const relayTimelineFilter = computed(() => prefer.r.relayTimelineFilter.value);
+
+function relaySelectedRef(id: string) {
+	return computed<boolean>({
+		get: () => prefer.r.relayTimelineFilter.value.includes(id),
+		set: (checked) => prefer.commit('relayTimelineFilter', checked
+			? [...prefer.s.relayTimelineFilter, id]
+			: prefer.s.relayTimelineFilter.filter(x => x !== id)),
+	});
+}
+
+juicePublicSettingsCache.fetch().then(res => {
+	relayTimelineEnabled.value = res.relayTimelineEnabled;
+	// 取得前に選択されていた場合や、無効化された後に古い選択が残っていた場合に備えて再チェックする
+	switchTlIfNeeded();
+
+	if (relayTimelineEnabled.value) {
+		juiceRelaysCache.fetch().then(res => {
+			relays.value = res;
+		});
+	}
+});
+
+type TimelinePageSrc = BasicTimelineType | 'relay' | `list:${string}`;
 
 const srcWhenNotSignin = ref<'local' | 'global'>(isAvailableBasicTimeline('local') ? 'local' : 'global');
 const src = computed<TimelinePageSrc>({
@@ -194,6 +223,8 @@ function saveTlFilter(key: keyof typeof store.s.tl.filter, newValue: boolean) {
 function switchTlIfNeeded() {
 	if (isBasicTimeline(src.value) && !isAvailableBasicTimeline(src.value)) {
 		src.value = availableBasicTimelines()[0];
+	} else if (src.value === 'relay' && !relayTimelineEnabled.value) {
+		src.value = availableBasicTimelines()[0];
 	}
 }
 
@@ -225,6 +256,21 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 					text: i18n.ts.showRepliesToOthersInTimeline,
 					ref: withReplies,
 					disabled: onlyFiles,
+				});
+			}
+
+			// JUICE: リレーTL表示中のみ、絞り込み先リレーを選べるようにする(複数選択可、未選択=すべてのリレーを表示)
+			if (src.value === 'relay' && relays.value.length > 0) {
+				menuItems.push({
+					type: 'parent',
+					icon: 'ti ti-broadcast',
+					text: i18n.ts._juice.relayTimelineFilter,
+					badge: true,
+					children: () => relays.value.map(relay => ({
+						type: 'switch',
+						text: relay.host,
+						ref: relaySelectedRef(relay.id),
+					})),
 				});
 			}
 
@@ -274,7 +320,13 @@ const headerTabs = computed(() => [...(prefer.r.pinnedUserLists.value.map(l => (
 	title: i18n.ts._timelines[tl],
 	icon: basicTimelineIconClass(tl),
 	iconOnly: true,
-})), {
+})), ...(relayTimelineEnabled.value ? [{
+	key: 'relay',
+	title: i18n.ts._juice.relayTimelineTab,
+	icon: 'ti ti-broadcast',
+	iconOnly: true,
+	badge: true,
+}] : []), {
 	icon: 'ti ti-list',
 	title: i18n.ts.lists,
 	iconOnly: true,
@@ -296,7 +348,13 @@ const headerTabsWhenNotLogin = computed(() => [...availableBasicTimelines().map(
 	title: i18n.ts._timelines[tl],
 	icon: basicTimelineIconClass(tl),
 	iconOnly: true,
-}))] as Tab[]);
+})), ...(relayTimelineEnabled.value ? [{
+	key: 'relay',
+	title: i18n.ts._juice.relayTimelineTab,
+	icon: 'ti ti-broadcast',
+	iconOnly: true,
+	badge: true,
+}] : [])] as Tab[]);
 
 definePage(() => ({
 	title: i18n.ts.timeline,

@@ -45,6 +45,8 @@ function generateDummyUser(override?: Partial<MiUser>): MiUser {
 		tags: [],
 		isSuspended: false,
 		isLocked: false,
+		approved: true,
+		signupReason: null,
 		isBot: false,
 		isCat: true,
 		isExplorable: true,
@@ -81,6 +83,7 @@ function generateDummyNote(override?: Partial<MiNote>): MiNote {
 		userId: 'dummy-user-1',
 		user: null,
 		localOnly: true,
+		isAIGenerated: false,
 		reactionAcceptance: 'likeOnly',
 		renoteCount: 10,
 		repliesCount: 5,
@@ -101,6 +104,8 @@ function generateDummyNote(override?: Partial<MiNote>): MiNote {
 		hasPoll: false,
 		channelId: null,
 		channel: null,
+		relayId: null,
+		relay: null,
 		userHost: null,
 		replyUserId: null,
 		replyUserHost: null,
@@ -326,6 +331,24 @@ export class WebhookTestService {
 				send('inactiveModeratorsInvitationOnlyChanged', {});
 				break;
 			}
+			// JUICE
+			case 'emojiRequestCreated': {
+				send('emojiRequestCreated', {
+					id: 'dummy-emoji-request-1',
+					name: 'dummy_emoji',
+					category: null,
+					requester: await this.toPackedUserLite(dummyUser1),
+				});
+				break;
+			}
+			// JUICE
+			case 'signupApplicationCreated': {
+				send('signupApplicationCreated', {
+					applicant: await this.toPackedUserLite(dummyUser1),
+					reason: 'This is a dummy signup application reason for testing purposes.',
+				});
+				break;
+			}
 			default: {
 				const _exhaustiveAssertion: never = params.type;
 				return;
@@ -385,6 +408,7 @@ export class WebhookTestService {
 			channelId: note.channelId,
 			channel: note.channel,
 			localOnly: note.localOnly,
+			isAIGenerated: note.isAIGenerated,
 			reactionAcceptance: note.reactionAcceptance,
 			reactionEmojis: {},
 			reactions: {},
@@ -469,6 +493,7 @@ export class WebhookTestService {
 			securityKeys: false,
 			roles: [],
 			memo: null,
+			nickname: null, // JUICE
 			moderationNote: undefined,
 			isFollowing: false,
 			isFollowed: false,

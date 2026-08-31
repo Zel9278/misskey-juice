@@ -7,13 +7,17 @@ import { Inject, Injectable } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import type { RegistrationTicketsRepository, UsedUsernamesRepository, UserPendingsRepository, UserProfilesRepository, UsersRepository, MiRegistrationTicket, MiMeta } from '@/models/_.js';
+import type { RegistrationTicketsRepository, SignupApprovalChecksRepository, UsedUsernamesRepository, UserPendingsRepository, UserProfilesRepository, UsersRepository, MiRegistrationTicket, MiMeta } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import { CaptchaService } from '@/core/CaptchaService.js';
 import { IdService } from '@/core/IdService.js';
 import { SignupService } from '@/core/SignupService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { EmailService } from '@/core/EmailService.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
+import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { JuiceAdminNotificationService } from '@/core/JuiceAdminNotificationService.js';
+import { resolveSignupApprovalSettings } from '@/models/JuiceSettings.js';
 import { MiLocalUser } from '@/models/User.js';
 import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
 import { bindThis } from '@/decorators.js';
@@ -45,13 +49,33 @@ export class SignupApiService {
 		@Inject(DI.registrationTicketsRepository)
 		private registrationTicketsRepository: RegistrationTicketsRepository,
 
+		@Inject(DI.signupApprovalChecksRepository)
+		private signupApprovalChecksRepository: SignupApprovalChecksRepository,
+
 		private userEntityService: UserEntityService,
 		private idService: IdService,
 		private captchaService: CaptchaService,
 		private signupService: SignupService,
 		private signinService: SigninService,
 		private emailService: EmailService,
+		private emailI18nService: EmailI18nService,
+		private juiceSettingsService: JuiceSettingsService,
+		private juiceAdminNotificationService: JuiceAdminNotificationService,
 	) {
+	}
+
+	// 承認待ちの申請者がメールアドレスなしでも審査状況を確認できるよう、
+	// 引換コードを発行してsignup_approval_checkに記録する(JUICE)。
+	@bindThis
+	private async issueApprovalCheckCode(userId: string): Promise<string> {
+		const code = secureRndstr(32, { chars: L_CHARS });
+		await this.signupApprovalChecksRepository.insertOne({
+			id: this.idService.gen(),
+			code,
+			userId,
+			status: 'pending',
+		});
+		return code;
 	}
 
 	@bindThis
@@ -63,6 +87,8 @@ export class SignupApiService {
 				host?: string;
 				invitationCode?: string;
 				emailAddress?: string;
+				reason?: string;
+				emailLang?: string;
 				'hcaptcha-response'?: string;
 				'g-recaptcha-response'?: string;
 				'turnstile-response'?: string;
@@ -113,6 +139,11 @@ export class SignupApiService {
 		const host: string | null = process.env.NODE_ENV === 'test' ? (body['host'] ?? null) : null;
 		const invitationCode = body['invitationCode'];
 		const emailAddress = body['emailAddress'];
+		const reason = typeof body['reason'] === 'string' ? body['reason'] : undefined;
+		const emailLang = typeof body['emailLang'] === 'string' ? body['emailLang'] : undefined;
+
+		const { approvalRequiredForSignup, signupReasonRequired, signupReasonMaxLength } =
+			resolveSignupApprovalSettings(await this.juiceSettingsService.fetch());
 
 		if (this.meta.emailRequiredForSignup) {
 			if (emailAddress == null || typeof emailAddress !== 'string') {
@@ -129,43 +160,63 @@ export class SignupApiService {
 
 		let ticket: MiRegistrationTicket | null = null;
 
+		// 承認式登録が有効な場合、招待コードは任意にする(コード無しなら理由入力での申請に回す。
+		// コードがあれば従来通り検証し、有効なら承認をバイパスする)
+		const invitationCodeOptional = approvalRequiredForSignup;
+		const hasInvitationCode = typeof invitationCode === 'string' && invitationCode !== '';
+
 		// テスト時はこの機構は障害となるため無効にする
 		if (process.env.NODE_ENV !== 'test' && this.meta.disableRegistration) {
-			if (invitationCode == null || typeof invitationCode !== 'string') {
+			if (!invitationCodeOptional && !hasInvitationCode) {
 				reply.code(400);
 				return;
 			}
 
-			ticket = await this.registrationTicketsRepository.findOneBy({
-				code: invitationCode,
-			});
+			if (hasInvitationCode) {
+				ticket = await this.registrationTicketsRepository.findOneBy({
+					code: invitationCode,
+				});
 
-			if (ticket == null || ticket.usedById != null) {
-				reply.code(400);
-				return;
-			}
-
-			if (ticket.expiresAt && ticket.expiresAt < new Date()) {
-				reply.code(400);
-				return;
-			}
-
-			// メアド認証が有効の場合
-			if (this.meta.emailRequiredForSignup) {
-				// メアド認証済みならエラー
-				if (ticket.usedBy) {
+				if (ticket == null || ticket.usedById != null) {
 					reply.code(400);
 					return;
 				}
 
-				// 認証しておらず、メール送信から30分以内ならエラー
-				if (ticket.usedAt && ticket.usedAt.getTime() + (1000 * 60 * 30) > Date.now()) {
+				if (ticket.expiresAt && ticket.expiresAt < new Date()) {
 					reply.code(400);
 					return;
 				}
-			} else if (ticket.usedAt) {
-				reply.code(400);
-				return;
+
+				// メアド認証が有効の場合
+				if (this.meta.emailRequiredForSignup) {
+					// メアド認証済みならエラー
+					if (ticket.usedBy) {
+						reply.code(400);
+						return;
+					}
+
+					// 認証しておらず、メール送信から30分以内ならエラー
+					if (ticket.usedAt && ticket.usedAt.getTime() + (1000 * 60 * 30) > Date.now()) {
+						reply.code(400);
+						return;
+					}
+				} else if (ticket.usedAt) {
+					reply.code(400);
+					return;
+				}
+			}
+		}
+
+		// 招待コードで登録した場合は承認式登録をバイパスする(招待した時点でモデレーターの信任があるため)
+		const approvalRequiredForThisSignup = approvalRequiredForSignup && ticket == null;
+
+		if (approvalRequiredForThisSignup) {
+			if (signupReasonRequired && (reason == null || reason.trim() === '')) {
+				throw new FastifyReplyError(400, 'REASON_REQUIRED');
+			}
+
+			if (reason != null && reason.length > signupReasonMaxLength) {
+				throw new FastifyReplyError(400, 'REASON_TOO_LONG');
 			}
 		}
 
@@ -196,13 +247,17 @@ export class SignupApiService {
 				email: emailAddress!,
 				username: username,
 				password: hash,
+				reason: approvalRequiredForThisSignup ? (reason ?? null) : null,
+				emailLang: emailLang ?? null,
 			});
 
 			const link = `${this.config.url}/signup-complete/${code}`;
 
-			this.emailService.sendEmail(emailAddress!, 'Signup',
-				`To complete signup, please click this link:<br><a href="${link}">${link}</a>`,
-				`To complete signup, please click this link: ${link}`);
+			const lang = await this.emailI18nService.resolveLang(emailLang);
+			const i18n = this.emailI18nService.getI18n(lang);
+			this.emailService.sendEmail(emailAddress!, i18n.t('_email.signupConfirm.subject'),
+				i18n.t('_email.signupConfirm.html', { link }),
+				i18n.t('_email.signupConfirm.text', { link }));
 
 			if (ticket) {
 				await this.registrationTicketsRepository.update(ticket.id, {
@@ -217,11 +272,9 @@ export class SignupApiService {
 			try {
 				const { account, secret } = await this.signupService.signup({
 					username, password, host,
-				});
-
-				const res = await this.userEntityService.pack(account, account, {
-					schema: 'MeDetailed',
-					includeSecrets: true,
+					approved: !approvalRequiredForThisSignup,
+					signupReason: approvalRequiredForThisSignup ? (reason ?? null) : undefined,
+					emailLang,
 				});
 
 				if (ticket) {
@@ -231,6 +284,21 @@ export class SignupApiService {
 						usedById: account.id,
 					});
 				}
+
+				if (approvalRequiredForThisSignup) {
+					const checkCode = await this.issueApprovalCheckCode(account.id);
+					// JUICE: モデレータへ新規申請をリアルタイム通知(admin stream + SystemWebhook)
+					await this.juiceAdminNotificationService.notifyNewSignupApplication({
+						applicant: await this.userEntityService.pack(account, null, { schema: 'UserLite' }),
+						reason: reason ?? null,
+					});
+					return { pendingApproval: true, checkCode } as const;
+				}
+
+				const res = await this.userEntityService.pack(account, account, {
+					schema: 'MeDetailed',
+					includeSecrets: true,
+				});
 
 				return {
 					...res,
@@ -255,9 +323,18 @@ export class SignupApiService {
 				throw new FastifyReplyError(400, 'EXPIRED');
 			}
 
+			const { approvalRequiredForSignup } = resolveSignupApprovalSettings(await this.juiceSettingsService.fetch());
+
+			// 招待コードで登録した場合は承認式登録をバイパスする(招待した時点でモデレーターの信任があるため)
+			const ticket = await this.registrationTicketsRepository.findOneBy({ pendingUserId: pendingUser.id });
+			const approvalRequiredForThisSignup = approvalRequiredForSignup && ticket == null;
+
 			const { account } = await this.signupService.signup({
 				username: pendingUser.username,
 				passwordHash: pendingUser.password,
+				approved: !approvalRequiredForThisSignup,
+				signupReason: approvalRequiredForThisSignup ? pendingUser.reason : undefined,
+				emailLang: pendingUser.emailLang,
 			});
 
 			this.userPendingsRepository.delete({
@@ -272,13 +349,28 @@ export class SignupApiService {
 				emailVerifyCode: null,
 			});
 
-			const ticket = await this.registrationTicketsRepository.findOneBy({ pendingUserId: pendingUser.id });
 			if (ticket) {
 				await this.registrationTicketsRepository.update(ticket.id, {
 					usedBy: account,
 					usedById: account.id,
 					pendingUserId: null,
 				});
+			}
+
+			if (approvalRequiredForThisSignup) {
+				const lang = await this.emailI18nService.resolveLang(pendingUser.emailLang);
+				const i18n = this.emailI18nService.getI18n(lang);
+				this.emailService.sendEmail(pendingUser.email, i18n.t('_email.signupPendingApproval.subject'),
+					i18n.t('_email.signupPendingApproval.html'),
+					i18n.t('_email.signupPendingApproval.text'));
+
+				const checkCode = await this.issueApprovalCheckCode(account.id);
+				// JUICE: モデレータへ新規申請をリアルタイム通知(admin stream + SystemWebhook)
+				await this.juiceAdminNotificationService.notifyNewSignupApplication({
+					applicant: await this.userEntityService.pack(account, null, { schema: 'UserLite' }),
+					reason: pendingUser.reason ?? null,
+				});
+				return { pendingApproval: true, checkCode } as const;
 			}
 
 			return this.signinService.signin(request, reply, account as MiLocalUser);

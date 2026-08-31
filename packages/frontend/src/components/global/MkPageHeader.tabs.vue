@@ -20,18 +20,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 			@click="(ev) => onTabClick(t, ev)"
 		>
 			<div :class="$style.tabInner">
-				<i v-if="t.icon" :class="[$style.tabIcon, t.icon]"></i>
+				<span v-if="t.icon" :class="$style.tabIconWrapper">
+					<i :class="[$style.tabIcon, t.icon]"></i>
+					<i v-if="t.badge && t.iconOnly" :class="$style.tabIconBadge"></i>
+				</span>
 				<div
 					v-if="!t.iconOnly || (!prefer.s.animation && t.key === tab)"
 					:class="$style.tabTitle"
 				>
-					{{ t.title }}
+					{{ t.title }}<span v-if="t.badge" class="_juice">JUICE</span>
 				</div>
 				<Transition
 					v-else mode="in-out" @enter="enter" @afterEnter="afterEnter" @leave="leave"
 					@afterLeave="afterLeave"
 				>
-					<div v-show="t.key === tab" :class="[$style.tabTitle, $style.animate]">{{ t.title }}</div>
+					<div v-show="t.key === tab" :class="[$style.tabTitle, $style.animate]">{{ t.title }}<span v-if="t.badge" class="_juice">JUICE</span></div>
 				</Transition>
 			</div>
 		</button>
@@ -50,6 +53,8 @@ export type Tab = {
 	iconOnly?: boolean;
 	title: string;
 	icon?: string;
+	/** JUICE: 本家に無いJUICE独自のタブであることを示すバッジを表示する */
+	badge?: boolean;
 };
 </script>
 
@@ -248,7 +253,23 @@ onUnmounted(() => {
 	align-items: center;
 }
 
-.tabIcon + .tabTitle {
+.tabIconWrapper {
+	position: relative;
+	display: inline-flex;
+}
+
+// JUICE: iconOnlyタブでタイトルが非表示のときも、JUICE独自タブであることを示す小さいドット
+.tabIconBadge {
+	position: absolute;
+	top: -2px;
+	right: -2px;
+	width: 6px;
+	height: 6px;
+	border-radius: 100%;
+	background: var(--MI_THEME-success);
+}
+
+.tabIconWrapper + .tabTitle {
 	padding-left: 4px;
 }
 

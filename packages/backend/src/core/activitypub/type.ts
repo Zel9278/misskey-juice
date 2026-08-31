@@ -17,6 +17,8 @@ export interface IObject {
 	_misskey_requireSigninToViewContents?: boolean;
 	_misskey_makeNotesFollowersOnlyBefore?: number | null;
 	_misskey_makeNotesHiddenBefore?: number | null;
+	// JUICE: AI生成物フラグ
+	_juice_isAIGenerated?: boolean;
 	published?: string;
 	cc?: ApObject;
 	to?: ApObject;

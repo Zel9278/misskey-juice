@@ -454,6 +454,27 @@ rt {
 	vertical-align: top;
 }
 
+// JUICE: 本家(upstream)画面に混ざったJUICE独自の設定・タブ・メニュー項目であることを示すバッジ
+// 色はテーマ依存の--MI_THEME-*ではなく、about-juice.vueの雨エフェクトと同じJUICEブランドカラーで固定する。
+// gradateボタンなど背景色が可変な場所でも視認できるよう、枠線だけでなく塗りつぶしにしている
+._juice {
+	margin-left: 0.7em;
+	// JUICE: font-size: 65%だと周囲のテキストサイズに引きずられ、大きい文字の場所(ボタン等)だけ
+	// バッジが縦に間延びして見えてしまうため、どこに置いても同じ大きさになる絶対値にする
+	font-size: 0.7rem;
+	line-height: 1.4;
+	padding: 1px 4px;
+	// 白文字だとオレンジ地とのコントラスト比が約2.59:1でWCAG未達のため、黒文字にして約8.1:1を確保する
+	color: #000;
+	background: #f2841f;
+	border-radius: 4px;
+	// JUICE: vertical-align: middleはテキストのベースライン基準のため、周囲のフォントサイズが大きいと
+	// わずかに下寄りに見える。微調整として1pxだけ上に持ち上げる
+	vertical-align: middle;
+	transform: translateY(-1px);
+	display: inline-block;
+}
+
 ._table {
 	> ._row {
 		display: flex;

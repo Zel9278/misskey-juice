@@ -25,6 +25,9 @@ import { WebAuthnService } from '@/core/WebAuthnService.js';
 import { UserAuthService } from '@/core/UserAuthService.js';
 import { CaptchaService } from '@/core/CaptchaService.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import { NotificationService } from '@/core/NotificationService.js';
+import { EmailService } from '@/core/EmailService.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
 import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
 import { RateLimiterService } from './RateLimiterService.js';
 import { SigninService } from './SigninService.js';
@@ -61,6 +64,9 @@ export class SigninApiService {
 		private userAuthService: UserAuthService,
 		private webAuthnService: WebAuthnService,
 		private captchaService: CaptchaService,
+		private notificationService: NotificationService,
+		private emailService: EmailService,
+		private emailI18nService: EmailI18nService,
 	) {
 		this.logger = this.loggerService.getLogger('Signin');
 	}
@@ -141,6 +147,12 @@ export class SigninApiService {
 			});
 		}
 
+		if (!user.approved) {
+			return error(403, {
+				id: '9f2f084b-af33-4f06-93cf-8a7fe04c6786',
+			});
+		}
+
 		const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 		const securityKeysAvailable = await this.userSecurityKeysRepository.countBy({ userId: user.id }).then(result => result >= 1);
 
@@ -175,6 +187,30 @@ export class SigninApiService {
 				ip: request.ip,
 				headers: request.headers as any,
 				success: false,
+			});
+
+			// JUICE: ログイン失敗をアカウント本人へ通知する(misskey-tempuraを参考)。
+			// レスポンスを遅延させないよう、成功時のSigninService.signin()と同様にsetImmediateで非同期実行する。
+			// このfail()は未認証の第三者が何度でも任意に発火できるため、既存のIPベースのrate limit(攻撃者側の
+			// 制限)とは別に、被害者アカウント宛の通知・メールが連打されないようuserId単位でも間引く
+			// (同一アカウントへは5分に1回まで)。
+			setImmediate(async () => {
+				try {
+					const notifyRateLimit = await this.rateLimiterService.limit({ key: 'loginFailedNotify', duration: 1000 * 60 * 5, max: 1 }, user.id);
+					if (notifyRateLimit != null) return;
+
+					this.notificationService.createNotification(user.id, 'loginFailed', {});
+
+					if (profile.email && profile.emailVerified) {
+						const lang = await this.emailI18nService.resolveLang(profile.emailLang);
+						const i18n = this.emailI18nService.getI18n(lang);
+						this.emailService.sendEmail(profile.email, i18n.t('_email.newLoginFailed.subject'),
+							i18n.t('_email.newLoginFailed.html', { ip: request.ip }),
+							i18n.t('_email.newLoginFailed.text', { ip: request.ip }));
+					}
+				} catch (err) {
+					this.logger.error('Failed to notify loginFailed', { stack: err });
+				}
 			});
 
 			return error(status ?? 500, failure ?? { id: '4e30e80c-e338-45a0-8c8f-44455efa3b76' });

@@ -13,6 +13,8 @@ import {
 	MiAnnouncement,
 	MiAnnouncementRead,
 	MiAnnouncementReaction,
+	MiAnnouncementPoll,
+	MiAnnouncementPollVote,
 	MiAntenna,
 	MiApp,
 	MiAuthSession,
@@ -29,6 +31,7 @@ import {
 	MiDriveFile,
 	MiDriveFolder,
 	MiEmoji,
+	MiEmojiRequest,
 	MiFlash,
 	MiFlashLike,
 	MiFollowing,
@@ -63,6 +66,7 @@ import {
 	MiRole,
 	MiRoleAssignment,
 	MiSignin,
+	MiSignupApprovalCheck,
 	MiSwSubscription,
 	MiSystemAccount,
 	MiSystemWebhook,
@@ -74,6 +78,7 @@ import {
 	MiUserListFavorite,
 	MiUserListMembership,
 	MiUserMemo,
+	MiUserNickname,
 	MiUserNotePining,
 	MiUserPending,
 	MiUserProfile,
@@ -116,6 +121,18 @@ const $announcementReadsRepository: Provider = {
 const $announcementReactionsRepository: Provider = {
 	provide: DI.announcementReactionsRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiAnnouncementReaction).extend(miRepository as MiRepository<MiAnnouncementReaction>),
+	inject: [DI.db],
+};
+
+const $announcementPollsRepository: Provider = {
+	provide: DI.announcementPollsRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiAnnouncementPoll).extend(miRepository as MiRepository<MiAnnouncementPoll>),
+	inject: [DI.db],
+};
+
+const $announcementPollVotesRepository: Provider = {
+	provide: DI.announcementPollVotesRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiAnnouncementPollVote).extend(miRepository as MiRepository<MiAnnouncementPollVote>),
 	inject: [DI.db],
 };
 
@@ -257,6 +274,12 @@ const $emojisRepository: Provider = {
 	inject: [DI.db],
 };
 
+const $emojiRequestsRepository: Provider = {
+	provide: DI.emojiRequestsRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiEmojiRequest).extend(miRepository as MiRepository<MiEmojiRequest>),
+	inject: [DI.db],
+};
+
 const $driveFilesRepository: Provider = {
 	provide: DI.driveFilesRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiDriveFile).extend(miRepository as MiRepository<MiDriveFile>),
@@ -344,6 +367,12 @@ const $accessTokensRepository: Provider = {
 const $signinsRepository: Provider = {
 	provide: DI.signinsRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiSignin).extend(miRepository as MiRepository<MiSignin>),
+	inject: [DI.db],
+};
+
+const $signupApprovalChecksRepository: Provider = {
+	provide: DI.signupApprovalChecksRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiSignupApprovalCheck).extend(miRepository as MiRepository<MiSignupApprovalCheck>),
 	inject: [DI.db],
 };
 
@@ -509,6 +538,13 @@ const $userMemosRepository: Provider = {
 	inject: [DI.db],
 };
 
+// JUICE
+const $userNicknamesRepository: Provider = {
+	provide: DI.userNicknamesRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiUserNickname).extend(miRepository as MiRepository<MiUserNickname>),
+	inject: [DI.db],
+};
+
 const $chatMessagesRepository: Provider = {
 	provide: DI.chatMessagesRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiChatMessage).extend(miRepository as MiRepository<MiChatMessage>),
@@ -559,6 +595,8 @@ const $reversiGamesRepository: Provider = {
 		$announcementsRepository,
 		$announcementReadsRepository,
 		$announcementReactionsRepository,
+		$announcementPollsRepository,
+		$announcementPollVotesRepository,
 		$appsRepository,
 		$avatarDecorationsRepository,
 		$noteFavoritesRepository,
@@ -582,6 +620,7 @@ const $reversiGamesRepository: Provider = {
 		$followRequestsRepository,
 		$instancesRepository,
 		$emojisRepository,
+		$emojiRequestsRepository,
 		$driveFilesRepository,
 		$driveFoldersRepository,
 		$metasRepository,
@@ -597,6 +636,7 @@ const $reversiGamesRepository: Provider = {
 		$authSessionsRepository,
 		$accessTokensRepository,
 		$signinsRepository,
+		$signupApprovalChecksRepository,
 		$pagesRepository,
 		$pageLikesRepository,
 		$galleryPostsRepository,
@@ -624,6 +664,7 @@ const $reversiGamesRepository: Provider = {
 		$flashsRepository,
 		$flashLikesRepository,
 		$userMemosRepository,
+		$userNicknamesRepository,
 		$chatMessagesRepository,
 		$chatRoomsRepository,
 		$chatRoomMembershipsRepository,
@@ -638,6 +679,8 @@ const $reversiGamesRepository: Provider = {
 		$announcementsRepository,
 		$announcementReadsRepository,
 		$announcementReactionsRepository,
+		$announcementPollsRepository,
+		$announcementPollVotesRepository,
 		$appsRepository,
 		$avatarDecorationsRepository,
 		$noteFavoritesRepository,
@@ -661,6 +704,7 @@ const $reversiGamesRepository: Provider = {
 		$followRequestsRepository,
 		$instancesRepository,
 		$emojisRepository,
+		$emojiRequestsRepository,
 		$driveFilesRepository,
 		$driveFoldersRepository,
 		$metasRepository,
@@ -676,6 +720,7 @@ const $reversiGamesRepository: Provider = {
 		$authSessionsRepository,
 		$accessTokensRepository,
 		$signinsRepository,
+		$signupApprovalChecksRepository,
 		$pagesRepository,
 		$pageLikesRepository,
 		$galleryPostsRepository,
@@ -703,6 +748,7 @@ const $reversiGamesRepository: Provider = {
 		$flashsRepository,
 		$flashLikesRepository,
 		$userMemosRepository,
+		$userNicknamesRepository,
 		$chatMessagesRepository,
 		$chatRoomsRepository,
 		$chatRoomMembershipsRepository,

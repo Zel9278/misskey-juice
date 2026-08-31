@@ -20,6 +20,7 @@ import MkCodeInline from '@/components/MkCodeInline.vue';
 import MkGoogle from '@/components/MkGoogle.vue';
 import MkSparkle from '@/components/MkSparkle.vue';
 import MkA from '@/components/global/MkA.vue';
+import MkFormula from '@/components/MkFormula.vue';
 import { prefer } from '@/preferences.js';
 
 function safeParseFloat(str: unknown): number | null {
@@ -37,6 +38,10 @@ color: var(--MI_THEME-fg);
 border-left: solid 3px var(--MI_THEME-fg);
 opacity: 0.7;
 `.split('\n').join(' ');
+
+// JUICE: mfm-jsの引用構文は">"の後のスペースが不要かつネスト段数の上限も無いため、
+// ">"を並べるだけのノートで引用divが際限なく積み重なり画面が異常に縦長になるのを防ぐための表示上の上限
+const MAX_QUOTE_DEPTH = 5;
 
 type MfmProps = {
 	text: string;
@@ -82,6 +87,7 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 	};
 
 	const useAnim = prefer.s.advancedMfm && prefer.s.animatedMfm;
+	let quoteDepth = 0;
 
 	/**
 	 * Gen Vue Elements from MFM AST
@@ -400,14 +406,23 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'quote': {
+				// JUICE: MAX_QUOTE_DEPTHを超えるネストは、それ以上枠を追加せず子要素をそのまま展開する
+				if (quoteDepth >= MAX_QUOTE_DEPTH) {
+					return genEl(token.children, scale, true);
+				}
+
+				quoteDepth++;
+				const children = genEl(token.children, scale, true);
+				quoteDepth--;
+
 				if (!props.nowrap) {
 					return [h('div', {
 						style: QUOTE_STYLE,
-					}, genEl(token.children, scale, true))];
+					}, children)];
 				} else {
 					return [h('span', {
 						style: QUOTE_STYLE,
-					}, genEl(token.children, scale, true))];
+					}, children)];
 				}
 			}
 
@@ -452,11 +467,19 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 			}
 
 			case 'mathInline': {
-				return [h('code', token.props.formula)];
+				return [h(MkFormula, {
+					key: Math.random(),
+					formula: token.props.formula,
+					block: false,
+				})];
 			}
 
 			case 'mathBlock': {
-				return [h('code', token.props.formula)];
+				return [h(MkFormula, {
+					key: Math.random(),
+					formula: token.props.formula,
+					block: true,
+				})];
 			}
 
 			case 'search': {

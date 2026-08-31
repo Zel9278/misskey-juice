@@ -48,6 +48,7 @@ import { DB_MAX_NOTE_TEXT_LENGTH } from '@/const.js';
 import { RoleService } from '@/core/RoleService.js';
 import { SearchService } from '@/core/SearchService.js';
 import { FeaturedService } from '@/core/FeaturedService.js';
+import { JuiceUserRankingService } from '@/core/JuiceUserRankingService.js';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
@@ -176,6 +177,7 @@ type Option = {
 	files?: MiDriveFile[] | null;
 	poll?: IPoll | null;
 	localOnly?: boolean | null;
+	isAIGenerated?: boolean | null;
 	reactionAcceptance?: MiNote['reactionAcceptance'];
 	cw?: string | null;
 	visibility?: string;
@@ -269,6 +271,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		private utilityService: UtilityService,
 		private userBlockingService: UserBlockingService,
 		private cacheService: CacheService,
+		private juiceUserRankingService: JuiceUserRankingService,
 	) {
 		this.updateNotesCountQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
 	}
@@ -291,6 +294,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		visibleUserIds: MiUser['id'][];
 		channelId: MiChannel['id'] | null;
 		localOnly: boolean;
+		isAIGenerated: boolean;
 		reactionAcceptance: MiNote['reactionAcceptance'];
 		poll: IPoll | null;
 		apMentions?: MinimumUser[] | null;
@@ -428,6 +432,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			renote,
 			cw: data.cw,
 			localOnly: data.localOnly,
+			isAIGenerated: data.isAIGenerated,
 			reactionAcceptance: data.reactionAcceptance,
 			visibility: data.visibility,
 			visibleUsers,
@@ -662,6 +667,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			emojis,
 			userId: user.id,
 			localOnly: data.localOnly!,
+			isAIGenerated: data.isAIGenerated ?? false,
 			reactionAcceptance: data.reactionAcceptance ?? null,
 			visibility: data.visibility as any,
 			visibleUserIds: data.visibility === 'specified'
@@ -775,6 +781,11 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 		// Increment notes count (user)
 		this.incNotesCountOfUser(user);
+
+		// JUICE: ユーザーランキング(投稿数)。純粋リノートは対象外。
+		if (!(this.isRenote(data) && !this.isQuote(data))) {
+			this.juiceUserRankingService.incrementPostCount(user.id);
+		}
 
 		this.pushToTl(note, user);
 

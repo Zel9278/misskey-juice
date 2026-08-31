@@ -64,6 +64,7 @@ const emit = defineEmits<{
 	(ev: 'update:modelValue', value: Misskey.entities.DriveFile[]): void;
 	(ev: 'detach', id: string): void;
 	(ev: 'changeSensitive', file: Misskey.entities.DriveFile, isSensitive: boolean): void;
+	(ev: 'changeAIGenerated', file: Misskey.entities.DriveFile, isAIGenerated: boolean): void;
 	(ev: 'changeName', file: Misskey.entities.DriveFile, newName: string): void;
 }>();
 
@@ -108,6 +109,20 @@ function toggleSensitive(file: Misskey.entities.DriveFile) {
 		isSensitive: !file.isSensitive,
 	}).then(() => {
 		emit('changeSensitive', file, !file.isSensitive);
+	});
+}
+
+function toggleAIGenerated(file: Misskey.entities.DriveFile) {
+	if (mock) {
+		emit('changeAIGenerated', file, !file.isAIGenerated);
+		return;
+	}
+
+	misskeyApi('drive/files/update', {
+		fileId: file.id,
+		isAIGenerated: !file.isAIGenerated,
+	}).then(() => {
+		emit('changeAIGenerated', file, !file.isAIGenerated);
 	});
 }
 
@@ -165,6 +180,10 @@ function showFileMenu(file: Misskey.entities.DriveFile, ev: PointerEvent | Keybo
 		text: file.isSensitive ? i18n.ts.unmarkAsSensitive : i18n.ts.markAsSensitive,
 		icon: file.isSensitive ? 'ti ti-eye-exclamation' : 'ti ti-eye',
 		action: () => { toggleSensitive(file); },
+	}, {
+		text: file.isAIGenerated ? i18n.ts.unmarkAsAIGenerated : i18n.ts.markAsAIGenerated,
+		icon: 'ti ti-sparkles',
+		action: () => { toggleAIGenerated(file); },
 	}, {
 		text: i18n.ts.describeFile,
 		icon: 'ti ti-text-caption',

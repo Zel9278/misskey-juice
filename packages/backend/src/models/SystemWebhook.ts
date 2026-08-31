@@ -18,6 +18,10 @@ export const systemWebhookEventTypes = [
 	'inactiveModeratorsWarning',
 	// モデレータが一定期間不在のためシステムにより招待制へと変更された
 	'inactiveModeratorsInvitationOnlyChanged',
+	// JUICE: 絵文字申請が作成されたとき
+	'emojiRequestCreated',
+	// JUICE: 承認式登録の申請が作成されたとき
+	'signupApplicationCreated',
 ] as const;
 export type SystemWebhookEventType = typeof systemWebhookEventTypes[number];
 

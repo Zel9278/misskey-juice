@@ -63,14 +63,14 @@ async function signin(
 		});
 }
 
-async function createAdmin(host: Host): Promise<Misskey.entities.SignupResponse | undefined> {
+async function createAdmin(host: Host): Promise<Misskey.entities.SignupSuccessResponse | undefined> {
 	const client = new Misskey.api.APIClient({ origin: `https://${host}` });
 	return await client.request('admin/accounts/create', ADMIN_PARAMS).then(res => {
 		ADMIN_CACHE.set(host, {
 			id: res.id,
 			i: res.token,
 		});
-		return res as Misskey.entities.SignupResponse;
+		return res as Misskey.entities.SignupSuccessResponse;
 	}).then(async res => {
 		await client.request('admin/roles/update-default-policies', {
 			policies: {
@@ -187,6 +187,8 @@ export async function uploadFile(
 	host: Host,
 	user: { i: string },
 	path = '../../test/resources/192.jpg',
+	/** JUICE */
+	isAIGenerated = false,
 ): Promise<Misskey.entities.DriveFile> {
 	const filename = path.split('/').pop() ?? 'untitled';
 	const buffer = await readFile(join(__dirname, path));
@@ -197,6 +199,7 @@ export async function uploadFile(
 	body.append('force', 'true');
 	body.append('file', blob);
 	body.append('name', filename);
+	body.append('isAIGenerated', isAIGenerated ? 'true' : 'false');
 
 	return await fetch(`https://${host}/api/drive/files/create`, { method: 'POST', body })
 		.then(async res => await res.json());

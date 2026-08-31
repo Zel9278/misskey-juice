@@ -80,11 +80,12 @@ import { isSeparatorNeeded, getSeparatorInfo } from '@/utility/timeline-date-sep
 import { Paginator } from '@/utility/paginator.js';
 
 const props = withDefaults(defineProps<{
-	src: BasicTimelineType | 'mentions' | 'directs' | 'list' | 'antenna' | 'channel' | 'role';
+	src: BasicTimelineType | 'mentions' | 'directs' | 'list' | 'antenna' | 'channel' | 'role' | 'relay';
 	list?: string;
 	antenna?: string;
 	channel?: string;
 	role?: string;
+	relays?: string[] | null;
 	sound?: boolean;
 	customSound?: SoundStore | null;
 	withRenotes?: boolean;
@@ -178,6 +179,15 @@ if (props.src === 'antenna') {
 	paginator = markRaw(new Paginator('roles/notes', {
 		computedParams: computed(() => ({
 			roleId: props.role!,
+		})),
+		useShallowRef: true,
+	}));
+} else if (props.src === 'relay') {
+	paginator = markRaw(new Paginator('notes/relay-timeline', {
+		computedParams: computed(() => ({
+			withRenotes: props.withRenotes,
+			withFiles: props.onlyFiles ? true : undefined,
+			relayIds: props.relays && props.relays.length > 0 ? props.relays : undefined,
 		})),
 		useShallowRef: true,
 	}));
@@ -316,6 +326,7 @@ const connections = {
 	userList: null as Misskey.IChannelConnection<Misskey.Channels['userList']> | null,
 	channel: null as Misskey.IChannelConnection<Misskey.Channels['channel']> | null,
 	roleTimeline: null as Misskey.IChannelConnection<Misskey.Channels['roleTimeline']> | null,
+	relayTimeline: null as Misskey.IChannelConnection<Misskey.Channels['relayTimeline']> | null,
 };
 
 function connectChannel() {
@@ -383,6 +394,13 @@ function connectChannel() {
 			roleId: props.role,
 		});
 		connections.roleTimeline.on('note', prepend);
+	} else if (props.src === 'relay') {
+		connections.relayTimeline = stream.useChannel('relayTimeline', {
+			withRenotes: props.withRenotes,
+			withFiles: props.onlyFiles ? true : undefined,
+			relayIds: props.relays && props.relays.length > 0 ? props.relays : undefined,
+		});
+		connections.relayTimeline.on('note', prepend);
 	}
 }
 
@@ -400,7 +418,7 @@ if (store.s.realtimeMode) {
 	connectChannel();
 }
 
-watch(() => [props.list, props.antenna, props.channel, props.role, props.withRenotes], () => {
+watch(() => [props.list, props.antenna, props.channel, props.role, props.relays, props.withRenotes], () => {
 	if (store.s.realtimeMode) {
 		disconnectChannel();
 		connectChannel();

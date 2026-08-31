@@ -201,6 +201,16 @@ export const packedNoteSchema = {
 			type: 'boolean',
 			optional: true, nullable: false,
 		},
+		isAIGenerated: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
+		relayId: {
+			type: 'string',
+			optional: true, nullable: true,
+			format: 'id',
+			example: 'xxxxxxxxxx',
+		},
 		reactionAcceptance: {
 			type: 'string',
 			optional: false, nullable: true,

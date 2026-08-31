@@ -50,6 +50,7 @@ export const Default = {
 			forYou: true,
 			reactions: {},
 			myReactions: [],
+			poll: null,
 		},
 	},
 	parameters: {

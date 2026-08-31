@@ -109,6 +109,18 @@ export type Channels = {
 		};
 		receives: null;
 	};
+	/** JUICE */
+	relayTimeline: {
+		params: {
+			withRenotes?: boolean;
+			withFiles?: boolean;
+			relayIds?: string[];
+		};
+		events: {
+			note: (payload: Note) => void;
+		};
+		receives: null;
+	};
 	userList: {
 		params: {
 			listId: string;
@@ -202,7 +214,19 @@ export type Channels = {
 				targetUserId: string;
 				reporterId: string;
 				comment: string;
-			}
+			};
+			// JUICE: 絵文字申請が作成されたとき
+			newEmojiRequest: {
+				id: string;
+				name: string;
+				category: string | null;
+				requester: UserLite;
+			};
+			// JUICE: 承認式登録の申請が作成されたとき
+			newSignupApplication: {
+				applicant: UserLite;
+				reason: string | null;
+			};
 		};
 		receives: null;
 	};
@@ -318,6 +342,12 @@ export type NoteUpdatedEvent = { id: Note['id'] } & ({
 	body: {
 		choice: number;
 		userId: User['id'];
+	};
+} | {
+	// JUICE
+	type: 'aiGeneratedChanged';
+	body: {
+		isAIGenerated: boolean;
 	};
 });
 

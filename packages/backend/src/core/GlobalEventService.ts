@@ -21,6 +21,7 @@ import type { MiPage } from '@/models/Page.js';
 import type { MiWebhook } from '@/models/Webhook.js';
 import type { MiSystemWebhook } from '@/models/SystemWebhook.js';
 import type { MiMeta } from '@/models/Meta.js';
+import type { MiJuiceSettings } from '@/models/JuiceSettings.js';
 import { MiAvatarDecoration, MiChatMessage, MiChatRoom, MiReversiGame, MiRole, MiRoleAssignment } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { DI } from '@/di-symbols.js';
@@ -52,6 +53,11 @@ export interface BroadcastTypes {
 	announcementUnreacted: {
 		announcementId: MiAnnouncement['id'];
 		reaction: string;
+		userId: MiUser['id'];
+	};
+	announcementPollVoted: {
+		announcementId: MiAnnouncement['id'];
+		choice: number;
 		userId: MiUser['id'];
 	};
 }
@@ -136,6 +142,9 @@ export interface NoteEventTypes {
 		reaction: string;
 		userId: MiUser['id'];
 	};
+	aiGeneratedChanged: {
+		isAIGenerated: boolean;
+	};
 }
 type NoteStreamEventTypes = {
 	[key in keyof NoteEventTypes]: {
@@ -166,6 +175,18 @@ export interface AdminEventTypes {
 		targetUserId: MiUser['id'],
 		reporterId: MiUser['id'],
 		comment: string;
+	};
+	// JUICE: 絵文字申請が作成された時のリアルタイム通知
+	newEmojiRequest: {
+		id: string;
+		name: string;
+		category: string | null;
+		requester: Packed<'UserLite'>;
+	};
+	// JUICE: 承認式登録の申請が作成された時のリアルタイム通知
+	newSignupApplication: {
+		applicant: Packed<'UserLite'>;
+		reason: string | null;
 	};
 }
 
@@ -263,6 +284,7 @@ export interface InternalEventTypes {
 	avatarDecorationDeleted: MiAvatarDecoration;
 	avatarDecorationUpdated: MiAvatarDecoration;
 	metaUpdated: { before?: MiMeta; after: MiMeta; };
+	juiceSettingsUpdated: { before: MiJuiceSettings['settings']; after: MiJuiceSettings['settings']; };
 	followChannel: { userId: MiUser['id']; channelId: MiChannel['id']; };
 	unfollowChannel: { userId: MiUser['id']; channelId: MiChannel['id']; };
 	muteChannel: { userId: MiUser['id']; channelId: MiChannel['id']; };
@@ -316,6 +338,11 @@ export type GlobalEvents = {
 	};
 	notes: {
 		name: 'notesStream';
+		payload: Serialized<Packed<'Note'>>;
+	};
+	/** JUICE: リレーTL */
+	relayTimeline: {
+		name: 'relayTimelineStream';
 		payload: Serialized<Packed<'Note'>>;
 	};
 	chatUser: {
@@ -420,6 +447,12 @@ export class GlobalEventService {
 	@bindThis
 	public publishNotesStream(note: Packed<'Note'>): void {
 		this.publish('notesStream', null, note);
+	}
+
+	/** JUICE: リレー経由で届いた公開ノートをリレーTL購読者に配信する */
+	@bindThis
+	public publishRelayTimelineStream(note: Packed<'Note'>): void {
+		this.publish('relayTimelineStream', null, note);
 	}
 
 	@bindThis

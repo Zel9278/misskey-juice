@@ -16,6 +16,8 @@ import { prefer } from '@/preferences.js';
 import { store } from '@/store.js';
 import { $i } from '@/i.js';
 import { signout } from '@/signout.js';
+import { instance } from '@/instance.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
 
 type AccountWithToken = Misskey.entities.MeDetailed & { token: string };
 
@@ -103,6 +105,16 @@ function fetchAccount(token: string, id?: string, forceShowDialog?: boolean): Pr
 								type: 'error',
 								title: i18n.ts.tokenRevoked,
 								text: i18n.ts.tokenRevokedDescription,
+							});
+						}
+					} else if (res.error.id === '3c25f403-6ed7-4b14-ba24-be9bb72a29e4') {
+						// YOUR_ACCOUNT_NOT_APPROVED (JUICE)
+						// 承認式新規登録が有効なサーバーで、まだ承認されていない
+						if (forceShowDialog || $i && (token === $i.token || id === $i.id)) {
+							await alert({
+								type: 'error',
+								title: i18n.ts.accountNotApproved,
+								text: i18n.ts.accountNotApprovedDescription,
 							});
 						}
 					} else {
@@ -301,6 +313,17 @@ export async function getAccountMenu(opts: {
 
 		menuItems.push(...accountItems);
 
+		const createAccountAction = (mode?: 'invitation' | 'application') => () => {
+			getAccountWithSignupDialog(mode).then(res => {
+				if (res != null) {
+					switchAccount(host, res.id);
+				}
+			});
+		};
+
+		const juicePublicSettings = await misskeyApi('juice/public-settings').catch(() => null);
+		const showSplitCreateAccountItems = instance.disableRegistration && (juicePublicSettings?.approvalRequiredForSignup ?? false);
+
 		menuItems.push({
 			type: 'parent',
 			icon: 'ti ti-plus',
@@ -314,16 +337,16 @@ export async function getAccountMenu(opts: {
 						}
 					});
 				},
+			}, ...(showSplitCreateAccountItems ? [{
+				text: i18n.ts._juice.registerWithInvitation,
+				action: createAccountAction('invitation'),
 			}, {
+				text: i18n.ts._juice.applyToJoin,
+				action: createAccountAction('application'),
+			}] : [{
 				text: i18n.ts.createAccount,
-				action: () => {
-					getAccountWithSignupDialog().then(res => {
-						if (res != null) {
-							switchAccount(host, res.id);
-						}
-					});
-				},
-			}],
+				action: createAccountAction(),
+			}])],
 		}, {
 			type: 'link',
 			icon: 'ti ti-users',
@@ -359,10 +382,10 @@ export function getAccountWithSigninDialog(): Promise<{ id: string, token: strin
 	});
 }
 
-export function getAccountWithSignupDialog(): Promise<{ id: string, token: string } | null> {
+export function getAccountWithSignupDialog(mode?: 'invitation' | 'application'): Promise<{ id: string, token: string } | null> {
 	return new Promise((resolve) => {
-		const { dispose } = popup(defineAsyncComponent(() => import('@/components/MkSignupDialog.vue')), {}, {
-			done: async (res: Misskey.entities.SignupResponse) => {
+		const { dispose } = popup(defineAsyncComponent(() => import('@/components/MkSignupDialog.vue')), { mode }, {
+			done: async (res: Misskey.entities.SignupSuccessResponse) => {
 				const user = JSON.parse(JSON.stringify(res));
 				delete user.token;
 				await addAccount(host, user, res.token);

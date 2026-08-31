@@ -17,10 +17,10 @@ import type * as misskey from 'misskey-js';
 describe('Note', () => {
 	let Notes: Repository<MiNote>;
 
-	let root: misskey.entities.SignupResponse;
-	let alice: misskey.entities.SignupResponse;
-	let bob: misskey.entities.SignupResponse;
-	let tom: misskey.entities.SignupResponse;
+	let root: misskey.entities.SignupSuccessResponse;
+	let alice: misskey.entities.SignupSuccessResponse;
+	let bob: misskey.entities.SignupSuccessResponse;
+	let tom: misskey.entities.SignupSuccessResponse;
 
 	beforeAll(async () => {
 		const connection = await initTestDb(true);
@@ -267,7 +267,7 @@ describe('Note', () => {
 
 	test('文字数ぎりぎりで怒られない', async () => {
 		const post = {
-			text: '!'.repeat(MAX_NOTE_TEXT_LENGTH), // 3000文字
+			text: '!'.repeat(MAX_NOTE_TEXT_LENGTH),
 		};
 		const res = await api('notes/create', post, alice);
 		assert.strictEqual(res.status, 200);
@@ -275,7 +275,7 @@ describe('Note', () => {
 
 	test('文字数オーバーで怒られる', async () => {
 		const post = {
-			text: '!'.repeat(MAX_NOTE_TEXT_LENGTH + 1), // 3001文字
+			text: '!'.repeat(MAX_NOTE_TEXT_LENGTH + 1),
 		};
 		const res = await api('notes/create', post, alice);
 		assert.strictEqual(res.status, 400);

@@ -15,6 +15,8 @@ import { MiAd } from '@/models/Ad.js';
 import { MiAnnouncement } from '@/models/Announcement.js';
 import { MiAnnouncementRead } from '@/models/AnnouncementRead.js';
 import { MiAnnouncementReaction } from '@/models/AnnouncementReaction.js';
+import { MiAnnouncementPoll } from '@/models/AnnouncementPoll.js';
+import { MiAnnouncementPollVote } from '@/models/AnnouncementPollVote.js';
 import { MiAntenna } from '@/models/Antenna.js';
 import { MiApp } from '@/models/App.js';
 import { MiAuthSession } from '@/models/AuthSession.js';
@@ -36,6 +38,7 @@ import { MiClipNote } from '@/models/ClipNote.js';
 import { MiDriveFile } from '@/models/DriveFile.js';
 import { MiDriveFolder } from '@/models/DriveFolder.js';
 import { MiEmoji } from '@/models/Emoji.js';
+import { MiEmojiRequest } from '@/models/EmojiRequest.js';
 import { MiFlash } from '@/models/Flash.js';
 import { MiFlashLike } from '@/models/FlashLike.js';
 import { MiFollowing } from '@/models/Following.js';
@@ -68,6 +71,7 @@ import { MiReversiGame } from '@/models/ReversiGame.js';
 import { MiRole } from '@/models/Role.js';
 import { MiRoleAssignment } from '@/models/RoleAssignment.js';
 import { MiSignin } from '@/models/Signin.js';
+import { MiSignupApprovalCheck } from '@/models/SignupApprovalCheck.js';
 import { MiSwSubscription } from '@/models/SwSubscription.js';
 import { MiSystemAccount } from '@/models/SystemAccount.js';
 import { MiSystemWebhook } from '@/models/SystemWebhook.js';
@@ -79,6 +83,7 @@ import { MiUserList } from '@/models/UserList.js';
 import { MiUserListFavorite } from '@/models/UserListFavorite.js';
 import { MiUserListMembership } from '@/models/UserListMembership.js';
 import { MiUserMemo } from '@/models/UserMemo.js';
+import { MiUserNickname } from '@/models/UserNickname.js';
 import { MiUserNotePining } from '@/models/UserNotePining.js';
 import { MiUserPending } from '@/models/UserPending.js';
 import { MiUserProfile } from '@/models/UserProfile.js';
@@ -105,6 +110,8 @@ export {
 	MiAnnouncement,
 	MiAnnouncementRead,
 	MiAnnouncementReaction,
+	MiAnnouncementPoll,
+	MiAnnouncementPollVote,
 	MiAntenna,
 	MiApp,
 	MiAvatarDecoration,
@@ -119,6 +126,7 @@ export {
 	MiDriveFile,
 	MiDriveFolder,
 	MiEmoji,
+	MiEmojiRequest,
 	MiFollowing,
 	MiFollowRequest,
 	MiGalleryLike,
@@ -145,6 +153,7 @@ export {
 	MiRegistryItem,
 	MiRelay,
 	MiSignin,
+	MiSignupApprovalCheck,
 	MiSwSubscription,
 	MiSystemAccount,
 	MiUsedUsername,
@@ -168,6 +177,7 @@ export {
 	MiFlash,
 	MiFlashLike,
 	MiUserMemo,
+	MiUserNickname,
 	MiChatMessage,
 	MiChatRoom,
 	MiChatRoomMembership,
@@ -186,6 +196,8 @@ export type AdsRepository = Repository<MiAd> & MiRepository<MiAd>;
 export type AnnouncementsRepository = Repository<MiAnnouncement> & MiRepository<MiAnnouncement>;
 export type AnnouncementReadsRepository = Repository<MiAnnouncementRead> & MiRepository<MiAnnouncementRead>;
 export type AnnouncementReactionsRepository = Repository<MiAnnouncementReaction> & MiRepository<MiAnnouncementReaction>;
+export type AnnouncementPollsRepository = Repository<MiAnnouncementPoll> & MiRepository<MiAnnouncementPoll>;
+export type AnnouncementPollVotesRepository = Repository<MiAnnouncementPollVote> & MiRepository<MiAnnouncementPollVote>;
 export type AntennasRepository = Repository<MiAntenna> & MiRepository<MiAntenna>;
 export type AppsRepository = Repository<MiApp> & MiRepository<MiApp>;
 export type AvatarDecorationsRepository = Repository<MiAvatarDecoration> & MiRepository<MiAvatarDecoration>;
@@ -200,6 +212,7 @@ export type ClipFavoritesRepository = Repository<MiClipFavorite> & MiRepository<
 export type DriveFilesRepository = Repository<MiDriveFile> & MiRepository<MiDriveFile>;
 export type DriveFoldersRepository = Repository<MiDriveFolder> & MiRepository<MiDriveFolder>;
 export type EmojisRepository = Repository<MiEmoji> & MiRepository<MiEmoji>;
+export type EmojiRequestsRepository = Repository<MiEmojiRequest> & MiRepository<MiEmojiRequest>;
 export type FollowingsRepository = Repository<MiFollowing> & MiRepository<MiFollowing>;
 export type FollowRequestsRepository = Repository<MiFollowRequest> & MiRepository<MiFollowRequest>;
 export type GalleryLikesRepository = Repository<MiGalleryLike> & MiRepository<MiGalleryLike>;
@@ -226,6 +239,7 @@ export type RegistrationTicketsRepository = Repository<MiRegistrationTicket> & M
 export type RegistryItemsRepository = Repository<MiRegistryItem> & MiRepository<MiRegistryItem>;
 export type RelaysRepository = Repository<MiRelay> & MiRepository<MiRelay>;
 export type SigninsRepository = Repository<MiSignin> & MiRepository<MiSignin>;
+export type SignupApprovalChecksRepository = Repository<MiSignupApprovalCheck> & MiRepository<MiSignupApprovalCheck>;
 export type SwSubscriptionsRepository = Repository<MiSwSubscription> & MiRepository<MiSwSubscription>;
 export type SystemAccountsRepository = Repository<MiSystemAccount> & MiRepository<MiSystemAccount>;
 export type UsedUsernamesRepository = Repository<MiUsedUsername> & MiRepository<MiUsedUsername>;
@@ -249,6 +263,7 @@ export type RoleAssignmentsRepository = Repository<MiRoleAssignment> & MiReposit
 export type FlashsRepository = Repository<MiFlash> & MiRepository<MiFlash>;
 export type FlashLikesRepository = Repository<MiFlashLike> & MiRepository<MiFlashLike>;
 export type UserMemoRepository = Repository<MiUserMemo> & MiRepository<MiUserMemo>;
+export type UserNicknameRepository = Repository<MiUserNickname> & MiRepository<MiUserNickname>;
 export type ChatMessagesRepository = Repository<MiChatMessage> & MiRepository<MiChatMessage>;
 export type ChatRoomsRepository = Repository<MiChatRoom> & MiRepository<MiChatRoom>;
 export type ChatRoomMembershipsRepository = Repository<MiChatRoomMembership> & MiRepository<MiChatRoomMembership>;

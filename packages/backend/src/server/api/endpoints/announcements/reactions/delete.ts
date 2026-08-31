@@ -31,6 +31,12 @@ export const meta = {
 			code: 'NOT_REACTED',
 			id: '899123f8-6e9c-4ff1-b5f7-198657e9609a',
 		},
+
+		reactionNotAllowed: {
+			message: 'Reactions are not allowed on announcements addressed to a specific user.',
+			code: 'REACTION_NOT_ALLOWED',
+			id: 'a058360a-1bf8-4896-8f8f-0d514c9b5ce9',
+		},
 	},
 } as const;
 
@@ -58,6 +64,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (announcement == null) {
 				throw new ApiError(meta.errors.noSuchAnnouncement);
+			}
+
+			if (announcement.userId != null) {
+				// ユーザー宛てのお知らせはリアクション自体を許可しない。本人以外には存在も知られてはいけないため404として扱う
+				if (announcement.userId !== me.id) {
+					throw new ApiError(meta.errors.noSuchAnnouncement);
+				}
+				throw new ApiError(meta.errors.reactionNotAllowed);
 			}
 
 			await this.announcementReactionService.delete(me, announcement, ps.reaction).catch(err => {

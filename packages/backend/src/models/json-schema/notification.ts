@@ -375,6 +375,17 @@ export const packedNotificationSchema = {
 			},
 		},
 	}, {
+		// JUICE: misskey-tempuraを参考に追加
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['loginFailed'],
+			},
+		},
+	}, {
 		type: 'object',
 		properties: {
 			...baseSchema.properties,

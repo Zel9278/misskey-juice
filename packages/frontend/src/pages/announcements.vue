@@ -33,7 +33,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 						</MkA>
 					</div>
-					<div :class="$style.reactions">
+					<div v-if="!announcement.forYou && announcement.poll" :class="$style.poll">
+						<MkAnnouncementPoll
+							:announcementId="announcement.id"
+							:multiple="announcement.poll.multiple"
+							:expiresAt="announcement.poll.expiresAt"
+							:choices="announcement.poll.choices"
+							@update="(choices) => onPollUpdate(announcement, choices)"
+						/>
+					</div>
+					<div v-if="!announcement.forYou" :class="$style.reactions">
 						<MkAnnouncementReactions
 							:announcementId="announcement.id"
 							:reactions="announcement.reactions"
@@ -58,6 +67,7 @@ import MkPagination from '@/components/MkPagination.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkAnnouncementReactions from '@/components/MkAnnouncementReactions.vue';
+import MkAnnouncementPoll from '@/components/MkAnnouncementPoll.vue';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
@@ -81,6 +91,16 @@ function onReactionsUpdate(target: Misskey.entities.Announcement, reactions: Rec
 		reactions,
 		myReactions,
 	}));
+}
+
+function onPollUpdate(target: Misskey.entities.Announcement, choices: NonNullable<Misskey.entities.Announcement['poll']>['choices']) {
+	paginator.updateItem(target.id, a => a.poll ? ({
+		...a,
+		poll: {
+			...a.poll,
+			choices,
+		},
+	}) : a);
 }
 
 async function read(target: Misskey.entities.Announcement) {
@@ -148,6 +168,10 @@ definePage(() => ({
 		max-height: 300px;
 		max-width: 100%;
 	}
+}
+
+.poll {
+	margin-top: 16px;
 }
 
 .reactions {

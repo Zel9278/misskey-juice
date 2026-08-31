@@ -155,6 +155,11 @@ function reset() {
 		mCaptchaReciever.destroy();
 		mCaptchaReciever = null;
 	}
+
+	// JUICE: reset()はウィジェットの表示状態だけでなく、既に消費済みの応答トークンも
+	// 呼び出し元のv-modelから確実に消さないと、再送信時に古いトークンのまま
+	// (見た目は未解決なのに)送信ボタンが有効なままになってしまう
+	emit('update:modelValue', null);
 }
 
 function remove() {

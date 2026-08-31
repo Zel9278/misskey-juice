@@ -175,6 +175,7 @@ export class ApRendererService {
 			width: file.properties?.width,
 			height: file.properties?.height,
 			sensitive: file.isSensitive,
+			_juice_isAIGenerated: file.isAIGenerated, // JUICE
 		};
 	}
 
@@ -483,6 +484,7 @@ export class ApRendererService {
 			}),
 			_misskey_quote: quote,
 			quoteUrl: quote,
+			_juice_isAIGenerated: note.isAIGenerated, // JUICE
 			published: this.idService.parse(note.id).date.toISOString(),
 			to,
 			cc,

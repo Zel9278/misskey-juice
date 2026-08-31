@@ -197,6 +197,47 @@ describe('ActivityPub', () => {
 		});
 	});
 
+	describe('AI generated flag (JUICE)', () => {
+		test('_juice_isAIGenerated: true が isAIGenerated に反映される', async () => {
+			const actor = createRandomActor();
+			const post = {
+				'@context': 'https://www.w3.org/ns/activitystreams',
+				id: `${host}/notes/${secureRndstr(8)}`,
+				type: 'Note',
+				attributedTo: actor.id,
+				to: 'https://www.w3.org/ns/activitystreams#Public',
+				content: 'AI generated note',
+				_juice_isAIGenerated: true,
+			};
+
+			resolver.register(actor.id, actor);
+			resolver.register(post.id, post);
+
+			const note = await noteService.createNote(post.id, undefined, resolver, true);
+
+			assert.strictEqual(note?.isAIGenerated, true);
+		});
+
+		test('_juice_isAIGenerated 未指定の場合は isAIGenerated が false になる', async () => {
+			const actor = createRandomActor();
+			const post = {
+				'@context': 'https://www.w3.org/ns/activitystreams',
+				id: `${host}/notes/${secureRndstr(8)}`,
+				type: 'Note',
+				attributedTo: actor.id,
+				to: 'https://www.w3.org/ns/activitystreams#Public',
+				content: 'normal note',
+			};
+
+			resolver.register(actor.id, actor);
+			resolver.register(post.id, post);
+
+			const note = await noteService.createNote(post.id, undefined, resolver, true);
+
+			assert.strictEqual(note?.isAIGenerated, false);
+		});
+	});
+
 	describe('Name field', () => {
 		test('Truncate long name', async () => {
 			const actor = {

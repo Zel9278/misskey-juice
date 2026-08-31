@@ -6,6 +6,7 @@
 /*
  * Notification manager for SW
  */
+import type { Endpoints } from 'misskey-js';
 import type { BadgeNames, PushNotificationDataMap } from '@/types.js';
 import { char2fileName } from '@/scripts/twemoji-base.js';
 import { cli } from '@/scripts/operations.js';
@@ -56,7 +57,7 @@ async function composeNotification(data: PushNotificationDataMap[keyof PushNotif
 					// users/showの型定義をswos.apiへ当てはめるのが困難なのでapiFetch.requestを直接使用
 					const account = await getAccountFromId(data.userId);
 					if (!account) return null;
-					const userDetail = await cli.request('users/show', { userId: data.body.userId }, account.token);
+					const userDetail = await cli.request<'users/show', Endpoints['users/show']['req']>('users/show', { userId: data.body.userId }, account.token);
 					return [i18n.ts._notification.youWereFollowed, {
 						body: getUserName(data.body.user),
 						icon: data.body.user.avatarUrl ?? undefined,
@@ -212,6 +213,13 @@ async function composeNotification(data: PushNotificationDataMap[keyof PushNotif
 
 				case 'login':
 					return [i18n.ts._notification.login, {
+						badge: iconUrl('login-2'),
+						data,
+					}];
+
+				case 'loginFailed':
+					// JUICE: 専用バッジ画像が無いため、login-2を流用(タイトル文言で失敗であることは伝わる)
+					return [i18n.ts._notification.loginFailed, {
 						badge: iconUrl('login-2'),
 						data,
 					}];

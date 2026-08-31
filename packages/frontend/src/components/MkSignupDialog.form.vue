@@ -10,7 +10,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<div class="_spacer" style="--MI_SPACER-min: 20px; --MI_SPACER-max: 32px;">
 		<form class="_gaps_m" autocomplete="new-password" @submit.prevent="onSubmit">
-			<MkInput v-if="instance.disableRegistration" v-model="invitationCode" type="text" :spellcheck="false" required data-testid="signup-invitation-code">
+			<MkInfo v-if="showReasonField" warn data-testid="signup-approval-notice">{{ i18n.ts._juice.approvalSignupNotice }}</MkInfo>
+			<MkInput v-if="showInvitationField" v-model="invitationCode" type="text" :spellcheck="false" required data-testid="signup-invitation-code">
 				<template #label>{{ i18n.ts.invitationCode }}</template>
 				<template #prefix><i class="ti ti-key"></i></template>
 			</MkInput>
@@ -29,7 +30,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span v-else-if="usernameState === 'max-range'" style="color: var(--MI_THEME-error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.tooLong }}</span>
 				</template>
 			</MkInput>
-			<MkInput v-if="instance.emailRequiredForSignup" v-model="email" :debounce="true" type="email" :spellcheck="false" required data-testid="signup-email" @update:modelValue="onChangeEmail">
+			<MkTextarea v-if="showReasonField" v-model="reason" :required="props.juicePublicSettings.signupReasonRequired" data-testid="signup-reason">
+				<template #label>{{ i18n.ts._signup.reason }}</template>
+				<template #caption>{{ i18n.tsx._signup.reasonCaption({ max: props.juicePublicSettings.signupReasonMaxLength }) }}</template>
+			</MkTextarea>
+			<MkInput v-if="showEmailField" v-model="email" :debounce="true" type="email" :spellcheck="false" required data-testid="signup-email" @update:modelValue="onChangeEmail">
 				<template #label>{{ i18n.ts.emailAddress }} <div v-tooltip:dialog="i18n.ts._signup.emailAddressInfo" class="_button _help"><i class="ti ti-help-circle"></i></div></template>
 				<template #prefix><i class="ti ti-mail"></i></template>
 				<template #caption>
@@ -45,6 +50,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span v-else-if="emailState === 'error'" style="color: var(--MI_THEME-error)"><i class="ti ti-alert-triangle ti-fw"></i> {{ i18n.ts.error }}</span>
 				</template>
 			</MkInput>
+			<MkSelect v-if="showEmailField" v-model="emailLang" :items="langs.map(x => ({ label: x[1], value: x[0] }))" data-testid="signup-email-lang">
+				<template #label>{{ i18n.ts._juice.emailLanguage }}</template>
+				<template #caption>{{ i18n.ts._juice.emailLanguageCaption }}</template>
+			</MkSelect>
 			<MkInput v-model="password" type="password" autocomplete="new-password" required data-testid="signup-password" @update:modelValue="onChangePassword">
 				<template #label>{{ i18n.ts.password }}</template>
 				<template #prefix><i class="ti ti-lock"></i></template>
@@ -71,7 +80,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template v-if="submitting">
 					<MkLoading :em="true" :colored="false"/>
 				</template>
-				<template v-else>{{ i18n.ts.start }}</template>
+				<template v-else>{{ showReasonField ? i18n.ts._juice.apply : i18n.ts.start }}</template>
 			</MkButton>
 		</form>
 	</div>
@@ -79,12 +88,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, defineAsyncComponent } from 'vue';
 import { toUnicode } from 'punycode.js';
 import * as Misskey from 'misskey-js';
 import * as config from '@@/js/config.js';
+import { langs } from '@@/js/config.js';
 import MkButton from './MkButton.vue';
 import MkInput from './MkInput.vue';
+import MkTextarea from './MkTextarea.vue';
+import MkInfo from './MkInfo.vue';
+import MkSelect from './MkSelect.vue';
 import type { Captcha } from '@/components/MkCaptcha.vue';
 import MkCaptcha from '@/components/MkCaptcha.vue';
 import * as os from '@/os.js';
@@ -92,16 +105,31 @@ import { misskeyApi } from '@/utility/misskey-api.js';
 import { instance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 import { login } from '@/accounts.js';
+import { addSignupApprovalCheckCode } from '@/utility/signup-approval-check-codes.js';
 
 const props = withDefaults(defineProps<{
 	autoSet?: boolean;
+	// 招待コード登録・参加申請のボタンが分かれている場合に、どちらの入口から開かれたかを示す。
+	// 未指定時は従来通り単一フォームの動的出し分け(招待コード欄の有無/入力有無で判定)を行う。
+	mode?: 'invitation' | 'application';
+	juicePublicSettings?: Misskey.entities.JuicePublicSettingsResponse;
 }>(), {
 	autoSet: false,
+	mode: undefined,
+	juicePublicSettings: () => ({
+		approvalRequiredForSignup: false,
+		signupReasonRequired: true,
+		signupReasonMaxLength: 4096,
+		emojiRequestEnabled: false,
+		relayTimelineEnabled: false,
+		latexEnabled: true,
+	}),
 });
 
 const emit = defineEmits<{
-	(ev: 'signup', user: Misskey.entities.SignupResponse): void;
+	(ev: 'signup', user: Misskey.entities.SignupSuccessResponse): void;
 	(ev: 'signupEmailPending'): void;
+	(ev: 'signupPendingApproval'): void;
 }>();
 
 const host = toUnicode(config.host);
@@ -117,6 +145,27 @@ const password = ref<string>('');
 const retypedPassword = ref<string>('');
 const invitationCode = ref<string>('');
 const email = ref('');
+const reason = ref('');
+
+// ブラウザの優先言語リスト(navigator.languages)を優先度順に見て、完全一致する翻訳があればそれを使う。
+// 無ければ次に優先度順で主言語一致を探す。最後まで何も無ければ ja-JP にフォールバックする
+function pickDefaultEmailLang(): string {
+	const preferred = navigator.languages && navigator.languages.length > 0 ? navigator.languages : [navigator.language];
+
+	for (const pref of preferred) {
+		const exact = langs.find(([code]) => code === pref)?.[0];
+		if (exact) return exact;
+	}
+
+	for (const pref of preferred) {
+		const primary = langs.find(([code]) => code.split('-')[0] === pref.split('-')[0])?.[0];
+		if (primary) return primary;
+	}
+
+	return 'ja-JP';
+}
+
+const emailLang = ref<string>(pickDefaultEmailLang());
 const usernameState = ref<null | 'wait' | 'ok' | 'unavailable' | 'error' | 'invalid-format' | 'min-range' | 'max-range'>(null);
 const emailState = ref<null | 'wait' | 'ok' | 'unavailable:used' | 'unavailable:format' | 'unavailable:disposable' | 'unavailable:banned' | 'unavailable:mx' | 'unavailable:smtp' | 'unavailable' | 'error'>(null);
 const passwordStrength = ref<'' | 'low' | 'medium' | 'high'>('');
@@ -130,6 +179,29 @@ const testcaptchaResponse = ref<string | null>(null);
 const usernameAbortController = ref<null | AbortController>(null);
 const emailAbortController = ref<null | AbortController>(null);
 
+// 招待コードでの登録は、招待した時点でモデレーターの信任があるため承認式登録をバイパスする
+// (mode 未指定時、単一フォームでの動的出し分けに使う)
+const approvalBypassedByInvitation = computed((): boolean => instance.disableRegistration && invitationCode.value !== '');
+
+// 招待コード欄を表示するか・必須にするか(このフォームでは常に同値: 表示する場合は必ず必須)。
+// mode="application" では常に隠す(申請ボタンから開いた=コードを持たない選択なので)。
+// mode="invitation" は明示的に招待コード登録を選んでいるため常に表示・必須にする
+const showInvitationField = computed((): boolean => {
+	if (props.mode === 'application') return false;
+	if (props.mode === 'invitation') return true;
+	return instance.disableRegistration;
+});
+
+// 理由欄を表示するか。mode="invitation" では常に隠す(招待コード登録は理由不要のため)
+const showReasonField = computed((): boolean => {
+	if (props.mode === 'invitation') return false;
+	if (props.mode === 'application') return props.juicePublicSettings.approvalRequiredForSignup;
+	return props.juicePublicSettings.approvalRequiredForSignup && !approvalBypassedByInvitation.value;
+});
+
+// メールアドレス欄・メール受信言語欄を表示するか
+const showEmailField = computed((): boolean => instance.emailRequiredForSignup);
+
 const shouldDisableSubmitting = computed((): boolean => {
 	return submitting.value ||
 		instance.enableHcaptcha && !hCaptchaResponse.value ||
@@ -137,8 +209,10 @@ const shouldDisableSubmitting = computed((): boolean => {
 		instance.enableRecaptcha && !reCaptchaResponse.value ||
 		instance.enableTurnstile && !turnstileResponse.value ||
 		instance.enableTestcaptcha && !testcaptchaResponse.value ||
-		instance.emailRequiredForSignup && emailState.value !== 'ok' ||
-		instance.disableRegistration && invitationCode.value === '' ||
+		showEmailField.value && emailState.value !== 'ok' ||
+		showInvitationField.value && invitationCode.value === '' ||
+		showReasonField.value && props.juicePublicSettings.signupReasonRequired && reason.value.trim() === '' ||
+		showReasonField.value && reason.value.length > props.juicePublicSettings.signupReasonMaxLength ||
 		usernameState.value !== 'ok' ||
 		passwordRetypeState.value !== 'match';
 });
@@ -260,7 +334,9 @@ async function onSubmit(): Promise<void> {
 		username: username.value,
 		password: password.value,
 		emailAddress: email.value,
-		invitationCode: invitationCode.value,
+		invitationCode: showInvitationField.value ? invitationCode.value : undefined,
+		reason: showReasonField.value ? reason.value : undefined,
+		emailLang: showEmailField.value ? emailLang.value : undefined,
 		'hcaptcha-response': hCaptchaResponse.value,
 		'm-captcha-response': mCaptchaResponse.value,
 		'g-recaptcha-response': reCaptchaResponse.value,
@@ -291,10 +367,25 @@ async function onSubmit(): Promise<void> {
 			const resJson = (await res.json()) as Misskey.entities.SignupResponse;
 			if (_DEV_) console.log(resJson);
 
-			emit('signup', resJson);
+			if ('pendingApproval' in resJson) {
+				// この分岐に来る時点で instance.emailRequiredForSignup は必ず false
+				// (true の場合は上の if で email 確認フローに分岐済み)なので、
+				// メールアドレスは収集していない。承認結果をメールで知らせる旨は案内しない。
+				// 代わりに確認コードをこの端末へ保存し、/signup-check でいつでも審査状況を確認できるようにする(JUICE)。
+				addSignupApprovalCheckCode(resJson.checkCode);
+				const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkSignupApprovalPendingDialog.vue')), {
+					text: i18n.ts._signup.pendingApprovalNoEmail,
+					code: resJson.checkCode,
+				}, {
+					closed: () => dispose(),
+				});
+				emit('signupPendingApproval');
+			} else {
+				emit('signup', resJson);
 
-			if (props.autoSet) {
-				await login(resJson.token);
+				if (props.autoSet) {
+					await login(resJson.token);
+				}
 			}
 		}
 	} else {

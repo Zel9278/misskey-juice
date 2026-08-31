@@ -95,4 +95,20 @@ describe('RelayService', () => {
 		await expect(relayService.removeRelay('https://x.example.com'))
 			.rejects.toThrow('relay not found');
 	});
+
+	test('getRelayForActor (JUICE)', async () => {
+		const relay = await relayService.addRelay('https://relay-for-actor.example.com');
+		await relayService.relayAccepted(relay.id);
+
+		const matchedByInbox = await relayService.getRelayForActor({ inbox: 'https://relay-for-actor.example.com', sharedInbox: null });
+		expect(matchedByInbox?.id).toBe(relay.id);
+
+		const matchedBySharedInbox = await relayService.getRelayForActor({ inbox: null, sharedInbox: 'https://relay-for-actor.example.com' });
+		expect(matchedBySharedInbox?.id).toBe(relay.id);
+
+		const notMatched = await relayService.getRelayForActor({ inbox: 'https://not-a-relay.example.com', sharedInbox: null });
+		expect(notMatched).toBeNull();
+
+		await relayService.removeRelay('https://relay-for-actor.example.com');
+	});
 });

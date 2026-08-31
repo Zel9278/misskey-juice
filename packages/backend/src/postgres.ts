@@ -8,6 +8,7 @@ import pg from 'pg';
 import { DataSource, Logger, type QueryRunner } from 'typeorm';
 import { entities as charts } from '@/core/chart/entities.js';
 import { Config } from '@/config.js';
+import { assertTestDatabaseName } from '@/misc/reset-db.js';
 import MisskeyLogger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
 
@@ -18,6 +19,8 @@ import { MiAd } from '@/models/Ad.js';
 import { MiAnnouncement } from '@/models/Announcement.js';
 import { MiAnnouncementRead } from '@/models/AnnouncementRead.js';
 import { MiAnnouncementReaction } from '@/models/AnnouncementReaction.js';
+import { MiAnnouncementPoll } from '@/models/AnnouncementPoll.js';
+import { MiAnnouncementPollVote } from '@/models/AnnouncementPollVote.js';
 import { MiAntenna } from '@/models/Antenna.js';
 import { MiApp } from '@/models/App.js';
 import { MiAvatarDecoration } from '@/models/AvatarDecoration.js';
@@ -32,12 +35,14 @@ import { MiClipFavorite } from '@/models/ClipFavorite.js';
 import { MiDriveFile } from '@/models/DriveFile.js';
 import { MiDriveFolder } from '@/models/DriveFolder.js';
 import { MiEmoji } from '@/models/Emoji.js';
+import { MiEmojiRequest } from '@/models/EmojiRequest.js';
 import { MiFollowing } from '@/models/Following.js';
 import { MiFollowRequest } from '@/models/FollowRequest.js';
 import { MiGalleryLike } from '@/models/GalleryLike.js';
 import { MiGalleryPost } from '@/models/GalleryPost.js';
 import { MiHashtag } from '@/models/Hashtag.js';
 import { MiInstance } from '@/models/Instance.js';
+import { MiJuiceSettings } from '@/models/JuiceSettings.js';
 import { MiMeta } from '@/models/Meta.js';
 import { MiModerationLog } from '@/models/ModerationLog.js';
 import { MiMuting } from '@/models/Muting.js';
@@ -58,6 +63,7 @@ import { MiRegistrationTicket } from '@/models/RegistrationTicket.js';
 import { MiRegistryItem } from '@/models/RegistryItem.js';
 import { MiRelay } from '@/models/Relay.js';
 import { MiSignin } from '@/models/Signin.js';
+import { MiSignupApprovalCheck } from '@/models/SignupApprovalCheck.js';
 import { MiSwSubscription } from '@/models/SwSubscription.js';
 import { MiUsedUsername } from '@/models/UsedUsername.js';
 import { MiUser } from '@/models/User.js';
@@ -80,6 +86,7 @@ import { MiRoleAssignment } from '@/models/RoleAssignment.js';
 import { MiFlash } from '@/models/Flash.js';
 import { MiFlashLike } from '@/models/FlashLike.js';
 import { MiUserMemo } from '@/models/UserMemo.js';
+import { MiUserNickname } from '@/models/UserNickname.js';
 import { MiChatMessage } from '@/models/ChatMessage.js';
 import { MiChatRoom } from '@/models/ChatRoom.js';
 import { MiChatRoomMembership } from '@/models/ChatRoomMembership.js';
@@ -182,7 +189,10 @@ export const entities = [
 	MiAnnouncement,
 	MiAnnouncementRead,
 	MiAnnouncementReaction,
+	MiAnnouncementPoll,
+	MiAnnouncementPollVote,
 	MiMeta,
+	MiJuiceSettings,
 	MiInstance,
 	MiApp,
 	MiAvatarDecoration,
@@ -217,6 +227,7 @@ export const entities = [
 	MiPoll,
 	MiPollVote,
 	MiEmoji,
+	MiEmojiRequest,
 	MiHashtag,
 	MiSwSubscription,
 	MiSystemAccount,
@@ -224,6 +235,7 @@ export const entities = [
 	MiAbuseReportNotificationRecipient,
 	MiRegistrationTicket,
 	MiSignin,
+	MiSignupApprovalCheck,
 	MiModerationLog,
 	MiClip,
 	MiClipNote,
@@ -249,6 +261,7 @@ export const entities = [
 	MiFlash,
 	MiFlashLike,
 	MiUserMemo,
+	MiUserNickname,
 	MiChatMessage,
 	MiChatRoom,
 	MiChatRoomMembership,
@@ -262,6 +275,13 @@ export const entities = [
 const log = process.env.NODE_ENV !== 'production';
 
 export function createPostgresDataSource(config: Config) {
+	// NODE_ENV=testのときsynchronize/dropSchemaをtrueにするため、接続先が本当にtest用DBかを
+	// 確認しておく(JUICE)。built/.config.jsonはNODE_ENVによってdefault.yml/test.ymlどちらからでも
+	// 生成されるため、環境変数だけを信用すると設定と実際の接続先がズレたときに開発用DBを消してしまう。
+	if (process.env.NODE_ENV === 'test') {
+		assertTestDatabaseName(config.db.db, 'createPostgresDataSource');
+	}
+
 	return new DataSource({
 		type: 'postgres',
 		host: config.db.host,

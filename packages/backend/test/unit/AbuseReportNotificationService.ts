@@ -22,6 +22,7 @@ import { DI } from '@/di-symbols.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { IdService } from '@/core/IdService.js';
 import { EmailService } from '@/core/EmailService.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { MetaService } from '@/core/MetaService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
@@ -121,6 +122,12 @@ describe('AbuseReportNotificationService', () => {
 					},
 					{
 						provide: EmailService, useFactory: () => ({ sendEmail: vi.fn() }),
+					},
+					{
+						provide: EmailI18nService, useFactory: () => ({
+							resolveLang: vi.fn().mockResolvedValue('ja-JP'),
+							getI18n: vi.fn().mockReturnValue({ t: (key: string) => key }),
+						}),
 					},
 					{
 						provide: MetaService, useFactory: () => ({ fetch: vi.fn() }),

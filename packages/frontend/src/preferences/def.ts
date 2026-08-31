@@ -99,6 +99,12 @@ export const PREF_DEF = definePreferences({
 		default: [] as DeckProfile[],
 	},
 
+	// JUICE: リレータイムラインを絞り込むリレーIDの一覧(空 = 絞り込みなし、全リレーを表示)
+	relayTimelineFilter: {
+		accountDependent: true,
+		default: [] as string[],
+	},
+
 	emojiPalettes: {
 		serverDependent: true,
 		default: () => [{
@@ -395,6 +401,10 @@ export const PREF_DEF = definePreferences({
 	},
 	showTitlebar: {
 		default: false,
+	},
+	// JUICE: ウィジェットパネル(デスクトップ)/ウィジェットドロワー(モバイル)を画面のどちら側に表示するか
+	widgetsSide: {
+		default: 'right' as 'left' | 'right',
 	},
 	showAvailableReactionsFirstInNote: {
 		default: false,
