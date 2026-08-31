@@ -2392,6 +2392,8 @@ _aboutJuice:
     announcementReaction: "お知らせへの複数リアクション"
     announcementPoll: "お知らせの投票機能"
     latex: "LaTeX(数式)表示機能"
+    nickname: "他ユーザーに対する自分専用のニックネーム設定(プロフィールページ・ユーザーホバープレビューに表示)"
+    loginFailedNotification: "ログイン試行の失敗をアカウント本人へ通知(アプリ内通知・メール)"
 
 _bonsai:
   title: "盆栽"

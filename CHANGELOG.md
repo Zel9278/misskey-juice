@@ -47,6 +47,7 @@
 - Feat: JUICE専用Aboutページ(`/about-juice`)の「参考にしたプロジェクト」に、misskey-tempuraへのGitHubリンクを追加
 - Feat: ログインに失敗したとき、アカウント本人へ通知(アプリ内通知・確認済みメールアドレスがあればメール)を送るように(misskey-tempuraを参考)
 - Feat: 他ユーザーに対して自分だけに見えるニックネームを設定できるように(misskey-tempuraを参考)。プロフィールページから設定でき、プロフィールページとユーザーホバープレビューの表示名がニックネームに置き換わる(意図的にこの2箇所限定。フォロー/フォロワー一覧やタイムライン・通知等、本来の表示名を使う既存の一覧表示には影響しない)
+- Enhance: JUICE専用Aboutページ(`/about-juice`)の「JUICE独自の主な機能」一覧に、ニックネーム機能とログイン失敗通知を追加
 
 ### Server
 - Feat: JUICE 独自機能の設定を取得・更新する `admin/juice/settings` / `admin/juice/update-settings` を追加

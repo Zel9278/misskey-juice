@@ -9126,6 +9126,14 @@ export interface Locale extends ILocale {
              * LaTeX(数式)表示機能
              */
             "latex": string;
+            /**
+             * 他ユーザーに対する自分専用のニックネーム設定(プロフィールページ・ユーザーホバープレビューに表示)
+             */
+            "nickname": string;
+            /**
+             * ログイン試行の失敗をアカウント本人へ通知(アプリ内通知・メール)
+             */
+            "loginFailedNotification": string;
         };
     };
     "_bonsai": {

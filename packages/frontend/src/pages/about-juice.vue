@@ -112,6 +112,8 @@ const features = [
 	{ icon: 'ti ti-mood-happy', text: i18n.ts._aboutJuice._features.announcementReaction },
 	{ icon: 'ti ti-list-check', text: i18n.ts._aboutJuice._features.announcementPoll },
 	{ icon: 'ti ti-math-function', text: i18n.ts._aboutJuice._features.latex },
+	{ icon: 'ti ti-tag', text: i18n.ts._aboutJuice._features.nickname },
+	{ icon: 'ti ti-shield-exclamation', text: i18n.ts._aboutJuice._features.loginFailedNotification },
 ];
 
 // JUICE: アイコンクリックでオレンジの雨が降るイースターエッグ
