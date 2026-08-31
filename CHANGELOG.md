@@ -1,7 +1,4 @@
-## Unreleased
-
-### General
--
+## 2026.7.0-juice+2.2
 
 ### Client
 - Enhance: JUICEについてページに、セルフホストを検討する人向けの注意書き(サーバー運用ガイドへのリンク)を追加
