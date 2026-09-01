@@ -17,7 +17,8 @@ export const meta = {
 	tags: ['admin'],
 
 	requireCredential: true,
-	requireModerator: true,
+	// JUICE: モデレーター/管理者、またはcanApproveAvatarDecorationRequestsロールポリシーを持つユーザーのみ許可
+	requiredRolePolicyOrModerator: 'canApproveAvatarDecorationRequests',
 	kind: 'write:admin:avatar-decoration-requests-reject',
 
 	errors: {

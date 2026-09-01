@@ -42,6 +42,13 @@ interface IEndpointMetaBase {
 	readonly requiredRolePolicy?: KeyOf<'RolePolicies'>;
 
 	/**
+	 * requiredRolePolicyと同様だが、isModerator/isAdministratorなロールを持つ
+	 * ユーザーも常に許可する(JUICE)。既存のモデレーション作業を、ロール経由で
+	 * モデレーター以外にも個別委譲できるようにするためのもの。
+	 */
+	readonly requiredRolePolicyOrModerator?: KeyOf<'RolePolicies'>;
+
+	/**
 	 * 引っ越し済みのユーザーによるリクエストを禁止するか
 	 * 省略した場合は false として解釈されます。
 	 */

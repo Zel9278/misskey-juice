@@ -16,7 +16,8 @@ export const meta = {
 	tags: ['admin'],
 
 	requireCredential: true,
-	requireModerator: true,
+	// JUICE: モデレーター/管理者、またはcanApproveSignupsロールポリシーを持つユーザーのみ許可
+	requiredRolePolicyOrModerator: 'canApproveSignups',
 	kind: 'write:admin:juice-approve-signup',
 
 	errors: {

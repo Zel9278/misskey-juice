@@ -249,6 +249,10 @@ export const rolePolicies = [
 	'scheduledNoteLimit',
 	'watermarkAvailable',
 	'emojiRequestLimit',
+	'avatarDecorationRequestLimit',
+	'canApproveEmojiRequests',
+	'canApproveAvatarDecorationRequests',
+	'canApproveSignups',
 ] as const;
 
 export const queueTypes = [

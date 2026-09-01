@@ -8373,6 +8373,18 @@ export interface Locale extends ILocale {
              * 同時に出せるアバターデコレーション申請数の上限
              */
             "avatarDecorationRequestLimit": string;
+            /**
+             * 絵文字申請の承認・却下
+             */
+            "canApproveEmojiRequests": string;
+            /**
+             * アバターデコレーション申請の承認・却下
+             */
+            "canApproveAvatarDecorationRequests": string;
+            /**
+             * 承認式新規登録の承認・却下
+             */
+            "canApproveSignups": string;
         };
         "_condition": {
             /**
@@ -9150,6 +9162,14 @@ export interface Locale extends ILocale {
              * 一般ユーザーによる絵文字申請機能
              */
             "emojiRequest": string;
+            /**
+             * 一般ユーザーによるアバターデコレーション申請機能
+             */
+            "avatarDecorationRequest": string;
+            /**
+             * 絵文字・アバターデコレーション・承認式新規登録の各申請の承認/却下権限を、モデレーターに限らずロール単位で個別に付与可能
+             */
+            "roleApprovalDelegation": string;
             /**
              * 投稿数・リアクション数のユーザーランキング
              */

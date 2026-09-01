@@ -98,7 +98,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</FormSection>
 
-				<FormSection>
+				<MkFolder>
+					<template #icon><i class="ti ti-stars"></i></template>
 					<template #label>{{ i18n.ts._aboutJuice.features }}</template>
 					<div :class="$style.features">
 						<div v-for="feature in features" :key="feature.text" :class="$style.feature">
@@ -106,7 +107,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<span>{{ feature.text }}</span>
 						</div>
 					</div>
-				</FormSection>
+				</MkFolder>
 
 				<MkFolder>
 					<template #icon><i class="ti ti-route"></i></template>
@@ -152,6 +153,8 @@ const features = [
 	{ icon: 'ti ti-user-check', text: i18n.ts._aboutJuice._features.approvalSignup },
 	{ icon: 'ti ti-sparkles', text: i18n.ts._aboutJuice._features.aiGenerated },
 	{ icon: 'ti ti-mood-plus', text: i18n.ts._aboutJuice._features.emojiRequest },
+	{ icon: 'ti ti-frame', text: i18n.ts._aboutJuice._features.avatarDecorationRequest },
+	{ icon: 'ti ti-shield-check', text: i18n.ts._aboutJuice._features.roleApprovalDelegation },
 	{ icon: 'ti ti-trophy', text: i18n.ts._aboutJuice._features.ranking },
 	{ icon: 'ti ti-broadcast', text: i18n.ts._aboutJuice._features.relayTimeline },
 	{ icon: 'ti ti-language', text: i18n.ts._aboutJuice._features.emailI18n },

@@ -16,7 +16,8 @@ export const meta = {
 	tags: ['admin'],
 
 	requireCredential: true,
-	requireModerator: true,
+	// JUICE: モデレーター/管理者、またはcanApproveEmojiRequestsロールポリシーを持つユーザーのみ許可
+	requiredRolePolicyOrModerator: 'canApproveEmojiRequests',
 	kind: 'read:admin:emoji-requests',
 
 	res: {
