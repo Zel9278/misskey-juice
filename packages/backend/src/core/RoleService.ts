@@ -75,6 +75,9 @@ export type RolePolicies = {
 	watermarkAvailable: boolean;
 	emojiRequestLimit: number;
 	avatarDecorationRequestLimit: number;
+	canApproveEmojiRequests: boolean;
+	canApproveAvatarDecorationRequests: boolean;
+	canApproveSignups: boolean;
 };
 
 export const DEFAULT_POLICIES: RolePolicies = {
@@ -125,6 +128,9 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	watermarkAvailable: true,
 	emojiRequestLimit: 3,
 	avatarDecorationRequestLimit: 3,
+	canApproveEmojiRequests: false,
+	canApproveAvatarDecorationRequests: false,
+	canApproveSignups: false,
 };
 
 @Injectable()
@@ -458,6 +464,9 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			watermarkAvailable: calc('watermarkAvailable', vs => vs.some(v => v === true)),
 			emojiRequestLimit: calc('emojiRequestLimit', vs => Math.max(...vs)),
 			avatarDecorationRequestLimit: calc('avatarDecorationRequestLimit', vs => Math.max(...vs)),
+			canApproveEmojiRequests: calc('canApproveEmojiRequests', vs => vs.some(v => v === true)),
+			canApproveAvatarDecorationRequests: calc('canApproveAvatarDecorationRequests', vs => vs.some(v => v === true)),
+			canApproveSignups: calc('canApproveSignups', vs => vs.some(v => v === true)),
 		};
 	}
 
@@ -471,6 +480,18 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	public async isAdministrator(user: { id: MiUser['id'] } | null): Promise<boolean> {
 		if (user == null) return false;
 		return (this.meta.rootUserId === user.id) || (await this.getUserRoles(user.id)).some(r => r.isAdministrator);
+	}
+
+	/**
+	 * モデレーター/管理者は常にtrue。それ以外は、指定したbooleanロールポリシーが
+	 * 付与されたロールを持っているかどうかで判定する(JUICE)。
+	 */
+	@bindThis
+	public async hasRoleCapability(user: { id: MiUser['id'] } | null, policy: { [K in keyof RolePolicies]: RolePolicies[K] extends boolean ? K : never }[keyof RolePolicies]): Promise<boolean> {
+		if (user == null) return false;
+		if (await this.isModerator(user)) return true;
+		const policies = await this.getUserPolicies(user.id);
+		return policies[policy] === true;
 	}
 
 	@bindThis

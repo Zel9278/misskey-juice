@@ -14,16 +14,23 @@ import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { DriveService } from '@/core/DriveService.js';
 import { EmailService } from '@/core/EmailService.js';
 import { EmailI18nService } from '@/core/EmailI18nService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { FILE_TYPE_IMAGE } from '@/const.js';
 
 export const meta = {
 	tags: ['admin'],
 
 	requireCredential: true,
-	requireModerator: true,
 	kind: 'write:admin:emoji-requests-approve',
 
 	errors: {
+		// JUICE: モデレーターまたはcanApproveEmojiRequestsロールポリシーを持つユーザーのみ許可
+		accessDenied: {
+			message: 'You do not have permission to approve emoji requests.',
+			code: 'ACCESS_DENIED',
+			kind: 'permission',
+			id: '3f1d530f-3907-4e79-95ee-1b9b2cc9cff0',
+		},
 		noSuchRequest: {
 			message: 'No such emoji request.',
 			code: 'NO_SUCH_REQUEST',
@@ -85,8 +92,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveService: DriveService,
 		private emailService: EmailService,
 		private emailI18nService: EmailI18nService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			if (!(await this.roleService.hasRoleCapability(me, 'canApproveEmojiRequests'))) {
+				throw new ApiError(meta.errors.accessDenied);
+			}
+
 			const request = await this.emojiRequestsRepository.findOneBy({ id: ps.requestId });
 			if (request == null) throw new ApiError(meta.errors.noSuchRequest);
 			if (request.status !== 'pending') throw new ApiError(meta.errors.alreadyReviewed);

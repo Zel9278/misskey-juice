@@ -8373,6 +8373,18 @@ export interface Locale extends ILocale {
              * 同時に出せるアバターデコレーション申請数の上限
              */
             "avatarDecorationRequestLimit": string;
+            /**
+             * 絵文字申請の承認・却下
+             */
+            "canApproveEmojiRequests": string;
+            /**
+             * アバターデコレーション申請の承認・却下
+             */
+            "canApproveAvatarDecorationRequests": string;
+            /**
+             * 承認式新規登録の承認・却下
+             */
+            "canApproveSignups": string;
         };
         "_condition": {
             /**

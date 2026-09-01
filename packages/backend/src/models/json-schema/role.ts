@@ -337,6 +337,18 @@ export const packedRolePoliciesSchema = {
 			type: 'integer',
 			optional: false, nullable: false,
 		},
+		canApproveEmojiRequests: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
+		canApproveAvatarDecorationRequests: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
+		canApproveSignups: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 	},
 } as const;
 

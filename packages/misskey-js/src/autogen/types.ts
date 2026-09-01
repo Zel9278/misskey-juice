@@ -5755,6 +5755,9 @@ export type components = {
             watermarkAvailable: boolean;
             emojiRequestLimit: number;
             avatarDecorationRequestLimit: number;
+            canApproveEmojiRequests: boolean;
+            canApproveAvatarDecorationRequests: boolean;
+            canApproveSignups: boolean;
         };
         ReversiGameLite: {
             /** Format: id */

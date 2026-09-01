@@ -1,3 +1,11 @@
+## Unreleased
+
+### Client
+- Feat: ロール編集画面に、絵文字申請・アバターデコレーション申請・承認式新規登録の承認/却下をモデレーター以外にも許可するための3つのポリシートグルを追加(JUICE独自)
+
+### Server
+- Feat: 絵文字申請・アバターデコレーション申請・承認式新規登録の承認/却下を、モデレーター権限を持たないユーザーにもロール単位で個別に許可できるように(JUICE独自)。ロールポリシーに`canApproveEmojiRequests`・`canApproveAvatarDecorationRequests`・`canApproveSignups`を追加(既定値false)。モデレーター・管理者は引き続き常にすべて承認・却下できる
+
 ## 2026.7.0-juice+2.4
 
 ### Client

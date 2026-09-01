@@ -11,15 +11,22 @@ import { ApiError } from '@/server/api/error.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { EmailService } from '@/core/EmailService.js';
 import { EmailI18nService } from '@/core/EmailI18nService.js';
+import { RoleService } from '@/core/RoleService.js';
 
 export const meta = {
 	tags: ['admin'],
 
 	requireCredential: true,
-	requireModerator: true,
 	kind: 'write:admin:juice-decline-signup',
 
 	errors: {
+		// JUICE: モデレーターまたはcanApproveSignupsロールポリシーを持つユーザーのみ許可
+		accessDenied: {
+			message: 'You do not have permission to decline signups.',
+			code: 'ACCESS_DENIED',
+			kind: 'permission',
+			id: '4065e26b-c24d-471d-ae4f-cd05520620c2',
+		},
 		noSuchUser: {
 			message: 'No such user.',
 			code: 'NO_SUCH_USER',
@@ -61,8 +68,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private moderationLogService: ModerationLogService,
 		private emailService: EmailService,
 		private emailI18nService: EmailI18nService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			if (!(await this.roleService.hasRoleCapability(me, 'canApproveSignups'))) {
+				throw new ApiError(meta.errors.accessDenied);
+			}
+
 			const user = await this.usersRepository.findOneBy({ id: ps.userId });
 			if (user == null) {
 				throw new ApiError(meta.errors.noSuchUser);

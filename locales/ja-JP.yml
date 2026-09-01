@@ -2173,6 +2173,9 @@ _role:
     watermarkAvailable: "ウォーターマーク機能の使用可否"
     emojiRequestLimit: "同時に出せる絵文字申請数の上限"
     avatarDecorationRequestLimit: "同時に出せるアバターデコレーション申請数の上限"
+    canApproveEmojiRequests: "絵文字申請の承認・却下"
+    canApproveAvatarDecorationRequests: "アバターデコレーション申請の承認・却下"
+    canApproveSignups: "承認式新規登録の承認・却下"
   _condition:
     roleAssignedTo: "マニュアルロールにアサイン済み"
     isLocal: "ローカルユーザー"

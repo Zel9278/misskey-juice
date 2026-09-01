@@ -9,15 +9,26 @@ import type { EmojiRequestsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { QueryService } from '@/core/QueryService.js';
 import { IdService } from '@/core/IdService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { ApiError } from '@/server/api/error.js';
 import { emojiRequestStatuses } from '@/models/EmojiRequest.js';
 
 export const meta = {
 	tags: ['admin'],
 
 	requireCredential: true,
-	requireModerator: true,
 	kind: 'read:admin:emoji-requests',
+
+	errors: {
+		// JUICE: モデレーターまたはcanApproveEmojiRequestsロールポリシーを持つユーザーのみ許可
+		accessDenied: {
+			message: 'You do not have permission to access emoji requests.',
+			code: 'ACCESS_DENIED',
+			kind: 'permission',
+			id: 'c2376e90-beda-4a96-918d-816e28233a42',
+		},
+	},
 
 	res: {
 		type: 'array',
@@ -49,9 +60,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private queryService: QueryService,
 		private idService: IdService,
+		private roleService: RoleService,
 		private userEntityService: UserEntityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			if (!(await this.roleService.hasRoleCapability(me, 'canApproveEmojiRequests'))) {
+				throw new ApiError(meta.errors.accessDenied);
+			}
+
 			const query = this.queryService.makePaginationQuery(this.emojiRequestsRepository.createQueryBuilder('request'), ps.sinceId, ps.untilId)
 				.andWhere('request.status = :status', { status: ps.state })
 				.leftJoinAndSelect('request.user', 'user')

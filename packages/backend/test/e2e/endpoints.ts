@@ -1530,6 +1530,44 @@ describe('Endpoints', () => {
 		});
 	});
 
+	// JUICE: ロールベースの承認権限委譲(canApproveEmojiRequests)のe2eテスト。
+	// emoji-requests機能自体の網羅的なテストは既存の対象外(既存のカバレッジ無し)のため、
+	// ここでは新規追加した「モデレーターでなくても、ロールで承認権限を付与できる」経路のみ検証する。
+	describe('emoji-requests (role-based approval)', () => {
+		beforeAll(async () => {
+			await api('admin/juice/update-settings', { emojiRequestEnabled: true }, alice);
+		});
+
+		afterAll(async () => {
+			await api('admin/juice/update-settings', { emojiRequestEnabled: false }, alice);
+		});
+
+		test('モデレーターでなくても、ロールで権限を付与されていれば一覧取得・却下ができる', async () => {
+			const approver = await signup({ username: 'emojiRequestApprover' });
+			const approverRole = await role(alice, { isModerator: false, name: 'Emoji Request Approver Role' }, {
+				canApproveEmojiRequests: { priority: 0, useDefault: false, value: true },
+			});
+			await api('admin/roles/assign', { userId: approver.id, roleId: approverRole.id }, alice);
+
+			const file = await uploadFile(bob);
+			const created = await api('emoji-requests/create', {
+				fileId: file.body!.id,
+				name: 'role_approver_emoji',
+			}, bob);
+			assert.strictEqual(created.status, 200);
+
+			const list = await api('admin/emoji-requests/list', { state: 'pending' }, approver);
+			assert.strictEqual(list.status, 200);
+			assert.notStrictEqual((list.body as any[]).find((r: any) => r.id === created.body.id), undefined);
+
+			const reject = await api('admin/emoji-requests/reject', {
+				requestId: created.body.id,
+				reason: 'role-based approver',
+			}, approver);
+			assert.strictEqual(reject.status, 204);
+		});
+	});
+
 	// JUICE: 絵文字申請と同じ仕組みで実装したアバターデコレーション申請機能のe2eテスト
 	describe('avatar-decoration-requests', () => {
 		beforeAll(async () => {
@@ -1643,6 +1681,32 @@ describe('Endpoints', () => {
 
 			const reject = await api('admin/avatar-decoration-requests/reject', { requestId: '000000000000000000000000', reason: 'x' }, bob);
 			assert.strictEqual(reject.status, 403);
+		});
+
+		// JUICE: モデレーターでなくても、ロールでcanApproveAvatarDecorationRequestsが付与されていれば承認・却下できる
+		test('モデレーターでなくても、ロールで権限を付与されていれば一覧取得・却下ができる', async () => {
+			const approver = await signup({ username: 'decoApprover' });
+			const approverRole = await role(alice, { isModerator: false, name: 'Avatar Decoration Approver Role' }, {
+				canApproveAvatarDecorationRequests: { priority: 0, useDefault: false, value: true },
+			});
+			await api('admin/roles/assign', { userId: approver.id, roleId: approverRole.id }, alice);
+
+			const file = await uploadFile(bob);
+			const created = await api('avatar-decoration-requests/create', {
+				fileId: file.body!.id,
+				name: 'role_approver_deco',
+			}, bob);
+			assert.strictEqual(created.status, 200);
+
+			const list = await api('admin/avatar-decoration-requests/list', { state: 'pending' }, approver);
+			assert.strictEqual(list.status, 200);
+			assert.notStrictEqual((list.body as any[]).find((r: any) => r.id === created.body.id), undefined);
+
+			const reject = await api('admin/avatar-decoration-requests/reject', {
+				requestId: created.body.id,
+				reason: 'role-based approver',
+			}, approver);
+			assert.strictEqual(reject.status, 204);
 		});
 	});
 
@@ -2051,6 +2115,40 @@ describe('Endpoints', () => {
 
 			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, bob);
 			assert.strictEqual(declineRes.status, 403);
+		});
+
+		// JUICE: モデレーターでなくても、ロールでcanApproveSignupsが付与されていれば承認・却下できる
+		test('モデレーターでなくても、ロールで権限を付与されていれば承認待ち一覧取得・承認ができる', async () => {
+			// このdescribeはapprovalRequiredForSignup: trueなので、approver自身のアカウントも
+			// 審査を経て作る必要がある(signup() ヘルパーはpendingApproval応答を許容しないため使えない)
+			const approverUsername = randomString();
+			const approverSignup = await api('signup', { username: approverUsername, password: 'test', reason: 'approver setup' });
+			assert.strictEqual(approverSignup.status, 200);
+			const approverPendingList = await api('admin/juice/pending-signups', {}, alice);
+			const approverPending = (approverPendingList.body as Array<{ id: string, username: string }>).find(u => u.username === approverUsername);
+			assert.ok(approverPending);
+			await api('admin/juice/approve-signup', { userId: approverPending.id }, alice);
+			const approverSignin = await api('signin-flow', { username: approverUsername, password: 'test' });
+			assert.strictEqual(approverSignin.status, 200);
+			const approverSigninBody = approverSignin.body as unknown as { id: string, i: string };
+			const approver = { id: approverSigninBody.id, token: approverSigninBody.i };
+
+			const approverRole = await role(alice, { isModerator: false, name: 'Signup Approver Role' }, {
+				canApproveSignups: { priority: 0, useDefault: false, value: true },
+			});
+			await api('admin/roles/assign', { userId: approver.id, roleId: approverRole.id }, alice);
+
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'test' });
+			assert.strictEqual(signupRes.status, 200);
+
+			const list = await api('admin/juice/pending-signups', {}, approver);
+			assert.strictEqual(list.status, 200);
+			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
+			assert.ok(target);
+
+			const approveRes = await api('admin/juice/approve-signup', { userId: target.id }, approver);
+			assert.strictEqual(approveRes.status, 204);
 		});
 
 		test('Moderatorが承認すると一覧に理由が表示され、承認後サインインできる', async () => {
