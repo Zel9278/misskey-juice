@@ -27,6 +27,9 @@ export * as 'admin/announcements/create' from './endpoints/admin/announcements/c
 export * as 'admin/announcements/delete' from './endpoints/admin/announcements/delete.js';
 export * as 'admin/announcements/list' from './endpoints/admin/announcements/list.js';
 export * as 'admin/announcements/update' from './endpoints/admin/announcements/update.js';
+export * as 'admin/avatar-decoration-requests/approve' from './endpoints/admin/avatar-decoration-requests/approve.js';
+export * as 'admin/avatar-decoration-requests/list' from './endpoints/admin/avatar-decoration-requests/list.js';
+export * as 'admin/avatar-decoration-requests/reject' from './endpoints/admin/avatar-decoration-requests/reject.js';
 export * as 'admin/avatar-decorations/create' from './endpoints/admin/avatar-decorations/create.js';
 export * as 'admin/avatar-decorations/delete' from './endpoints/admin/avatar-decorations/delete.js';
 export * as 'admin/avatar-decorations/list' from './endpoints/admin/avatar-decorations/list.js';
@@ -143,6 +146,8 @@ export * as 'auth/accept' from './endpoints/auth/accept.js';
 export * as 'auth/session/generate' from './endpoints/auth/session/generate.js';
 export * as 'auth/session/show' from './endpoints/auth/session/show.js';
 export * as 'auth/session/userkey' from './endpoints/auth/session/userkey.js';
+export * as 'avatar-decoration-requests/create' from './endpoints/avatar-decoration-requests/create.js';
+export * as 'avatar-decoration-requests/list' from './endpoints/avatar-decoration-requests/list.js';
 export * as 'blocking/create' from './endpoints/blocking/create.js';
 export * as 'blocking/delete' from './endpoints/blocking/delete.js';
 export * as 'blocking/list' from './endpoints/blocking/list.js';

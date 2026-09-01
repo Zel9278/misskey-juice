@@ -84,6 +84,18 @@ describe('misc:discord-webhook-format', () => {
 			const result = formatSystemWebhookForDiscord('somethingUnknown', {}, server);
 			expect(result.embeds[0].description).toContain('somethingUnknown');
 		});
+
+		test('formats avatarDecorationRequestCreated (JUICE) with the decoration name and requester', () => {
+			const result = formatSystemWebhookForDiscord('avatarDecorationRequestCreated', {
+				id: 'req1',
+				name: 'sparkle_crown',
+				category: 'fun',
+				requester: user,
+			}, server);
+
+			expect(result.embeds[0].title).toBe('✨ アバターデコレーション申請が届きました');
+			expect(result.embeds[0].description).toBe('sparkle_crown');
+		});
 	});
 
 	describe('formatUserWebhookForDiscord', () => {

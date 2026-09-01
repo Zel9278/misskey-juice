@@ -25,6 +25,7 @@ export const paramDef = {
 		signupReasonMaxLength: { type: 'integer', minimum: 1 },
 		defaultEmailLang: { type: 'string' },
 		emojiRequestEnabled: { type: 'boolean' },
+		avatarDecorationRequestEnabled: { type: 'boolean' },
 		rankingAggregationPeriodHours: { type: 'integer', minimum: 1 },
 		relayTimelineEnabled: { type: 'boolean' },
 		latexEnabled: { type: 'boolean' },
@@ -49,6 +50,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.signupReasonMaxLength !== undefined) set.signupReasonMaxLength = ps.signupReasonMaxLength;
 			if (ps.defaultEmailLang !== undefined) set.defaultEmailLang = ps.defaultEmailLang;
 			if (ps.emojiRequestEnabled !== undefined) set.emojiRequestEnabled = ps.emojiRequestEnabled;
+			if (ps.avatarDecorationRequestEnabled !== undefined) set.avatarDecorationRequestEnabled = ps.avatarDecorationRequestEnabled;
 			if (ps.rankingAggregationPeriodHours !== undefined) set.rankingAggregationPeriodHours = ps.rankingAggregationPeriodHours;
 			if (ps.relayTimelineEnabled !== undefined) set.relayTimelineEnabled = ps.relayTimelineEnabled;
 			if (ps.latexEnabled !== undefined) set.latexEnabled = ps.latexEnabled;

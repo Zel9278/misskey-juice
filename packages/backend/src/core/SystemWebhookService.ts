@@ -57,6 +57,14 @@ export type SignupApplicationCreatedPayload = {
 	reason: string | null;
 };
 
+// JUICE: アバターデコレーション申請が作成された時のWebhookペイロード
+export type AvatarDecorationRequestCreatedPayload = {
+	id: string;
+	name: string;
+	category: string | null;
+	requester: Packed<'UserLite'>;
+};
+
 export type SystemWebhookPayload<T extends SystemWebhookEventType> =
 	T extends 'abuseReport' | 'abuseReportResolved' ? AbuseReportPayload :
 	T extends 'userCreated' ? Packed<'UserLite'> :
@@ -64,6 +72,7 @@ export type SystemWebhookPayload<T extends SystemWebhookEventType> =
 	T extends 'inactiveModeratorsInvitationOnlyChanged' ? Record<string, never> :
 	T extends 'emojiRequestCreated' ? EmojiRequestCreatedPayload :
 	T extends 'signupApplicationCreated' ? SignupApplicationCreatedPayload :
+	T extends 'avatarDecorationRequestCreated' ? AvatarDecorationRequestCreatedPayload :
 		never;
 
 @Injectable()

@@ -62,6 +62,16 @@ const emailFallbackLocaleEnUS = {
 		html: 'Your emoji request "{name}" has been rejected. Reason: {reason}',
 		text: 'Your emoji request "{name}" has been rejected. Reason: {reason}',
 	},
+	avatarDecorationRequestApproved: {
+		subject: 'Your avatar decoration request has been approved',
+		html: 'Your avatar decoration request "{name}" has been approved and registered.',
+		text: 'Your avatar decoration request "{name}" has been approved and registered.',
+	},
+	avatarDecorationRequestRejected: {
+		subject: 'Your avatar decoration request has been rejected',
+		html: 'Your avatar decoration request "{name}" has been rejected. Reason: {reason}',
+		text: 'Your avatar decoration request "{name}" has been rejected. Reason: {reason}',
+	},
 	newLogin: {
 		subject: 'New sign-in detected',
 		html: 'A new sign-in to your account was detected. If this wasn\'t you, please update your account security, such as changing your password.',

@@ -18,6 +18,8 @@ export interface JuiceSettingsValue {
 	defaultEmailLang?: string;
 	/** 絵文字申請機能を有効にするか */
 	emojiRequestEnabled?: boolean;
+	/** アバターデコレーション申請機能を有効にするか */
+	avatarDecorationRequestEnabled?: boolean;
 	/** ユーザーランキングの集計期間(時間単位) */
 	rankingAggregationPeriodHours?: number;
 	/** リレーTL機能を有効にするか */
@@ -63,6 +65,18 @@ export function resolveEmojiRequestSettings(settings: JuiceSettingsValue): {
 } {
 	return {
 		emojiRequestEnabled: settings.emojiRequestEnabled ?? false,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・juice/public-settings・avatar-decoration-requests/*の4箇所で共通利用する。
+ */
+export function resolveAvatarDecorationRequestSettings(settings: JuiceSettingsValue): {
+	avatarDecorationRequestEnabled: boolean;
+} {
+	return {
+		avatarDecorationRequestEnabled: settings.avatarDecorationRequestEnabled ?? false,
 	};
 }
 

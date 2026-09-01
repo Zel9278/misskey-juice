@@ -128,6 +128,18 @@ type AdminAnnouncementsListResponse = operations['admin___announcements___list']
 type AdminAnnouncementsUpdateRequest = operations['admin___announcements___update']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type AdminAvatarDecorationRequestsApproveRequest = operations['admin___avatar-decoration-requests___approve']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminAvatarDecorationRequestsListRequest = operations['admin___avatar-decoration-requests___list']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminAvatarDecorationRequestsListResponse = operations['admin___avatar-decoration-requests___list']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminAvatarDecorationRequestsRejectRequest = operations['admin___avatar-decoration-requests___reject']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type AdminAvatarDecorationsCreateRequest = operations['admin___avatar-decorations___create']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -652,6 +664,24 @@ type AuthSessionUserkeyRequest = operations['auth___session___userkey']['request
 
 // @public (undocumented)
 type AuthSessionUserkeyResponse = operations['auth___session___userkey']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AvatarDecorationRequestEntry = components['schemas']['AvatarDecorationRequestEntry'];
+
+// @public (undocumented)
+type AvatarDecorationRequestEntryDetailedAdmin = components['schemas']['AvatarDecorationRequestEntryDetailedAdmin'];
+
+// @public (undocumented)
+type AvatarDecorationRequestsCreateRequest = operations['avatar-decoration-requests___create']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AvatarDecorationRequestsCreateResponse = operations['avatar-decoration-requests___create']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AvatarDecorationRequestsListRequest = operations['avatar-decoration-requests___list']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AvatarDecorationRequestsListResponse = operations['avatar-decoration-requests___list']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type Blocking = components['schemas']['Blocking'];
@@ -1659,6 +1689,10 @@ declare namespace entities {
         AdminAnnouncementsListRequest,
         AdminAnnouncementsListResponse,
         AdminAnnouncementsUpdateRequest,
+        AdminAvatarDecorationRequestsApproveRequest,
+        AdminAvatarDecorationRequestsListRequest,
+        AdminAvatarDecorationRequestsListResponse,
+        AdminAvatarDecorationRequestsRejectRequest,
         AdminAvatarDecorationsCreateRequest,
         AdminAvatarDecorationsCreateResponse,
         AdminAvatarDecorationsDeleteRequest,
@@ -1817,6 +1851,10 @@ declare namespace entities {
         AuthSessionShowResponse,
         AuthSessionUserkeyRequest,
         AuthSessionUserkeyResponse,
+        AvatarDecorationRequestsCreateRequest,
+        AvatarDecorationRequestsCreateResponse,
+        AvatarDecorationRequestsListRequest,
+        AvatarDecorationRequestsListResponse,
         BlockingCreateRequest,
         BlockingCreateResponse,
         BlockingDeleteRequest,
@@ -2370,6 +2408,8 @@ declare namespace entities {
         EmojiDetailedAdmin,
         EmojiRequestEntry,
         EmojiRequestEntryDetailedAdmin,
+        AvatarDecorationRequestEntry,
+        AvatarDecorationRequestEntryDetailedAdmin,
         Flash,
         Signin,
         RoleCondFormulaLogics,

@@ -79,6 +79,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 								</MkSwitch>
 								<MkButton v-show="mode === 'edit'" transparent :class="$style.testButton" :disabled="!(isActive && events.signupApplicationCreated)" @click="test('signupApplicationCreated')"><i class="ti ti-send"></i></MkButton>
 							</div>
+							<div :class="$style.switchBox">
+								<MkSwitch v-model="events.avatarDecorationRequestCreated" :disabled="disabledEvents.avatarDecorationRequestCreated">
+									<template #label>{{ i18n.ts._webhookSettings._systemEvents.avatarDecorationRequestCreated }}<span class="_juice">JUICE</span></template>
+								</MkSwitch>
+								<MkButton v-show="mode === 'edit'" transparent :class="$style.testButton" :disabled="!(isActive && events.avatarDecorationRequestCreated)" @click="test('avatarDecorationRequestCreated')"><i class="ti ti-send"></i></MkButton>
+							</div>
 						</div>
 
 						<div v-show="mode === 'edit'" :class="$style.description">
@@ -129,6 +135,7 @@ type EventType = {
 	// JUICE
 	emojiRequestCreated: boolean;
 	signupApplicationCreated: boolean;
+	avatarDecorationRequestCreated: boolean;
 };
 
 const emit = defineEmits<{
@@ -157,6 +164,7 @@ const events = ref<EventType>({
 	// JUICE
 	emojiRequestCreated: true,
 	signupApplicationCreated: true,
+	avatarDecorationRequestCreated: true,
 });
 const isActive = ref<boolean>(true);
 
@@ -169,6 +177,7 @@ const disabledEvents = ref<EventType>({
 	// JUICE
 	emojiRequestCreated: false,
 	signupApplicationCreated: false,
+	avatarDecorationRequestCreated: false,
 });
 
 const disableSubmitButton = computed(() => {

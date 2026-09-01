@@ -119,6 +119,12 @@ export class MiUserProfile {
 
 	@Column('boolean', {
 		default: true,
+		comment: 'Whether to receive an email when own avatar decoration request is approved/rejected (JUICE).',
+	})
+	public receiveAvatarDecorationRequestResultEmail: boolean;
+
+	@Column('boolean', {
+		default: true,
 	})
 	public publicReactions: boolean;
 

@@ -406,6 +406,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkInput>
 			</template>
 		</XFolder>
+
+		<XFolder v-if="matchQuery([i18n.ts._role._options.avatarDecorationRequestLimit, 'avatarDecorationRequestLimit'])" v-model:policyMeta="policyMetaModel.avatarDecorationRequestLimit" :isBaseRole="isBaseRole" :readonly="readonly">
+			<template #label>{{ i18n.ts._role._options.avatarDecorationRequestLimit }}<span class="_juice">JUICE</span></template>
+			<template #valueText>{{ valuesModel.avatarDecorationRequestLimit }}</template>
+			<template #default="{ disabled }">
+				<MkInput v-model="valuesModel.avatarDecorationRequestLimit" type="number" :disabled="disabled" :min="0">
+				</MkInput>
+			</template>
+		</XFolder>
 	</div>
 </template>
 

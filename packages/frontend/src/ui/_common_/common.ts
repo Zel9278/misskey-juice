@@ -56,11 +56,14 @@ export async function openInstanceMenu(ev: PointerEvent) {
 	const anchorElement = ev.currentTarget ?? ev.target;
 	const menuItems: MenuItem[] = [];
 
-	// JUICE: 絵文字申請機能自体が無効化されているサーバーではメニューに出さない。設定取得に失敗した場合は
-	// メニュー全体が開かなくなるのを避けるため、フェイルオープン(従来通り表示する)にする
+	// JUICE: 絵文字申請・アバターデコレーション申請機能自体が無効化されているサーバーではメニューに出さない。
+	// 設定取得に失敗した場合はメニュー全体が開かなくなるのを避けるため、フェイルオープン(従来通り表示する)にする
 	let emojiRequestEnabled = true;
+	let avatarDecorationRequestEnabled = true;
 	try {
-		emojiRequestEnabled = (await juicePublicSettingsCache.fetch()).emojiRequestEnabled;
+		const juicePublicSettings = await juicePublicSettingsCache.fetch();
+		emojiRequestEnabled = juicePublicSettings.emojiRequestEnabled;
+		avatarDecorationRequestEnabled = juicePublicSettings.avatarDecorationRequestEnabled;
 	} catch (err) {
 		console.error('Failed to fetch juice public settings', err);
 	}
@@ -116,6 +119,16 @@ export async function openInstanceMenu(ev: PointerEvent) {
 			text: i18n.ts._juice.emojiRequest,
 			icon: 'ti ti-mood-plus',
 			to: '/emoji-request',
+			badge: true,
+		});
+	}
+
+	if ($i && avatarDecorationRequestEnabled) {
+		menuItems.push({
+			type: 'link',
+			text: i18n.ts._juice.avatarDecorationRequest,
+			icon: 'ti ti-sparkles',
+			to: '/avatar-decoration-request',
 			badge: true,
 		});
 	}

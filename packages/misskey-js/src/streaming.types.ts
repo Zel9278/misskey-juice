@@ -227,6 +227,13 @@ export type Channels = {
 				applicant: UserLite;
 				reason: string | null;
 			};
+			// JUICE: アバターデコレーション申請が作成されたとき
+			newAvatarDecorationRequest: {
+				id: string;
+				name: string;
+				category: string | null;
+				requester: UserLite;
+			};
 		};
 		receives: null;
 	};

@@ -29,6 +29,10 @@ import type {
 	AdminAnnouncementsListRequest,
 	AdminAnnouncementsListResponse,
 	AdminAnnouncementsUpdateRequest,
+	AdminAvatarDecorationRequestsApproveRequest,
+	AdminAvatarDecorationRequestsListRequest,
+	AdminAvatarDecorationRequestsListResponse,
+	AdminAvatarDecorationRequestsRejectRequest,
 	AdminAvatarDecorationsCreateRequest,
 	AdminAvatarDecorationsCreateResponse,
 	AdminAvatarDecorationsDeleteRequest,
@@ -187,6 +191,10 @@ import type {
 	AuthSessionShowResponse,
 	AuthSessionUserkeyRequest,
 	AuthSessionUserkeyResponse,
+	AvatarDecorationRequestsCreateRequest,
+	AvatarDecorationRequestsCreateResponse,
+	AvatarDecorationRequestsListRequest,
+	AvatarDecorationRequestsListResponse,
 	BlockingCreateRequest,
 	BlockingCreateResponse,
 	BlockingDeleteRequest,
@@ -718,6 +726,9 @@ export type Endpoints = {
 	'admin/announcements/delete': { req: AdminAnnouncementsDeleteRequest; res: EmptyResponse };
 	'admin/announcements/list': { req: AdminAnnouncementsListRequest; res: AdminAnnouncementsListResponse };
 	'admin/announcements/update': { req: AdminAnnouncementsUpdateRequest; res: EmptyResponse };
+	'admin/avatar-decoration-requests/approve': { req: AdminAvatarDecorationRequestsApproveRequest; res: EmptyResponse };
+	'admin/avatar-decoration-requests/list': { req: AdminAvatarDecorationRequestsListRequest; res: AdminAvatarDecorationRequestsListResponse };
+	'admin/avatar-decoration-requests/reject': { req: AdminAvatarDecorationRequestsRejectRequest; res: EmptyResponse };
 	'admin/avatar-decorations/create': { req: AdminAvatarDecorationsCreateRequest; res: AdminAvatarDecorationsCreateResponse };
 	'admin/avatar-decorations/delete': { req: AdminAvatarDecorationsDeleteRequest; res: EmptyResponse };
 	'admin/avatar-decorations/list': { req: AdminAvatarDecorationsListRequest; res: AdminAvatarDecorationsListResponse };
@@ -833,6 +844,8 @@ export type Endpoints = {
 	'auth/session/generate': { req: AuthSessionGenerateRequest; res: AuthSessionGenerateResponse };
 	'auth/session/show': { req: AuthSessionShowRequest; res: AuthSessionShowResponse };
 	'auth/session/userkey': { req: AuthSessionUserkeyRequest; res: AuthSessionUserkeyResponse };
+	'avatar-decoration-requests/create': { req: AvatarDecorationRequestsCreateRequest; res: AvatarDecorationRequestsCreateResponse };
+	'avatar-decoration-requests/list': { req: AvatarDecorationRequestsListRequest; res: AvatarDecorationRequestsListResponse };
 	'blocking/create': { req: BlockingCreateRequest; res: BlockingCreateResponse };
 	'blocking/delete': { req: BlockingDeleteRequest; res: BlockingDeleteResponse };
 	'blocking/list': { req: BlockingListRequest; res: BlockingListResponse };

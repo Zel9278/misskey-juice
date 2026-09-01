@@ -16,6 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkInfo v-if="thereIsUnresolvedAbuseReport" warn>{{ i18n.ts.thereIsUnresolvedAbuseReportWarning }} <MkA to="/admin/abuses" class="_link">{{ i18n.ts.check }}</MkA></MkInfo>
 					<MkInfo v-if="thereArePendingEmojiRequests" warn>{{ i18n.ts._juice.thereArePendingEmojiRequestsWarning }} <MkA to="/admin/emoji-requests" class="_link">{{ i18n.ts.check }}</MkA></MkInfo>
 					<MkInfo v-if="thereArePendingSignupApplications" warn>{{ i18n.ts._juice.thereArePendingSignupApplicationsWarning }} <MkA to="/admin/juice-approvals" class="_link">{{ i18n.ts.check }}</MkA></MkInfo>
+					<MkInfo v-if="thereArePendingAvatarDecorationRequests" warn>{{ i18n.ts._juice.thereArePendingAvatarDecorationRequestsWarning }} <MkA to="/admin/avatar-decoration-requests" class="_link">{{ i18n.ts.check }}</MkA></MkInfo>
 					<MkInfo v-if="noMaintainerInformation" warn>{{ i18n.ts.noMaintainerInformationWarning }} <MkA to="/admin/settings" class="_link">{{ i18n.ts.configure }}</MkA></MkInfo>
 					<MkInfo v-if="noInquiryUrl" warn>{{ i18n.ts.noInquiryUrlWarning }} <MkA to="/admin/settings" class="_link">{{ i18n.ts.configure }}</MkA></MkInfo>
 					<MkInfo v-if="noBotProtection" warn>{{ i18n.ts.noBotProtectionWarning }} <MkA to="/admin/security" class="_link">{{ i18n.ts.configure }}</MkA></MkInfo>
@@ -77,6 +78,7 @@ const thereIsUnresolvedAbuseReport = ref(false);
 // JUICE: 通報と同じく、未対応の絵文字申請・承認式登録申請がある場合に警告バナーを出す
 const thereArePendingEmojiRequests = ref(false);
 const thereArePendingSignupApplications = ref(false);
+const thereArePendingAvatarDecorationRequests = ref(false);
 const currentPage = computed(() => router.currentRef.value.child);
 
 misskeyApi('admin/abuse-user-reports', {
@@ -99,6 +101,14 @@ misskeyApi('admin/juice/pending-signups', {
 	limit: 1,
 }).then(users => {
 	if (users.length > 0) thereArePendingSignupApplications.value = true;
+});
+
+// JUICE
+misskeyApi('admin/avatar-decoration-requests/list', {
+	state: 'pending',
+	limit: 1,
+}).then(requests => {
+	if (requests.length > 0) thereArePendingAvatarDecorationRequests.value = true;
 });
 
 const NARROW_THRESHOLD = 600;
@@ -270,6 +280,12 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		to: '/admin/emoji-requests',
 		active: currentPage.value?.route.name === 'emoji-requests',
 		badge: true,
+	}, {
+		icon: 'ti ti-sparkles',
+		text: i18n.ts._avatarDecorationRequestApprovals.title,
+		to: '/admin/avatar-decoration-requests',
+		active: currentPage.value?.route.name === 'avatar-decoration-requests',
+		badge: true,
 	}],
 }, {
 	title: i18n.ts.info,
@@ -300,6 +316,11 @@ function onNewSignupApplication() {
 	thereArePendingSignupApplications.value = true;
 }
 
+function onNewAvatarDecorationRequest() {
+	os.toast(i18n.ts._juice.newAvatarDecorationRequestToast);
+	thereArePendingAvatarDecorationRequests.value = true;
+}
+
 onMounted(() => {
 	if (el.value != null) {
 		ro.observe(el.value);
@@ -325,12 +346,14 @@ onActivated(() => {
 	adminConnection.on('newAbuseUserReport', onNewAbuseUserReport);
 	adminConnection.on('newEmojiRequest', onNewEmojiRequest);
 	adminConnection.on('newSignupApplication', onNewSignupApplication);
+	adminConnection.on('newAvatarDecorationRequest', onNewAvatarDecorationRequest);
 });
 
 onDeactivated(() => {
 	adminConnection.off('newAbuseUserReport', onNewAbuseUserReport);
 	adminConnection.off('newEmojiRequest', onNewEmojiRequest);
 	adminConnection.off('newSignupApplication', onNewSignupApplication);
+	adminConnection.off('newAvatarDecorationRequest', onNewAvatarDecorationRequest);
 });
 
 onUnmounted(() => {

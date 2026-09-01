@@ -143,6 +143,8 @@ export const moderationLogTypes = [
 	'declineSignup',
 	'approveEmojiRequest',
 	'rejectEmojiRequest',
+	'approveAvatarDecorationRequest',
+	'rejectAvatarDecorationRequest',
 	// JUICE
 	'cleanupOrphanedObjectStorageFiles',
 ] as const;
@@ -435,6 +437,22 @@ export type ModerationLogPayloads = {
 		emojiName: string;
 	};
 	rejectEmojiRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		requestedName: string;
+		reason: string;
+	};
+	approveAvatarDecorationRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		avatarDecorationId: string;
+		avatarDecorationName: string;
+	};
+	rejectAvatarDecorationRequest: {
 		requestId: string;
 		requesterId: string;
 		requesterUsername: string;

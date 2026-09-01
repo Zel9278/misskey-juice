@@ -22,6 +22,8 @@ export const systemWebhookEventTypes = [
 	'emojiRequestCreated',
 	// JUICE: 承認式登録の申請が作成されたとき
 	'signupApplicationCreated',
+	// JUICE: アバターデコレーション申請が作成されたとき
+	'avatarDecorationRequestCreated',
 ] as const;
 export type SystemWebhookEventType = typeof systemWebhookEventTypes[number];
 

@@ -1477,6 +1477,7 @@ describe('Endpoints', () => {
 				signupReasonMaxLength: 4096,
 				defaultEmailLang: 'ja-JP',
 				emojiRequestEnabled: false,
+				avatarDecorationRequestEnabled: false,
 				rankingAggregationPeriodHours: 12,
 				relayTimelineEnabled: false,
 				latexEnabled: true,
@@ -1526,6 +1527,122 @@ describe('Endpoints', () => {
 		test('未認証では設定を更新できない', async () => {
 			const res = await api('admin/juice/update-settings', {});
 			assert.strictEqual(res.status, 401);
+		});
+	});
+
+	// JUICE: 絵文字申請と同じ仕組みで実装したアバターデコレーション申請機能のe2eテスト
+	describe('avatar-decoration-requests', () => {
+		beforeAll(async () => {
+			await api('admin/juice/update-settings', { avatarDecorationRequestEnabled: true }, alice);
+		});
+
+		afterAll(async () => {
+			await api('admin/juice/update-settings', { avatarDecorationRequestEnabled: false }, alice);
+		});
+
+		test('機能が無効な場合は申請できない', async () => {
+			await api('admin/juice/update-settings', { avatarDecorationRequestEnabled: false }, alice);
+			const file = await uploadFile(bob);
+			const res = await api('avatar-decoration-requests/create', {
+				fileId: file.body!.id,
+				name: 'disabled_deco',
+			}, bob);
+			assert.strictEqual(res.status, 400);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'FUNCTION_DISABLED');
+			await api('admin/juice/update-settings', { avatarDecorationRequestEnabled: true }, alice);
+		});
+
+		test('一般ユーザーが申請を作成できる', async () => {
+			const file = await uploadFile(bob);
+			const res = await api('avatar-decoration-requests/create', {
+				fileId: file.body!.id,
+				name: 'sparkle_crown',
+				description: 'きらきらクラウン',
+				category: 'fun',
+			}, bob);
+			assert.strictEqual(res.status, 200);
+			assert.strictEqual(res.body.status, 'pending');
+			assert.strictEqual(res.body.name, 'sparkle_crown');
+			assert.strictEqual(res.body.description, 'きらきらクラウン');
+			assert.strictEqual(res.body.category, 'fun');
+		});
+
+		test('モデレータは承認待ち一覧で申請を確認できる', async () => {
+			const file = await uploadFile(bob);
+			const created = await api('avatar-decoration-requests/create', {
+				fileId: file.body!.id,
+				name: 'listed_deco',
+			}, bob);
+			assert.strictEqual(created.status, 200);
+
+			const list = await api('admin/avatar-decoration-requests/list', { state: 'pending' }, alice);
+			assert.strictEqual(list.status, 200);
+			const found = (list.body as any[]).find((r: any) => r.id === created.body.id);
+			assert.notStrictEqual(found, undefined);
+			assert.strictEqual(found!.user.username, 'bob');
+
+			// 以降のテストがavatarDecorationRequestLimit(既定3件)に引っかからないよう却下して片付ける
+			await api('admin/avatar-decoration-requests/reject', { requestId: created.body.id, reason: 'cleanup' }, alice);
+		});
+
+		// NOTE: 承認時のファイル複製(システム所有コピー)はconfig.url(この環境ではmisskey.local)への
+		// 実ネットワークfetchを伴うため、テスト環境では実際に到達できずFILE_COPY_FAILEDになる
+		// (misskey.localはCI/devcontainerどちらも名前解決されない)。ここでは複製の成否そのものではなく、
+		// 複製に失敗した場合に申請がapproved状態へ中途半端に遷移しない(pendingのまま・
+		// resultAvatarDecorationIdがnullのまま)ことを確認する。複製自体が成功するケースは、
+		// 実サーバーへの手動確認(curl)で別途確認済み。
+		test('複製に失敗した場合、申請はpendingのまま残る', async () => {
+			const file = await uploadFile(bob);
+			const created = await api('avatar-decoration-requests/create', {
+				fileId: file.body!.id,
+				name: 'approved_deco',
+			}, bob);
+			assert.strictEqual(created.status, 200);
+
+			const approve = await api('admin/avatar-decoration-requests/approve', { requestId: created.body.id }, alice);
+			assert.strictEqual(approve.status, 400);
+			assert.strictEqual(castAsError(approve.body as any).error.code, 'FILE_COPY_FAILED');
+
+			const list = await api('avatar-decoration-requests/list', {}, bob);
+			const reviewed = (list.body as any[]).find((r: any) => r.id === created.body.id);
+			assert.notStrictEqual(reviewed, undefined);
+			assert.strictEqual(reviewed!.status, 'pending');
+			assert.strictEqual(reviewed!.resultAvatarDecorationId, null);
+
+			// 以降のテストがavatarDecorationRequestLimit(既定3件)に引っかからないよう却下して片付ける
+			await api('admin/avatar-decoration-requests/reject', { requestId: created.body.id, reason: 'cleanup' }, alice);
+		});
+
+		test('モデレータが却下すると理由が保存される', async () => {
+			const file = await uploadFile(bob);
+			const created = await api('avatar-decoration-requests/create', {
+				fileId: file.body!.id,
+				name: 'rejected_deco',
+			}, bob);
+			assert.strictEqual(created.status, 200);
+
+			const reject = await api('admin/avatar-decoration-requests/reject', {
+				requestId: created.body.id,
+				reason: '不適切な画像のため',
+			}, alice);
+			assert.strictEqual(reject.status, 204);
+
+			const list = await api('avatar-decoration-requests/list', {}, bob);
+			const reviewed = (list.body as any[]).find((r: any) => r.id === created.body.id);
+			assert.notStrictEqual(reviewed, undefined);
+			assert.strictEqual(reviewed!.status, 'rejected');
+			assert.strictEqual(reviewed!.rejectReason, '不適切な画像のため');
+		});
+
+		test('一般ユーザーは管理者用エンドポイントを使えない', async () => {
+			const list = await api('admin/avatar-decoration-requests/list', {}, bob);
+			assert.strictEqual(list.status, 403);
+
+			const approve = await api('admin/avatar-decoration-requests/approve', { requestId: '000000000000000000000000' }, bob);
+			assert.strictEqual(approve.status, 403);
+
+			const reject = await api('admin/avatar-decoration-requests/reject', { requestId: '000000000000000000000000', reason: 'x' }, bob);
+			assert.strictEqual(reject.status, 403);
 		});
 	});
 
@@ -2051,6 +2168,7 @@ describe('Endpoints', () => {
 				signupReasonRequired: true,
 				signupReasonMaxLength: 4096,
 				emojiRequestEnabled: false,
+				avatarDecorationRequestEnabled: false,
 				relayTimelineEnabled: false,
 				latexEnabled: true,
 			});

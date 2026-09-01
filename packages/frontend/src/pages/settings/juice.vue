@@ -78,6 +78,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</FormSection>
 		</SearchMarker>
+
+		<SearchMarker :keywords="['avatar', 'decoration', 'request']">
+			<FormSection>
+				<template #label><SearchLabel>{{ i18n.ts._juice.avatarDecorationRequest }}</SearchLabel></template>
+				<div class="_gaps_s">
+					<FormLink to="/avatar-decoration-request">{{ i18n.ts._avatarDecorationRequestPage.newRequest }}</FormLink>
+					<SearchMarker :keywords="['avatar', 'decoration', 'request', 'email']">
+						<MkSwitch :modelValue="$i.receiveAvatarDecorationRequestResultEmail" @update:modelValue="onChangeReceiveAvatarDecorationRequestResultEmail">
+							<template #label><SearchLabel>{{ i18n.ts._juice.receiveAvatarDecorationRequestResultEmail }}</SearchLabel></template>
+							<template #caption>{{ i18n.ts._juice.receiveAvatarDecorationRequestResultEmailCaption }}</template>
+						</MkSwitch>
+					</SearchMarker>
+				</div>
+			</FormSection>
+		</SearchMarker>
 	</div>
 </SearchMarker>
 </template>
@@ -156,6 +171,12 @@ function saveMuteAIGeneratedNotes() {
 function onChangeReceiveEmojiRequestResultEmail(v: boolean) {
 	misskeyApi('i/update', {
 		receiveEmojiRequestResultEmail: v,
+	});
+}
+
+function onChangeReceiveAvatarDecorationRequestResultEmail(v: boolean) {
+	misskeyApi('i/update', {
+		receiveAvatarDecorationRequestResultEmail: v,
 	});
 }
 

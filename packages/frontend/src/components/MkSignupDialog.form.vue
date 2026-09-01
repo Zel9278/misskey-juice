@@ -121,6 +121,7 @@ const props = withDefaults(defineProps<{
 		signupReasonRequired: true,
 		signupReasonMaxLength: 4096,
 		emojiRequestEnabled: false,
+		avatarDecorationRequestEnabled: false,
 		relayTimelineEnabled: false,
 		latexEnabled: true,
 	}),

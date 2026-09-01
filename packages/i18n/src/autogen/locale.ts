@@ -8369,6 +8369,10 @@ export interface Locale extends ILocale {
              * 同時に出せる絵文字申請数の上限
              */
             "emojiRequestLimit": string;
+            /**
+             * 同時に出せるアバターデコレーション申請数の上限
+             */
+            "avatarDecorationRequestLimit": string;
         };
         "_condition": {
             /**
@@ -8845,6 +8849,34 @@ export interface Locale extends ILocale {
             "html": ParameterizedString<"name" | "reason">;
             /**
              * 申請した絵文字「{name}」は却下されました。理由: {reason}
+             */
+            "text": ParameterizedString<"name" | "reason">;
+        };
+        "avatarDecorationRequestApproved": {
+            /**
+             * アバターデコレーション申請が承認されました
+             */
+            "subject": string;
+            /**
+             * 申請したアバターデコレーション「{name}」が承認され、登録されました。
+             */
+            "html": ParameterizedString<"name">;
+            /**
+             * 申請したアバターデコレーション「{name}」が承認され、登録されました。
+             */
+            "text": ParameterizedString<"name">;
+        };
+        "avatarDecorationRequestRejected": {
+            /**
+             * アバターデコレーション申請が却下されました
+             */
+            "subject": string;
+            /**
+             * 申請したアバターデコレーション「{name}」は却下されました。理由: {reason}
+             */
+            "html": ParameterizedString<"name" | "reason">;
+            /**
+             * 申請したアバターデコレーション「{name}」は却下されました。理由: {reason}
              */
             "text": ParameterizedString<"name" | "reason">;
         };
@@ -10128,6 +10160,14 @@ export interface Locale extends ILocale {
          */
         "write:emoji-requests": string;
         /**
+         * アバターデコレーション申請を見る
+         */
+        "read:avatar-decoration-requests": string;
+        /**
+         * アバターデコレーション申請を操作する
+         */
+        "write:avatar-decoration-requests": string;
+        /**
          * ユーザーからの通報を見る
          */
         "read:admin:abuse-user-reports": string;
@@ -10235,6 +10275,18 @@ export interface Locale extends ILocale {
          * 絵文字申請を却下する
          */
         "write:admin:emoji-requests-reject": string;
+        /**
+         * アバターデコレーション申請の一覧を見る
+         */
+        "read:admin:avatar-decoration-requests": string;
+        /**
+         * アバターデコレーション申請を承認する
+         */
+        "write:admin:avatar-decoration-requests-approve": string;
+        /**
+         * アバターデコレーション申請を却下する
+         */
+        "write:admin:avatar-decoration-requests-reject": string;
         /**
          * モデレーションノートを操作する
          */
@@ -11990,6 +12042,10 @@ export interface Locale extends ILocale {
              * 承認式登録の申請があったとき
              */
             "signupApplicationCreated": string;
+            /**
+             * アバターデコレーション申請があったとき
+             */
+            "avatarDecorationRequestCreated": string;
         };
         /**
          * Webhookを削除しますか？
@@ -12125,6 +12181,14 @@ export interface Locale extends ILocale {
          * 絵文字申請を却下
          */
         "rejectEmojiRequest": string;
+        /**
+         * アバターデコレーション申請を承認
+         */
+        "approveAvatarDecorationRequest": string;
+        /**
+         * アバターデコレーション申請を却下
+         */
+        "rejectAvatarDecorationRequest": string;
         /**
          * ユーザーのモデレーションノート更新
          */
@@ -14093,6 +14157,26 @@ export interface Locale extends ILocale {
          */
         "emojiRequestEnabledCaption": string;
         /**
+         * アバターデコレーション申請の審査結果をメールで受け取る
+         */
+        "receiveAvatarDecorationRequestResultEmail": string;
+        /**
+         * 自分が申請したアバターデコレーションが承認・却下されたときに、その結果をメールで通知します。
+         */
+        "receiveAvatarDecorationRequestResultEmailCaption": string;
+        /**
+         * アバターデコレーション申請
+         */
+        "avatarDecorationRequest": string;
+        /**
+         * アバターデコレーション申請機能を有効にする
+         */
+        "avatarDecorationRequestEnabled": string;
+        /**
+         * 無効にすると、一般ユーザーの申請ページ・APIの両方が利用できなくなります。
+         */
+        "avatarDecorationRequestEnabledCaption": string;
+        /**
          * ユーザーランキング
          */
         "ranking": string;
@@ -14169,6 +14253,10 @@ export interface Locale extends ILocale {
          */
         "thereArePendingSignupApplicationsWarning": string;
         /**
+         * 未対応のアバターデコレーション申請があります。
+         */
+        "thereArePendingAvatarDecorationRequestsWarning": string;
+        /**
          * 新しい絵文字申請があります。
          */
         "newEmojiRequestToast": string;
@@ -14176,6 +14264,10 @@ export interface Locale extends ILocale {
          * 新しい承認式登録の申請があります。
          */
         "newSignupApplicationToast": string;
+        /**
+         * 新しいアバターデコレーション申請があります。
+         */
+        "newAvatarDecorationRequestToast": string;
         /**
          * ニックネーム
          */
@@ -14284,6 +14376,86 @@ export interface Locale extends ILocale {
         "reject": string;
         /**
          * 「{name}」を絵文字として登録しますか？
+         */
+        "approveConfirm": ParameterizedString<"name">;
+        /**
+         * 却下理由を入力してください
+         */
+        "rejectReasonTitle": string;
+    };
+    "_avatarDecorationRequestPage": {
+        /**
+         * 申請フォーム
+         */
+        "newRequest": string;
+        /**
+         * 自分の申請一覧
+         */
+        "myRequests": string;
+        /**
+         * この機能は現在無効になっています。
+         */
+        "disabled": string;
+        /**
+         * 説明
+         */
+        "description": string;
+        /**
+         * カテゴリ
+         */
+        "category": string;
+        /**
+         * プレビュー
+         */
+        "preview": string;
+        /**
+         * 審査後にこの画像をDriveから削除する
+         */
+        "deleteFileAfterReview": string;
+        /**
+         * 申請する
+         */
+        "submit": string;
+        /**
+         * 申請はまだありません。
+         */
+        "noRequests": string;
+        /**
+         * 審査待ち
+         */
+        "statusPending": string;
+        /**
+         * 承認済み
+         */
+        "statusApproved": string;
+        /**
+         * 却下
+         */
+        "statusRejected": string;
+        /**
+         * 却下理由
+         */
+        "rejectReason": string;
+    };
+    "_avatarDecorationRequestApprovals": {
+        /**
+         * アバターデコレーション申請
+         */
+        "title": string;
+        /**
+         * 審査待ちのアバターデコレーション申請はありません。
+         */
+        "noPendingRequests": string;
+        /**
+         * 承認
+         */
+        "approve": string;
+        /**
+         * 却下
+         */
+        "reject": string;
+        /**
+         * 「{name}」をアバターデコレーションとして登録しますか？
          */
         "approveConfirm": ParameterizedString<"name">;
         /**

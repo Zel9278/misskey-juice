@@ -66,6 +66,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<SearchMarker v-slot="slotProps">
 					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.avatarDecorationRequest }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="avatarDecorationRequestEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.avatarDecorationRequestEnabled }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.avatarDecorationRequestEnabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 						<template #label><SearchLabel>{{ i18n.ts._juice.ranking }}</SearchLabel></template>
 
 						<div class="_gaps_m">
@@ -135,6 +150,7 @@ const signupReasonRequired = ref(settings.signupReasonRequired);
 const signupReasonMaxLength = ref(settings.signupReasonMaxLength);
 const defaultEmailLang = ref(settings.defaultEmailLang);
 const emojiRequestEnabled = ref(settings.emojiRequestEnabled);
+const avatarDecorationRequestEnabled = ref(settings.avatarDecorationRequestEnabled);
 const rankingAggregationPeriodHours = ref(settings.rankingAggregationPeriodHours);
 const relayTimelineEnabled = ref(settings.relayTimelineEnabled);
 const latexEnabled = ref(settings.latexEnabled);
@@ -146,6 +162,7 @@ function save() {
 		signupReasonMaxLength: signupReasonMaxLength.value,
 		defaultEmailLang: defaultEmailLang.value,
 		emojiRequestEnabled: emojiRequestEnabled.value,
+		avatarDecorationRequestEnabled: avatarDecorationRequestEnabled.value,
 		rankingAggregationPeriodHours: rankingAggregationPeriodHours.value,
 		relayTimelineEnabled: relayTimelineEnabled.value,
 		latexEnabled: latexEnabled.value,
