@@ -1,0 +1,99 @@
+name: Notify Misskey
+
+on:
+  push:
+    branches:
+      - juice/main
+  pull_request:
+    types: [opened, closed]
+  issues:
+    types: [opened, closed]
+  release:
+    types: [published]
+  workflow_run:
+    workflows: ["Lint", "Test (backend)", "Test (frontend)"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure'
+    steps:
+      - name: Build message
+        id: msg
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          COMMITS_JSON: ${{ toJSON(github.event.commits) }}
+          PUSHER: ${{ github.event.pusher.name }}
+          COMPARE_URL: ${{ github.event.compare }}
+          PR_ACTION: ${{ github.event.action }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          ISSUE_ACTION: ${{ github.event.action }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          ISSUE_USER: ${{ github.event.issue.user.login }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_NAME: ${{ github.event.release.name }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          WORKFLOW_URL: ${{ github.event.workflow_run.html_url }}
+          WORKFLOW_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -e
+          case "$EVENT_NAME" in
+            push)
+              COUNT=$(echo "$COMMITS_JSON" | jq 'length')
+              LINES=$(echo "$COMMITS_JSON" | jq -r '.[0:3][] | "- " + (.message | split("\n")[0]) + " (" + (.author.name // "unknown") + ")"')
+              MORE=""
+              if [ "$COUNT" -gt 3 ]; then
+                MORE=$'\n'"...ほか$((COUNT - 3))件"
+              fi
+              TEXT=$(printf '📦 [%s] %sが%s件push\n%s%s\n%s' "$REPO" "$PUSHER" "$COUNT" "$LINES" "$MORE" "$COMPARE_URL")
+              ;;
+            pull_request)
+              if [ "$PR_ACTION" = "opened" ]; then
+                TEXT=$(printf '🔀 [%s] PR作成: %s by %s\n%s' "$REPO" "$PR_TITLE" "$PR_USER" "$PR_URL")
+              elif [ "$PR_MERGED" = "true" ]; then
+                TEXT=$(printf '✅ [%s] PRマージ: %s\n%s' "$REPO" "$PR_TITLE" "$PR_URL")
+              else
+                TEXT=$(printf '🚫 [%s] PRクローズ: %s\n%s' "$REPO" "$PR_TITLE" "$PR_URL")
+              fi
+              ;;
+            issues)
+              if [ "$ISSUE_ACTION" = "opened" ]; then
+                TEXT=$(printf '📝 [%s] Issue作成: %s by %s\n%s' "$REPO" "$ISSUE_TITLE" "$ISSUE_USER" "$ISSUE_URL")
+              else
+                TEXT=$(printf '✔️ [%s] Issueクローズ: %s\n%s' "$REPO" "$ISSUE_TITLE" "$ISSUE_URL")
+              fi
+              ;;
+            release)
+              NAME="${RELEASE_NAME:-$RELEASE_TAG}"
+              TEXT=$(printf '🎉 [%s] リリース: %s\n%s' "$REPO" "$NAME" "$RELEASE_URL")
+              ;;
+            workflow_run)
+              TEXT=$(printf '🔴 [%s] CI失敗: %s (%s)\n%s' "$REPO" "$WORKFLOW_NAME" "$WORKFLOW_BRANCH" "$WORKFLOW_URL")
+              ;;
+            workflow_dispatch)
+              TEXT="🔔 [$REPO] Misskey通知テスト"
+              ;;
+            *)
+              exit 0
+              ;;
+          esac
+          {
+            echo "text<<MSGEOF"
+            echo "$TEXT"
+            echo "MSGEOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post to Misskey
+        if: steps.msg.outputs.text != ''
+        run: |
+          curl -sf -X POST https://mk-juice.dev/api/notes/create \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg text "${{ steps.msg.outputs.text }}" --arg i "${{ secrets.MISSKEY_BOT_TOKEN }}" '{i:$i, text:$text, visibility:"public"}')"
