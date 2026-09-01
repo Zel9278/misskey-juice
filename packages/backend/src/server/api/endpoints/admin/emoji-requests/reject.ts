@@ -12,22 +12,16 @@ import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { DriveService } from '@/core/DriveService.js';
 import { EmailService } from '@/core/EmailService.js';
 import { EmailI18nService } from '@/core/EmailI18nService.js';
-import { RoleService } from '@/core/RoleService.js';
 
 export const meta = {
 	tags: ['admin'],
 
 	requireCredential: true,
+	// JUICE: モデレーター/管理者、またはcanApproveEmojiRequestsロールポリシーを持つユーザーのみ許可
+	requiredRolePolicyOrModerator: 'canApproveEmojiRequests',
 	kind: 'write:admin:emoji-requests-reject',
 
 	errors: {
-		// JUICE: モデレーターまたはcanApproveEmojiRequestsロールポリシーを持つユーザーのみ許可
-		accessDenied: {
-			message: 'You do not have permission to reject emoji requests.',
-			code: 'ACCESS_DENIED',
-			kind: 'permission',
-			id: '24ebdf85-3ff5-4809-b566-ede03c8231af',
-		},
 		noSuchRequest: {
 			message: 'No such emoji request.',
 			code: 'NO_SUCH_REQUEST',
@@ -69,13 +63,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveService: DriveService,
 		private emailService: EmailService,
 		private emailI18nService: EmailI18nService,
-		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			if (!(await this.roleService.hasRoleCapability(me, 'canApproveEmojiRequests'))) {
-				throw new ApiError(meta.errors.accessDenied);
-			}
-
 			const request = await this.emojiRequestsRepository.findOneBy({ id: ps.requestId });
 			if (request == null) throw new ApiError(meta.errors.noSuchRequest);
 			if (request.status !== 'pending') throw new ApiError(meta.errors.alreadyReviewed);

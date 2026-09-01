@@ -1675,12 +1675,17 @@ describe('Endpoints', () => {
 		test('一般ユーザーは管理者用エンドポイントを使えない', async () => {
 			const list = await api('admin/avatar-decoration-requests/list', {}, bob);
 			assert.strictEqual(list.status, 403);
+			// JUICE: フロントエンドがROLE_PERMISSION_DENIEDを見て専用の権限不足ダイアログを出すため、
+			// このコードで返ることを保証しておく(requireModerator由来の他の403と同じコード)
+			assert.strictEqual(castAsError(list.body as any).error.code, 'ROLE_PERMISSION_DENIED');
 
 			const approve = await api('admin/avatar-decoration-requests/approve', { requestId: '000000000000000000000000' }, bob);
 			assert.strictEqual(approve.status, 403);
+			assert.strictEqual(castAsError(approve.body as any).error.code, 'ROLE_PERMISSION_DENIED');
 
 			const reject = await api('admin/avatar-decoration-requests/reject', { requestId: '000000000000000000000000', reason: 'x' }, bob);
 			assert.strictEqual(reject.status, 403);
+			assert.strictEqual(castAsError(reject.body as any).error.code, 'ROLE_PERMISSION_DENIED');
 		});
 
 		// JUICE: モデレーターでなくても、ロールでcanApproveAvatarDecorationRequestsが付与されていれば承認・却下できる
@@ -2099,6 +2104,7 @@ describe('Endpoints', () => {
 		test('Moderator以外は承認待ち一覧を取得できない', async () => {
 			const res = await api('admin/juice/pending-signups', {}, bob);
 			assert.strictEqual(res.status, 403);
+			assert.strictEqual(castAsError(res.body as any).error.code, 'ROLE_PERMISSION_DENIED');
 		});
 
 		test('Moderator以外は承認・却下できない', async () => {
@@ -2112,9 +2118,11 @@ describe('Endpoints', () => {
 
 			const approveRes = await api('admin/juice/approve-signup', { userId: target.id }, bob);
 			assert.strictEqual(approveRes.status, 403);
+			assert.strictEqual(castAsError(approveRes.body as any).error.code, 'ROLE_PERMISSION_DENIED');
 
 			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, bob);
 			assert.strictEqual(declineRes.status, 403);
+			assert.strictEqual(castAsError(declineRes.body as any).error.code, 'ROLE_PERMISSION_DENIED');
 		});
 
 		// JUICE: モデレーターでなくても、ロールでcanApproveSignupsが付与されていれば承認・却下できる

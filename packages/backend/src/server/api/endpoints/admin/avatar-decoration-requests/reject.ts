@@ -12,22 +12,16 @@ import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { DriveService } from '@/core/DriveService.js';
 import { EmailService } from '@/core/EmailService.js';
 import { EmailI18nService } from '@/core/EmailI18nService.js';
-import { RoleService } from '@/core/RoleService.js';
 
 export const meta = {
 	tags: ['admin'],
 
 	requireCredential: true,
+	// JUICE: モデレーター/管理者、またはcanApproveAvatarDecorationRequestsロールポリシーを持つユーザーのみ許可
+	requiredRolePolicyOrModerator: 'canApproveAvatarDecorationRequests',
 	kind: 'write:admin:avatar-decoration-requests-reject',
 
 	errors: {
-		// JUICE: モデレーターまたはcanApproveAvatarDecorationRequestsロールポリシーを持つユーザーのみ許可
-		accessDenied: {
-			message: 'You do not have permission to reject avatar decoration requests.',
-			code: 'ACCESS_DENIED',
-			kind: 'permission',
-			id: '2060d4b5-72f3-4414-9fee-1471c7ed61cb',
-		},
 		noSuchRequest: {
 			message: 'No such avatar decoration request.',
 			code: 'NO_SUCH_REQUEST',
@@ -69,13 +63,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveService: DriveService,
 		private emailService: EmailService,
 		private emailI18nService: EmailI18nService,
-		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			if (!(await this.roleService.hasRoleCapability(me, 'canApproveAvatarDecorationRequests'))) {
-				throw new ApiError(meta.errors.accessDenied);
-			}
-
 			const request = await this.avatarDecorationRequestsRepository.findOneBy({ id: ps.requestId });
 			if (request == null) throw new ApiError(meta.errors.noSuchRequest);
 			if (request.status !== 'pending') throw new ApiError(meta.errors.alreadyReviewed);

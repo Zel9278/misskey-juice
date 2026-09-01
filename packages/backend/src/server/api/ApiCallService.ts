@@ -416,6 +416,20 @@ export class ApiCallService implements OnApplicationShutdown {
 			}
 		}
 
+		// JUICE: requiredRolePolicyと同じだが、isModerator/isAdministratorなロールも常に許可する
+		if (ep.meta.requiredRolePolicyOrModerator != null && (this.meta.rootUserId !== user!.id)) {
+			const myRoles = await this.roleService.getUserRoles(user!.id);
+			const policies = await this.roleService.getUserPolicies(user!.id);
+			if (!policies[ep.meta.requiredRolePolicyOrModerator] && !myRoles.some(r => r.isModerator || r.isAdministrator)) {
+				throw new ApiError({
+					message: 'You are not assigned to a required role.',
+					code: 'ROLE_PERMISSION_DENIED',
+					kind: 'permission',
+					id: '60ae1eea-4c46-4b88-9c4c-549867219a30',
+				});
+			}
+		}
+
 		if (token && ((ep.meta.kind && !token.permission.some(p => p === ep.meta.kind))
 			|| (!ep.meta.kind && (ep.meta.requireCredential || ep.meta.requireModerator || ep.meta.requireAdmin)))) {
 			throw new ApiError({

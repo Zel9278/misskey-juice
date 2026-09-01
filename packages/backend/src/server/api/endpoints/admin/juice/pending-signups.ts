@@ -9,24 +9,14 @@ import type { UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { QueryService } from '@/core/QueryService.js';
 import { IdService } from '@/core/IdService.js';
-import { RoleService } from '@/core/RoleService.js';
-import { ApiError } from '@/server/api/error.js';
 
 export const meta = {
 	tags: ['admin'],
 
 	requireCredential: true,
+	// JUICE: モデレーター/管理者、またはcanApproveSignupsロールポリシーを持つユーザーのみ許可
+	requiredRolePolicyOrModerator: 'canApproveSignups',
 	kind: 'read:admin:juice-pending-signups',
-
-	errors: {
-		// JUICE: モデレーターまたはcanApproveSignupsロールポリシーを持つユーザーのみ許可
-		accessDenied: {
-			message: 'You do not have permission to access pending signups.',
-			code: 'ACCESS_DENIED',
-			kind: 'permission',
-			id: 'cd0d82b2-9e0c-4669-95d2-809602e498e8',
-		},
-	},
 
 	res: {
 		type: 'array',
@@ -80,13 +70,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private queryService: QueryService,
 		private idService: IdService,
-		private roleService: RoleService,
 	) {
-		super(meta, paramDef, async (ps, me) => {
-			if (!(await this.roleService.hasRoleCapability(me, 'canApproveSignups'))) {
-				throw new ApiError(meta.errors.accessDenied);
-			}
-
+		super(meta, paramDef, async (ps) => {
 			const query = this.queryService.makePaginationQuery(this.usersRepository.createQueryBuilder('user'), ps.sinceId, ps.untilId)
 				.andWhere('user.approved = FALSE')
 				.andWhere('user.host IS NULL')

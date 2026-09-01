@@ -482,18 +482,6 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		return (this.meta.rootUserId === user.id) || (await this.getUserRoles(user.id)).some(r => r.isAdministrator);
 	}
 
-	/**
-	 * モデレーター/管理者は常にtrue。それ以外は、指定したbooleanロールポリシーが
-	 * 付与されたロールを持っているかどうかで判定する(JUICE)。
-	 */
-	@bindThis
-	public async hasRoleCapability(user: { id: MiUser['id'] } | null, policy: { [K in keyof RolePolicies]: RolePolicies[K] extends boolean ? K : never }[keyof RolePolicies]): Promise<boolean> {
-		if (user == null) return false;
-		if (await this.isModerator(user)) return true;
-		const policies = await this.getUserPolicies(user.id);
-		return policies[policy] === true;
-	}
-
 	@bindThis
 	public async isExplorable(role: { id: MiRole['id'] } | null): Promise<boolean> {
 		if (role == null) return false;
