@@ -122,6 +122,7 @@ describe('ユーザー', () => {
 			injectFeaturedNote: user.injectFeaturedNote,
 			receiveAnnouncementEmail: user.receiveAnnouncementEmail,
 			receiveEmojiRequestResultEmail: user.receiveEmojiRequestResultEmail,
+			receiveAvatarDecorationRequestResultEmail: user.receiveAvatarDecorationRequestResultEmail,
 			alwaysMarkNsfw: user.alwaysMarkNsfw,
 			autoSensitive: user.autoSensitive,
 			carefulBot: user.carefulBot,

@@ -349,6 +349,16 @@ export class WebhookTestService {
 				});
 				break;
 			}
+			// JUICE
+			case 'avatarDecorationRequestCreated': {
+				send('avatarDecorationRequestCreated', {
+					id: 'dummy-avatar-decoration-request-1',
+					name: 'dummy_decoration',
+					category: null,
+					requester: await this.toPackedUserLite(dummyUser1),
+				});
+				break;
+			}
 			default: {
 				const _exhaustiveAssertion: never = params.type;
 				return;

@@ -188,6 +188,13 @@ export interface AdminEventTypes {
 		applicant: Packed<'UserLite'>;
 		reason: string | null;
 	};
+	// JUICE: アバターデコレーション申請が作成された時のリアルタイム通知
+	newAvatarDecorationRequest: {
+		id: string;
+		name: string;
+		category: string | null;
+		requester: Packed<'UserLite'>;
+	};
 }
 
 export interface ChatEventTypes {

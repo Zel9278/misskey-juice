@@ -7,7 +7,7 @@ import { Injectable } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { RoleService } from '@/core/RoleService.js';
-import { SystemWebhookService, type EmojiRequestCreatedPayload, type SignupApplicationCreatedPayload } from '@/core/SystemWebhookService.js';
+import { SystemWebhookService, type EmojiRequestCreatedPayload, type SignupApplicationCreatedPayload, type AvatarDecorationRequestCreatedPayload } from '@/core/SystemWebhookService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 
@@ -67,6 +67,24 @@ export class JuiceAdminNotificationService {
 			await this.systemWebhookService.enqueueSystemWebhook('signupApplicationCreated', payload);
 		} catch (err) {
 			this.logger.error('Failed to notify new signup application', { stack: err });
+		}
+	}
+
+	@bindThis
+	public async notifyNewAvatarDecorationRequest(payload: AvatarDecorationRequestCreatedPayload): Promise<void> {
+		try {
+			const moderatorIds = await this.roleService.getModeratorIds({
+				includeAdmins: true,
+				excludeExpire: true,
+			});
+
+			for (const moderatorId of moderatorIds) {
+				this.globalEventService.publishAdminStream(moderatorId, 'newAvatarDecorationRequest', payload);
+			}
+
+			await this.systemWebhookService.enqueueSystemWebhook('avatarDecorationRequestCreated', payload);
+		} catch (err) {
+			this.logger.error('Failed to notify new avatar decoration request', { stack: err });
 		}
 	}
 }

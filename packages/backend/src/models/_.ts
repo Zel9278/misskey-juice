@@ -39,6 +39,7 @@ import { MiDriveFile } from '@/models/DriveFile.js';
 import { MiDriveFolder } from '@/models/DriveFolder.js';
 import { MiEmoji } from '@/models/Emoji.js';
 import { MiEmojiRequest } from '@/models/EmojiRequest.js';
+import { MiAvatarDecorationRequest } from '@/models/AvatarDecorationRequest.js';
 import { MiFlash } from '@/models/Flash.js';
 import { MiFlashLike } from '@/models/FlashLike.js';
 import { MiFollowing } from '@/models/Following.js';
@@ -127,6 +128,7 @@ export {
 	MiDriveFolder,
 	MiEmoji,
 	MiEmojiRequest,
+	MiAvatarDecorationRequest,
 	MiFollowing,
 	MiFollowRequest,
 	MiGalleryLike,
@@ -213,6 +215,7 @@ export type DriveFilesRepository = Repository<MiDriveFile> & MiRepository<MiDriv
 export type DriveFoldersRepository = Repository<MiDriveFolder> & MiRepository<MiDriveFolder>;
 export type EmojisRepository = Repository<MiEmoji> & MiRepository<MiEmoji>;
 export type EmojiRequestsRepository = Repository<MiEmojiRequest> & MiRepository<MiEmojiRequest>;
+export type AvatarDecorationRequestsRepository = Repository<MiAvatarDecorationRequest> & MiRepository<MiAvatarDecorationRequest>;
 export type FollowingsRepository = Repository<MiFollowing> & MiRepository<MiFollowing>;
 export type FollowRequestsRepository = Repository<MiFollowRequest> & MiRepository<MiFollowRequest>;
 export type GalleryLikesRepository = Repository<MiGalleryLike> & MiRepository<MiGalleryLike>;

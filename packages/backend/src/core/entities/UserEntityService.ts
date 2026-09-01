@@ -610,6 +610,7 @@ export class UserEntityService implements OnModuleInit {
 				injectFeaturedNote: profile!.injectFeaturedNote,
 				receiveAnnouncementEmail: profile!.receiveAnnouncementEmail,
 				receiveEmojiRequestResultEmail: profile!.receiveEmojiRequestResultEmail,
+				receiveAvatarDecorationRequestResultEmail: profile!.receiveAvatarDecorationRequestResultEmail,
 				alwaysMarkNsfw: profile!.alwaysMarkNsfw,
 				autoSensitive: profile!.autoSensitive,
 				carefulBot: profile!.carefulBot,

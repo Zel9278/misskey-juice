@@ -20,6 +20,7 @@ import type {
 	InactiveModeratorsWarningPayload,
 	EmojiRequestCreatedPayload,
 	SignupApplicationCreatedPayload,
+	AvatarDecorationRequestCreatedPayload,
 } from '@/core/SystemWebhookService.js';
 import type { UserWebhookPayload } from '@/core/UserWebhookService.js';
 
@@ -69,6 +70,7 @@ type Messages = {
 	invitationOnlyChangedTitle: string;
 	invitationOnlyChangedDescription: string;
 	emojiRequestCreatedTitle: string;
+	avatarDecorationRequestCreatedTitle: string;
 	requesterField: string;
 	categoryField: string;
 	noCategory: string;
@@ -106,6 +108,7 @@ const MESSAGES_JA: Messages = {
 	invitationOnlyChangedTitle: '🔒 サーバーが招待制に変更されました',
 	invitationOnlyChangedDescription: 'モデレーターの長期非アクティブにより、サーバーが自動的に招待制に変更されました。',
 	emojiRequestCreatedTitle: '🙂 絵文字申請が届きました',
+	avatarDecorationRequestCreatedTitle: '✨ アバターデコレーション申請が届きました',
 	requesterField: '申請者',
 	categoryField: 'カテゴリ',
 	noCategory: '*未設定*',
@@ -143,6 +146,7 @@ const MESSAGES_EN: Messages = {
 	invitationOnlyChangedTitle: '🔒 Server switched to invite-only mode',
 	invitationOnlyChangedDescription: 'Due to prolonged moderator inactivity, this server has automatically switched to invite-only mode.',
 	emojiRequestCreatedTitle: '🙂 New emoji request',
+	avatarDecorationRequestCreatedTitle: '✨ New avatar decoration request',
 	requesterField: 'Requester',
 	categoryField: 'Category',
 	noCategory: '*Unset*',
@@ -269,6 +273,20 @@ function formatSignupApplicationCreated(server: string, payload: SignupApplicati
 	};
 }
 
+// JUICE
+function formatAvatarDecorationRequestCreated(server: string, payload: AvatarDecorationRequestCreatedPayload, t: Messages): DiscordEmbed {
+	return {
+		title: t.avatarDecorationRequestCreatedTitle,
+		description: payload.name,
+		color: COLORS.PURPLE,
+		fields: [
+			{ name: t.requesterField, value: formatUserLink(server, payload.requester), inline: true },
+			{ name: t.categoryField, value: payload.category ?? t.noCategory, inline: true },
+		],
+		footer: { text: server },
+	};
+}
+
 function formatUnknownEvent(server: string, type: string, t: Messages): DiscordEmbed {
 	return {
 		title: t.unknownEventTitle,
@@ -303,6 +321,9 @@ export function formatSystemWebhookForDiscord(type: SystemWebhookEventType, cont
 			break;
 		case 'signupApplicationCreated':
 			embed = formatSignupApplicationCreated(server, content as SignupApplicationCreatedPayload, t);
+			break;
+		case 'avatarDecorationRequestCreated':
+			embed = formatAvatarDecorationRequestCreated(server, content as AvatarDecorationRequestCreatedPayload, t);
 			break;
 		default: {
 			const _: never = type;

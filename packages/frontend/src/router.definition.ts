@@ -370,6 +370,9 @@ export const ROUTE_DEF = [{
 	path: '/emoji-request',
 	component: page(() => import('@/pages/emoji-request.vue')),
 }, {
+	path: '/avatar-decoration-request',
+	component: page(() => import('@/pages/avatar-decoration-request.vue')),
+}, {
 	path: '/avatar-decorations',
 	name: 'avatarDecorations',
 	component: page(() => import('@/pages/avatar-decorations.vue')),
@@ -519,6 +522,10 @@ export const ROUTE_DEF = [{
 		path: '/emoji-requests',
 		name: 'emoji-requests',
 		component: page(() => import('@/pages/admin/emoji-requests.vue')),
+	}, {
+		path: '/avatar-decoration-requests',
+		name: 'avatar-decoration-requests',
+		component: page(() => import('@/pages/admin/avatar-decoration-requests.vue')),
 	}, {
 		path: '/invites',
 		name: 'invites',

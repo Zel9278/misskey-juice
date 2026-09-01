@@ -333,6 +333,10 @@ export const packedRolePoliciesSchema = {
 			type: 'integer',
 			optional: false, nullable: false,
 		},
+		avatarDecorationRequestLimit: {
+			type: 'integer',
+			optional: false, nullable: false,
+		},
 	},
 } as const;
 
