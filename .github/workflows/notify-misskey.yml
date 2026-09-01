@@ -96,4 +96,4 @@ jobs:
         run: |
           curl -sf -X POST https://mk-juice.dev/api/notes/create \
             -H "Content-Type: application/json" \
-            -d "$(jq -n --arg text "${{ steps.msg.outputs.text }}" --arg i "${{ secrets.MISSKEY_BOT_TOKEN }}" '{i:$i, text:$text, visibility:"public"}')"
+            -d "$(jq -n --arg text "${{ steps.msg.outputs.text }}" --arg i "${{ secrets.MISSKEY_BOT_TOKEN }}" '{i:$i, text:$text, visibility:"home"}')"
