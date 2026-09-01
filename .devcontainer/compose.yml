@@ -30,6 +30,20 @@ services:
       - internal_network
       - external_network
 
+  # ホスト側は 3001:3000 でポート衝突を避けているが、backend自身が
+  # config.url(http://127.0.0.1:3001/)へ自己参照fetchする処理(絵文字申請/
+  # アバターデコレーション申請の承認時にシステム所有の複製を作る箇所など)は、
+  # コンテナ内部の127.0.0.1:3001には何もlistenしていないためECONNREFUSEDになる。
+  # appとネットワーク名前空間を共有し、3001→実際にappがlistenしている3000へ
+  # ループバック転送することで、コンテナ内部からもconfig.url宛のfetchが届くようにする。
+  port-forward:
+    restart: unless-stopped
+    image: alpine/socat
+    network_mode: "service:app"
+    depends_on:
+      - app
+    command: "TCP-LISTEN:3001,fork,reuseaddr TCP:127.0.0.1:3000"
+
   redis:
     restart: unless-stopped
     image: redis:7-alpine
