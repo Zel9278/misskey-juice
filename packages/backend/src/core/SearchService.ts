@@ -282,7 +282,11 @@ export class SearchService {
 
 		if (this.config.fulltextSearch?.provider === 'sqlPgroonga') {
 			const pgroongaClauses = buildPgroongaKeywordClauses(q);
-			if (pgroongaClauses.length === 0 && excludeWords.length === 0) {
+			// JUICE: `q`が意図的な空文字(フィルタのみでの検索)の場合は、本文条件を付けずに
+			// 他のフィルタ(hasCw/visibility等)だけで絞り込ませる。`q`が空白のみ等で実質的な
+			// キーワードが1つも得られなかった(かつ除外ワードも無い)場合のみ、検索条件が
+			// 何も無いとみなして0件にする
+			if (q !== '' && pgroongaClauses.length === 0 && excludeWords.length === 0) {
 				query.andWhere('1=0');
 			} else {
 				if (pgroongaClauses.length > 0) {
