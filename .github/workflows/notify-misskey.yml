@@ -97,3 +97,17 @@ jobs:
           curl -sf -X POST https://mk-juice.dev/api/notes/create \
             -H "Content-Type: application/json" \
             -d "$(jq -n --arg text "${{ steps.msg.outputs.text }}" --arg i "${{ secrets.MISSKEY_BOT_TOKEN }}" '{i:$i, text:$text, visibility:"home"}')"
+
+      - name: Dispatch changelog update to docs repo
+        if: github.event_name == 'release'
+        env:
+          DOCS_REPO_TOKEN: ${{ secrets.DOCS_REPO_TOKEN }}
+          TAG_NAME: ${{ github.event.release.tag_name }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: token $DOCS_REPO_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/Zel9278/docs.mk-juice.dev/dispatches \
+            -d "$(jq -n --arg tag "$TAG_NAME" --arg body "$RELEASE_BODY" --arg url "$RELEASE_URL" '{event_type:"misskey-juice-release", client_payload:{tag_name:$tag, body:$body, html_url:$url}}')"
