@@ -25,6 +25,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 				<MkButton rounded style="margin: 0 auto;" @click="chooseFile">{{ i18n.ts.selectFile }}</MkButton>
 
+				<!-- JUICE: この絵文字をノートにリアクションした場合の見た目のサンプルをMkNote(mockモード)で表示する -->
+				<div v-if="file" :class="$style.reactionPreview">
+					<div :class="$style.previewLabel">{{ i18n.ts._emojiRequestPage.preview }}</div>
+					<div :class="$style.previewCaption">{{ i18n.ts._emojiRequestPage.previewCaption }}</div>
+					<MkNote :mock="true" :note="exampleNote" :class="$style.previewNote"/>
+				</div>
+
 				<MkInput v-model="name" pattern="[a-z0-9_]" autocapitalize="off">
 					<template #label>{{ i18n.ts.name }}</template>
 				</MkInput>
@@ -81,6 +88,7 @@ import MkSwitch from '@/components/MkSwitch.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import MkEmojiRequestItem from '@/components/MkEmojiRequestItem.vue';
+import MkNote from '@/components/MkNote.vue';
 import type { Captcha } from '@/components/MkCaptcha.vue';
 import MkCaptcha from '@/components/MkCaptcha.vue';
 import * as os from '@/os.js';
@@ -93,7 +101,7 @@ import { Paginator } from '@/utility/paginator.js';
 import { ensureSignin } from '@/i.js';
 import { instance } from '@/instance.js';
 
-ensureSignin();
+const $i = ensureSignin();
 
 const enabled = ref(true);
 misskeyApi('juice/public-settings').then(res => {
@@ -121,6 +129,36 @@ const mCaptchaResponse = ref<string | null>(null);
 const reCaptchaResponse = ref<string | null>(null);
 const turnstileResponse = ref<string | null>(null);
 const testcaptchaResponse = ref<string | null>(null);
+
+// JUICE: 申請中の絵文字をリアクションとして使った場合の見た目のプレビュー用。
+// まだ承認されていない(=正式な絵文字として登録されていない)画像のため、
+// note.reactionEmojisでアップロード直後のfile.urlを直接差し込んで表示する
+// (MkReactionsViewer.reaction.vue参照。既存のアバターデコレーション申請の
+// プレビュー(MkAvatarのdecorations上書き)と同じ考え方)
+const exampleNote = computed<Misskey.entities.Note>(() => {
+	const previewName = name.value || 'preview';
+	return {
+		id: '0000000000',
+		createdAt: new Date().toISOString(),
+		userId: $i.id,
+		user: $i,
+		text: i18n.ts._emojiRequestPage.previewSampleNoteText,
+		cw: null,
+		visibility: 'public',
+		localOnly: false,
+		isAIGenerated: false,
+		reactionAcceptance: null,
+		renoteCount: 0,
+		repliesCount: 0,
+		reactionCount: 1,
+		reactions: { [`:${previewName}:`]: 1 },
+		reactionEmojis: { [previewName]: file.value?.url ?? '' },
+		fileIds: [],
+		files: [],
+		replyId: null,
+		renoteId: null,
+	};
+});
 
 const shouldDisableSubmitting = computed((): boolean => {
 	return !file.value || !name.value ||
@@ -222,5 +260,31 @@ definePage(() => ({
 	height: 64px;
 	width: 64px;
 	object-fit: contain;
+}
+
+.reactionPreview {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.previewLabel {
+	font-size: 0.85em;
+	opacity: 0.7;
+}
+
+.previewCaption {
+	font-size: 0.85em;
+	opacity: 0.7;
+	text-align: center;
+}
+
+.previewNote {
+	width: 100%;
+	border-radius: var(--MI-radius);
+	border: var(--MI_THEME-panelBorder);
+	background: var(--MI_THEME-panel);
+	pointer-events: none;
 }
 </style>

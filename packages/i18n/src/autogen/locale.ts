@@ -14433,6 +14433,18 @@ export interface Locale extends ILocale {
          */
         "license": string;
         /**
+         * プレビュー
+         */
+        "preview": string;
+        /**
+         * この絵文字をノートにリアクションしたときの見た目のサンプルです
+         */
+        "previewCaption": string;
+        /**
+         * これはサンプルのノートです
+         */
+        "previewSampleNoteText": string;
+        /**
          * 審査後にこの画像をDriveから削除する
          */
         "deleteFileAfterReview": string;
