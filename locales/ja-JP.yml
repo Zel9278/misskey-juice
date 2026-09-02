@@ -3588,8 +3588,11 @@ _search:
   optionWith: "あり"
   optionWithout: "なし"
   myReactionLabel: "自分のリアクション"
+  myReactionPageHint: "自分が過去に投稿へ付けたリアクションをもとに投稿を検索します。下から絞り込み方を選び、「検索」を押してください。"
   myReactionAny: "何かしらリアクションした投稿"
+  myReactionAnyCaption: "これまでに何かしらのリアクションを付けたすべての投稿が対象になります"
   myReactionSpecific: "特定のリアクションをした投稿"
+  myReactionSpecificCaption: "下のボタンから絵文字を選ぶと、そのリアクションを付けた投稿だけに絞り込めます"
   selectReaction: "リアクションを選択"
   narrowByKeywordPlaceholder: "キーワードで絞り込む(省略可)"
 

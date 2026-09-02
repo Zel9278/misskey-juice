@@ -82,6 +82,7 @@ const headerTabs = computed(() => [{
 	key: 'reaction',
 	title: i18n.ts.reaction,
 	icon: 'ti ti-mood-smile',
+	badge: true,
 }]);
 
 definePage(() => ({

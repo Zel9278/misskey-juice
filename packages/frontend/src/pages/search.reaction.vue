@@ -7,6 +7,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 <div class="_gaps">
 	<!-- JUICE: 付けたリアクションでノートを検索する専用タブ。プライバシー上、自分自身のリアクションのみ対象 -->
 	<div class="_gaps">
+		<MkInfo>{{ i18n.ts._search.myReactionPageHint }}</MkInfo>
+
 		<MkRadios v-model="myReactionMode" :options="myReactionModeOptions">
 			<template #label>{{ i18n.ts._search.myReactionLabel }}<span class="_juice">JUICE</span></template>
 		</MkRadios>
@@ -55,6 +57,7 @@ import { i18n } from '@/i18n.js';
 import { reactionPicker } from '@/utility/reaction-picker.js';
 import MkButton from '@/components/MkButton.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
+import MkInfo from '@/components/MkInfo.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkNotesTimeline from '@/components/MkNotesTimeline.vue';
 import MkRadios from '@/components/MkRadios.vue';
@@ -72,8 +75,8 @@ const myReactionValue = ref<string | null>(null);
 const myReactionPickerButtonEl = useTemplateRef('myReactionPickerButtonEl');
 
 const myReactionModeOptions = computed<MkRadiosOption[]>(() => [
-	{ value: 'any', label: i18n.ts._search.myReactionAny },
-	{ value: 'specific', label: i18n.ts._search.myReactionSpecific },
+	{ value: 'any', label: i18n.ts._search.myReactionAny, caption: i18n.ts._search.myReactionAnyCaption },
+	{ value: 'specific', label: i18n.ts._search.myReactionSpecific, caption: i18n.ts._search.myReactionSpecificCaption },
 ]);
 
 const canSearch = computed(() => myReactionMode.value === 'any' || myReactionValue.value != null);

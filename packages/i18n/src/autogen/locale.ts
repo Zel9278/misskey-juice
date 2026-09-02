@@ -13407,13 +13407,25 @@ export interface Locale extends ILocale {
          */
         "myReactionLabel": string;
         /**
+         * 自分が過去に投稿へ付けたリアクションをもとに投稿を検索します。下から絞り込み方を選び、「検索」を押してください。
+         */
+        "myReactionPageHint": string;
+        /**
          * 何かしらリアクションした投稿
          */
         "myReactionAny": string;
         /**
+         * これまでに何かしらのリアクションを付けたすべての投稿が対象になります
+         */
+        "myReactionAnyCaption": string;
+        /**
          * 特定のリアクションをした投稿
          */
         "myReactionSpecific": string;
+        /**
+         * 下のボタンから絵文字を選ぶと、そのリアクションを付けた投稿だけに絞り込めます
+         */
+        "myReactionSpecificCaption": string;
         /**
          * リアクションを選択
          */
