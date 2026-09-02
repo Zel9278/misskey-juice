@@ -33604,6 +33604,8 @@ export interface operations {
                     searchOperator?: 'and' | 'or';
                     /** @default [] */
                     excludeWords?: string[];
+                    /** @default null */
+                    myReaction?: string | null;
                 };
             };
         };

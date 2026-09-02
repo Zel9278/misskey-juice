@@ -13402,6 +13402,22 @@ export interface Locale extends ILocale {
          * なし
          */
         "optionWithout": string;
+        /**
+         * 自分のリアクション
+         */
+        "myReactionLabel": string;
+        /**
+         * 何かしらリアクションした投稿
+         */
+        "myReactionAny": string;
+        /**
+         * 特定のリアクションをした投稿
+         */
+        "myReactionSpecific": string;
+        /**
+         * リアクションを選択
+         */
+        "selectReaction": string;
     };
     "_serverSetupWizard": {
         /**

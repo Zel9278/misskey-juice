@@ -49,6 +49,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkRadios v-model="hasPoll" :options="triStateOptions">
 					<template #label>{{ i18n.ts._search.hasPollLabel }}</template>
 				</MkRadios>
+
+				<!-- JUICE: 付けたリアクションでノートを検索する。プライバシー上、自分自身のリアクションのみ対象 -->
+				<div v-if="$i != null" class="_gaps_s">
+					<MkRadios v-model="myReactionMode" :options="myReactionModeOptions">
+						<template #label>{{ i18n.ts._search.myReactionLabel }}<span class="_juice">JUICE</span></template>
+					</MkRadios>
+					<div v-if="myReactionMode === 'specific'">
+						<button
+							ref="myReactionPickerButtonEl"
+							class="_button"
+							:class="$style.myReactionPickerButton"
+							@click="pickMyReaction"
+						>
+							<MkReactionIcon v-if="myReactionValue" :reaction="myReactionValue" :class="$style.myReactionPickerIcon"/>
+							<span>{{ i18n.ts._search.selectReaction }}</span>
+						</button>
+					</div>
+				</div>
 			</div>
 		</MkFolder>
 
@@ -155,7 +173,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, markRaw, ref, shallowRef, toRef } from 'vue';
+import { computed, markRaw, ref, shallowRef, toRef, useTemplateRef } from 'vue';
 import { host as localHost } from '@@/js/config.js';
 import type * as Misskey from 'misskey-js';
 import { $i } from '@/i.js';
@@ -164,6 +182,7 @@ import { instance } from '@/instance.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { apLookup } from '@/utility/lookup.js';
+import { reactionPicker } from '@/utility/reaction-picker.js';
 import { useRouter } from '@/router.js';
 import MkButton from '@/components/MkButton.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
@@ -172,6 +191,7 @@ import MkInfo from '@/components/MkInfo.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkNotesTimeline from '@/components/MkNotesTimeline.vue';
 import MkRadios from '@/components/MkRadios.vue';
+import MkReactionIcon from '@/components/MkReactionIcon.vue';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import { Paginator } from '@/utility/paginator.js';
 import type { MkRadiosOption } from '@/components/MkRadios.vue';
@@ -195,6 +215,13 @@ const triStateOptions = computed<MkRadiosOption[]>(() => [
 	{ value: 'all', label: i18n.ts.all },
 	{ value: 'with', label: i18n.ts._search.optionWith },
 	{ value: 'without', label: i18n.ts._search.optionWithout },
+]);
+
+// JUICE: 付けたリアクションでノートを検索する
+const myReactionModeOptions = computed<MkRadiosOption[]>(() => [
+	{ value: 'all', label: i18n.ts.all },
+	{ value: 'any', label: i18n.ts._search.myReactionAny },
+	{ value: 'specific', label: i18n.ts._search.myReactionSpecific },
 ]);
 
 const props = withDefaults(defineProps<{
@@ -227,6 +254,17 @@ const hasFiles = ref<'all' | 'with' | 'without'>('all');
 const hasCw = ref<'all' | 'with' | 'without'>('all');
 const hasReply = ref<'all' | 'with' | 'without'>('all');
 const hasPoll = ref<'all' | 'with' | 'without'>('all');
+
+// JUICE: 付けたリアクションでノートを検索する。プライバシー上、自分自身のリアクションのみ対象
+const myReactionMode = ref<'all' | 'any' | 'specific'>('all');
+const myReactionValue = ref<string | null>(null);
+const myReactionPickerButtonEl = useTemplateRef('myReactionPickerButtonEl');
+
+function pickMyReaction() {
+	reactionPicker.show(myReactionPickerButtonEl.value ?? null, null, (reaction) => {
+		myReactionValue.value = reaction;
+	});
+}
 
 const user = shallowRef<Misskey.entities.UserDetailed | null>(null);
 
@@ -303,6 +341,9 @@ const advancedSearchParams = computed(() => ({
 	hasPoll: hasPoll.value,
 	searchOperator: searchOperator.value,
 	excludeWords: excludeWordsInput.value.split(',').map(word => word.trim()).filter(word => word !== ''),
+	myReaction: myReactionMode.value === 'any'
+		? 'any'
+		: (myReactionMode.value === 'specific' && myReactionValue.value ? myReactionValue.value : null),
 }));
 
 const searchRange = () => {
@@ -487,5 +528,20 @@ async function search() {
 	width: 32px;
 	height: 32px;
 	color: #ff2a2a;
+}
+
+.myReactionPickerButton {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 32px;
+	padding: 0 12px;
+	border-radius: var(--MI-radius);
+	background: var(--MI_THEME-buttonBg);
+}
+
+.myReactionPickerIcon {
+	width: 20px;
+	height: 20px;
 }
 </style>

@@ -3587,6 +3587,10 @@ _search:
   hasPollLabel: "投票"
   optionWith: "あり"
   optionWithout: "なし"
+  myReactionLabel: "自分のリアクション"
+  myReactionAny: "何かしらリアクションした投稿"
+  myReactionSpecific: "特定のリアクションをした投稿"
+  selectReaction: "リアクションを選択"
 
 _serverSetupWizard:
   installCompleted: "Misskeyのインストールが完了しました！"

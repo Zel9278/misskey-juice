@@ -17,7 +17,13 @@ import { CacheService } from '@/core/CacheService.js';
 import { QueryService } from '@/core/QueryService.js';
 import { IdService } from '@/core/IdService.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import { ReactionService } from '@/core/ReactionService.js';
 import type { Index, Meilisearch } from 'meilisearch';
+
+// JUICE: ReactionService.tsの同名定数と同じ定義。カスタム絵文字リアクション(`:name:`/`:name@host:`)の
+// 判定に使う。自分のリアクションを検索する際、カスタム絵文字はnormalize()を通さず文字列そのままで
+// 照合する必要があるため(normalize()はUnicode絵文字専用で、カスタム絵文字を渡すとFALLBACKになってしまう)
+const isCustomEmojiRegexp = /^:([\w+-]+)(?:@\.)?:$/;
 
 type K = string;
 type V = string | number | boolean;
@@ -53,6 +59,10 @@ export type SearchOpts = {
 	hasPoll?: 'all' | 'with' | 'without';
 	searchOperator?: 'and' | 'or';
 	excludeWords?: string[];
+	// JUICE: 自分が付けたリアクションでノートを絞り込む。`'any'`で「何かしらリアクションした
+	// ノート」全体、それ以外は特定のリアクション文字列との完全一致。プライバシー上、
+	// 自分自身のリアクションのみを対象とする(他人のリアクションでの検索は不可)
+	myReaction?: string | null;
 };
 
 export type SearchPagination = {
@@ -125,6 +135,7 @@ export class SearchService {
 		private queryService: QueryService,
 		private idService: IdService,
 		private loggerService: LoggerService,
+		private reactionService: ReactionService,
 	) {
 		if (meilisearch) {
 			this.meilisearchNoteIndex = meilisearch.index(`${config.meilisearch!.index}---notes`);
@@ -269,6 +280,28 @@ export class SearchService {
 			query.andWhere('note."hasPoll" = TRUE');
 		} else if (opts.hasPoll === 'without') {
 			query.andWhere('note."hasPoll" = FALSE');
+		}
+
+		// JUICE: 自分が付けたリアクションでノートを絞り込む(プロジェクト項目「付けたリアクションで
+		// ノートを検索できるようにする」)。プライバシー上、自分自身のリアクションのみが対象
+		if (opts.myReaction) {
+			if (me == null) {
+				query.andWhere('1=0');
+			} else {
+				query.innerJoin('note_reaction', 'my_reaction', 'my_reaction."noteId" = note.id');
+				query.andWhere('my_reaction."userId" = :myReactionUserId', { myReactionUserId: me.id });
+				if (opts.myReaction !== 'any') {
+					// JUICE: カスタム絵文字は`:name:`/`:name@.:`のどちらの形式で来ても`name`部分だけを
+					// 取り出し、ローカルユーザー(=自分)がリアクションした際に実際に保存される形式
+					// (`:name:`、ホスト無し)に正規化してから比較する。ReactionService.create()も
+					// 同じ正規表現でカスタム絵文字判定をした上で、実際の保存形式はリアクションした
+					// 本人(=自分)のホストだけで決まる(絵文字自体の出身ホストは無関係)ため、常に
+					// ローカル形式に揃えるのが正しい
+					const customMatch = opts.myReaction.match(isCustomEmojiRegexp);
+					const reactionValue = customMatch ? `:${customMatch[1]}:` : this.reactionService.normalize(opts.myReaction);
+					query.andWhere('my_reaction.reaction = :myReactionValue', { myReactionValue: reactionValue });
+				}
+			}
 		}
 
 		query

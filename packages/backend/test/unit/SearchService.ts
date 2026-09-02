@@ -18,6 +18,7 @@ import {
 	type ChannelsRepository,
 	type FollowingsRepository,
 	type MutingsRepository,
+	type NoteReactionsRepository,
 	type NotesRepository,
 	type UserProfilesRepository,
 	type UsersRepository,
@@ -160,6 +161,16 @@ describe('SearchService', () => {
 		}
 
 		return note;
+	}
+
+	async function createReaction(ctx: TestContext, user: MiUser, note: MiNote, reaction: string) {
+		const noteReactionsRepository = ctx.app.get<NoteReactionsRepository>(DI.noteReactionsRepository);
+		await noteReactionsRepository.insert({
+			id: ctx.idService.gen(),
+			userId: user.id,
+			noteId: note.id,
+			reaction,
+		});
 	}
 
 	async function createFollowing(ctx: TestContext, follower: MiUser, followee: MiUser) {
@@ -627,6 +638,77 @@ describe('SearchService', () => {
 
 				const result = await ctx.service.searchNote('hello', me, { visibility: 'public' }, { limit: 10 });
 				expect(result.map(note => note.id)).toEqual([publicNote.id]);
+			});
+
+			// JUICE: 付けたリアクションでノートを検索する機能。プライバシー上、自分自身のリアクションのみ対象
+			describe('myReaction', () => {
+				test('"any" matches only notes the requester has reacted to, regardless of reaction type', async () => {
+					const me = await createUser(ctx, { username: 'me', usernameLower: 'me', host: null });
+					const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+
+					const reactedNote = await createNote(ctx, author, { text: 'hello' });
+					await createNote(ctx, author, { text: 'hello not reacted' });
+					await createReaction(ctx, me, reactedNote, '👍');
+
+					const result = await ctx.service.searchNote('hello', me, { myReaction: 'any' }, { limit: 10 });
+					expect(result.map(note => note.id)).toEqual([reactedNote.id]);
+				});
+
+				test('a specific unicode reaction matches only notes reacted to with that exact reaction', async () => {
+					const me = await createUser(ctx, { username: 'me', usernameLower: 'me', host: null });
+					const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+
+					const likedNote = await createNote(ctx, author, { text: 'hello' });
+					const lovedNote = await createNote(ctx, author, { text: 'hello' });
+					await createReaction(ctx, me, likedNote, '👍');
+					await createReaction(ctx, me, lovedNote, '❤');
+
+					const result = await ctx.service.searchNote('hello', me, { myReaction: '👍' }, { limit: 10 });
+					expect(result.map(note => note.id)).toEqual([likedNote.id]);
+				});
+
+				test('a custom emoji reaction (":name:") matches stored reactions of the same name', async () => {
+					const me = await createUser(ctx, { username: 'me', usernameLower: 'me', host: null });
+					const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+
+					const reactedNote = await createNote(ctx, author, { text: 'hello' });
+					await createReaction(ctx, me, reactedNote, ':neocat:');
+
+					const result = await ctx.service.searchNote('hello', me, { myReaction: ':neocat:' }, { limit: 10 });
+					expect(result.map(note => note.id)).toEqual([reactedNote.id]);
+				});
+
+				test('a custom emoji reaction given as ":name@.:" still matches the locally-stored ":name:" form', async () => {
+					const me = await createUser(ctx, { username: 'me', usernameLower: 'me', host: null });
+					const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+
+					const reactedNote = await createNote(ctx, author, { text: 'hello' });
+					await createReaction(ctx, me, reactedNote, ':neocat:');
+
+					const result = await ctx.service.searchNote('hello', me, { myReaction: ':neocat@.:' }, { limit: 10 });
+					expect(result.map(note => note.id)).toEqual([reactedNote.id]);
+				});
+
+				test('never matches another user\'s reaction to the same note', async () => {
+					const me = await createUser(ctx, { username: 'me', usernameLower: 'me', host: null });
+					const other = await createUser(ctx, { username: 'other', usernameLower: 'other', host: null });
+					const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+
+					const note = await createNote(ctx, author, { text: 'hello' });
+					await createReaction(ctx, other, note, '👍');
+
+					const result = await ctx.service.searchNote('hello', me, { myReaction: 'any' }, { limit: 10 });
+					expect(result).toEqual([]);
+				});
+
+				test('returns no results when unauthenticated, even without crashing', async () => {
+					const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+					const note = await createNote(ctx, author, { text: 'hello' });
+					await createReaction(ctx, author, note, '👍');
+
+					const result = await ctx.service.searchNote('hello', null, { myReaction: 'any' }, { limit: 10 });
+					expect(result).toEqual([]);
+				});
 			});
 		});
 	});
