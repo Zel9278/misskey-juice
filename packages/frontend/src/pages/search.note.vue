@@ -15,6 +15,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 		>
 			<template #prefix><i class="ti ti-search"></i></template>
 		</MkInput>
+		<!-- JUICE: sqlLike/sqlPgroongaいずれも高度な検索構文(OR・除外・フレーズ検索等)には
+			対応しておらず、スペース区切りのキーワードがAND検索されるだけのため、その旨を案内する -->
+		<MkInfo>{{ i18n.ts._search.queryHint }}</MkInfo>
 		<MkFoldableSection expanded>
 			<template #header>{{ i18n.ts.options }}</template>
 
@@ -130,6 +133,7 @@ import { apLookup } from '@/utility/lookup.js';
 import { useRouter } from '@/router.js';
 import MkButton from '@/components/MkButton.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
+import MkInfo from '@/components/MkInfo.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkNotesTimeline from '@/components/MkNotesTimeline.vue';
 import MkRadios from '@/components/MkRadios.vue';

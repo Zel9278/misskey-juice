@@ -3574,6 +3574,7 @@ _search:
   serverHostPlaceholder: "例: misskey.example.com"
   postFrom: "投稿日時from"
   postTo: "投稿日時to"
+  queryHint: "複数のキーワードをスペースで区切ると、すべてを含む投稿だけが検索されます(AND検索)。「OR」「-」等による除外・フレーズ検索等の高度な構文には対応していません。"
 
 _serverSetupWizard:
   installCompleted: "Misskeyのインストールが完了しました！"

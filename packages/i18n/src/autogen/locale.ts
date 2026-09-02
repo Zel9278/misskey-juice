@@ -13350,6 +13350,10 @@ export interface Locale extends ILocale {
          * 投稿日時to
          */
         "postTo": string;
+        /**
+         * 複数のキーワードをスペースで区切ると、すべてを含む投稿だけが検索されます(AND検索)。「OR」「-」等による除外・フレーズ検索等の高度な構文には対応していません。
+         */
+        "queryHint": string;
     };
     "_serverSetupWizard": {
         /**
