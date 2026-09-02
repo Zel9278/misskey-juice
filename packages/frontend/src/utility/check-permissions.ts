@@ -25,3 +25,9 @@ export const usersSearchAvailable = (
 	($i != null && $i.policies.canSearchUsers) ||
 	false
 );
+
+// JUICE: 自分自身のリアクションを対象とする検索のため、ログインしていることが必須。
+// 内部的にはnotes/searchエンドポイントを使うため、ノート検索自体の権限も併せて確認する
+export const myReactionSearchAvailable = (
+	$i != null && notesSearchAvailable
+) as boolean;

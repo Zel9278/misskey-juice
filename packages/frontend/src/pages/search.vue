@@ -22,6 +22,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkInfo warn>{{ i18n.ts.usersSearchNotAvailable }}</MkInfo>
 		</div>
 	</div>
+
+	<!-- JUICE: 付けたリアクションでノートを検索する専用タブ -->
+	<div v-else-if="tab === 'reaction'" class="_spacer" style="--MI_SPACER-w: 800px;">
+		<div v-if="myReactionSearchAvailable">
+			<XReaction/>
+		</div>
+		<div v-else>
+			<MkInfo warn>{{ i18n.ts.notesSearchNotAvailable }}</MkInfo>
+		</div>
+	</div>
 </PageWithHeader>
 </template>
 
@@ -30,7 +40,7 @@ import { computed, defineAsyncComponent, ref, toRef } from 'vue';
 import { $i } from '@/i.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
-import { notesSearchAvailable, usersSearchAvailable } from '@/utility/check-permissions.js';
+import { myReactionSearchAvailable, notesSearchAvailable, usersSearchAvailable } from '@/utility/check-permissions.js';
 import MkInfo from '@/components/MkInfo.vue';
 
 const props = withDefaults(defineProps<{
@@ -38,7 +48,7 @@ const props = withDefaults(defineProps<{
 	userId?: string,
 	username?: string,
 	host?: string | null,
-	type?: 'note' | 'user',
+	type?: 'note' | 'user' | 'reaction',
 	origin?: 'combined' | 'local' | 'remote',
 	// For storybook only
 	ignoreNotesSearchAvailable?: boolean,
@@ -54,6 +64,7 @@ const props = withDefaults(defineProps<{
 
 const XNote = defineAsyncComponent(() => import('./search.note.vue'));
 const XUser = defineAsyncComponent(() => import('./search.user.vue'));
+const XReaction = defineAsyncComponent(() => import('./search.reaction.vue'));
 
 const tab = ref(toRef(props, 'type').value);
 
@@ -67,6 +78,10 @@ const headerTabs = computed(() => [{
 	key: 'user',
 	title: i18n.ts.users,
 	icon: 'ti ti-users',
+}, {
+	key: 'reaction',
+	title: i18n.ts.reaction,
+	icon: 'ti ti-mood-smile',
 }]);
 
 definePage(() => ({

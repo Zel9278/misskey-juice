@@ -13418,6 +13418,10 @@ export interface Locale extends ILocale {
          * リアクションを選択
          */
         "selectReaction": string;
+        /**
+         * キーワードで絞り込む(省略可)
+         */
+        "narrowByKeywordPlaceholder": string;
     };
     "_serverSetupWizard": {
         /**

@@ -3591,6 +3591,7 @@ _search:
   myReactionAny: "何かしらリアクションした投稿"
   myReactionSpecific: "特定のリアクションをした投稿"
   selectReaction: "リアクションを選択"
+  narrowByKeywordPlaceholder: "キーワードで絞り込む(省略可)"
 
 _serverSetupWizard:
   installCompleted: "Misskeyのインストールが完了しました！"
