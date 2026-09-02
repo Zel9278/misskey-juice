@@ -40,6 +40,19 @@ export type SearchOpts = {
 	host?: string | null;
 	rangeStartAt?: number | null;
 	rangeEndAt?: number | null;
+	// JUICE: misskey-tempuraの検索拡張(高度な検索周りの追加 / 検索の拡張)からチェリーピック。
+	// ただしtempura本家はテキスト本文の検索に`&@~`(PGroongaのクエリ構文演算子、ユーザー入力を
+	// そのままクエリとしてパースするため`-`や`(`混じりの語で構文エラーになりうる)を使っており、
+	// それはこのフォームでは既に`&@`ベースの安全な方式に置き換え済み(buildPgroongaKeywordClauses
+	// 参照)なので、フィルタ部分(パラメータ化されており安全)のみ移植し、OR検索・除外ワードは
+	// `&@`ベースのまま対応させている。
+	visibility?: MiNote['visibility'] | 'all';
+	hasFiles?: 'all' | 'with' | 'without';
+	hasCw?: 'all' | 'with' | 'without';
+	hasReply?: 'all' | 'with' | 'without';
+	hasPoll?: 'all' | 'with' | 'without';
+	searchOperator?: 'and' | 'or';
+	excludeWords?: string[];
 };
 
 export type SearchPagination = {
@@ -52,12 +65,15 @@ export type SearchPagination = {
 // 単語に`-`や`(`等の記号が混ざっただけで構文エラーになりうる。単純な「含む」判定の`&@`演算子を
 // キーワードごとにAND連結することで、構文パースを経由せず(=構文エラーが起きえない)従来通りの
 // 複数キーワードAND検索を実現する。
-export function buildPgroongaKeywordClauses(q: string): { sql: string, param: Record<string, string> }[] {
+// JUICE: 除外ワード(NOT句)にも同じ関数を使い回せるよう、パラメータ名のプレフィックスを引数化できる
+// ようにしてある。本文検索節と除外節を同じプレフィックスで呼ぶとバインドパラメータ名が衝突し、
+// 片方の値がもう片方を上書きしてしまう(実際に踏んだ不具合)ため、呼び出し側で必ず別々のプレフィックスを渡すこと。
+export function buildPgroongaKeywordClauses(q: string, paramPrefix = 'pgroongaKeyword'): { sql: string, param: Record<string, string> }[] {
 	return q.split(/\s+/)
 		.filter(keyword => keyword.length > 0)
 		.map((keyword, i) => ({
-			sql: `note.text &@ :pgroongaKeyword${i}`,
-			param: { [`pgroongaKeyword${i}`]: keyword },
+			sql: `note.text &@ :${paramPrefix}${i}`,
+			param: { [`${paramPrefix}${i}`]: keyword },
 		}));
 }
 
@@ -226,6 +242,35 @@ export class SearchService {
 			query.andWhere('note.channelId = :channelId', { channelId: opts.channelId });
 		}
 
+		// JUICE: misskey-tempuraからチェリーピック。いずれもパラメータ化されており安全
+		if (opts.visibility && opts.visibility !== 'all') {
+			query.andWhere('note.visibility = :visibility', { visibility: opts.visibility });
+		}
+
+		if (opts.hasFiles === 'with') {
+			query.andWhere('array_length(note."fileIds", 1) > 0');
+		} else if (opts.hasFiles === 'without') {
+			query.andWhere('note."fileIds" = :fileIds', { fileIds: [] });
+		}
+
+		if (opts.hasCw === 'with') {
+			query.andWhere('note.cw IS NOT NULL AND note.cw != :emptyString', { emptyString: '' });
+		} else if (opts.hasCw === 'without') {
+			query.andWhere('(note.cw IS NULL OR note.cw = :emptyString)', { emptyString: '' });
+		}
+
+		if (opts.hasReply === 'with') {
+			query.andWhere('note."replyId" IS NOT NULL');
+		} else if (opts.hasReply === 'without') {
+			query.andWhere('note."replyId" IS NULL');
+		}
+
+		if (opts.hasPoll === 'with') {
+			query.andWhere('note."hasPoll" = TRUE');
+		} else if (opts.hasPoll === 'without') {
+			query.andWhere('note."hasPoll" = FALSE');
+		}
+
 		query
 			.innerJoinAndSelect('note.user', 'user')
 			.leftJoinAndSelect('note.reply', 'reply')
@@ -233,17 +278,50 @@ export class SearchService {
 			.leftJoinAndSelect('reply.user', 'replyUser')
 			.leftJoinAndSelect('renote.user', 'renoteUser');
 
+		const excludeWords = (opts.excludeWords ?? []).filter(word => word.trim().length > 0);
+
 		if (this.config.fulltextSearch?.provider === 'sqlPgroonga') {
 			const pgroongaClauses = buildPgroongaKeywordClauses(q);
-			if (pgroongaClauses.length === 0) {
+			if (pgroongaClauses.length === 0 && excludeWords.length === 0) {
 				query.andWhere('1=0');
 			} else {
-				for (const clause of pgroongaClauses) {
-					query.andWhere(clause.sql, clause.param);
+				if (pgroongaClauses.length > 0) {
+					// JUICE: OR検索時は`&@`キーワード節をORで束ねる。個々の節は引き続き
+					// パラメータバインドのみでクエリ構文を経由しないため安全
+					if (opts.searchOperator === 'or') {
+						const sql = pgroongaClauses.map(clause => clause.sql).join(' OR ');
+						const params = Object.assign({}, ...pgroongaClauses.map(clause => clause.param));
+						query.andWhere(`(${sql})`, params);
+					} else {
+						for (const clause of pgroongaClauses) {
+							query.andWhere(clause.sql, clause.param);
+						}
+					}
+				}
+				// JUICE: 本文検索節と同じパラメータ名プレフィックスを使うと、TypeORMの
+				// バインドパラメータが衝突して片方の値がもう片方を上書きしてしまうため、
+				// 除外ワード側は別プレフィックスを使う
+				for (const clause of buildPgroongaKeywordClauses(excludeWords.join(' '), 'pgroongaExcludeKeyword')) {
+					query.andWhere(`NOT (${clause.sql})`, clause.param);
 				}
 			}
-		} else {
-			query.andWhere('LOWER(note.text) LIKE :q', { q: `%${ sqlLikeEscape(q.toLowerCase()) }%` });
+		} else if (q !== '' || excludeWords.length > 0) {
+			if (q !== '') {
+				const keywords = q.split(/\s+/).filter(keyword => keyword.length > 0);
+				if (opts.searchOperator === 'or' && keywords.length > 0) {
+					const params: Record<string, string> = {};
+					const sql = keywords.map((keyword, i) => {
+						params[`likeKeyword${i}`] = `%${sqlLikeEscape(keyword.toLowerCase())}%`;
+						return `LOWER(note.text) LIKE :likeKeyword${i}`;
+					}).join(' OR ');
+					query.andWhere(`(${sql})`, params);
+				} else {
+					query.andWhere('LOWER(note.text) LIKE :q', { q: `%${ sqlLikeEscape(q.toLowerCase()) }%` });
+				}
+			}
+			excludeWords.forEach((word, i) => {
+				query.andWhere(`LOWER(note.text) NOT LIKE :excludeLikeKeyword${i}`, { [`excludeLikeKeyword${i}`]: `%${sqlLikeEscape(word.toLowerCase())}%` });
+			});
 		}
 
 		if (opts.host) {

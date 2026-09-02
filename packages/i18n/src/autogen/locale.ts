@@ -13351,9 +13351,57 @@ export interface Locale extends ILocale {
          */
         "postTo": string;
         /**
-         * 複数のキーワードをスペースで区切ると、すべてを含む投稿だけが検索されます(AND検索)。「OR」「-」等による除外・フレーズ検索等の高度な構文には対応していません。
+         * 複数のキーワードをスペースで区切ると、既定ではすべてを含む投稿だけが検索されます(AND検索)。「OR」「-」等の記号を検索欄に入力しても構文としては扱われません。いずれかを含む投稿の検索や特定の単語の除外は、下の「高度な検索オプション」から行えます。
          */
         "queryHint": string;
+        /**
+         * 高度な検索オプション
+         */
+        "advancedSearch": string;
+        /**
+         * 複数キーワードの検索方法
+         */
+        "searchOperatorLabel": string;
+        /**
+         * すべて含む(AND)
+         */
+        "searchOperatorAnd": string;
+        /**
+         * いずれかを含む(OR)
+         */
+        "searchOperatorOr": string;
+        /**
+         * 除外ワード
+         */
+        "excludeWords": string;
+        /**
+         * カンマ区切りで、検索結果から除外したい単語を指定できます
+         */
+        "excludeWordsCaption": string;
+        /**
+         * 添付ファイル
+         */
+        "hasFilesLabel": string;
+        /**
+         * 閲覧注意(CW)
+         */
+        "hasCwLabel": string;
+        /**
+         * 返信
+         */
+        "hasReplyLabel": string;
+        /**
+         * 投票
+         */
+        "hasPollLabel": string;
+        /**
+         * あり
+         */
+        "optionWith": string;
+        /**
+         * なし
+         */
+        "optionWithout": string;
     };
     "_serverSetupWizard": {
         /**

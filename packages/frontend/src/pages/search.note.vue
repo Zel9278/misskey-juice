@@ -15,9 +15,43 @@ SPDX-License-Identifier: AGPL-3.0-only
 		>
 			<template #prefix><i class="ti ti-search"></i></template>
 		</MkInput>
-		<!-- JUICE: sqlLike/sqlPgroongaいずれも高度な検索構文(OR・除外・フレーズ検索等)には
-			対応しておらず、スペース区切りのキーワードがAND検索されるだけのため、その旨を案内する -->
+		<!-- JUICE: 検索欄自体はスペース区切りキーワードのAND検索のみ対応(構文としての「OR」「-」等は解釈しない)。
+			OR検索・除外ワードは下の「高度な検索オプション」の専用UIで対応する -->
 		<MkInfo>{{ i18n.ts._search.queryHint }}</MkInfo>
+
+		<!-- JUICE: misskey-tempuraからチェリーピック(OR検索・除外ワード・各種フィルタ) -->
+		<MkFolder>
+			<template #icon><i class="ti ti-adjustments"></i></template>
+			<template #label>{{ i18n.ts._search.advancedSearch }}<span class="_juice">JUICE</span></template>
+
+			<div class="_gaps_s">
+				<MkRadios v-model="searchOperator" :options="searchOperatorOptions">
+					<template #label>{{ i18n.ts._search.searchOperatorLabel }}</template>
+				</MkRadios>
+
+				<MkInput v-model="excludeWordsInput">
+					<template #label>{{ i18n.ts._search.excludeWords }}</template>
+					<template #caption>{{ i18n.ts._search.excludeWordsCaption }}</template>
+				</MkInput>
+
+				<MkRadios v-model="visibilitySelect" :options="visibilityOptions">
+					<template #label>{{ i18n.ts.visibility }}</template>
+				</MkRadios>
+				<MkRadios v-model="hasFiles" :options="triStateOptions">
+					<template #label>{{ i18n.ts._search.hasFilesLabel }}</template>
+				</MkRadios>
+				<MkRadios v-model="hasCw" :options="triStateOptions">
+					<template #label>{{ i18n.ts._search.hasCwLabel }}</template>
+				</MkRadios>
+				<MkRadios v-model="hasReply" :options="triStateOptions">
+					<template #label>{{ i18n.ts._search.hasReplyLabel }}</template>
+				</MkRadios>
+				<MkRadios v-model="hasPoll" :options="triStateOptions">
+					<template #label>{{ i18n.ts._search.hasPollLabel }}</template>
+				</MkRadios>
+			</div>
+		</MkFolder>
+
 		<MkFoldableSection expanded>
 			<template #header>{{ i18n.ts.options }}</template>
 
@@ -133,6 +167,7 @@ import { apLookup } from '@/utility/lookup.js';
 import { useRouter } from '@/router.js';
 import MkButton from '@/components/MkButton.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
+import MkFolder from '@/components/MkFolder.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkNotesTimeline from '@/components/MkNotesTimeline.vue';
@@ -140,6 +175,27 @@ import MkRadios from '@/components/MkRadios.vue';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import { Paginator } from '@/utility/paginator.js';
 import type { MkRadiosOption } from '@/components/MkRadios.vue';
+
+// JUICE: misskey-tempuraからチェリーピック(OR検索・除外ワード・各種フィルタ)。
+// searchScopeDefと同じくcomputedで遅延評価し、i18nロード前の評価による文言の固定化を避ける
+const searchOperatorOptions = computed<MkRadiosOption[]>(() => [
+	{ value: 'and', label: i18n.ts._search.searchOperatorAnd },
+	{ value: 'or', label: i18n.ts._search.searchOperatorOr },
+]);
+
+const visibilityOptions = computed<MkRadiosOption[]>(() => [
+	{ value: 'all', label: i18n.ts.all },
+	{ value: 'public', label: i18n.ts._visibility.public },
+	{ value: 'home', label: i18n.ts._visibility.home },
+	{ value: 'followers', label: i18n.ts._visibility.followers },
+	{ value: 'specified', label: i18n.ts._visibility.specified },
+]);
+
+const triStateOptions = computed<MkRadiosOption[]>(() => [
+	{ value: 'all', label: i18n.ts.all },
+	{ value: 'with', label: i18n.ts._search.optionWith },
+	{ value: 'without', label: i18n.ts._search.optionWithout },
+]);
 
 const props = withDefaults(defineProps<{
 	query?: string;
@@ -162,6 +218,15 @@ const searchQuery = ref(toRef(props, 'query').value);
 const hostInput = ref(toRef(props, 'host').value);
 const rangeStartAt = ref<string | null>(null);
 const rangeEndAt = ref<string | null>(null);
+
+// JUICE: misskey-tempuraからチェリーピック(OR検索・除外ワード・各種フィルタ)
+const searchOperator = ref<'and' | 'or'>('and');
+const excludeWordsInput = ref('');
+const visibilitySelect = ref<'all' | 'public' | 'home' | 'followers' | 'specified'>('all');
+const hasFiles = ref<'all' | 'with' | 'without'>('all');
+const hasCw = ref<'all' | 'with' | 'without'>('all');
+const hasReply = ref<'all' | 'with' | 'without'>('all');
+const hasPoll = ref<'all' | 'with' | 'without'>('all');
 
 const user = shallowRef<Misskey.entities.UserDetailed | null>(null);
 
@@ -228,6 +293,17 @@ const fixHostIfLocal = (target: string | null | undefined) => {
 	if (!target || target === localHost) return '.';
 	return target;
 };
+
+// JUICE: misskey-tempuraからチェリーピック(OR検索・除外ワード・各種フィルタ)
+const advancedSearchParams = computed(() => ({
+	visibility: visibilitySelect.value,
+	hasFiles: hasFiles.value,
+	hasCw: hasCw.value,
+	hasReply: hasReply.value,
+	hasPoll: hasPoll.value,
+	searchOperator: searchOperator.value,
+	excludeWords: excludeWordsInput.value.split(',').map(word => word.trim()).filter(word => word !== ''),
+}));
 
 const searchRange = () => {
 	return {
@@ -360,6 +436,7 @@ async function search() {
 		limit: 10,
 		params: {
 			...searchParams.value,
+			...advancedSearchParams.value,
 		},
 	}));
 

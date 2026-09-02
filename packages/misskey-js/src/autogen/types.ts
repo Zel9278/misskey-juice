@@ -33546,7 +33546,8 @@ export interface operations {
         requestBody: {
             content: {
                 'application/json': {
-                    query: string;
+                    /** @default  */
+                    query?: string;
                     rangeStartAt?: number | null;
                     rangeEndAt?: number | null;
                     /** Format: misskey:id */
@@ -33571,6 +33572,38 @@ export interface operations {
                      * @default null
                      */
                     channelId?: string | null;
+                    /**
+                     * @default all
+                     * @enum {string}
+                     */
+                    visibility?: 'all' | 'public' | 'home' | 'followers' | 'specified';
+                    /**
+                     * @default all
+                     * @enum {string}
+                     */
+                    hasFiles?: 'all' | 'with' | 'without';
+                    /**
+                     * @default all
+                     * @enum {string}
+                     */
+                    hasCw?: 'all' | 'with' | 'without';
+                    /**
+                     * @default all
+                     * @enum {string}
+                     */
+                    hasReply?: 'all' | 'with' | 'without';
+                    /**
+                     * @default all
+                     * @enum {string}
+                     */
+                    hasPoll?: 'all' | 'with' | 'without';
+                    /**
+                     * @default and
+                     * @enum {string}
+                     */
+                    searchOperator?: 'and' | 'or';
+                    /** @default [] */
+                    excludeWords?: string[];
                 };
             };
         };

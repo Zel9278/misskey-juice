@@ -537,6 +537,98 @@ describe('SearchService', () => {
 		});
 
 		defineSearchNoteTests(() => ctx, { supportsFollowersVisibility: true, sinceIdOrder: 'asc' });
+
+		// JUICE: misskey-tempuraからチェリーピックした検索拡張(OR検索・除外ワード・各種フィルタ)。
+		// テキストマッチ部分自体は`&@~`ではなく`&@`ベースの安全な方式のままsqlLike/sqlPgroongaで
+		// 共有しているため、sqlLikeプロバイダーでの検証がsqlPgroonga側の分岐ロジックの検証も兼ねる
+		describe('advanced search options (JUICE, cherry-picked from misskey-tempura)', () => {
+			test('searchOperator "or" matches notes containing any of the space-separated keywords', async () => {
+				const me = await createUser(ctx, { username: 'me', usernameLower: 'me', host: null });
+				const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+
+				const fooNote = await createNote(ctx, author, { text: 'foo only' });
+				const barNote = await createNote(ctx, author, { text: 'bar only' });
+				await createNote(ctx, author, { text: 'neither' });
+
+				const result = await ctx.service.searchNote('foo bar', me, { searchOperator: 'or' }, { limit: 10 });
+				expect(result.map(note => note.id).sort()).toEqual([fooNote.id, barNote.id].sort());
+			});
+
+			test('excludeWords filters out notes containing any excluded word', async () => {
+				const me = await createUser(ctx, { username: 'me', usernameLower: 'me', host: null });
+				const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+
+				const keepNote = await createNote(ctx, author, { text: 'hello world' });
+				await createNote(ctx, author, { text: 'hello spam' });
+
+				const result = await ctx.service.searchNote('hello', me, { excludeWords: ['spam'] }, { limit: 10 });
+				expect(result.map(note => note.id)).toEqual([keepNote.id]);
+			});
+
+			test('excludeWords alone (no query text) filters by exclusion only', async () => {
+				const me = await createUser(ctx, { username: 'me', usernameLower: 'me', host: null });
+				const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+
+				const keepNote = await createNote(ctx, author, { text: 'clean note' });
+				await createNote(ctx, author, { text: 'has spam in it' });
+
+				const result = await ctx.service.searchNote('', me, { excludeWords: ['spam'] }, { limit: 10 });
+				expect(result.map(note => note.id)).toEqual([keepNote.id]);
+			});
+
+			test('hasFiles "with"/"without" filters notes by attached files', async () => {
+				const me = await createUser(ctx, { username: 'me', usernameLower: 'me', host: null });
+				const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+
+				const withFile = await createNote(ctx, author, { text: 'hello', fileIds: ['aaaaaaaaaaaaaaaaaaaaaaaaaa'] });
+				const withoutFile = await createNote(ctx, author, { text: 'hello', fileIds: [] });
+
+				const withResult = await ctx.service.searchNote('hello', me, { hasFiles: 'with' }, { limit: 10 });
+				expect(withResult.map(note => note.id)).toEqual([withFile.id]);
+
+				const withoutResult = await ctx.service.searchNote('hello', me, { hasFiles: 'without' }, { limit: 10 });
+				expect(withoutResult.map(note => note.id)).toEqual([withoutFile.id]);
+			});
+
+			test('hasCw "with"/"without" filters notes by content warning', async () => {
+				const me = await createUser(ctx, { username: 'me', usernameLower: 'me', host: null });
+				const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+
+				const withCw = await createNote(ctx, author, { text: 'hello', cw: 'spoiler' });
+				const withoutCw = await createNote(ctx, author, { text: 'hello', cw: null });
+
+				const withResult = await ctx.service.searchNote('hello', me, { hasCw: 'with' }, { limit: 10 });
+				expect(withResult.map(note => note.id)).toEqual([withCw.id]);
+
+				const withoutResult = await ctx.service.searchNote('hello', me, { hasCw: 'without' }, { limit: 10 });
+				expect(withoutResult.map(note => note.id)).toEqual([withoutCw.id]);
+			});
+
+			test('hasPoll "with"/"without" filters notes by poll presence', async () => {
+				const me = await createUser(ctx, { username: 'me', usernameLower: 'me', host: null });
+				const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+
+				const withPoll = await createNote(ctx, author, { text: 'hello', hasPoll: true });
+				const withoutPoll = await createNote(ctx, author, { text: 'hello', hasPoll: false });
+
+				const withResult = await ctx.service.searchNote('hello', me, { hasPoll: 'with' }, { limit: 10 });
+				expect(withResult.map(note => note.id)).toEqual([withPoll.id]);
+
+				const withoutResult = await ctx.service.searchNote('hello', me, { hasPoll: 'without' }, { limit: 10 });
+				expect(withoutResult.map(note => note.id)).toEqual([withoutPoll.id]);
+			});
+
+			test('visibility filters notes by exact visibility value', async () => {
+				const me = await createUser(ctx, { username: 'me', usernameLower: 'me', host: null });
+				const author = await createUser(ctx, { username: 'author', usernameLower: 'author', host: null });
+
+				const publicNote = await createNote(ctx, author, { text: 'hello', visibility: 'public' });
+				await createNote(ctx, author, { text: 'hello', visibility: 'home' });
+
+				const result = await ctx.service.searchNote('hello', me, { visibility: 'public' }, { limit: 10 });
+				expect(result.map(note => note.id)).toEqual([publicNote.id]);
+			});
+		});
 	});
 
 	describe('meilisearch', () => {
@@ -633,5 +725,21 @@ describe('buildPgroongaKeywordClauses', () => {
 	test('returns an empty array for an empty or whitespace-only query', () => {
 		expect(buildPgroongaKeywordClauses('')).toEqual([]);
 		expect(buildPgroongaKeywordClauses('   ')).toEqual([]);
+	});
+
+	test('uses a custom parameter prefix so main-query and exclude-word clauses never collide (regression)', () => {
+		// 本文検索節と除外ワード節を同じデフォルトプレフィックスで呼ぶと、TypeORMの
+		// バインドパラメータ名が衝突して片方の値がもう片方を上書きしてしまっていた
+		// (実際にpgroonga環境で踏んだ不具合)。呼び出し側が別プレフィックスを渡せることを確認する
+		const mainClauses = buildPgroongaKeywordClauses('applesauce');
+		const excludeClauses = buildPgroongaKeywordClauses('xyz-notpresent', 'pgroongaExcludeKeyword');
+		expect(mainClauses).toEqual([
+			{ sql: 'note.text &@ :pgroongaKeyword0', param: { pgroongaKeyword0: 'applesauce' } },
+		]);
+		expect(excludeClauses).toEqual([
+			{ sql: 'note.text &@ :pgroongaExcludeKeyword0', param: { pgroongaExcludeKeyword0: 'xyz-notpresent' } },
+		]);
+		const allParamNames = [...mainClauses, ...excludeClauses].map(c => Object.keys(c.param)[0]);
+		expect(new Set(allParamNames).size).toBe(allParamNames.length);
 	});
 });
