@@ -377,6 +377,18 @@ export const ROUTE_DEF = [{
 	name: 'avatarDecorations',
 	component: page(() => import('@/pages/avatar-decorations.vue')),
 }, {
+	// JUICE: /admin配下(iAmModeratorガード)の同名ページと同一コンポーネントを、
+	// モデレーターでなくてもロールポリシー(canApproveEmojiRequests等)経由で到達できるよう
+	// トップレベルにも登録する(custom-emojis-managerと同じ方式)
+	path: '/emoji-requests-manager',
+	component: page(() => import('@/pages/admin/emoji-requests.vue')),
+}, {
+	path: '/avatar-decoration-requests-manager',
+	component: page(() => import('@/pages/admin/avatar-decoration-requests.vue')),
+}, {
+	path: '/signup-approvals-manager',
+	component: page(() => import('@/pages/admin/juice-approvals.vue')),
+}, {
 	path: '/registry/keys/:domain/:path(*)?',
 	component: page(() => import('@/pages/registry.keys.vue')),
 }, {

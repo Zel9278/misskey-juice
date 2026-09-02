@@ -48,6 +48,39 @@ function toolsMenuItems(): MenuItem[] {
 		});
 	}
 
+	// JUICE: モデレーター/管理者、またはロールポリシーで個別に承認権限を持つユーザー向けに、
+	// コントロールパネル(/admin、iAmModeratorのみでガード)を経由しなくても各承認画面へ
+	// 到達できるようにする(custom-emojis-manager/avatar-decorationsと同じ方式)
+	if ($i && ($i.isModerator || $i.isAdmin || $i.policies.canApproveEmojiRequests)) {
+		items.push({
+			type: 'link',
+			to: '/emoji-requests-manager',
+			text: i18n.ts._emojiRequestApprovals.title,
+			icon: 'ti ti-mood-plus',
+			badge: true,
+		});
+	}
+
+	if ($i && ($i.isModerator || $i.isAdmin || $i.policies.canApproveAvatarDecorationRequests)) {
+		items.push({
+			type: 'link',
+			to: '/avatar-decoration-requests-manager',
+			text: i18n.ts._avatarDecorationRequestApprovals.title,
+			icon: 'ti ti-sparkles',
+			badge: true,
+		});
+	}
+
+	if ($i && ($i.isModerator || $i.isAdmin || $i.policies.canApproveSignups)) {
+		items.push({
+			type: 'link',
+			to: '/signup-approvals-manager',
+			text: i18n.ts._juiceApprovals.title,
+			icon: 'ti ti-user-question',
+			badge: true,
+		});
+	}
+
 	return items;
 }
 
