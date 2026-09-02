@@ -13,6 +13,16 @@ import { resolveRankingSettings } from '@/models/JuiceSettings.js';
 
 const JUICE_RANKING_EPOCH = new Date('2026-01-01T00:00:00Z').getTime();
 
+/**
+ * JUICEユーザーランキング(投稿数・リアクション数)はインスタンス単位の集計を意図しているため、
+ * ローカルユーザーの活動のみを対象とする。ホスト判定を漏らすと、ActivityPub経由で受信した
+ * リモートユーザーの投稿・リアクションまで加点されてしまい、実質フェディバース全体のランキングに
+ * なってしまう(実際に起きていた不具合)。
+ */
+export function isLocalForJuiceRanking(host: MiUser['host']): boolean {
+	return host == null;
+}
+
 export type JuiceUserRankingEntry = {
 	userId: MiUser['id'];
 	score: number;

@@ -26,7 +26,7 @@ import { UserBlockingService } from '@/core/UserBlockingService.js';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { FeaturedService } from '@/core/FeaturedService.js';
-import { JuiceUserRankingService } from '@/core/JuiceUserRankingService.js';
+import { JuiceUserRankingService, isLocalForJuiceRanking } from '@/core/JuiceUserRankingService.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
 import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
@@ -234,7 +234,10 @@ export class ReactionService {
 		}
 
 		// JUICE: ユーザーランキング(リアクション数)。もらった側(投稿者)に加点。
-		this.juiceUserRankingService.incrementReactionCount(note.userId);
+		// ローカルユーザーが受け取ったリアクションのみ対象(リアクションした側の所属は問わない)
+		if (isLocalForJuiceRanking(note.userHost)) {
+			this.juiceUserRankingService.incrementReactionCount(note.userId);
+		}
 
 		// カスタム絵文字リアクションだったら絵文字情報も送る
 		const decodedReaction = this.decodeReaction(reaction);
