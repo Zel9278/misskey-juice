@@ -446,8 +446,11 @@ export class ClientServerService {
 			reply.header('Cache-Control', 'public, max-age=30');
 			return await HtmlTemplateService.replyHtml(reply, BasePage({
 				img: this.meta.bannerUrl ?? undefined,
-				title: this.meta.name ?? 'Misskey',
-				desc: this.meta.description ?? undefined,
+				// JUICE: <title>・og:title・og:description・opensearchのtitle属性等
+				// プレーンテキスト表示箇所(埋め込みURLプレビューカードの元にもなる)へ渡るため、
+				// HTMLタグを除去しておく(info-card.tsxのようにHTML表示を意図した場所は対象外)
+				title: stripHtmlTags(this.meta.name ?? 'Misskey'),
+				desc: this.meta.description != null ? stripHtmlTags(this.meta.description) : undefined,
 				...(await this.htmlTemplateService.getCommonData()),
 				...data,
 			}));
@@ -813,7 +816,8 @@ export class ClientServerService {
 
 			reply.header('Cache-Control', 'public, max-age=3600');
 			return await HtmlTemplateService.replyHtml(reply, BaseEmbed({
-				title: this.meta.name ?? 'Misskey',
+				// JUICE: embedページの<title>等プレーンテキスト表示箇所へ渡るため、HTMLタグを除去しておく
+				title: stripHtmlTags(this.meta.name ?? 'Misskey'),
 				...(await this.htmlTemplateService.getCommonData()),
 				embedCtxJson: htmlSafeJsonStringify({
 					user: _user,
@@ -843,7 +847,8 @@ export class ClientServerService {
 
 			reply.header('Cache-Control', 'public, max-age=3600');
 			return await HtmlTemplateService.replyHtml(reply, BaseEmbed({
-				title: this.meta.name ?? 'Misskey',
+				// JUICE: embedページの<title>等プレーンテキスト表示箇所へ渡るため、HTMLタグを除去しておく
+				title: stripHtmlTags(this.meta.name ?? 'Misskey'),
 				...(await this.htmlTemplateService.getCommonData()),
 				embedCtxJson: htmlSafeJsonStringify({
 					note: _note,
@@ -864,7 +869,8 @@ export class ClientServerService {
 
 			reply.header('Cache-Control', 'public, max-age=3600');
 			return await HtmlTemplateService.replyHtml(reply, BaseEmbed({
-				title: this.meta.name ?? 'Misskey',
+				// JUICE: embedページの<title>等プレーンテキスト表示箇所へ渡るため、HTMLタグを除去しておく
+				title: stripHtmlTags(this.meta.name ?? 'Misskey'),
 				...(await this.htmlTemplateService.getCommonData()),
 				embedCtxJson: htmlSafeJsonStringify({
 					clip: _clip,
@@ -877,7 +883,8 @@ export class ClientServerService {
 
 			reply.header('Cache-Control', 'public, max-age=3600');
 			return await HtmlTemplateService.replyHtml(reply, BaseEmbed({
-				title: this.meta.name ?? 'Misskey',
+				// JUICE: embedページの<title>等プレーンテキスト表示箇所へ渡るため、HTMLタグを除去しておく
+				title: stripHtmlTags(this.meta.name ?? 'Misskey'),
 				...(await this.htmlTemplateService.getCommonData()),
 			}));
 		});

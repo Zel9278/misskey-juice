@@ -10,6 +10,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { htmlSafeJsonStringify } from '@/misc/json-stringify-html-safe.js';
+import { stripHtmlTags } from '@/misc/strip-html-tags.js';
 import { MetaEntityService } from '@/core/entities/MetaEntityService.js';
 import type { FastifyReply } from 'fastify';
 import type { Manifest } from 'vite';
@@ -157,7 +158,8 @@ export class HtmlTemplateService {
 			version: this.config.version,
 			config: this.config,
 			langs: [...languages],
-			instanceName: this.meta.name ?? 'Misskey',
+			// JUICE: og:site_name等プレーンテキスト表示箇所へ渡るため、HTMLタグを除去しておく
+			instanceName: stripHtmlTags(this.meta.name ?? 'Misskey'),
 			icon: this.meta.iconUrl,
 			appleTouchIcon: this.meta.app512IconUrl,
 			themeColor: this.meta.themeColor,
