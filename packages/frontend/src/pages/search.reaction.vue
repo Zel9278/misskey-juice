@@ -174,7 +174,9 @@ import { $i } from '@/i.js';
 import { i18n } from '@/i18n.js';
 import { instance } from '@/instance.js';
 import * as os from '@/os.js';
+import { apLookup } from '@/utility/lookup.js';
 import { reactionPicker } from '@/utility/reaction-picker.js';
+import { useRouter } from '@/router.js';
 import MkButton from '@/components/MkButton.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
 import MkFolder from '@/components/MkFolder.vue';
@@ -206,6 +208,8 @@ const triStateOptions = computed<MkRadiosOption[]>(() => [
 	{ value: 'with', label: i18n.ts._search.optionWith },
 	{ value: 'without', label: i18n.ts._search.optionWithout },
 ]);
+
+const router = useRouter();
 
 const key = ref(0);
 const paginator = shallowRef<Paginator<'notes/search'> | null>(null);
@@ -313,8 +317,67 @@ function removeUser() {
 	user.value = null;
 }
 
-function search() {
+async function search() {
 	if (!canSearch.value) return;
+
+	const trimmedQuery = searchQuery.value.trim();
+
+	//#region AP lookup
+	if (trimmedQuery.startsWith('https://') && !trimmedQuery.includes(' ')) {
+		const confirm = await os.confirm({
+			type: 'info',
+			text: i18n.ts.lookupConfirm,
+		});
+		if (!confirm.canceled) {
+			const res = await apLookup(trimmedQuery);
+
+			if (res.type === 'User') {
+				router.push('/@:acct/:page?', {
+					params: {
+						acct: `${res.object.username}@${res.object.host}`,
+					},
+				});
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			} else if (res.type === 'Note') {
+				router.push('/notes/:noteId/:initialTab?', {
+					params: {
+						noteId: res.object.id,
+					},
+				});
+			}
+
+			return;
+		}
+	}
+	//#endregion
+
+	if (trimmedQuery.length > 1 && !trimmedQuery.includes(' ')) {
+		if (trimmedQuery.startsWith('@')) {
+			const confirm = await os.confirm({
+				type: 'info',
+				text: i18n.ts.lookupConfirm,
+			});
+			if (!confirm.canceled) {
+				router.pushByPath(`/${trimmedQuery}`);
+				return;
+			}
+		}
+
+		if (trimmedQuery.startsWith('#')) {
+			const confirm = await os.confirm({
+				type: 'info',
+				text: i18n.ts.openTagPageConfirm,
+			});
+			if (!confirm.canceled) {
+				router.push('/tags/:tag', {
+					params: {
+						tag: trimmedQuery.substring(1),
+					},
+				});
+				return;
+			}
+		}
+	}
 
 	let scopeParams: { host?: string; userId?: string } = {};
 	if (searchScope.value === 'user' && user.value != null) {
@@ -336,7 +399,7 @@ function search() {
 	paginator.value = markRaw(new Paginator('notes/search', {
 		limit: 10,
 		params: {
-			query: searchQuery.value.trim(),
+			query: trimmedQuery,
 			myReaction: myReactionMode.value === 'any' ? 'any' : myReactionValue.value,
 			...scopeParams,
 			...searchRange(),
