@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, test } from 'vitest';
-import { exceedsMaxNestDepth, FORMULA_MAX_LENGTH, isFormulaTooComplex } from '@/utility/formula-safety.js';
+import { exceedsMaxNestDepth, FORMULA_MAX_LENGTH, FORMULA_MAX_NEST_DEPTH, isFormulaTooComplex } from '@/utility/formula-safety.js';
 
 describe('exceedsMaxNestDepth', () => {
 	test('returns false for a formula with no braces', () => {
@@ -41,6 +41,17 @@ describe('isFormulaTooComplex', () => {
 	test('blocks a formula that is too long even without deep nesting', () => {
 		expect(isFormulaTooComplex('x'.repeat(FORMULA_MAX_LENGTH))).toBe(false);
 		expect(isFormulaTooComplex('x'.repeat(FORMULA_MAX_LENGTH + 1))).toBe(true);
+	});
+
+	// JUICE: 既定の深度上限(FORMULA_MAX_NEST_DEPTH)ちょうどの境界を固定する
+	test('allows nesting exactly at the default depth limit', () => {
+		const formula = '{'.repeat(FORMULA_MAX_NEST_DEPTH) + 'x' + '}'.repeat(FORMULA_MAX_NEST_DEPTH);
+		expect(isFormulaTooComplex(formula)).toBe(false);
+	});
+
+	test('blocks nesting one level beyond the default depth limit', () => {
+		const formula = '{'.repeat(FORMULA_MAX_NEST_DEPTH + 1) + 'x' + '}'.repeat(FORMULA_MAX_NEST_DEPTH + 1);
+		expect(isFormulaTooComplex(formula)).toBe(true);
 	});
 
 	// JUICE: 実際に報告された再現パターン(継続分数・入れ子のsum上下添字)がブロックされることを確認する

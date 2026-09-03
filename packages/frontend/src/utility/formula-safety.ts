@@ -10,7 +10,7 @@
 // KaTeX自体にネスト深度を制限するオプションは無いため、レンダリングを試みる前に独自にチェックする
 
 export const FORMULA_MAX_LENGTH = 1000;
-export const FORMULA_MAX_NEST_DEPTH = 32;
+export const FORMULA_MAX_NEST_DEPTH = 3;
 
 export function exceedsMaxNestDepth(formula: string, maxDepth: number): boolean {
 	let depth = 0;
