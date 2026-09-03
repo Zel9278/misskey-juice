@@ -2309,8 +2309,8 @@ _email:
     text: "アカウントの登録が承認されました。サインインできるようになりました。"
   signupDeclined:
     subject: "登録が却下されました"
-    html: "アカウントの登録申請は却下されました。"
-    text: "アカウントの登録申請は却下されました。"
+    html: "アカウントの登録申請は却下されました。理由: {reason}"
+    text: "アカウントの登録申請は却下されました。理由: {reason}"
   emojiRequestApproved:
     subject: "絵文字申請が承認されました"
     html: "申請した絵文字「{name}」が承認され、カスタム絵文字として登録されました。"
@@ -3244,6 +3244,7 @@ _moderationLogTypes:
   rejectEmojiRequest: "絵文字申請を却下"
   approveAvatarDecorationRequest: "アバターデコレーション申請を承認"
   rejectAvatarDecorationRequest: "アバターデコレーション申請を却下"
+  cleanupOrphanedObjectStorageFiles: "孤立したオブジェクトストレージファイルの整理"
   updateUserNote: "ユーザーのモデレーションノート更新"
   deleteDriveFile: "ファイルを削除"
   deleteNote: "ノートを削除"
@@ -3860,7 +3861,8 @@ _juiceApprovals:
   approve: "承認"
   decline: "却下"
   approveConfirm: "@{username} の登録を承認しますか？"
-  declineConfirm: "@{username} の登録を却下しますか？アカウントは削除されます。この操作は取り消せません。"
+  declineReasonTitle: "却下理由を入力してください"
+  declineWarning: "@{username} のアカウントは削除されます。この操作は取り消せません。"
 
 _emojiRequestPage:
   newRequest: "申請フォーム"

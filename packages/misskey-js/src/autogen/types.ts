@@ -10380,6 +10380,7 @@ export interface operations {
                 'application/json': {
                     /** Format: misskey:id */
                     userId: string;
+                    reason: string;
                 };
             };
         };
@@ -31224,6 +31225,7 @@ export interface operations {
                     'application/json': {
                         /** @enum {string} */
                         status: 'pending' | 'approved' | 'declined' | 'notFound';
+                        reason: string | null;
                     };
                 };
             };

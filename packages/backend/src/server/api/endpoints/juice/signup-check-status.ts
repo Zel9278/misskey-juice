@@ -41,6 +41,11 @@ export const meta = {
 				optional: false, nullable: false,
 				enum: ['pending', 'approved', 'declined', 'notFound'],
 			},
+			// JUICE: 却下時の理由。却下されていない場合や、まだ理由が記録されていない古いレコードではnull
+			reason: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 		},
 	},
 } as const;
@@ -90,6 +95,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			return {
 				status: check?.status ?? 'notFound',
+				reason: check?.reason ?? null,
 			};
 		});
 	}

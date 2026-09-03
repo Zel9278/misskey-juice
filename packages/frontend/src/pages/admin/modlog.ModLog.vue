@@ -18,6 +18,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'createAvatarDecoration',
 					'createSystemWebhook',
 					'createAbuseReportNotificationRecipient',
+					// JUICE
+					'approveSignup',
+					'approveEmojiRequest',
+					'approveAvatarDecorationRequest',
 				].includes(log.type),
 				[$style.logYellow]: [
 					'markSensitiveDriveFile',
@@ -42,6 +46,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'deleteFlash',
 					'deleteGalleryPost',
 					'deleteChatRoom',
+					// JUICE
+					'declineSignup',
+					'rejectEmojiRequest',
+					'rejectAvatarDecorationRequest',
 				].includes(log.type)
 			}"
 		>{{ i18n.ts._moderationLogTypes[log.type] }}</b>
@@ -84,6 +92,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="log.type === 'deleteFlash'">: @{{ log.info.flashUserUsername }}</span>
 		<span v-else-if="log.type === 'deleteGalleryPost'">: @{{ log.info.postUserUsername }}</span>
 		<span v-else-if="log.type === 'deleteChatRoom'">: @{{ log.info.room.name }}</span>
+		<!-- JUICE -->
+		<span v-else-if="log.type === 'approveSignup'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
+		<span v-else-if="log.type === 'declineSignup'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
+		<span v-else-if="log.type === 'approveEmojiRequest'">: {{ log.info.emojiName }}</span>
+		<span v-else-if="log.type === 'rejectEmojiRequest'">: {{ log.info.requestedName }}</span>
+		<span v-else-if="log.type === 'approveAvatarDecorationRequest'">: {{ log.info.avatarDecorationName }}</span>
+		<span v-else-if="log.type === 'rejectAvatarDecorationRequest'">: {{ log.info.requestedName }}</span>
 	</template>
 	<template #icon>
 		<i v-if="log.type === 'updateServerSettings'" class="ti ti-settings"></i>
@@ -129,6 +144,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="log.type === 'deleteFlash'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'deleteGalleryPost'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'deleteChatRoom'" class="ti ti-trash"></i>
+		<!-- JUICE -->
+		<i v-else-if="log.type === 'approveSignup'" class="ti ti-user-check"></i>
+		<i v-else-if="log.type === 'declineSignup'" class="ti ti-user-x"></i>
+		<i v-else-if="log.type === 'approveEmojiRequest'" class="ti ti-check"></i>
+		<i v-else-if="log.type === 'rejectEmojiRequest'" class="ti ti-x"></i>
+		<i v-else-if="log.type === 'approveAvatarDecorationRequest'" class="ti ti-check"></i>
+		<i v-else-if="log.type === 'rejectAvatarDecorationRequest'" class="ti ti-x"></i>
 	</template>
 	<template #suffix>
 		<MkTime :time="log.createdAt"/>
@@ -220,6 +242,29 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div :class="$style.diff">
 				<CodeDiff :context="5" :hideHeader="true" :oldString="log.info.before ?? ''" :newString="log.info.after ?? ''" maxHeight="300px"/>
 			</div>
+		</template>
+		<!-- JUICE -->
+		<template v-else-if="log.type === 'approveSignup'">
+			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>
+		</template>
+		<template v-else-if="log.type === 'declineSignup'">
+			<!-- 却下されたアカウントは物理削除されるため、リンクは張らない -->
+			<div>{{ i18n.ts.user }}: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</div>
+			<div class="_selectable">{{ i18n.ts._emojiRequestPage.rejectReason }}: {{ log.info.reason }}</div>
+		</template>
+		<template v-else-if="log.type === 'approveEmojiRequest'">
+			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.requesterId}`" class="_link">@{{ log.info.requesterUsername }}{{ log.info.requesterHost ? '@' + log.info.requesterHost : '' }}</MkA></div>
+		</template>
+		<template v-else-if="log.type === 'rejectEmojiRequest'">
+			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.requesterId}`" class="_link">@{{ log.info.requesterUsername }}{{ log.info.requesterHost ? '@' + log.info.requesterHost : '' }}</MkA></div>
+			<div class="_selectable">{{ i18n.ts._emojiRequestPage.rejectReason }}: {{ log.info.reason }}</div>
+		</template>
+		<template v-else-if="log.type === 'approveAvatarDecorationRequest'">
+			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.requesterId}`" class="_link">@{{ log.info.requesterUsername }}{{ log.info.requesterHost ? '@' + log.info.requesterHost : '' }}</MkA></div>
+		</template>
+		<template v-else-if="log.type === 'rejectAvatarDecorationRequest'">
+			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.requesterId}`" class="_link">@{{ log.info.requesterUsername }}{{ log.info.requesterHost ? '@' + log.info.requesterHost : '' }}</MkA></div>
+			<div class="_selectable">{{ i18n.ts._emojiRequestPage.rejectReason }}: {{ log.info.reason }}</div>
 		</template>
 
 		<details>

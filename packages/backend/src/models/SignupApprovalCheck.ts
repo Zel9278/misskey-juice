@@ -45,4 +45,10 @@ export class MiSignupApprovalCheck {
 		comment: 'The approval status of this signup application (JUICE): pending, approved, or declined.',
 	})
 	public status: typeof signupApprovalCheckStatuses[number];
+
+	@Column('text', {
+		nullable: true,
+		comment: 'The reason for declining this signup application, if declined (JUICE).',
+	})
+	public reason: string | null;
 }

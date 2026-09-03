@@ -52,14 +52,16 @@ async function approve() {
 }
 
 async function decline() {
-	const confirm = await os.confirm({
-		type: 'warning',
-		text: i18n.tsx._juiceApprovals.declineConfirm({ username: props.signup.username }),
+	// JUICE: 却下するとアカウントが削除される(取り消せない)ため、理由入力と一緒に警告文も表示する
+	const { canceled, result: reason } = await os.inputText({
+		title: i18n.ts._juiceApprovals.declineReasonTitle,
+		text: i18n.tsx._juiceApprovals.declineWarning({ username: props.signup.username }),
 	});
-	if (confirm.canceled) return;
+	if (canceled || !reason) return;
 
 	os.apiWithDialog('admin/juice/decline-signup', {
 		userId: props.signup.id,
+		reason,
 	}).then(() => {
 		emit('resolved', props.signup.id);
 	});

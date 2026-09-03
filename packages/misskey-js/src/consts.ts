@@ -558,5 +558,56 @@ export type ModerationLogPayloads = {
 	updateProxyAccountDescription: {
 		before: string | null;
 		after: string | null;
-	}
+	};
+	// JUICE
+	approveSignup: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+	};
+	declineSignup: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+		reason: string;
+	};
+	approveEmojiRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		emojiId: string;
+		emojiName: string;
+	};
+	rejectEmojiRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		requestedName: string;
+		reason: string;
+	};
+	approveAvatarDecorationRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		avatarDecorationId: string;
+		avatarDecorationName: string;
+	};
+	rejectAvatarDecorationRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		requestedName: string;
+		reason: string;
+	};
+	cleanupOrphanedObjectStorageFiles: {
+		dryRun: boolean;
+		scanned: number;
+		deletedCount: number;
+		deletedKeys: string[];
+		failedKeys: string[];
+	};
 };

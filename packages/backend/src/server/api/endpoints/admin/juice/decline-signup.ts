@@ -40,8 +40,10 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		userId: { type: 'string', format: 'misskey:id' },
+		// JUICE
+		reason: { type: 'string', maxLength: 1024 },
 	},
-	required: ['userId'],
+	required: ['userId', 'reason'],
 } as const;
 
 @Injectable()
@@ -77,21 +79,23 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				const lang = await this.emailI18nService.resolveLang(profile.emailLang);
 				const i18n = this.emailI18nService.getI18n(lang);
 				this.emailService.sendEmail(profile.email, i18n.t('_email.signupDeclined.subject'),
-					i18n.t('_email.signupDeclined.html'),
-					i18n.t('_email.signupDeclined.text'));
+					i18n.t('_email.signupDeclined.html', { reason: ps.reason }),
+					i18n.t('_email.signupDeclined.text', { reason: ps.reason }));
 			}
 
 			this.moderationLogService.log(me, 'declineSignup', {
 				userId: user.id,
 				userUsername: user.username,
 				userHost: user.host,
+				reason: ps.reason,
 			});
 
 			// ユーザー行を削除する前に引換コードの状態を更新しておく(JUICE)。
 			// FKはON DELETE SET NULLなので、削除後もこのレコード自体は残り、
-			// メールアドレスを持たない申請者でもコードから却下されたことを確認できる。
+			// メールアドレスを持たない申請者でもコードから却下された理由を確認できる。
 			await this.signupApprovalChecksRepository.update({ userId: user.id }, {
 				status: 'declined',
+				reason: ps.reason,
 			});
 
 			// 承認前(approved: false)のアカウントは、サインインもAPI利用も全面的にブロックされているため

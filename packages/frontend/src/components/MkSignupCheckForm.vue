@@ -20,7 +20,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					{{ i18n.ts._signupCheck.statusApproved }}
 					<MkButton style="margin-top: 8px;" @click="openSignin()">{{ i18n.ts._signupCheck.goToSignin }}</MkButton>
 				</MkInfo>
-				<MkInfo v-else-if="entry.status === 'declined'" warn>{{ i18n.ts._signupCheck.statusDeclined }}</MkInfo>
+				<MkInfo v-else-if="entry.status === 'declined'" warn>
+					{{ i18n.ts._signupCheck.statusDeclined }}
+					<div v-if="entry.reason" class="_selectable" style="margin-top: 4px;">{{ i18n.ts._emojiRequestPage.rejectReason }}: {{ entry.reason }}</div>
+				</MkInfo>
 				<MkInfo v-else-if="entry.status === 'notFound'" warn>{{ i18n.ts._signupCheck.statusNotFound }}</MkInfo>
 				<MkInfo v-else-if="entry.status === 'error'" warn>{{ i18n.ts.somethingHappened }}</MkInfo>
 			</template>
@@ -66,6 +69,7 @@ type Status = 'pending' | 'approved' | 'declined' | 'notFound' | 'error';
 type Entry = {
 	code: string;
 	status: Status | null;
+	reason: string | null;
 	checking: boolean;
 };
 
@@ -105,7 +109,7 @@ function resetCaptchas() {
 // リスト内の全エントリを一括で再確認する際に、通信エラーのたびにos.alertが積み上がるのを避けるため、
 // ここでは例外を投げずに'error'ステータスとして返し、呼び出し側でインライン表示させる(JUICE)。
 // captchaはisNewSubmission(新規コード追加時)のみ送る(JUICE)。
-async function checkStatus(code: string, isNewSubmission = false): Promise<Status> {
+async function checkStatus(code: string, isNewSubmission = false): Promise<{ status: Status; reason: string | null; }> {
 	try {
 		const res = await misskeyApi('juice/signup-check-status', {
 			code,
@@ -116,9 +120,9 @@ async function checkStatus(code: string, isNewSubmission = false): Promise<Statu
 			'turnstile-response': isNewSubmission ? turnstileResponse.value : undefined,
 			'testcaptcha-response': isNewSubmission ? testcaptchaResponse.value : undefined,
 		});
-		return res.status;
+		return { status: res.status, reason: res.reason };
 	} catch {
-		return 'error';
+		return { status: 'error', reason: null };
 	}
 }
 
@@ -134,7 +138,9 @@ function openSignin() {
 
 async function refreshEntry(entry: Entry) {
 	entry.checking = true;
-	entry.status = await checkStatus(entry.code);
+	const { status, reason } = await checkStatus(entry.code);
+	entry.status = status;
+	entry.reason = reason;
 	entry.checking = false;
 }
 
@@ -148,7 +154,7 @@ async function addAndCheck() {
 	const code = newCode.value;
 	adding.value = true;
 
-	const status = await checkStatus(code, true);
+	const { status, reason } = await checkStatus(code, true);
 
 	if (status === 'error') {
 		os.alert({
@@ -166,8 +172,9 @@ async function addAndCheck() {
 		const existing = entries.value.find(e => e.code === code);
 		if (existing) {
 			existing.status = status;
+			existing.reason = reason;
 		} else {
-			entries.value.unshift({ code, status, checking: false });
+			entries.value.unshift({ code, status, reason, checking: false });
 		}
 		newCode.value = '';
 	}
@@ -178,7 +185,7 @@ async function addAndCheck() {
 }
 
 onMounted(() => {
-	entries.value = getSignupApprovalCheckCodes().map(code => ({ code, status: null, checking: false }));
+	entries.value = getSignupApprovalCheckCodes().map(code => ({ code, status: null, reason: null, checking: false }));
 	for (const entry of entries.value) {
 		refreshEntry(entry);
 	}

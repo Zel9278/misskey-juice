@@ -2246,7 +2246,7 @@ describe('Endpoints', () => {
 			assert.strictEqual(approveRes.status, 403);
 			assert.strictEqual(castAsError(approveRes.body as any).error.code, 'ROLE_PERMISSION_DENIED');
 
-			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, bob);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id, reason: 'test decline reason' }, bob);
 			assert.strictEqual(declineRes.status, 403);
 			assert.strictEqual(castAsError(declineRes.body as any).error.code, 'ROLE_PERMISSION_DENIED');
 		});
@@ -2312,7 +2312,7 @@ describe('Endpoints', () => {
 			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
 			assert.ok(target);
 
-			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id, reason: 'test decline reason' }, alice);
 			assert.strictEqual(declineRes.status, 204);
 
 			// 却下は承認前アカウントの物理削除(user行が即座に消える)なので、
@@ -2330,7 +2330,7 @@ describe('Endpoints', () => {
 			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
 			assert.ok(target);
 
-			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id, reason: 'test decline reason' }, alice);
 			assert.strictEqual(declineRes.status, 204);
 
 			// 却下された時点で一度も承認されていないため、通常のアカウント削除と異なり
@@ -2349,7 +2349,7 @@ describe('Endpoints', () => {
 
 			const res = await api('juice/signup-check-status', { code: checkCode });
 			assert.strictEqual(res.status, 200);
-			assert.deepStrictEqual(res.body, { status: 'pending' });
+			assert.deepStrictEqual(res.body, { status: 'pending', reason: null });
 		});
 
 		test('signup-check-status: 承認するとapprovedになる', async () => {
@@ -2366,10 +2366,10 @@ describe('Endpoints', () => {
 
 			const res = await api('juice/signup-check-status', { code: checkCode });
 			assert.strictEqual(res.status, 200);
-			assert.deepStrictEqual(res.body, { status: 'approved' });
+			assert.deepStrictEqual(res.body, { status: 'approved', reason: null });
 		});
 
-		test('signup-check-status: 却下してユーザーが削除された後もdeclinedを確認できる', async () => {
+		test('signup-check-status: 却下してユーザーが削除された後もdeclinedと理由を確認できる', async () => {
 			const username = randomString();
 			const signupRes = await api('signup', { username, password: 'test', reason: 'test' });
 			assert.strictEqual(signupRes.status, 200);
@@ -2378,18 +2378,18 @@ describe('Endpoints', () => {
 			const list = await api('admin/juice/pending-signups', {}, alice);
 			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
 			assert.ok(target);
-			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id, reason: 'test decline reason' }, alice);
 			assert.strictEqual(declineRes.status, 204);
 
 			const res = await api('juice/signup-check-status', { code: checkCode });
 			assert.strictEqual(res.status, 200);
-			assert.deepStrictEqual(res.body, { status: 'declined' });
+			assert.deepStrictEqual(res.body, { status: 'declined', reason: 'test decline reason' });
 		});
 
 		test('signup-check-status: 存在しないコードはnotFoundを返す', async () => {
 			const res = await api('juice/signup-check-status', { code: 'no-such-code' });
 			assert.strictEqual(res.status, 200);
-			assert.deepStrictEqual(res.body, { status: 'notFound' });
+			assert.deepStrictEqual(res.body, { status: 'notFound', reason: null });
 		});
 
 		test('juice/public-settings は無認証で現在の設定を反映する', async () => {
@@ -2413,7 +2413,7 @@ describe('Endpoints', () => {
 		});
 
 		test('存在しないユーザーは却下できない', async () => {
-			const res = await api('admin/juice/decline-signup', { userId: '000000000000000000000000' }, alice);
+			const res = await api('admin/juice/decline-signup', { userId: '000000000000000000000000', reason: 'test decline reason' }, alice);
 			assert.strictEqual(res.status, 404);
 			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_USER');
 		});
@@ -2447,7 +2447,7 @@ describe('Endpoints', () => {
 			const approveRes = await api('admin/juice/approve-signup', { userId: target.id }, alice);
 			assert.strictEqual(approveRes.status, 204);
 
-			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id, reason: 'test decline reason' }, alice);
 			assert.strictEqual(declineRes.status, 400);
 			assert.strictEqual(castAsError(declineRes.body as any).error.code, 'ALREADY_APPROVED');
 		});

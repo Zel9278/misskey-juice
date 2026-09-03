@@ -8828,13 +8828,13 @@ export interface Locale extends ILocale {
              */
             "subject": string;
             /**
-             * アカウントの登録申請は却下されました。
+             * アカウントの登録申請は却下されました。理由: {reason}
              */
-            "html": string;
+            "html": ParameterizedString<"reason">;
             /**
-             * アカウントの登録申請は却下されました。
+             * アカウントの登録申請は却下されました。理由: {reason}
              */
-            "text": string;
+            "text": ParameterizedString<"reason">;
         };
         "emojiRequestApproved": {
             /**
@@ -12210,6 +12210,10 @@ export interface Locale extends ILocale {
          */
         "rejectAvatarDecorationRequest": string;
         /**
+         * 孤立したオブジェクトストレージファイルの整理
+         */
+        "cleanupOrphanedObjectStorageFiles": string;
+        /**
          * ユーザーのモデレーションノート更新
          */
         "updateUserNote": string;
@@ -14411,9 +14415,13 @@ export interface Locale extends ILocale {
          */
         "approveConfirm": ParameterizedString<"username">;
         /**
-         * @{username} の登録を却下しますか？アカウントは削除されます。この操作は取り消せません。
+         * 却下理由を入力してください
          */
-        "declineConfirm": ParameterizedString<"username">;
+        "declineReasonTitle": string;
+        /**
+         * @{username} のアカウントは削除されます。この操作は取り消せません。
+         */
+        "declineWarning": ParameterizedString<"username">;
     };
     "_emojiRequestPage": {
         /**
