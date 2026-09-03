@@ -5587,6 +5587,7 @@ export type components = {
         };
         EmojiRequestEntryDetailedAdmin: components['schemas']['EmojiRequestEntry'] & {
             user: components['schemas']['UserLite'];
+            reviewer: components['schemas']['UserLite'] | null;
         };
         AvatarDecorationRequestEntry: {
             /** Format: id */
@@ -5609,6 +5610,7 @@ export type components = {
         };
         AvatarDecorationRequestEntryDetailedAdmin: components['schemas']['AvatarDecorationRequestEntry'] & {
             user: components['schemas']['UserLite'];
+            reviewer: components['schemas']['UserLite'] | null;
         };
         Flash: {
             /**

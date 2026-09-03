@@ -14492,6 +14492,10 @@ export interface Locale extends ILocale {
          * 却下理由
          */
         "rejectReason": string;
+        /**
+         * 審査者
+         */
+        "reviewedBy": string;
     };
     "_emojiRequestApprovals": {
         /**
@@ -14502,6 +14506,10 @@ export interface Locale extends ILocale {
          * 審査待ちの絵文字申請はありません。
          */
         "noPendingRequests": string;
+        /**
+         * この状態の絵文字申請はありません。
+         */
+        "noRequests": string;
         /**
          * 承認
          */
@@ -14580,6 +14588,10 @@ export interface Locale extends ILocale {
          * 却下理由
          */
         "rejectReason": string;
+        /**
+         * 審査者
+         */
+        "reviewedBy": string;
     };
     "_avatarDecorationRequestApprovals": {
         /**
@@ -14590,6 +14602,10 @@ export interface Locale extends ILocale {
          * 審査待ちのアバターデコレーション申請はありません。
          */
         "noPendingRequests": string;
+        /**
+         * この状態のアバターデコレーション申請はありません。
+         */
+        "noRequests": string;
         /**
          * 承認
          */

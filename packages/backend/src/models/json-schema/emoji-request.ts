@@ -77,6 +77,8 @@ export const packedEmojiRequestEntrySchema = {
 } as const;
 
 // 管理画面の一覧では申請者の情報も併せて表示する必要があるため、Simple版とは別に用意する(JUICE)。
+// reviewer(審査したモデレーター)もここでのみ公開する。通報機能のassigneeと同様、申請者本人に
+// 個人を特定して晒すと逆恨み等のリスクがあるため、一般ユーザー向けのEntry schemaには含めない。
 export const packedEmojiRequestEntryDetailedAdminSchema = {
 	type: 'object',
 	allOf: [
@@ -90,6 +92,12 @@ export const packedEmojiRequestEntryDetailedAdminSchema = {
 				user: {
 					type: 'object',
 					optional: false, nullable: false,
+					ref: 'UserLite',
+				},
+				// JUICE: 審査履歴に「誰が審査したか」を表示するために使う。未審査(pending)の間はnull
+				reviewer: {
+					type: 'object',
+					optional: false, nullable: true,
 					ref: 'UserLite',
 				},
 			},

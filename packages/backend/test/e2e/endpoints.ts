@@ -1565,6 +1565,13 @@ describe('Endpoints', () => {
 				reason: 'role-based approver',
 			}, approver);
 			assert.strictEqual(reject.status, 204);
+
+			// JUICE: 却下したユーザー(モデレーターでない権限付与ユーザー)がreviewerとして記録されることを確認
+			const rejectedList = await api('admin/emoji-requests/list', { state: 'rejected' }, approver);
+			assert.strictEqual(rejectedList.status, 200);
+			const rejected = (rejectedList.body as any[]).find((r: any) => r.id === created.body.id);
+			assert.notStrictEqual(rejected, undefined);
+			assert.strictEqual(rejected.reviewer.id, approver.id);
 		});
 	});
 
@@ -1733,6 +1740,15 @@ describe('Endpoints', () => {
 			assert.notStrictEqual(reviewed, undefined);
 			assert.strictEqual(reviewed!.status, 'rejected');
 			assert.strictEqual(reviewed!.rejectReason, '不適切な画像のため');
+			// JUICE: reviewer(審査したモデレーター)は通報のassigneeと同様、申請者自身には公開しない
+			assert.strictEqual((reviewed as any).reviewer, undefined);
+
+			// JUICE: reviewerは管理画面向けの一覧でのみ公開される
+			const adminList = await api('admin/avatar-decoration-requests/list', { state: 'rejected' }, alice);
+			assert.strictEqual(adminList.status, 200);
+			const adminReviewed = (adminList.body as any[]).find((r: any) => r.id === created.body.id);
+			assert.notStrictEqual(adminReviewed, undefined);
+			assert.strictEqual(adminReviewed.reviewer.id, alice.id);
 		});
 
 		test('一般ユーザーは管理者用エンドポイントを使えない', async () => {

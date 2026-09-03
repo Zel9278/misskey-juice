@@ -3882,10 +3882,12 @@ _emojiRequestPage:
   statusApproved: "承認済み"
   statusRejected: "却下"
   rejectReason: "却下理由"
+  reviewedBy: "審査者"
 
 _emojiRequestApprovals:
   title: "絵文字申請"
   noPendingRequests: "審査待ちの絵文字申請はありません。"
+  noRequests: "この状態の絵文字申請はありません。"
   approve: "承認"
   reject: "却下"
   approveConfirm: "「{name}」を絵文字として登録しますか？"
@@ -3907,10 +3909,12 @@ _avatarDecorationRequestPage:
   statusApproved: "承認済み"
   statusRejected: "却下"
   rejectReason: "却下理由"
+  reviewedBy: "審査者"
 
 _avatarDecorationRequestApprovals:
   title: "アバターデコレーション申請"
   noPendingRequests: "審査待ちのアバターデコレーション申請はありません。"
+  noRequests: "この状態のアバターデコレーション申請はありません。"
   approve: "承認"
   reject: "却下"
   approveConfirm: "「{name}」をアバターデコレーションとして登録しますか？"
