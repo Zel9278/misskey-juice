@@ -672,6 +672,12 @@ type AvatarDecorationRequestEntry = components['schemas']['AvatarDecorationReque
 type AvatarDecorationRequestEntryDetailedAdmin = components['schemas']['AvatarDecorationRequestEntryDetailedAdmin'];
 
 // @public (undocumented)
+type AvatarDecorationRequestsCreateManyRequest = operations['avatar-decoration-requests___create-many']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AvatarDecorationRequestsCreateManyResponse = operations['avatar-decoration-requests___create-many']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AvatarDecorationRequestsCreateRequest = operations['avatar-decoration-requests___create']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1528,6 +1534,12 @@ type EmojiRequestEntry = components['schemas']['EmojiRequestEntry'];
 type EmojiRequestEntryDetailedAdmin = components['schemas']['EmojiRequestEntryDetailedAdmin'];
 
 // @public (undocumented)
+type EmojiRequestsCreateManyRequest = operations['emoji-requests___create-many']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type EmojiRequestsCreateManyResponse = operations['emoji-requests___create-many']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type EmojiRequestsCreateRequest = operations['emoji-requests___create']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1859,6 +1871,8 @@ declare namespace entities {
         AuthSessionUserkeyResponse,
         AvatarDecorationRequestsCreateRequest,
         AvatarDecorationRequestsCreateResponse,
+        AvatarDecorationRequestsCreateManyRequest,
+        AvatarDecorationRequestsCreateManyResponse,
         AvatarDecorationRequestsListRequest,
         AvatarDecorationRequestsListResponse,
         BlockingCreateRequest,
@@ -2014,6 +2028,8 @@ declare namespace entities {
         EmojiResponse,
         EmojiRequestsCreateRequest,
         EmojiRequestsCreateResponse,
+        EmojiRequestsCreateManyRequest,
+        EmojiRequestsCreateManyResponse,
         EmojiRequestsListRequest,
         EmojiRequestsListResponse,
         EmojisResponse,

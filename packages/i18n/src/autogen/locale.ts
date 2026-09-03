@@ -14445,6 +14445,14 @@ export interface Locale extends ILocale {
          */
         "previewSampleNoteText": string;
         /**
+         * 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できます
+         */
+        "multipleRequestsHint": string;
+        /**
+         * {n}件目
+         */
+        "requestNumber": ParameterizedString<"n">;
+        /**
          * 審査後にこの画像をDriveから削除する
          */
         "deleteFileAfterReview": string;
@@ -14524,6 +14532,14 @@ export interface Locale extends ILocale {
          * プレビュー
          */
         "preview": string;
+        /**
+         * 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できます
+         */
+        "multipleRequestsHint": string;
+        /**
+         * {n}件目
+         */
+        "requestNumber": ParameterizedString<"n">;
         /**
          * 審査後にこの画像をDriveから削除する
          */

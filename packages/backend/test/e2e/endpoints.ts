@@ -1568,6 +1568,69 @@ describe('Endpoints', () => {
 		});
 	});
 
+	// JUICE: 同一画面から複数件をまとめて申請できるemoji-requests/create-manyのe2eテスト
+	describe('emoji-requests/create-many', () => {
+		beforeAll(async () => {
+			await api('admin/juice/update-settings', { emojiRequestEnabled: true }, alice);
+		});
+
+		afterAll(async () => {
+			await api('admin/juice/update-settings', { emojiRequestEnabled: false }, alice);
+		});
+
+		test('複数件をまとめて作成できる', async () => {
+			const file1 = await uploadFile(bob);
+			const file2 = await uploadFile(bob);
+			const created = await api('emoji-requests/create-many', {
+				requests: [
+					{ fileId: file1.body!.id, name: 'batch_emoji_one' },
+					{ fileId: file2.body!.id, name: 'batch_emoji_two' },
+				],
+			}, bob);
+			assert.strictEqual(created.status, 200);
+			assert.strictEqual((created.body as any[]).length, 2);
+			assert.strictEqual((created.body as any[])[0].name, 'batch_emoji_one');
+			assert.strictEqual((created.body as any[])[1].name, 'batch_emoji_two');
+
+			const list = await api('admin/emoji-requests/list', { state: 'pending' }, alice);
+			assert.strictEqual(list.status, 200);
+			for (const item of created.body as any[]) {
+				assert.notStrictEqual((list.body as any[]).find((r: any) => r.id === item.id), undefined);
+				await api('admin/emoji-requests/reject', { requestId: item.id, reason: 'cleanup' }, alice);
+			}
+		});
+
+		test('1件でも無効なファイルがあれば全体が拒否され、有効な方も作成されない', async () => {
+			const file1 = await uploadFile(bob);
+
+			const created = await api('emoji-requests/create-many', {
+				requests: [
+					{ fileId: file1.body!.id, name: 'batch_valid_notcreated' },
+					{ fileId: '000000000000000000000000', name: 'batch_invalid_notcreated' },
+				],
+			}, bob);
+			assert.strictEqual(created.status, 400);
+			assert.strictEqual(castAsError(created.body as any).error.code, 'NO_SUCH_FILE');
+
+			const after = await api('emoji-requests/list', { limit: 100 }, bob);
+			assert.strictEqual((after.body as any[]).some((r: any) => r.name === 'batch_valid_notcreated'), false);
+		});
+
+		test('申請数の上限を超えるバッチは全体が拒否される', async () => {
+			// JUICE: emojiRequestLimitの既定値は3。既にpending中の申請が無い前提で、
+			// 上限を超える4件を一度に送って拒否されることを確認する
+			const files = await Promise.all([1, 2, 3, 4].map(() => uploadFile(bob)));
+			const created = await api('emoji-requests/create-many', {
+				requests: files.map((f, i) => ({ fileId: f.body!.id, name: `batch_over_limit_${i}` })),
+			}, bob);
+			assert.strictEqual(created.status, 400);
+			assert.strictEqual(castAsError(created.body as any).error.code, 'TOO_MANY_PENDING_REQUESTS');
+
+			const after = await api('emoji-requests/list', { limit: 100 }, bob);
+			assert.strictEqual((after.body as any[]).some((r: any) => r.name.startsWith('batch_over_limit_')), false);
+		});
+	});
+
 	// JUICE: 絵文字申請と同じ仕組みで実装したアバターデコレーション申請機能のe2eテスト
 	describe('avatar-decoration-requests', () => {
 		beforeAll(async () => {
@@ -1712,6 +1775,69 @@ describe('Endpoints', () => {
 				reason: 'role-based approver',
 			}, approver);
 			assert.strictEqual(reject.status, 204);
+		});
+	});
+
+	// JUICE: 同一画面から複数件をまとめて申請できるavatar-decoration-requests/create-manyのe2eテスト
+	describe('avatar-decoration-requests/create-many', () => {
+		beforeAll(async () => {
+			await api('admin/juice/update-settings', { avatarDecorationRequestEnabled: true }, alice);
+		});
+
+		afterAll(async () => {
+			await api('admin/juice/update-settings', { avatarDecorationRequestEnabled: false }, alice);
+		});
+
+		test('複数件をまとめて作成できる', async () => {
+			const file1 = await uploadFile(bob);
+			const file2 = await uploadFile(bob);
+			const created = await api('avatar-decoration-requests/create-many', {
+				requests: [
+					{ fileId: file1.body!.id, name: 'batch_deco_one' },
+					{ fileId: file2.body!.id, name: 'batch_deco_two' },
+				],
+			}, bob);
+			assert.strictEqual(created.status, 200);
+			assert.strictEqual((created.body as any[]).length, 2);
+			assert.strictEqual((created.body as any[])[0].name, 'batch_deco_one');
+			assert.strictEqual((created.body as any[])[1].name, 'batch_deco_two');
+
+			const list = await api('admin/avatar-decoration-requests/list', { state: 'pending' }, alice);
+			assert.strictEqual(list.status, 200);
+			for (const item of created.body as any[]) {
+				assert.notStrictEqual((list.body as any[]).find((r: any) => r.id === item.id), undefined);
+				await api('admin/avatar-decoration-requests/reject', { requestId: item.id, reason: 'cleanup' }, alice);
+			}
+		});
+
+		test('1件でも無効なファイルがあれば全体が拒否され、有効な方も作成されない', async () => {
+			const file1 = await uploadFile(bob);
+
+			const created = await api('avatar-decoration-requests/create-many', {
+				requests: [
+					{ fileId: file1.body!.id, name: 'batch_deco_valid_notcreated' },
+					{ fileId: '000000000000000000000000', name: 'batch_deco_invalid_notcreated' },
+				],
+			}, bob);
+			assert.strictEqual(created.status, 400);
+			assert.strictEqual(castAsError(created.body as any).error.code, 'NO_SUCH_FILE');
+
+			const after = await api('avatar-decoration-requests/list', { limit: 100 }, bob);
+			assert.strictEqual((after.body as any[]).some((r: any) => r.name === 'batch_deco_valid_notcreated'), false);
+		});
+
+		test('申請数の上限を超えるバッチは全体が拒否される', async () => {
+			// JUICE: avatarDecorationRequestLimitの既定値は3。既にpending中の申請が無い前提で、
+			// 上限を超える4件を一度に送って拒否されることを確認する
+			const files = await Promise.all([1, 2, 3, 4].map(() => uploadFile(bob)));
+			const created = await api('avatar-decoration-requests/create-many', {
+				requests: files.map((f, i) => ({ fileId: f.body!.id, name: `batch_deco_over_limit_${i}` })),
+			}, bob);
+			assert.strictEqual(created.status, 400);
+			assert.strictEqual(castAsError(created.body as any).error.code, 'TOO_MANY_PENDING_REQUESTS');
+
+			const after = await api('avatar-decoration-requests/list', { limit: 100 }, bob);
+			assert.strictEqual((after.body as any[]).some((r: any) => r.name.startsWith('batch_deco_over_limit_')), false);
 		});
 	});
 

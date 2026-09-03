@@ -1239,6 +1239,15 @@ export type paths = {
          */
         post: operations['avatar-decoration-requests___create'];
     };
+    '/avatar-decoration-requests/create-many': {
+        /**
+         * avatar-decoration-requests/create-many
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:avatar-decoration-requests*
+         */
+        post: operations['avatar-decoration-requests___create-many'];
+    };
     '/avatar-decoration-requests/list': {
         /**
          * avatar-decoration-requests/list
@@ -2075,6 +2084,15 @@ export type paths = {
          *     **Credential required**: *Yes* / **Permission**: *write:emoji-requests*
          */
         post: operations['emoji-requests___create'];
+    };
+    '/emoji-requests/create-many': {
+        /**
+         * emoji-requests/create-many
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:emoji-requests*
+         */
+        post: operations['emoji-requests___create-many'];
     };
     '/emoji-requests/list': {
         /**
@@ -16031,6 +16049,94 @@ export interface operations {
             };
         };
     };
+    'avatar-decoration-requests___create-many': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    requests: {
+                        /** Format: misskey:id */
+                        fileId: string;
+                        name: string;
+                        /** @default  */
+                        description?: string;
+                        category?: string | null;
+                        /** @default false */
+                        deleteFileAfterReview?: boolean;
+                    }[];
+                    'hcaptcha-response'?: string | null;
+                    'g-recaptcha-response'?: string | null;
+                    'm-captcha-response'?: string | null;
+                    'turnstile-response'?: string | null;
+                    'testcaptcha-response'?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['AvatarDecorationRequestEntry'][];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'avatar-decoration-requests___list': {
         requestBody: {
             content: {
@@ -22611,6 +22717,99 @@ export interface operations {
                 };
                 content: {
                     'application/json': components['schemas']['EmojiRequestEntry'];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'emoji-requests___create-many': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    requests: {
+                        /** Format: misskey:id */
+                        fileId: string;
+                        name: string;
+                        category?: string | null;
+                        /** @default [] */
+                        aliases?: string[];
+                        license?: string | null;
+                        /** @default false */
+                        isSensitive?: boolean;
+                        /** @default false */
+                        localOnly?: boolean;
+                        /** @default false */
+                        deleteFileAfterReview?: boolean;
+                    }[];
+                    'hcaptcha-response'?: string | null;
+                    'g-recaptcha-response'?: string | null;
+                    'm-captcha-response'?: string | null;
+                    'turnstile-response'?: string | null;
+                    'testcaptcha-response'?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['EmojiRequestEntry'][];
                 };
             };
             /** @description Client error */

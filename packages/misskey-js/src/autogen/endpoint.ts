@@ -193,6 +193,8 @@ import type {
 	AuthSessionUserkeyResponse,
 	AvatarDecorationRequestsCreateRequest,
 	AvatarDecorationRequestsCreateResponse,
+	AvatarDecorationRequestsCreateManyRequest,
+	AvatarDecorationRequestsCreateManyResponse,
 	AvatarDecorationRequestsListRequest,
 	AvatarDecorationRequestsListResponse,
 	BlockingCreateRequest,
@@ -348,6 +350,8 @@ import type {
 	EmojiResponse,
 	EmojiRequestsCreateRequest,
 	EmojiRequestsCreateResponse,
+	EmojiRequestsCreateManyRequest,
+	EmojiRequestsCreateManyResponse,
 	EmojiRequestsListRequest,
 	EmojiRequestsListResponse,
 	EmojisResponse,
@@ -845,6 +849,7 @@ export type Endpoints = {
 	'auth/session/show': { req: AuthSessionShowRequest; res: AuthSessionShowResponse };
 	'auth/session/userkey': { req: AuthSessionUserkeyRequest; res: AuthSessionUserkeyResponse };
 	'avatar-decoration-requests/create': { req: AvatarDecorationRequestsCreateRequest; res: AvatarDecorationRequestsCreateResponse };
+	'avatar-decoration-requests/create-many': { req: AvatarDecorationRequestsCreateManyRequest; res: AvatarDecorationRequestsCreateManyResponse };
 	'avatar-decoration-requests/list': { req: AvatarDecorationRequestsListRequest; res: AvatarDecorationRequestsListResponse };
 	'blocking/create': { req: BlockingCreateRequest; res: BlockingCreateResponse };
 	'blocking/delete': { req: BlockingDeleteRequest; res: BlockingDeleteResponse };
@@ -938,6 +943,7 @@ export type Endpoints = {
 	'email-address/available': { req: EmailAddressAvailableRequest; res: EmailAddressAvailableResponse };
 	'emoji': { req: EmojiRequest; res: EmojiResponse };
 	'emoji-requests/create': { req: EmojiRequestsCreateRequest; res: EmojiRequestsCreateResponse };
+	'emoji-requests/create-many': { req: EmojiRequestsCreateManyRequest; res: EmojiRequestsCreateManyResponse };
 	'emoji-requests/list': { req: EmojiRequestsListRequest; res: EmojiRequestsListResponse };
 	'emojis': { req: EmptyRequest; res: EmojisResponse };
 	'endpoint': { req: EndpointRequest; res: EndpointResponse };
