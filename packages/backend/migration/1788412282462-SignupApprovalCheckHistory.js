@@ -22,6 +22,26 @@ export class SignupApprovalCheckHistory1788412282462 {
         // 現在のuser.username/user.signupReasonから遡って補完しておく(却下時と違い、承認時はuser行を
         // 削除しないため取得できる)。
         await queryRunner.query(`UPDATE "signup_approval_check" c SET "username" = u."username", "signupReason" = u."signupReason" FROM "user" u WHERE c."userId" = u."id" AND c."username" IS NULL`);
+
+        // JUICE: reviewer(誰が審査したか)も同様に、この機能追加より前の行には記録が無い。
+        // moderation_log(approveSignup/declineSignup)には審査したモデレーター自身のuserIdと、
+        // 対象ユーザーのIDがinfo->>'userId'として既に記録されているため、承認済みの行(userIdがまだ
+        // 生きている)についてはそこから確実に一意特定できる範囲でreviewerIdを補完する。却下済みの行は
+        // userIdが既にNULL化されておりmoderation_logと確実に対応付けられないため対象外とする
+        // (却下理由自体はdecline-signup.tsが削除前に直接signup_approval_check.reasonへ保存しているため、
+        // この機能追加より後の却下であればreasonは既に正しく残っている)。
+        await queryRunner.query(`
+            UPDATE "signup_approval_check" c
+            SET "reviewerId" = m."moderatorId"
+            FROM (
+                SELECT (info->>'userId') AS "targetUserId", MIN("userId") AS "moderatorId"
+                FROM "moderation_log"
+                WHERE "type" = 'approveSignup'
+                GROUP BY (info->>'userId')
+                HAVING count(DISTINCT "userId") = 1
+            ) m
+            WHERE c."status" = 'approved' AND c."reviewerId" IS NULL AND c."userId" = m."targetUserId"
+        `);
     }
 
     async down(queryRunner) {
