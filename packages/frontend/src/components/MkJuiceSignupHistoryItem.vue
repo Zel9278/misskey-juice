@@ -20,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<!-- JUICE: この機能の追加より前に処理された申請は、ユーザー名等のスナップショットを持っていない -->
 		<div v-if="entry.username == null">{{ i18n.ts._juiceApprovals.historySnapshotUnavailable }}</div>
 		<!-- JUICE: 審査済みの申請には「誰がいつ審査したか」を表示する -->
-		<div v-if="entry.reviewer">{{ i18n.ts._juiceApprovals.reviewedBy }}: <MkAcct :user="entry.reviewer"/> (<MkTime v-if="entry.reviewedAt" :time="entry.reviewedAt"/>)</div>
+		<div v-if="entry.reviewer">{{ i18n.ts._juiceApprovals.reviewedBy }}: <MkAcct :user="entry.reviewer"/><template v-if="entry.reviewedAt"> (<MkTime :time="entry.reviewedAt"/>)</template></div>
 	</div>
 </MkFolder>
 </template>
