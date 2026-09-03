@@ -10,6 +10,8 @@ import type { UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { JuiceUserRankingService, type JuiceUserRankingEntry } from '@/core/JuiceUserRankingService.js';
+import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { resolveRankingSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['juice'],
@@ -81,12 +83,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private userEntityService: UserEntityService,
 		private juiceUserRankingService: JuiceUserRankingService,
+		private juiceSettingsService: JuiceSettingsService,
 	) {
 		super(meta, paramDef, async () => {
+			// JUICE: 表示人数はadmin/juice/update-settingsで管理者が変更できる(既定3人)
+			const { rankingDisplayCount } = resolveRankingSettings(await this.juiceSettingsService.fetch());
+
 			const [periodHours, postRanking, reactionRanking] = await Promise.all([
 				this.juiceUserRankingService.getPeriodHours(),
-				this.juiceUserRankingService.getPostRanking(3),
-				this.juiceUserRankingService.getReactionRanking(3),
+				this.juiceUserRankingService.getPostRanking(rankingDisplayCount),
+				this.juiceUserRankingService.getReactionRanking(rankingDisplayCount),
 			]);
 
 			const userIds = [...new Set([...postRanking, ...reactionRanking].map(e => e.userId))];

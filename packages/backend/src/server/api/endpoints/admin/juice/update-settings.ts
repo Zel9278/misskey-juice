@@ -27,6 +27,7 @@ export const paramDef = {
 		emojiRequestEnabled: { type: 'boolean' },
 		avatarDecorationRequestEnabled: { type: 'boolean' },
 		rankingAggregationPeriodHours: { type: 'integer', minimum: 1 },
+		rankingDisplayCount: { type: 'integer', minimum: 1, maximum: 100 },
 		relayTimelineEnabled: { type: 'boolean' },
 		latexEnabled: { type: 'boolean' },
 	},
@@ -52,6 +53,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.emojiRequestEnabled !== undefined) set.emojiRequestEnabled = ps.emojiRequestEnabled;
 			if (ps.avatarDecorationRequestEnabled !== undefined) set.avatarDecorationRequestEnabled = ps.avatarDecorationRequestEnabled;
 			if (ps.rankingAggregationPeriodHours !== undefined) set.rankingAggregationPeriodHours = ps.rankingAggregationPeriodHours;
+			if (ps.rankingDisplayCount !== undefined) set.rankingDisplayCount = ps.rankingDisplayCount;
 			if (ps.relayTimelineEnabled !== undefined) set.relayTimelineEnabled = ps.relayTimelineEnabled;
 			if (ps.latexEnabled !== undefined) set.latexEnabled = ps.latexEnabled;
 

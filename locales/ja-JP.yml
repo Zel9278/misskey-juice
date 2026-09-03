@@ -3828,6 +3828,7 @@ _juice:
   avatarDecorationRequestEnabledCaption: "無効にすると、一般ユーザーの申請ページ・APIの両方が利用できなくなります。"
   ranking: "ユーザーランキング"
   rankingPeriodHours: "集計期間(時間)"
+  rankingDisplayCount: "表示する人数"
   relayTimeline: "リレータイムライン"
   relayTimelineTab: "リレー"
   signupCheck: "登録審査状況の確認"

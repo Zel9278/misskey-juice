@@ -10531,6 +10531,7 @@ export interface operations {
                         emojiRequestEnabled: boolean;
                         avatarDecorationRequestEnabled: boolean;
                         rankingAggregationPeriodHours: number;
+                        rankingDisplayCount: number;
                         relayTimelineEnabled: boolean;
                         latexEnabled: boolean;
                     };
@@ -10594,6 +10595,7 @@ export interface operations {
                     emojiRequestEnabled?: boolean;
                     avatarDecorationRequestEnabled?: boolean;
                     rankingAggregationPeriodHours?: number;
+                    rankingDisplayCount?: number;
                     relayTimelineEnabled?: boolean;
                     latexEnabled?: boolean;
                 };

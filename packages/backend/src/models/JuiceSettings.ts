@@ -22,6 +22,8 @@ export interface JuiceSettingsValue {
 	avatarDecorationRequestEnabled?: boolean;
 	/** ユーザーランキングの集計期間(時間単位) */
 	rankingAggregationPeriodHours?: number;
+	/** ユーザーランキングに表示する人数 */
+	rankingDisplayCount?: number;
 	/** リレーTL機能を有効にするか */
 	relayTimelineEnabled?: boolean;
 	/** LaTeX(数式)表示機能を有効にするか */
@@ -82,13 +84,15 @@ export function resolveAvatarDecorationRequestSettings(settings: JuiceSettingsVa
 
 /**
  * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
- * admin/juice/settings・JuiceUserRankingServiceの2箇所で共通利用する。
+ * admin/juice/settings・JuiceUserRankingService・juice/rankingの3箇所で共通利用する。
  */
 export function resolveRankingSettings(settings: JuiceSettingsValue): {
 	rankingAggregationPeriodHours: number;
+	rankingDisplayCount: number;
 } {
 	return {
 		rankingAggregationPeriodHours: settings.rankingAggregationPeriodHours ?? 12,
+		rankingDisplayCount: settings.rankingDisplayCount ?? 3,
 	};
 }
 

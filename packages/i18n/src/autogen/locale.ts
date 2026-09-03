@@ -14289,6 +14289,10 @@ export interface Locale extends ILocale {
          */
         "rankingPeriodHours": string;
         /**
+         * 表示する人数
+         */
+        "rankingDisplayCount": string;
+        /**
          * リレータイムライン
          */
         "relayTimeline": string;

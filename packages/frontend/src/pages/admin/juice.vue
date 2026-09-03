@@ -89,6 +89,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 									<template #label><SearchLabel>{{ i18n.ts._juice.rankingPeriodHours }}</SearchLabel></template>
 								</MkInput>
 							</SearchMarker>
+							<SearchMarker>
+								<MkInput v-model="rankingDisplayCount" type="number" :min="1" :max="100">
+									<template #label><SearchLabel>{{ i18n.ts._juice.rankingDisplayCount }}</SearchLabel></template>
+								</MkInput>
+							</SearchMarker>
 						</div>
 					</MkFolder>
 				</SearchMarker>
@@ -152,6 +157,7 @@ const defaultEmailLang = ref(settings.defaultEmailLang);
 const emojiRequestEnabled = ref(settings.emojiRequestEnabled);
 const avatarDecorationRequestEnabled = ref(settings.avatarDecorationRequestEnabled);
 const rankingAggregationPeriodHours = ref(settings.rankingAggregationPeriodHours);
+const rankingDisplayCount = ref(settings.rankingDisplayCount);
 const relayTimelineEnabled = ref(settings.relayTimelineEnabled);
 const latexEnabled = ref(settings.latexEnabled);
 
@@ -164,6 +170,7 @@ function save() {
 		emojiRequestEnabled: emojiRequestEnabled.value,
 		avatarDecorationRequestEnabled: avatarDecorationRequestEnabled.value,
 		rankingAggregationPeriodHours: rankingAggregationPeriodHours.value,
+		rankingDisplayCount: rankingDisplayCount.value,
 		relayTimelineEnabled: relayTimelineEnabled.value,
 		latexEnabled: latexEnabled.value,
 	});

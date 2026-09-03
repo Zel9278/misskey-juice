@@ -47,6 +47,10 @@ export const meta = {
 				type: 'number',
 				optional: false, nullable: false,
 			},
+			rankingDisplayCount: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
 			relayTimelineEnabled: {
 				type: 'boolean',
 				optional: false, nullable: false,
