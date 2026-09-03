@@ -113,6 +113,7 @@ import { Paginator } from '@/utility/paginator.js';
 import { ensureSignin } from '@/i.js';
 import { instance } from '@/instance.js';
 import { genId } from '@/utility/id.js';
+import { buildMockLocalCustomEmojiReaction } from '@/utility/mock-note-reaction.js';
 
 const $i = ensureSignin();
 
@@ -172,8 +173,7 @@ function exampleNoteFor(draft: EmojiRequestDraft): Misskey.entities.Note {
 		renoteCount: 0,
 		repliesCount: 0,
 		reactionCount: 1,
-		reactions: { [`:${previewName}:`]: 1 },
-		reactionEmojis: { [previewName]: draft.file.url },
+		...buildMockLocalCustomEmojiReaction(previewName, draft.file.url),
 		fileIds: [],
 		files: [],
 		replyId: null,
