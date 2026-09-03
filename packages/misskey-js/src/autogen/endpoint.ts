@@ -88,6 +88,8 @@ import type {
 	AdminJuicePendingSignupsRequest,
 	AdminJuicePendingSignupsResponse,
 	AdminJuiceSettingsResponse,
+	AdminJuiceSignupApprovalHistoryRequest,
+	AdminJuiceSignupApprovalHistoryResponse,
 	AdminJuiceUpdateSettingsRequest,
 	AdminMetaResponse,
 	AdminPromoCreateRequest,
@@ -776,6 +778,7 @@ export type Endpoints = {
 	'admin/juice/decline-signup': { req: AdminJuiceDeclineSignupRequest; res: EmptyResponse };
 	'admin/juice/pending-signups': { req: AdminJuicePendingSignupsRequest; res: AdminJuicePendingSignupsResponse };
 	'admin/juice/settings': { req: EmptyRequest; res: AdminJuiceSettingsResponse };
+	'admin/juice/signup-approval-history': { req: AdminJuiceSignupApprovalHistoryRequest; res: AdminJuiceSignupApprovalHistoryResponse };
 	'admin/juice/update-settings': { req: AdminJuiceUpdateSettingsRequest; res: EmptyResponse };
 	'admin/meta': { req: EmptyRequest; res: AdminMetaResponse };
 	'admin/promo/create': { req: AdminPromoCreateRequest; res: EmptyResponse };

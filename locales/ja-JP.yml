@@ -2708,6 +2708,7 @@ _permissions:
   "read:admin:juice-settings": "JUICE独自機能の設定を見る"
   "write:admin:juice-settings": "JUICE独自機能の設定を操作する"
   "read:admin:juice-pending-signups": "承認待ちユーザーの一覧を見る"
+  "read:admin:juice-signup-approval-history": "承認済み・却下済みのユーザー登録申請の履歴(審査したモデレーターを含む)を見る"
   "write:admin:juice-approve-signup": "ユーザーの登録を承認する"
   "write:admin:juice-decline-signup": "ユーザーの登録を却下する"
   "read:admin:emoji-requests": "絵文字申請の一覧を見る"
@@ -3857,12 +3858,19 @@ _juice:
 _juiceApprovals:
   title: "承認待ちユーザー"
   noPendingSignups: "承認待ちのユーザーはいません。"
+  noHistory: "この状態の登録申請はありません。"
   reason: "登録理由"
   approve: "承認"
   decline: "却下"
   approveConfirm: "@{username} の登録を承認しますか？"
   declineReasonTitle: "却下理由を入力してください"
   declineWarning: "@{username} のアカウントは削除されます。この操作は取り消せません。"
+  statusPending: "審査待ち"
+  statusApproved: "承認済み"
+  statusDeclined: "却下"
+  declineReason: "却下理由"
+  reviewedBy: "審査者"
+  historySnapshotUnavailable: "この申請は履歴機能の追加より前に処理されたため、詳細情報の一部は表示できません。"
 
 _emojiRequestPage:
   newRequest: "申請フォーム"

@@ -575,6 +575,15 @@ export type paths = {
          */
         post: operations['admin___juice___settings'];
     };
+    '/admin/juice/signup-approval-history': {
+        /**
+         * admin/juice/signup-approval-history
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *read:admin:juice-signup-approval-history*
+         */
+        post: operations['admin___juice___signup-approval-history'];
+    };
     '/admin/juice/update-settings': {
         /**
          * admin/juice/update-settings
@@ -10538,6 +10547,94 @@ export interface operations {
                         relayTimelineEnabled: boolean;
                         latexEnabled: boolean;
                     };
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'admin___juice___signup-approval-history': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /**
+                     * @default approved
+                     * @enum {string}
+                     */
+                    state?: 'approved' | 'declined';
+                    /** @default 10 */
+                    limit?: number;
+                    /** Format: misskey:id */
+                    sinceId?: string;
+                    /** Format: misskey:id */
+                    untilId?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /** Format: id */
+                        id: string;
+                        /** Format: date-time */
+                        createdAt: string;
+                        username: string | null;
+                        signupReason: string | null;
+                        /** @enum {string} */
+                        status: 'approved' | 'declined';
+                        reason: string | null;
+                        /** Format: date-time */
+                        reviewedAt: string | null;
+                        reviewer: components['schemas']['UserLite'] | null;
+                    }[];
                 };
             };
             /** @description Client error */

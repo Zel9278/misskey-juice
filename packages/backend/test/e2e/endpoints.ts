@@ -2402,6 +2402,51 @@ describe('Endpoints', () => {
 			assert.deepStrictEqual(res.body, { status: 'declined', reason: 'test decline reason' });
 		});
 
+		// JUICE: 承認/却下履歴一覧(admin/juice/signup-approval-history)のe2eテスト。
+		// 却下されたアカウントは物理削除されるため、username/signupReasonのスナップショットが
+		// 削除後も参照できること、reviewerが管理画面向けにのみ記録されることを確認する。
+		test('signup-approval-history: 承認するとusername・reason・reviewerが履歴に記録される', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'approve history test reason' });
+			assert.strictEqual(signupRes.status, 200);
+
+			const list = await api('admin/juice/pending-signups', {}, alice);
+			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
+			assert.ok(target);
+			const approveRes = await api('admin/juice/approve-signup', { userId: target.id }, alice);
+			assert.strictEqual(approveRes.status, 204);
+
+			const history = await api('admin/juice/signup-approval-history', { state: 'approved' }, alice);
+			assert.strictEqual(history.status, 200);
+			const entry = (history.body as any[]).find((e: any) => e.username === username);
+			assert.notStrictEqual(entry, undefined);
+			assert.strictEqual(entry.signupReason, 'approve history test reason');
+			assert.strictEqual(entry.status, 'approved');
+			assert.strictEqual(entry.reviewer.id, alice.id);
+			assert.notStrictEqual(entry.reviewedAt, null);
+		});
+
+		test('signup-approval-history: 却下してユーザーが削除された後もusername・signupReasonのスナップショットが残る', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'decline history test reason' });
+			assert.strictEqual(signupRes.status, 200);
+
+			const list = await api('admin/juice/pending-signups', {}, alice);
+			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
+			assert.ok(target);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id, reason: 'decline history test reason for reject' }, alice);
+			assert.strictEqual(declineRes.status, 204);
+
+			const history = await api('admin/juice/signup-approval-history', { state: 'declined' }, alice);
+			assert.strictEqual(history.status, 200);
+			const entry = (history.body as any[]).find((e: any) => e.username === username);
+			assert.notStrictEqual(entry, undefined);
+			assert.strictEqual(entry.signupReason, 'decline history test reason');
+			assert.strictEqual(entry.reason, 'decline history test reason for reject');
+			assert.strictEqual(entry.status, 'declined');
+			assert.strictEqual(entry.reviewer.id, alice.id);
+		});
+
 		test('signup-check-status: 存在しないコードはnotFoundを返す', async () => {
 			const res = await api('juice/signup-check-status', { code: 'no-such-code' });
 			assert.strictEqual(res.status, 200);

@@ -705,6 +705,17 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
+     * **Credential required**: *Yes* / **Permission**: *read:admin:juice-signup-approval-history*
+     */
+    request<E extends 'admin/juice/signup-approval-history', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
      * **Credential required**: *Yes* / **Permission**: *write:admin:juice-settings*
      */
     request<E extends 'admin/juice/update-settings', P extends Endpoints[E]['req']>(

@@ -111,6 +111,7 @@ export const permissions = [
 	'read:admin:juice-settings',
 	'write:admin:juice-settings',
 	'read:admin:juice-pending-signups',
+	'read:admin:juice-signup-approval-history',
 	'write:admin:juice-approve-signup',
 	'write:admin:juice-decline-signup',
 	'read:admin:emoji-requests',

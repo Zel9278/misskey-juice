@@ -10276,6 +10276,10 @@ export interface Locale extends ILocale {
          */
         "read:admin:juice-pending-signups": string;
         /**
+         * 承認済み・却下済みのユーザー登録申請の履歴(審査したモデレーターを含む)を見る
+         */
+        "read:admin:juice-signup-approval-history": string;
+        /**
          * ユーザーの登録を承認する
          */
         "write:admin:juice-approve-signup": string;
@@ -14399,6 +14403,10 @@ export interface Locale extends ILocale {
          */
         "noPendingSignups": string;
         /**
+         * この状態の登録申請はありません。
+         */
+        "noHistory": string;
+        /**
          * 登録理由
          */
         "reason": string;
@@ -14422,6 +14430,30 @@ export interface Locale extends ILocale {
          * @{username} のアカウントは削除されます。この操作は取り消せません。
          */
         "declineWarning": ParameterizedString<"username">;
+        /**
+         * 審査待ち
+         */
+        "statusPending": string;
+        /**
+         * 承認済み
+         */
+        "statusApproved": string;
+        /**
+         * 却下
+         */
+        "statusDeclined": string;
+        /**
+         * 却下理由
+         */
+        "declineReason": string;
+        /**
+         * 審査者
+         */
+        "reviewedBy": string;
+        /**
+         * この申請は履歴機能の追加より前に処理されたため、詳細情報の一部は表示できません。
+         */
+        "historySnapshotUnavailable": string;
     };
     "_emojiRequestPage": {
         /**

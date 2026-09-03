@@ -96,6 +96,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			await this.signupApprovalChecksRepository.update({ userId: user.id }, {
 				status: 'declined',
 				reason: ps.reason,
+				reviewerId: me.id,
+				reviewedAt: new Date(),
 			});
 
 			// 承認前(approved: false)のアカウントは、サインインもAPI利用も全面的にブロックされているため

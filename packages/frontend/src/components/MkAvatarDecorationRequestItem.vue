@@ -75,11 +75,11 @@ const statusClass = computed(() => {
 
 .statusApproved {
 	background: var(--MI_THEME-success);
-	color: #fff;
+	color: var(--MI_THEME-fgOnAccent);
 }
 
 .statusRejected {
 	background: var(--MI_THEME-error);
-	color: #fff;
+	color: var(--MI_THEME-fgOnAccent);
 }
 </style>

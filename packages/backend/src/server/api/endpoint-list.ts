@@ -74,6 +74,7 @@ export * as 'admin/juice/approve-signup' from './endpoints/admin/juice/approve-s
 export * as 'admin/juice/decline-signup' from './endpoints/admin/juice/decline-signup.js';
 export * as 'admin/juice/pending-signups' from './endpoints/admin/juice/pending-signups.js';
 export * as 'admin/juice/settings' from './endpoints/admin/juice/settings.js';
+export * as 'admin/juice/signup-approval-history' from './endpoints/admin/juice/signup-approval-history.js';
 export * as 'admin/juice/update-settings' from './endpoints/admin/juice/update-settings.js';
 export * as 'admin/meta' from './endpoints/admin/meta.js';
 export * as 'admin/promo/create' from './endpoints/admin/promo/create.js';

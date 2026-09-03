@@ -75,6 +75,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			await this.signupApprovalChecksRepository.update({ userId: user.id }, {
 				status: 'approved',
+				reviewerId: me.id,
+				reviewedAt: new Date(),
 			});
 
 			this.moderationLogService.log(me, 'approveSignup', {
