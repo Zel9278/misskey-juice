@@ -21,6 +21,11 @@ export const packedEmojiRequestEntrySchema = {
 			optional: false, nullable: true,
 			format: 'id',
 		},
+		// JUICE: 申請一覧でサムネイル表示に使う。承認/却下後にファイルが削除されていればnull
+		fileUrl: {
+			type: 'string',
+			optional: false, nullable: true,
+		},
 		name: {
 			type: 'string',
 			optional: false, nullable: false,
@@ -86,10 +91,6 @@ export const packedEmojiRequestEntryDetailedAdminSchema = {
 					type: 'object',
 					optional: false, nullable: false,
 					ref: 'UserLite',
-				},
-				fileUrl: {
-					type: 'string',
-					optional: false, nullable: true,
 				},
 			},
 		},

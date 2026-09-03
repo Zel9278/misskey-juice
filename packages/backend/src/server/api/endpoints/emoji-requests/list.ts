@@ -63,7 +63,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (!emojiRequestEnabled) throw new ApiError(meta.errors.functionDisabled);
 
 			const query = this.queryService.makePaginationQuery(this.emojiRequestsRepository.createQueryBuilder('request'), ps.sinceId, ps.untilId)
-				.andWhere('request.userId = :userId', { userId: me.id });
+				.andWhere('request.userId = :userId', { userId: me.id })
+				.leftJoinAndSelect('request.file', 'file');
 
 			const requests = await query.limit(ps.limit).getMany();
 
@@ -71,6 +72,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				id: request.id,
 				createdAt: this.idService.parse(request.id).date.toISOString(),
 				fileId: request.fileId,
+				// JUICE: 一覧でサムネイル表示に使う
+				fileUrl: request.file?.url ?? null,
 				name: request.name,
 				category: request.category,
 				aliases: request.aliases,

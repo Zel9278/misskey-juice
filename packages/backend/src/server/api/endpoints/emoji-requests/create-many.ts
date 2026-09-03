@@ -194,10 +194,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				requester,
 			})));
 
-			return newRequests.map(request => ({
+			return newRequests.map((request, i) => ({
 				id: request.id,
 				createdAt: this.idService.parse(request.id).date.toISOString(),
 				fileId: request.fileId,
+				// JUICE: 一覧でサムネイル表示に使う
+				fileUrl: driveFiles[i].url,
 				name: request.name,
 				category: request.category,
 				aliases: request.aliases,

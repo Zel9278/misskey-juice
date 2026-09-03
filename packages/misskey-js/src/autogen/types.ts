@@ -5570,6 +5570,7 @@ export type components = {
             createdAt: string;
             /** Format: id */
             fileId: string | null;
+            fileUrl: string | null;
             name: string;
             category: string | null;
             license: string | null;
@@ -5586,7 +5587,6 @@ export type components = {
         };
         EmojiRequestEntryDetailedAdmin: components['schemas']['EmojiRequestEntry'] & {
             user: components['schemas']['UserLite'];
-            fileUrl: string | null;
         };
         AvatarDecorationRequestEntry: {
             /** Format: id */
@@ -5595,6 +5595,7 @@ export type components = {
             createdAt: string;
             /** Format: id */
             fileId: string | null;
+            fileUrl: string | null;
             name: string;
             description: string;
             category: string | null;
@@ -5608,7 +5609,6 @@ export type components = {
         };
         AvatarDecorationRequestEntryDetailedAdmin: components['schemas']['AvatarDecorationRequestEntry'] & {
             user: components['schemas']['UserLite'];
-            fileUrl: string | null;
         };
         Flash: {
             /**

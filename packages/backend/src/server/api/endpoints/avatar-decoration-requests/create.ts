@@ -156,6 +156,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				id: request.id,
 				createdAt: this.idService.parse(request.id).date.toISOString(),
 				fileId: request.fileId,
+				// JUICE: 一覧でサムネイル表示に使う
+				fileUrl: driveFile.url,
 				name: request.name,
 				description: request.description,
 				category: request.category,

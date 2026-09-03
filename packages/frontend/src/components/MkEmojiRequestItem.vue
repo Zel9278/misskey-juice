@@ -5,7 +5,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <MkFolder>
-	<template #icon><i v-if="request.fileId" class="ti ti-photo"></i></template>
+	<!-- JUICE: サムネイルで申請中の画像そのものを表示する。承認/却下後にファイルが削除されている場合はアイコンにフォールバック -->
+	<template #icon>
+		<img v-if="request.fileUrl" :src="request.fileUrl" :class="$style.thumbnail" alt=""/>
+		<i v-else-if="request.fileId" class="ti ti-photo"></i>
+	</template>
 	<template #label>{{ request.name }}</template>
 	<template #suffix>
 		<span :class="[$style.status, $style[statusClass]]">{{ statusLabel }}</span>
@@ -49,6 +53,15 @@ const statusClass = computed(() => {
 </script>
 
 <style lang="scss" module>
+.thumbnail {
+	display: block;
+	width: 28px;
+	height: 28px;
+	object-fit: contain;
+	border-radius: 4px;
+	background: var(--MI_THEME-panel);
+}
+
 .status {
 	display: inline-block;
 	padding: 2px 8px;
