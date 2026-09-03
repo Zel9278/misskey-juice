@@ -128,6 +128,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 				</SearchMarker>
 
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.reactionPiggyback }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="reactionPiggybackOnRemoteEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.reactionPiggybackOnRemoteEnabled }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.reactionPiggybackOnRemoteEnabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
 				<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 			</div>
 		</SearchMarker>
@@ -160,6 +175,7 @@ const rankingAggregationPeriodHours = ref(settings.rankingAggregationPeriodHours
 const rankingDisplayCount = ref(settings.rankingDisplayCount);
 const relayTimelineEnabled = ref(settings.relayTimelineEnabled);
 const latexEnabled = ref(settings.latexEnabled);
+const reactionPiggybackOnRemoteEnabled = ref(settings.reactionPiggybackOnRemoteEnabled);
 
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
@@ -173,6 +189,7 @@ function save() {
 		rankingDisplayCount: rankingDisplayCount.value,
 		relayTimelineEnabled: relayTimelineEnabled.value,
 		latexEnabled: latexEnabled.value,
+		reactionPiggybackOnRemoteEnabled: reactionPiggybackOnRemoteEnabled.value,
 	});
 }
 

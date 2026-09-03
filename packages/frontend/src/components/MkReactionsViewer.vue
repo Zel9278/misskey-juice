@@ -20,6 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		:reactionEmojis="props.reactionEmojis"
 		:count="count"
 		:isInitial="initialReactions.has(reaction)"
+		:note="props.note"
 		:noteId="props.noteId"
 		:myReaction="props.myReaction"
 		@reactionToggled="onMockToggleReaction"
@@ -40,6 +41,7 @@ import { customEmojisMap } from '@/custom-emojis.js';
 import { DI } from '@/di.js';
 
 const props = withDefaults(defineProps<{
+	note: Misskey.entities.Note;
 	noteId: Misskey.entities.Note['id'];
 	reactions: Misskey.entities.Note['reactions'];
 	reactionEmojis: Misskey.entities.Note['reactionEmojis'];

@@ -1479,8 +1479,10 @@ describe('Endpoints', () => {
 				emojiRequestEnabled: false,
 				avatarDecorationRequestEnabled: false,
 				rankingAggregationPeriodHours: 12,
+				rankingDisplayCount: 3,
 				relayTimelineEnabled: false,
 				latexEnabled: true,
+				reactionPiggybackOnRemoteEnabled: false,
 			});
 		});
 
@@ -2464,6 +2466,7 @@ describe('Endpoints', () => {
 				avatarDecorationRequestEnabled: false,
 				relayTimelineEnabled: false,
 				latexEnabled: true,
+				reactionPiggybackOnRemoteEnabled: false,
 			});
 		});
 

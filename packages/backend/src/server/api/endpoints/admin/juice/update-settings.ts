@@ -30,6 +30,7 @@ export const paramDef = {
 		rankingDisplayCount: { type: 'integer', minimum: 1, maximum: 100 },
 		relayTimelineEnabled: { type: 'boolean' },
 		latexEnabled: { type: 'boolean' },
+		reactionPiggybackOnRemoteEnabled: { type: 'boolean' },
 	},
 } as const;
 
@@ -56,6 +57,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.rankingDisplayCount !== undefined) set.rankingDisplayCount = ps.rankingDisplayCount;
 			if (ps.relayTimelineEnabled !== undefined) set.relayTimelineEnabled = ps.relayTimelineEnabled;
 			if (ps.latexEnabled !== undefined) set.latexEnabled = ps.latexEnabled;
+			if (ps.reactionPiggybackOnRemoteEnabled !== undefined) set.reactionPiggybackOnRemoteEnabled = ps.reactionPiggybackOnRemoteEnabled;
 
 			const after = await this.juiceSettingsService.update(set);
 

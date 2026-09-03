@@ -10546,6 +10546,7 @@ export interface operations {
                         rankingDisplayCount: number;
                         relayTimelineEnabled: boolean;
                         latexEnabled: boolean;
+                        reactionPiggybackOnRemoteEnabled: boolean;
                     };
                 };
             };
@@ -10698,6 +10699,7 @@ export interface operations {
                     rankingDisplayCount?: number;
                     relayTimelineEnabled?: boolean;
                     latexEnabled?: boolean;
+                    reactionPiggybackOnRemoteEnabled?: boolean;
                 };
             };
         };
@@ -22726,6 +22728,7 @@ export interface operations {
             content: {
                 'application/json': {
                     name: string;
+                    host?: string | null;
                 };
             };
         };
@@ -31119,6 +31122,7 @@ export interface operations {
                         avatarDecorationRequestEnabled: boolean;
                         relayTimelineEnabled: boolean;
                         latexEnabled: boolean;
+                        reactionPiggybackOnRemoteEnabled: boolean;
                     };
                 };
             };

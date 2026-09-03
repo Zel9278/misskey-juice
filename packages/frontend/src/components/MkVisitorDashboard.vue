@@ -94,6 +94,7 @@ const juicePublicSettings = ref<Misskey.entities.JuicePublicSettingsResponse>({
 	avatarDecorationRequestEnabled: false,
 	relayTimelineEnabled: false,
 	latexEnabled: true,
+	reactionPiggybackOnRemoteEnabled: false,
 });
 misskeyApi('juice/public-settings').then(res => {
 	juicePublicSettings.value = res;

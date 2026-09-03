@@ -28,6 +28,8 @@ export interface JuiceSettingsValue {
 	relayTimelineEnabled?: boolean;
 	/** LaTeX(数式)表示機能を有効にするか */
 	latexEnabled?: boolean;
+	/** リモートのカスタム絵文字を使ったリアクションへの相乗り(既存リアクションをクリックして同じリアクションを付けること)を許可するか */
+	reactionPiggybackOnRemoteEnabled?: boolean;
 }
 
 /**
@@ -117,6 +119,20 @@ export function resolveLatexSettings(settings: JuiceSettingsValue): {
 } {
 	return {
 		latexEnabled: settings.latexEnabled ?? true,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・juice/public-settingsの2箇所で共通利用する。
+ */
+export function resolveReactionPiggybackSettings(settings: JuiceSettingsValue): {
+	reactionPiggybackOnRemoteEnabled: boolean;
+} {
+	return {
+		// JUICE: リモートの絵文字画像を著作権者の許諾なく表示・使用することになりうるため、
+		// 既定は無効(サーバー管理者の自己責任でのオプトイン)とする
+		reactionPiggybackOnRemoteEnabled: settings.reactionPiggybackOnRemoteEnabled ?? false,
 	};
 }
 

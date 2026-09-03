@@ -40,8 +40,10 @@ import { noteEvents } from '@/composables/use-note-capture.js';
 import { mute as muteEmoji, unmute as unmuteEmoji, checkMuted as isEmojiMuted } from '@/utility/emoji-mute.js';
 import { addToEmojiPalette } from '@/utility/emoji-palette.js';
 import { haptic } from '@/utility/haptic.js';
+import { juicePublicSettingsCache } from '@/cache.js';
 
 const props = defineProps<{
+	note: Misskey.entities.Note;
 	noteId: Misskey.entities.Note['id'];
 	reaction: string;
 	reactionEmojis: Misskey.entities.Note['reactionEmojis'];
@@ -59,15 +61,29 @@ const emit = defineEmits<{
 const buttonEl = useTemplateRef('buttonEl');
 
 const emojiName = computed(() => props.reaction.replace(/:/g, '').replace(/@\./, ''));
+const isLocalReactionFormat = computed(() => props.reaction.match(/@\w/) == null);
+
+// JUICE: リモートのカスタム絵文字を使ったリアクションへの相乗り(既存リアクションに便乗して
+// 同じリアクションを付けること)を管理者設定で有効化できるようにする(著作権者の許諾なく
+// リモートの絵文字画像を表示・使用することになりうるため、既定は無効)。
+const reactionPiggybackOnRemoteEnabled = computed(() => juicePublicSettingsCache.value.value?.reactionPiggybackOnRemoteEnabled ?? false);
 
 const canToggle = computed(() => {
-	const emoji = customEmojisMap.get(emojiName.value) ?? getUnicodeEmojiOrNull(props.reaction);
+	if ($i == null) return false;
 
-	// TODO
-	//return !props.reaction.match(/@\w/) && $i && emoji && checkReactionPermissions($i, props.note, emoji);
-	return props.reaction.match(/@\w/) == null && $i != null && emoji != null;
+	if (isLocalReactionFormat.value) {
+		const emoji = customEmojisMap.get(emojiName.value) ?? getUnicodeEmojiOrNull(props.reaction);
+		if (emoji == null) return false;
+		return checkReactionPermissions($i, props.note, emoji);
+	}
+
+	// JUICE: リモートホストのカスタム絵文字は権限情報(ロール制限等)をローカルで持っていないため
+	// 事前判定できない。サーバー側(ReactionService.create)がローカルに同名絵文字が無ければ
+	// 既定のリアクションにフォールバックするので、クリックできること自体はここでは許可する。
+	return reactionPiggybackOnRemoteEnabled.value;
 });
-const canGetInfo = computed(() => !props.reaction.match(/@\w/) && props.reaction.includes(':'));
+// JUICE: リモートのカスタム絵文字によるリアクションも、ライセンス等の詳細情報を確認できるようにする
+const canGetInfo = computed(() => props.reaction.includes(':'));
 const isLocalCustomEmoji = props.reaction[0] === ':' && props.reaction.includes('@.');
 
 async function toggleReaction() {
@@ -166,9 +182,15 @@ async function menu(ev: PointerEvent) {
 			text: i18n.ts.info,
 			icon: 'ti ti-info-circle',
 			action: async () => {
+				// JUICE: リモートのカスタム絵文字("@host"付き)も情報取得の対象にするため、
+				// name/hostを分離してemoji APIへ渡す(ローカル・"@."表記の場合はhostを省略する)
+				const decoded = props.reaction.match(/^:([\w+-]+)(?:@([\w.-]+))?:$/);
+				const decodedName = decoded?.[1] ?? emojiName.value;
+				const decodedHost = decoded?.[2];
 				const { dispose } = os.popup(MkCustomEmojiDetailedDialog, {
 					emoji: await misskeyApiGet('emoji', {
-						name: props.reaction.replace(/:/g, '').replace(/@\./, ''),
+						name: decodedName,
+						...(decodedHost != null && decodedHost !== '.' ? { host: decodedHost } : {}),
 					}),
 				}, {
 					closed: () => dispose(),

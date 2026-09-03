@@ -9,6 +9,9 @@ import type { EmojisRepository, NoteReactionsRepository, UsersRepository, NotesR
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import type { MiRemoteUser, MiUser } from '@/models/User.js';
 import type { MiNote } from '@/models/Note.js';
+import type { MiEmoji } from '@/models/Emoji.js';
+import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { resolveReactionPiggybackSettings } from '@/models/JuiceSettings.js';
 import { IdService } from '@/core/IdService.js';
 import type { MiNoteReaction } from '@/models/NoteReaction.js';
 import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
@@ -65,7 +68,6 @@ type DecodedReaction = {
 	host?: string | null;
 };
 
-const isCustomEmojiRegexp = /^:([\w+-]+)(?:@\.)?:$/;
 const decodeCustomEmojiRegexp = /^:([\w+-]+)(?:@([\w.-]+))?:$/;
 
 @Injectable()
@@ -101,6 +103,7 @@ export class ReactionService {
 		private notificationService: NotificationService,
 		private perUserReactionsChart: PerUserReactionsChart,
 		private juiceUserRankingService: JuiceUserRankingService,
+		private juiceSettingsService: JuiceSettingsService,
 	) {
 	}
 
@@ -129,21 +132,62 @@ export class ReactionService {
 		if (note.reactionAcceptance === 'likeOnly' || ((note.reactionAcceptance === 'likeOnlyForRemote' || note.reactionAcceptance === 'nonSensitiveOnlyForLocalLikeOnlyForRemote') && (user.host != null))) {
 			reaction = '\u2764';
 		} else if (_reaction != null) {
-			const custom = reaction.match(isCustomEmojiRegexp);
+			const custom = reaction.match(decodeCustomEmojiRegexp);
 			if (custom) {
 				const reacterHost = this.utilityService.toPunyNullable(user.host);
-
 				const name = custom[1];
-				const emoji = reacterHost == null
-					? (await this.customEmojiService.localEmojisCache.fetch()).get(name)
-					: await this.emojisRepository.findOneBy({
-						host: reacterHost,
-						name,
-					});
+
+				// JUICE: リアクション相乗り(ノートに既についている他人のリアクションをクリックして、
+				// 自分も同じリアクションを付けること)対応。管理者設定で無効化できる。無効時は元の
+				// 挙動(ローカルユーザーは自分のインスタンスのローカル絵文字のみ、リモートユーザーは
+				// 自分自身のホストの絵文字のみを対象)のまま。
+				const { reactionPiggybackOnRemoteEnabled } = resolveReactionPiggybackSettings(await this.juiceSettingsService.fetch());
+
+				let hostsToSearch: (string | null | undefined)[];
+				if (reactionPiggybackOnRemoteEnabled && reacterHost == null) {
+					// JUICE: 相乗り(明示的なホスト指定の尊重)はローカルユーザーからのリアクションに限る。
+					// リモートから受信したActivity由来のリアクションは、送信元が完全に外部の制御下に
+					// あり任意のホスト文字列を詐称できてしまう(=このサーバーがキャッシュ済みの
+					// (host, name)の組み合わせを外部から探索可能にしてしまう、あるいは他ユーザーの
+					// リアクションの出所を偽装できてしまう)ため、従来通りreacterHost固定のままにする
+					const noteHost = note.userHost;
+					// リアクション文字列に明示的に指定されたホスト。無指定ならundefined、
+					// ":name@.:" ならローカルを表すnull、それ以外はホスト名の文字列
+					const emojiDeclaratedHostRaw = custom[2];
+					const emojiDeclaratedHost = emojiDeclaratedHostRaw == null
+						? undefined
+						: emojiDeclaratedHostRaw === '.'
+							? null
+							: this.utilityService.toPunyNullable(emojiDeclaratedHostRaw);
+					const resolvedDeclaratedHost = emojiDeclaratedHost != null && this.utilityService.isSelfHost(emojiDeclaratedHost) ? null : emojiDeclaratedHost;
+
+					// 指定されたホスト → ローカル → ノート投稿者のホストの順で、このサーバーが
+					// 既に把握している絵文字を探す。":name@.:"(明示的にローカルを指定)の場合も
+					// resolvedDeclaratedHostがnullになるため、無指定の場合と同じくnoteHostへの
+					// フォールバックが働く(tempura本家の実装踏襲。ローカルに同名絵文字が既に
+					// 存在しない場合のみ発生する、稀な代替挙動として許容する)
+					hostsToSearch = emojiDeclaratedHost !== undefined
+						? [resolvedDeclaratedHost, null, noteHost]
+						: [null, noteHost];
+				} else {
+					hostsToSearch = [reacterHost];
+				}
+
+				const hosts = [...new Set(hostsToSearch)].filter((h): h is string | null => h !== undefined);
+
+				let emoji: MiEmoji | null = null;
+				for (const host of hosts) {
+					emoji = host == null
+						? (await this.customEmojiService.localEmojisCache.fetch()).get(name) ?? null
+						: await this.emojisRepository.findOneBy({ host, name });
+					if (emoji) break;
+				}
 
 				if (emoji) {
 					if (emoji.roleIdsThatCanBeUsedThisEmojiAsReaction.length === 0 || (await this.roleService.getUserRoles(user.id)).some(r => emoji.roleIdsThatCanBeUsedThisEmojiAsReaction.includes(r.id))) {
-						reaction = reacterHost ? `:${name}@${reacterHost}:` : `:${name}:`;
+						// JUICE: リアクション相乗りにより、実際に解決された絵文字のホストが
+						// リアクションしたユーザー自身のホストと異なりうるため、emoji.hostを使う
+						reaction = emoji.host ? `:${name}@${emoji.host}:` : `:${name}:`;
 
 						// センシティブ
 						if ((note.reactionAcceptance === 'nonSensitiveOnly' || note.reactionAcceptance === 'nonSensitiveOnlyForLocalLikeOnlyForRemote') && emoji.isSensitive) {
@@ -151,7 +195,10 @@ export class ReactionService {
 						}
 
 						// for media silenced host, custom emoji reactions are not allowed
-						if (reacterHost != null && this.utilityService.isMediaSilencedHost(this.meta.mediaSilencedHosts, reacterHost)) {
+						// JUICE: 相乗りにより実際に表示される画像の提供元(emoji.host)がreacterHostと
+						// 異なりうるため、判定対象はemoji.hostにする(reacterHostだと相乗り経由で
+						// media-silenced指定したホストの画像がすり抜けてしまう)
+						if (emoji.host != null && this.utilityService.isMediaSilencedHost(this.meta.mediaSilencedHosts, emoji.host)) {
 							reaction = FALLBACK;
 						}
 					} else {

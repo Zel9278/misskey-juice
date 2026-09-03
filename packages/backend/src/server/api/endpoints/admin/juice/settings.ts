@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveLatexSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -59,6 +59,10 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			reactionPiggybackOnRemoteEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 		},
 	},
 } as const;
@@ -83,6 +87,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...resolveRankingSettings(settings),
 				...resolveRelayTimelineSettings(settings),
 				...resolveLatexSettings(settings),
+				...resolveReactionPiggybackSettings(settings),
 			};
 		});
 	}

@@ -88,6 +88,7 @@ const props = withDefaults(defineProps<{
 		avatarDecorationRequestEnabled: false,
 		relayTimelineEnabled: false,
 		latexEnabled: true,
+		reactionPiggybackOnRemoteEnabled: false,
 	}),
 });
 

@@ -14353,6 +14353,18 @@ export interface Locale extends ILocale {
          */
         "latexEnabledCaption": string;
         /**
+         * リアクションの相乗り
+         */
+        "reactionPiggyback": string;
+        /**
+         * リモートのリアクションへの相乗りを許可する
+         */
+        "reactionPiggybackOnRemoteEnabled": string;
+        /**
+         * 他のサーバーのカスタム絵文字によるリアクションをクリックして、自分も同じリアクションを付けられるようにします(ローカルのカスタム絵文字・Unicode絵文字によるリアクションへの相乗りには影響しません)。有効にすると、他のサーバーの絵文字画像を著作権者の許諾なく表示・使用することになる可能性があります。有効化は管理者の自己責任で行ってください。
+         */
+        "reactionPiggybackOnRemoteEnabledCaption": string;
+        /**
          * 投票を追加
          */
         "enablePoll": string;
