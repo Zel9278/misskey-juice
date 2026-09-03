@@ -17,7 +17,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<div class="_gaps_s">
 		<div v-if="request.category">{{ i18n.ts._emojiRequestPage.category }}: {{ request.category }}</div>
+		<div v-if="request.aliases.length > 0">{{ i18n.ts.tags }}: {{ request.aliases.join(' ') }}</div>
 		<div v-if="request.license">{{ i18n.ts._emojiRequestPage.license }}: {{ request.license }}</div>
+		<div v-if="request.isSensitive">{{ i18n.ts.sensitive }}</div>
+		<div v-if="request.localOnly">{{ i18n.ts.localOnly }}</div>
 		<div v-if="request.status === 'rejected'" class="_selectable">
 			{{ i18n.ts._emojiRequestPage.rejectReason }}: {{ request.rejectReason }}
 		</div>

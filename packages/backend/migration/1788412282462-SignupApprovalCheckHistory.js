@@ -23,25 +23,35 @@ export class SignupApprovalCheckHistory1788412282462 {
         // 削除しないため取得できる)。
         await queryRunner.query(`UPDATE "signup_approval_check" c SET "username" = u."username", "signupReason" = u."signupReason" FROM "user" u WHERE c."userId" = u."id" AND c."username" IS NULL`);
 
-        // JUICE: reviewer(誰が審査したか)も同様に、この機能追加より前の行には記録が無い。
-        // moderation_log(approveSignup/declineSignup)には審査したモデレーター自身のuserIdと、
+        // JUICE: reviewer(誰が審査したか)・reviewedAt(いつ審査したか)も同様に、この機能追加より前の
+        // 行には記録が無い。moderation_log(approveSignup)には審査したモデレーター自身のuserIdと、
         // 対象ユーザーのIDがinfo->>'userId'として既に記録されているため、承認済みの行(userIdがまだ
         // 生きている)についてはそこから確実に一意特定できる範囲でreviewerIdを補完する。却下済みの行は
         // userIdが既にNULL化されておりmoderation_logと確実に対応付けられないため対象外とする
         // (却下理由自体はdecline-signup.tsが削除前に直接signup_approval_check.reasonへ保存しているため、
         // この機能追加より後の却下であればreasonは既に正しく残っている)。
-        await queryRunner.query(`
-            UPDATE "signup_approval_check" c
-            SET "reviewerId" = m."moderatorId"
-            FROM (
-                SELECT (info->>'userId') AS "targetUserId", MIN("userId") AS "moderatorId"
+        // reviewedAtは、対応するmoderation_logの行自体が作られた時刻(=審査した瞬間)を使う。このID列は
+        // aidx形式(先頭8文字が2000-01-01からの経過msをbase36エンコードしたもの、packages/backend/src/
+        // misc/id/aidx.tsのparseAidxと同じ形式。このインスタンスの.config/default.ymlはid: 'aidx'固定)
+        // なので、その部分だけ数値に戻せば復元できる。
+        const TIME2000 = 946684800000;
+        const matchedApprovals = await queryRunner.query(`
+            SELECT c.id AS "checkId", m."moderatorId", m."logId"
+            FROM "signup_approval_check" c
+            JOIN (
+                SELECT (info->>'userId') AS "targetUserId", MIN("userId") AS "moderatorId", MIN(id) AS "logId"
                 FROM "moderation_log"
                 WHERE "type" = 'approveSignup'
                 GROUP BY (info->>'userId')
                 HAVING count(DISTINCT "userId") = 1
-            ) m
-            WHERE c."status" = 'approved' AND c."reviewerId" IS NULL AND c."userId" = m."targetUserId"
+            ) m ON c."userId" = m."targetUserId"
+            WHERE c."status" = 'approved' AND c."reviewerId" IS NULL
         `);
+        for (const row of matchedApprovals) {
+            const ms = parseInt(row.logId.slice(0, 8), 36) + TIME2000;
+            const reviewedAt = Number.isFinite(ms) && ms > TIME2000 ? new Date(ms) : null;
+            await queryRunner.query(`UPDATE "signup_approval_check" SET "reviewerId" = $1, "reviewedAt" = $2 WHERE id = $3`, [row.moderatorId, reviewedAt, row.checkId]);
+        }
     }
 
     async down(queryRunner) {

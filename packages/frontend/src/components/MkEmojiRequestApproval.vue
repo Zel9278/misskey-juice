@@ -18,7 +18,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div class="_gaps_s">
 		<img v-if="request.fileUrl" :src="request.fileUrl" :class="$style.img"/>
 		<div v-if="request.category">{{ i18n.ts._emojiRequestPage.category }}: {{ request.category }}</div>
+		<div v-if="request.aliases.length > 0">{{ i18n.ts.tags }}: {{ request.aliases.join(' ') }}</div>
 		<div v-if="request.license" class="_selectable">{{ i18n.ts._emojiRequestPage.license }}: {{ request.license }}</div>
+		<div v-if="request.isSensitive">{{ i18n.ts.sensitive }}</div>
+		<div v-if="request.localOnly">{{ i18n.ts.localOnly }}</div>
 		<div v-if="request.status === 'rejected'" class="_selectable">{{ i18n.ts._emojiRequestPage.rejectReason }}: {{ request.rejectReason }}</div>
 		<!-- JUICE: 審査済みの申請には「誰がいつ審査したか」を表示する -->
 		<div v-if="request.reviewer">{{ i18n.ts._emojiRequestPage.reviewedBy }}: <MkAcct :user="request.reviewer"/><template v-if="request.reviewedAt"> (<MkTime :time="request.reviewedAt"/>)</template></div>
