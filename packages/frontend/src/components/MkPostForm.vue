@@ -120,7 +120,7 @@ import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
 import insertTextAtCursor from 'insert-text-at-cursor';
 import { toASCII } from 'punycode.js';
-import { host, url } from '@@/js/config.js';
+import { host, url, langs } from '@@/js/config.js';
 import MkUploaderItems from './MkUploaderItems.vue';
 import type { ShallowRef } from 'vue';
 import type { PostFormProps } from '@/types/post-form.js';
@@ -213,6 +213,8 @@ if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(u => pushVisibleUser(u));
 }
 const reactionAcceptance = ref(store.s.reactionAcceptance);
+// JUICE: nullなら投稿時にサーバー側でユーザーの表示言語設定が既定値として使われる
+const lang = ref<string | null>(null);
 const scheduledAt = ref<number | null>(null);
 const draghover = ref(false);
 const quoteId = ref<string | null>(null);
@@ -614,6 +616,20 @@ async function toggleReactionAcceptance() {
 	reactionAcceptance.value = select.result;
 }
 
+// JUICE
+async function toggleLang() {
+	const select = await os.select({
+		title: i18n.ts._postLanguage.title,
+		items: [
+			{ value: null, label: i18n.ts._postLanguage.auto },
+			...langs.map(([k, v]) => ({ value: k as string | null, label: v })),
+		],
+		default: lang.value,
+	});
+	if (select.canceled) return;
+	lang.value = select.result;
+}
+
 //#region その他の設定メニューpopup
 function showOtherSettings() {
 	let reactionAcceptanceIcon = 'ti ti-icons';
@@ -655,6 +671,14 @@ function showOtherSettings() {
 		caption: reactionAcceptanceCaption,
 		action: () => {
 			toggleReactionAcceptance();
+		},
+	}, {
+		// JUICE
+		icon: 'ti ti-language',
+		text: i18n.ts._postLanguage.title,
+		caption: lang.value ? (langs.find(([k]) => k === lang.value)?.[1] ?? lang.value) : i18n.ts._postLanguage.auto,
+		action: () => {
+			toggleLang();
 		},
 	}, { type: 'divider' }, {
 		type: 'button',
@@ -1042,6 +1066,7 @@ async function post(ev?: PointerEvent) {
 		visibility: visibility.value,
 		visibleUserIds: visibility.value === 'specified' ? visibleUsers.value.map(u => u.id) : undefined,
 		reactionAcceptance: reactionAcceptance.value,
+		lang: lang.value, // JUICE
 	};
 
 	if (withHashtags.value && hashtags.value && hashtags.value.trim() !== '') {

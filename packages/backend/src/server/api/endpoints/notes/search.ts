@@ -64,6 +64,8 @@ export const paramDef = {
 		// JUICE: 自分が付けたリアクションでの絞り込み。`'any'`で「何かしらリアクションしたノート」
 		// 全体、それ以外は指定したリアクション文字列と完全一致するものだけ。自分自身のリアクションのみ対象
 		myReaction: { type: 'string', nullable: true, default: null },
+		// JUICE: ノートの言語(BCP 47言語タグ)での絞り込み。完全一致のみ
+		lang: { type: 'string', nullable: true, default: null },
 	},
 	required: [],
 } as const;
@@ -102,6 +104,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				searchOperator: ps.searchOperator,
 				excludeWords: ps.excludeWords,
 				myReaction: ps.myReaction,
+				lang: ps.lang,
 			}, {
 				untilId: untilId,
 				sinceId: sinceId,

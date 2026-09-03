@@ -4458,6 +4458,7 @@ export type components = {
             mutedWords: string[][];
             hardMutedWords: string[][];
             mutedInstances: string[];
+            filteredLanguages: string[];
             notificationRecieveConfig: {
                 note?: {
                     /** @enum {string} */
@@ -4780,6 +4781,7 @@ export type components = {
             deletedAt?: string | null;
             text: string | null;
             cw?: string | null;
+            lang?: string | null;
             /** Format: id */
             userId: string;
             user: components['schemas']['UserLite'];
@@ -30136,6 +30138,7 @@ export interface operations {
                     mutedWords?: (string[] | string)[];
                     hardMutedWords?: (string[] | string)[];
                     mutedInstances?: string[];
+                    filteredLanguages?: string[];
                     notificationRecieveConfig?: {
                         note?: {
                             /** @enum {string} */
@@ -32101,6 +32104,7 @@ export interface operations {
                     visibility?: 'public' | 'home' | 'followers' | 'specified';
                     visibleUserIds?: string[];
                     cw?: string | null;
+                    lang?: string | null;
                     /** @default false */
                     localOnly?: boolean;
                     /** @default false */
@@ -33912,6 +33916,8 @@ export interface operations {
                     excludeWords?: string[];
                     /** @default null */
                     myReaction?: string | null;
+                    /** @default null */
+                    lang?: string | null;
                 };
             };
         };

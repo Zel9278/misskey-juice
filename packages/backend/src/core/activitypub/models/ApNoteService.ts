@@ -193,6 +193,17 @@ export class ApNoteService {
 			text = this.apMfmService.htmlToMfm(note.content, note.tag);
 		}
 
+		// JUICE: ノートの言語(BCP 47言語タグ)。AS2標準のcontentMapから取得する(Mastodon/Akkoma互換)。
+		// 複数言語が指定されていた場合は先頭の1つのみを採用する。指定が無ければnull(未タグ付け扱い)
+		// リモートから届く値は信用できないため、DBカラム長(varchar(32))を超える・空文字の場合は
+		// 不正な値として扱い、タグ付け自体を諦める(insertエラーで受信処理全体を失敗させないため)
+		const contentMapLang = note.contentMap && typeof note.contentMap === 'object'
+			? Object.keys(note.contentMap)[0]
+			: undefined;
+		const lang = contentMapLang && contentMapLang.length > 0 && contentMapLang.length <= 32
+			? contentMapLang
+			: null;
+
 		const poll = await this.apQuestionService.extractPollFromQuestion(note, resolver).catch(() => undefined);
 
 		//#region Contents Check
@@ -320,6 +331,7 @@ export class ApNoteService {
 				renote: quote,
 				name: note.name,
 				cw,
+				lang,
 				text,
 				localOnly: false,
 				isAIGenerated: !!note._juice_isAIGenerated, // JUICE

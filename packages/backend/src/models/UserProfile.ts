@@ -270,6 +270,14 @@ export class MiUserProfile {
 	})
 	public mutedInstances: string[];
 
+	// JUICE: タイムラインに表示する言語を絞り込むための許可リスト(BCP 47言語タグ)。
+	// 空配列(既定)の場合は絞り込みを行わない。言語が指定されていないノートは常に表示する
+	@Column('jsonb', {
+		default: [],
+		comment: 'List of languages (BCP 47) to show in timelines. Empty means no filtering (JUICE).',
+	})
+	public filteredLanguages: string[];
+
 	@Column('jsonb', {
 		default: {},
 	})

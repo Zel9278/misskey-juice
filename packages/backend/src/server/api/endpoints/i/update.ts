@@ -199,6 +199,10 @@ export const paramDef = {
 		mutedInstances: { type: 'array', items: {
 			type: 'string',
 		} },
+		// JUICE: タイムラインに表示する言語の絞り込み(空なら絞り込み無し)
+		filteredLanguages: { type: 'array', items: {
+			type: 'string',
+		} },
 		notificationRecieveConfig: {
 			type: 'object',
 			nullable: false,
@@ -346,6 +350,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				profileUpdates.hardMutedWords = ps.hardMutedWords;
 			}
 			if (ps.mutedInstances !== undefined) profileUpdates.mutedInstances = ps.mutedInstances;
+			if (ps.filteredLanguages !== undefined) profileUpdates.filteredLanguages = ps.filteredLanguages; // JUICE
 			if (ps.notificationRecieveConfig !== undefined) profileUpdates.notificationRecieveConfig = ps.notificationRecieveConfig;
 			if (typeof ps.isLocked === 'boolean') updates.isLocked = ps.isLocked;
 			if (typeof ps.isExplorable === 'boolean') updates.isExplorable = ps.isExplorable;

@@ -610,6 +610,15 @@ export const packedMeDetailedOnlySchema = {
 				nullable: false, optional: false,
 			},
 		},
+		// JUICE: タイムラインに表示する言語の絞り込み(空なら絞り込み無し)
+		filteredLanguages: {
+			type: 'array',
+			nullable: false, optional: false,
+			items: {
+				type: 'string',
+				nullable: false, optional: false,
+			},
+		},
 		notificationRecieveConfig: {
 			type: 'object',
 			nullable: false, optional: false,

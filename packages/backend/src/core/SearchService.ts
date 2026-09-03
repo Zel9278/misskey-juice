@@ -63,6 +63,8 @@ export type SearchOpts = {
 	// ノート」全体、それ以外は特定のリアクション文字列との完全一致。プライバシー上、
 	// 自分自身のリアクションのみを対象とする(他人のリアクションでの検索は不可)
 	myReaction?: string | null;
+	// JUICE: ノートの言語(BCP 47言語タグ)での絞り込み。完全一致のみ(部分一致は行わない)
+	lang?: string | null;
 };
 
 export type SearchPagination = {
@@ -153,6 +155,7 @@ export class SearchService {
 					'userHost',
 					'channelId',
 					'tags',
+					'lang', // JUICE
 				],
 				typoTolerance: {
 					enabled: false,
@@ -201,6 +204,7 @@ export class SearchService {
 			cw: note.cw,
 			text: note.text,
 			tags: note.tags,
+			lang: note.lang, // JUICE
 		}], {
 			primaryKey: 'id',
 		});
@@ -280,6 +284,11 @@ export class SearchService {
 			query.andWhere('note."hasPoll" = TRUE');
 		} else if (opts.hasPoll === 'without') {
 			query.andWhere('note."hasPoll" = FALSE');
+		}
+
+		// JUICE: ノートの言語(BCP 47言語タグ)での絞り込み。完全一致のみ
+		if (opts.lang) {
+			query.andWhere('note.lang = :lang', { lang: opts.lang });
 		}
 
 		// JUICE: 自分が付けたリアクションでノートを絞り込む(プロジェクト項目「付けたリアクションで
@@ -429,6 +438,8 @@ export class SearchService {
 				filter.qs.push({ op: '=', k: 'userHost', v: opts.host });
 			}
 		}
+		// JUICE: ノートの言語(BCP 47言語タグ)での絞り込み。完全一致のみ
+		if (opts.lang) filter.qs.push({ op: '=', k: 'lang', v: opts.lang });
 
 		const res = await this.meilisearchNoteIndex.search(q, {
 			sort: ['createdAt:desc'],

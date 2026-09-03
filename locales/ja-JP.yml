@@ -2894,6 +2894,10 @@ _visibility:
   disableFederation: "連合なし"
   disableFederationDescription: "他サーバーへの配信を行いません"
 
+_postLanguage:
+  title: "投稿の言語"
+  auto: "自動(表示言語の設定に従う)"
+
 _postForm:
   quitInspiteOfThereAreUnuploadedFilesConfirm: "アップロードされていないファイルがありますが、破棄してフォームを閉じますか？"
   uploaderTip: "ファイルはまだアップロードされていません。ファイルのメニューから、リネームや画像のクロップ、ウォーターマークの付与、圧縮の有無などを設定できます。ファイルはノート投稿時に自動でアップロードされます。"
@@ -3589,6 +3593,7 @@ _search:
   hasPollLabel: "投票"
   optionWith: "あり"
   optionWithout: "なし"
+  langLabel: "投稿の言語"
   myReactionLabel: "自分のリアクション"
   myReactionPageHint: "自分が過去に投稿へ付けたリアクションをもとに投稿を検索します。下から絞り込み方を選び、「検索」を押してください。"
   myReactionAny: "何かしらリアクションした投稿"
@@ -3847,6 +3852,8 @@ _juice:
   reactionPiggyback: "リアクションの相乗り"
   reactionPiggybackOnRemoteEnabled: "リモートのリアクションへの相乗りを許可する"
   reactionPiggybackOnRemoteEnabledCaption: "他のサーバーのカスタム絵文字によるリアクションをクリックして、自分も同じリアクションを付けられるようにします(ローカルのカスタム絵文字・Unicode絵文字によるリアクションへの相乗りには影響しません)。有効にすると、他のサーバーの絵文字画像を著作権者の許諾なく表示・使用することになる可能性があります。有効化は管理者の自己責任で行ってください。"
+  filteredLanguages: "タイムラインに表示する言語"
+  filteredLanguagesCaption: "チェックした言語の投稿だけをホーム・ローカル・グローバルタイムラインに表示します。1つもチェックしない場合は、すべての言語の投稿を表示します。言語が指定されていない投稿は、この設定に関わらず常に表示されます。"
   enablePoll: "投票を追加"
   enablePollCaption: "作成後に選択肢や期限を変更することはできません。"
   thereArePendingEmojiRequestsWarning: "未対応の絵文字申請があります。"

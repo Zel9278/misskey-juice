@@ -80,6 +80,7 @@ function generateDummyNote(override?: Partial<MiNote>): MiNote {
 		text: 'This is a dummy note for testing purposes.',
 		name: null,
 		cw: null,
+		lang: null,
 		userId: 'dummy-user-1',
 		user: null,
 		localOnly: true,
@@ -402,6 +403,7 @@ export class WebhookTestService {
 			deletedAt: null,
 			text: note.text,
 			cw: note.cw,
+			lang: note.lang, // JUICE
 			userId: note.userId,
 			user: await this.toPackedUserLite(note.user ?? generateDummyUser()),
 			replyId: note.replyId,

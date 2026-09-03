@@ -18,6 +18,7 @@ import { MiLocalUser } from '@/models/User.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
 import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
+import { isLanguageFiltered } from '@/misc/is-language-filtered.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -98,9 +99,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const [
 				followings,
+				profile,
 			] = await Promise.all([
 				this.cacheService.userFollowingsCache.fetch(me.id),
+				this.cacheService.userProfileCache.fetch(me.id),
 			]);
+			// JUICE
+			const filteredLanguages = new Set(profile.filteredLanguages);
 
 			const timeline = this.fanoutTimelineEndpointService.timeline({
 				untilId,
@@ -116,6 +121,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					if (note.reply && note.reply.visibility === 'followers') {
 						if (!Object.hasOwn(followings, note.reply.userId) && note.reply.userId !== me.id) return false;
 					}
+
+					// JUICE: 表示言語の絞り込み
+					if (isLanguageFiltered(note, filteredLanguages)) return false;
 
 					return true;
 				},
@@ -216,6 +224,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		this.queryService.generateVisibilityQuery(query, me);
 		this.queryService.generateBaseNoteFilteringQuery(query, me);
 		this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+		// JUICE: 表示言語の絞り込み
+		this.queryService.generateLanguageFilterQuery(query, me, true);
 
 		if (ps.includeMyRenotes === false) {
 			query.andWhere(new Brackets(qb => {

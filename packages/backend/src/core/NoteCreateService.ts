@@ -180,6 +180,9 @@ type Option = {
 	isAIGenerated?: boolean | null;
 	reactionAcceptance?: MiNote['reactionAcceptance'];
 	cw?: string | null;
+	// JUICE: このノートの言語(BCP 47言語タグ)。デフォルト解決(未指定時にユーザーの表示言語設定を
+	// 使う等)は呼び出し元(notes/create.ts等)の責務とし、ここでは渡された値をそのまま使う
+	lang?: string | null;
 	visibility?: string;
 	visibleUsers?: MinimumUser[] | null;
 	channel?: MiChannel | null;
@@ -290,6 +293,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		fileIds: MiDriveFile['id'][];
 		text: string | null;
 		cw: string | null;
+		lang?: string | null;
 		visibility: string;
 		visibleUserIds: MiUser['id'][];
 		channelId: MiChannel['id'] | null;
@@ -431,6 +435,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			reply,
 			renote,
 			cw: data.cw,
+			lang: data.lang,
 			localOnly: data.localOnly,
 			isAIGenerated: data.isAIGenerated,
 			reactionAcceptance: data.reactionAcceptance,
@@ -663,6 +668,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			text: data.text,
 			hasPoll: data.poll != null,
 			cw: data.cw ?? null,
+			lang: data.lang ?? null,
 			tags: tags.map(tag => normalizeForSearch(tag)),
 			emojis,
 			userId: user.id,

@@ -10954,6 +10954,16 @@ export interface Locale extends ILocale {
          */
         "disableFederationDescription": string;
     };
+    "_postLanguage": {
+        /**
+         * 投稿の言語
+         */
+        "title": string;
+        /**
+         * 自動(表示言語の設定に従う)
+         */
+        "auto": string;
+    };
     "_postForm": {
         /**
          * アップロードされていないファイルがありますが、破棄してフォームを閉じますか？
@@ -13411,6 +13421,10 @@ export interface Locale extends ILocale {
          */
         "optionWithout": string;
         /**
+         * 投稿の言語
+         */
+        "langLabel": string;
+        /**
          * 自分のリアクション
          */
         "myReactionLabel": string;
@@ -14364,6 +14378,14 @@ export interface Locale extends ILocale {
          * 他のサーバーのカスタム絵文字によるリアクションをクリックして、自分も同じリアクションを付けられるようにします(ローカルのカスタム絵文字・Unicode絵文字によるリアクションへの相乗りには影響しません)。有効にすると、他のサーバーの絵文字画像を著作権者の許諾なく表示・使用することになる可能性があります。有効化は管理者の自己責任で行ってください。
          */
         "reactionPiggybackOnRemoteEnabledCaption": string;
+        /**
+         * タイムラインに表示する言語
+         */
+        "filteredLanguages": string;
+        /**
+         * チェックした言語の投稿だけをホーム・ローカル・グローバルタイムラインに表示します。1つもチェックしない場合は、すべての言語の投稿を表示します。言語が指定されていない投稿は、この設定に関わらず常に表示されます。
+         */
+        "filteredLanguagesCaption": string;
         /**
          * 投票を追加
          */

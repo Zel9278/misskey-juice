@@ -30,6 +30,11 @@ export const packedNoteSchema = {
 			type: 'string',
 			optional: true, nullable: true,
 		},
+		// JUICE: このノートの言語(BCP 47言語タグ)。未指定の場合はnull
+		lang: {
+			type: 'string',
+			optional: true, nullable: true,
+		},
 		userId: {
 			type: 'string',
 			optional: false, nullable: false,

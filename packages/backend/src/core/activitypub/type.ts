@@ -27,6 +27,9 @@ export interface IObject {
 	inReplyTo?: any;
 	replies?: ICollection;
 	content?: string | null;
+	// JUICE: ノートの言語(BCP 47言語タグ)をAS2標準の仕組みで連合するため。Mastodon/Akkoma等と
+	// 同様、キーは常に1つ(そのノートの言語)のみを送出・想定する
+	contentMap?: Record<string, string> | null;
 	startTime?: Date;
 	endTime?: Date;
 	icon?: any;

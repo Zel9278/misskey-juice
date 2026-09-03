@@ -1615,6 +1615,71 @@ describe('Timelines', () => {
 			});
 		});
 
+		// JUICE: ホーム/ローカルタイムラインの言語フィルタ(filteredLanguages)。
+		// QueryService.generateLanguageFilterQuery (DBパス) とFanoutTimelineEndpointServiceの
+		// noteFilter経由のisLanguageFiltered (Redis fanoutパス) の2経路が一致していることを、
+		// enableFanoutTimeline: true/false の両方で確認する
+		describe('言語フィルタ', () => {
+			test('フィルタした言語以外の他人の投稿が含まれない(言語未指定の投稿は含まれる)', async () => {
+				const [alice, bob] = await Promise.all([signup(), signup()]);
+
+				await api('following/create', { userId: bob.id }, alice);
+				await api('i/update', { filteredLanguages: ['ja-JP'] }, alice);
+
+				const bobNoteJa = await post(bob, { text: 'こんにちは', lang: 'ja-JP' });
+				const bobNoteEn = await post(bob, { text: 'hi', lang: 'en-US' });
+				const bobNoteNoLang = await post(bob, { text: 'no lang' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/timeline', { limit: 100 }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === bobNoteJa.id), true);
+					assert.strictEqual(res.body.some(note => note.id === bobNoteEn.id), false);
+					assert.strictEqual(res.body.some(note => note.id === bobNoteNoLang.id), true);
+				}, waitForPushToTlOptions);
+
+				const localRes = await api('notes/local-timeline', { limit: 100 }, alice);
+
+				assert.strictEqual(localRes.body.some(note => note.id === bobNoteJa.id), true);
+				assert.strictEqual(localRes.body.some(note => note.id === bobNoteEn.id), false);
+				assert.strictEqual(localRes.body.some(note => note.id === bobNoteNoLang.id), true);
+			});
+
+			test('自分の投稿はフィルタした言語以外でも常に含まれる', async () => {
+				const [alice] = await Promise.all([signup()]);
+
+				await api('i/update', { filteredLanguages: ['ja-JP'] }, alice);
+
+				const aliceNoteEn = await post(alice, { text: 'hi', lang: 'en-US' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/timeline', { limit: 100 }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === aliceNoteEn.id), true);
+				}, waitForPushToTlOptions);
+
+				const localRes = await api('notes/local-timeline', { limit: 100 }, alice);
+
+				assert.strictEqual(localRes.body.some(note => note.id === aliceNoteEn.id), true);
+			});
+
+			test('リノートはリノート元ノートの言語で判定される', async () => {
+				const [alice, bob, carol] = await Promise.all([signup(), signup(), signup()]);
+
+				await api('following/create', { userId: bob.id }, alice);
+				await api('i/update', { filteredLanguages: ['ja-JP'] }, alice);
+
+				const carolNoteEn = await post(carol, { text: 'hi', lang: 'en-US' });
+				const bobRenote = await post(bob, { renoteId: carolNoteEn.id });
+
+				await waitForPushToTl();
+
+				const res = await api('notes/timeline', { limit: 100 }, alice);
+
+				assert.strictEqual(res.body.some(note => note.id === bobRenote.id), false);
+			});
+		});
+
 		describe('Social TL', () => {
 			test('ローカルユーザーのノートが含まれる', async () => {
 				const [alice, bob] = await Promise.all([signup(), signup()]);
@@ -3298,5 +3363,28 @@ describe('Timelines', () => {
 		});
 		// TODO: リノートミュート済みユーザーのテスト
 		// TODO: ページネーションのテスト
+	});
+
+	// JUICE: グローバルタイムラインの言語フィルタ(filteredLanguages)。fanoutパスを持たない
+	// 純粋なDBクエリのエンドポイントであり、alwaysIncludeMyNotesの概念も無いため、
+	// ホーム/ローカルタイムラインとは異なり自分自身の投稿もフィルタ対象になる
+	describe('Global TL: 言語フィルタ', () => {
+		test('フィルタした言語以外の投稿(自分自身の投稿を含む)が含まれない', async () => {
+			const [alice] = await Promise.all([signup()]);
+
+			await api('i/update', { filteredLanguages: ['ja-JP'] }, alice);
+
+			const aliceNoteEn = await post(alice, { text: 'hi', lang: 'en-US' });
+			const aliceNoteJa = await post(alice, { text: 'こんにちは', lang: 'ja-JP' });
+			const aliceNoteNoLang = await post(alice, { text: 'no lang' });
+
+			await vi.waitFor(async () => {
+				const res = await api('notes/global-timeline', { limit: 100 }, alice);
+
+				assert.strictEqual(res.body.some(note => note.id === aliceNoteEn.id), false);
+				assert.strictEqual(res.body.some(note => note.id === aliceNoteJa.id), true);
+				assert.strictEqual(res.body.some(note => note.id === aliceNoteNoLang.id), true);
+			}, waitForPushToTlOptions);
+		});
 	});
 });

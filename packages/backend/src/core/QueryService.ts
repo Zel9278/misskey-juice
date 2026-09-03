@@ -166,6 +166,41 @@ export class QueryService {
 		q.setParameters(blockedQuery.getParameters());
 	}
 
+	// JUICE: ユーザーが設定した表示言語の絞り込み(filteredLanguages、空なら絞り込み無し)を
+	// タイムラインへ適用する。言語が指定されていないノートは常に表示する(Mastodonと同様の仕様)。
+	// generateBaseNoteFilteringQueryとは異なり、ホーム・ローカル・グローバルタイムラインからのみ
+	// 明示的に呼び出す(ミュート・ブロックのような全タイムライン共通のフィルターではない)。
+	// 純粋なリノート(note自身に言語が無い)は、リノート元ノート(renote)自身の言語で判定するため、
+	// この関数を呼び出すクエリは事前に note.renote を(leftJoinAndSelect等で)joinしておくこと。
+	// Notes for future maintainers: この関数と同等の処理をFanoutTimelineEndpointServiceの
+	// noteFilter(isLanguageFiltered、misc/is-language-filtered.ts)にも実装している。
+	// この関数を変更した場合、そちらも変更する必要がある。
+	// alwaysIncludeMyNotesは、FanoutTimelineEndpointServiceのalwaysIncludeMyNotesオプション
+	// (自分の投稿は他のフィルターに関わらず常に表示する)とタイムラインごとの挙動を揃えるためのもの。
+	// そのオプションを使わないタイムライン(globalTimeline等)では渡さないこと。
+	@bindThis
+	public generateLanguageFilterQuery(
+		q: SelectQueryBuilder<any>,
+		me: { id: MiUser['id'] },
+		alwaysIncludeMyNotes = false,
+	): void {
+		const filteredLanguagesQuery = this.userProfilesRepository.createQueryBuilder('user_profile')
+			.select('user_profile.filteredLanguages')
+			.where('user_profile.userId = :userId', { userId: me.id });
+
+		q.andWhere(new Brackets(qb => {
+			qb
+				.where('COALESCE(note.lang, renote.lang) IS NULL')
+				.orWhere(`(${filteredLanguagesQuery.getQuery()})::jsonb = '[]'::jsonb`)
+				.orWhere(`(${filteredLanguagesQuery.getQuery()})::jsonb ? COALESCE(note.lang, renote.lang)`);
+			if (alwaysIncludeMyNotes) {
+				qb.orWhere('note.userId = :languageFilterMeId', { languageFilterMeId: me.id });
+			}
+		}));
+
+		q.setParameters(filteredLanguagesQuery.getParameters());
+	}
+
 	@bindThis
 	public generateMutedNoteThreadQuery(q: SelectQueryBuilder<any>, me: { id: MiUser['id'] }): void {
 		const mutedQuery = this.noteThreadMutingsRepository.createQueryBuilder('threadMuted')

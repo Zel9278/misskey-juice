@@ -48,6 +48,8 @@ import { deepMerge } from '@/utility/merge.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
 import { prefer } from '@/preferences.js';
+import { langs } from '@@/js/config.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
 
 const tlComponent = useTemplateRef('tlComponent');
 
@@ -67,6 +69,26 @@ function relaySelectedRef(id: string) {
 			: prefer.s.relayTimelineFilter.filter(x => x !== id)),
 	});
 }
+
+// JUICE: タイムラインに表示する言語の絞り込み。リレーフィルタと異なりサーバー側(アカウント)の
+// 設定なので、i/updateへ保存する(反映は他のi/update系設定と同様、meUpdatedストリームイベント経由)。
+// langsは40言語超あり、「…」メニューを開くたびにcomputedを作り直すと体感できる遅さになるため、
+// コンポーネント初期化時に1回だけ生成してMapに保持し、メニュー表示時は参照するだけにする
+function filteredLanguageSelectedRef(code: string) {
+	return computed<boolean>({
+		get: () => $i != null && $i.filteredLanguages.includes(code),
+		set: (checked) => {
+			if ($i == null) return;
+			misskeyApi('i/update', {
+				filteredLanguages: checked
+					? [...$i.filteredLanguages, code]
+					: $i.filteredLanguages.filter(x => x !== code),
+			});
+		},
+	});
+}
+
+const filteredLanguageRefs = new Map(langs.map(([code]) => [code, filteredLanguageSelectedRef(code)]));
 
 juicePublicSettingsCache.fetch().then(res => {
 	relayTimelineEnabled.value = res.relayTimelineEnabled;
@@ -273,6 +295,21 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 						type: 'switch',
 						text: relay.host,
 						ref: relaySelectedRef(relay.id),
+					})),
+				});
+			}
+
+			// JUICE: 表示する投稿を言語で絞り込む(未選択=すべての言語を表示、言語未指定の投稿は常に表示)
+			if ($i) {
+				menuItems.push({
+					type: 'parent',
+					icon: 'ti ti-language',
+					text: i18n.ts._juice.filteredLanguages,
+					badge: true,
+					children: () => langs.map(([code, label]) => ({
+						type: 'switch',
+						text: label,
+						ref: filteredLanguageRefs.get(code)!,
 					})),
 				});
 			}

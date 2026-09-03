@@ -57,6 +57,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</FormSection>
 		</SearchMarker>
 
+		<SearchMarker :keywords="['language', 'timeline', 'filter']">
+			<FormSection>
+				<template #label><SearchLabel>{{ i18n.ts._juice.filteredLanguages }}</SearchLabel></template>
+				<div class="_gaps_s">
+					<MkInfo>{{ i18n.ts._juice.filteredLanguagesCaption }}</MkInfo>
+					<MkSwitch
+						v-for="[code, label] in langs"
+						:key="code"
+						:modelValue="isLanguageFilterSelected(code)"
+						@update:modelValue="(v) => onChangeLanguageFilter(code, v)"
+					>
+						<template #label>{{ label }}</template>
+					</MkSwitch>
+				</div>
+			</FormSection>
+		</SearchMarker>
+
 		<SearchMarker :keywords="['signup', 'approval', 'check']">
 			<FormSection>
 				<template #label><SearchLabel>{{ i18n.ts._juice.signupCheck }}</SearchLabel></template>
@@ -142,6 +159,23 @@ function onChangeRelayFilter(id: string, checked: boolean) {
 	prefer.commit('relayTimelineFilter', checked
 		? [...prefer.s.relayTimelineFilter, id]
 		: prefer.s.relayTimelineFilter.filter(x => x !== id));
+}
+
+// JUICE: タイムライン(ホーム・ローカル・グローバル)に表示する言語の絞り込み。
+// リレーフィルタと異なりサーバー側(アカウント)の設定なので、i/updateへ保存する
+const filteredLanguages = ref($i.filteredLanguages);
+
+function isLanguageFilterSelected(code: string): boolean {
+	return filteredLanguages.value.includes(code);
+}
+
+function onChangeLanguageFilter(code: string, checked: boolean) {
+	filteredLanguages.value = checked
+		? [...filteredLanguages.value, code]
+		: filteredLanguages.value.filter(x => x !== code);
+	misskeyApi('i/update', {
+		filteredLanguages: filteredLanguages.value,
+	});
 }
 
 // JUICE: ウィジェットパネル/ドロワーを画面のどちら側に表示するか

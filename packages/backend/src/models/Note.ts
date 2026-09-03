@@ -78,6 +78,13 @@ export class MiNote {
 	})
 	public cw: string | null;
 
+	// JUICE: このノートの言語(BCP 47言語タグ、例: "ja"、"en-US")。未指定の場合はnull
+	@Index()
+	@Column('varchar', {
+		length: 32, nullable: true,
+	})
+	public lang: string | null;
+
 	@Column({
 		...id(),
 		comment: 'The ID of author.',

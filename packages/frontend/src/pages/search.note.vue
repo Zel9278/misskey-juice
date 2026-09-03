@@ -49,6 +49,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkRadios v-model="hasPoll" :options="triStateOptions">
 					<template #label>{{ i18n.ts._search.hasPollLabel }}</template>
 				</MkRadios>
+				<MkSelect v-model="lang" :items="langOptions">
+					<template #label>{{ i18n.ts._search.langLabel }}</template>
+				</MkSelect>
 			</div>
 		</MkFolder>
 
@@ -156,7 +159,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { computed, markRaw, ref, shallowRef, toRef } from 'vue';
-import { host as localHost } from '@@/js/config.js';
+import { host as localHost, langs } from '@@/js/config.js';
 import type * as Misskey from 'misskey-js';
 import { $i } from '@/i.js';
 import { i18n } from '@/i18n.js';
@@ -172,6 +175,7 @@ import MkInfo from '@/components/MkInfo.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkNotesTimeline from '@/components/MkNotesTimeline.vue';
 import MkRadios from '@/components/MkRadios.vue';
+import MkSelect from '@/components/MkSelect.vue';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import { Paginator } from '@/utility/paginator.js';
 import type { MkRadiosOption } from '@/components/MkRadios.vue';
@@ -195,6 +199,12 @@ const triStateOptions = computed<MkRadiosOption[]>(() => [
 	{ value: 'all', label: i18n.ts.all },
 	{ value: 'with', label: i18n.ts._search.optionWith },
 	{ value: 'without', label: i18n.ts._search.optionWithout },
+]);
+
+// JUICE: ノートの言語(BCP 47言語タグ)での絞り込み。「all」は絞り込み無し
+const langOptions = computed(() => [
+	{ value: 'all', label: i18n.ts.all },
+	...langs.map(([code, label]) => ({ value: code, label })),
 ]);
 
 const props = withDefaults(defineProps<{
@@ -227,6 +237,7 @@ const hasFiles = ref<'all' | 'with' | 'without'>('all');
 const hasCw = ref<'all' | 'with' | 'without'>('all');
 const hasReply = ref<'all' | 'with' | 'without'>('all');
 const hasPoll = ref<'all' | 'with' | 'without'>('all');
+const lang = ref<string>('all');
 
 const user = shallowRef<Misskey.entities.UserDetailed | null>(null);
 
@@ -303,6 +314,7 @@ const advancedSearchParams = computed(() => ({
 	hasPoll: hasPoll.value,
 	searchOperator: searchOperator.value,
 	excludeWords: excludeWordsInput.value.split(',').map(word => word.trim()).filter(word => word !== ''),
+	lang: lang.value === 'all' ? null : lang.value,
 }));
 
 const searchRange = () => {
