@@ -14950,11 +14950,11 @@ export interface Locale extends ILocale {
              */
             "misskeyUsername": string;
             /**
-             * 「ユーザー名@ホスト名」の形式で入力してください。
+             * ローカルユーザーは「@ユーザー名」、リモートユーザーは「@ユーザー名@ホスト名」の形式で入力してください。
              */
             "misskeyUsernameCaption": string;
             /**
-             * @example@misskey.example.com
+             * @example
              */
             "misskeyUsernamePlaceholder": string;
             /**

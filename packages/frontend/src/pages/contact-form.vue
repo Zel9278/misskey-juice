@@ -339,8 +339,10 @@ onMounted(async () => {
 	if ($i) {
 		name.value = $i.name || $i.username;
 		replyMethod.value = 'misskey';
-		const host = $i.host || new URL(instance.uri).hostname;
-		misskeyUsername.value = `${$i.username}@${host}`;
+		// JUICE: $iは常にこのサーバー自身のローカルユーザーなので、ホストの付与は不要
+		// (付けるとインスタンスのURLがIPアドレス・ポート番号を含む場合等にドメイン形式の
+		// バリデーションへ引っかかっていた)。プレースホルダー・キャプションと表示を合わせるため先頭に@を付ける
+		misskeyUsername.value = `@${$i.username}`;
 		email.value = $i.email || '';
 	}
 });
@@ -353,8 +355,11 @@ function onChangeMisskeyUsername(): void {
 
 	const username = misskeyUsername.value.trim().replace(/^@/, '');
 
+	// JUICE: ローカルユーザーはこのサーバーのドメインを付与しなくても@usernameのみで通す
 	if (!username.includes('@')) {
-		misskeyUsernameError.value = i18n.ts._contactForm._validation.misskeyUsernameFormatError;
+		misskeyUsernameError.value = /^[a-zA-Z0-9_-]+$/.test(username)
+			? null
+			: i18n.ts._contactForm._validation.misskeyUsernameCharacterError;
 		return;
 	}
 
@@ -471,7 +476,7 @@ async function submit() {
 			name: name.value,
 			replyMethod: replyMethod.value,
 			email: replyMethod.value === 'email' ? email.value : null,
-			misskeyUsername: replyMethod.value === 'misskey' ? misskeyUsername.value : null,
+			misskeyUsername: replyMethod.value === 'misskey' ? misskeyUsername.value.trim().replace(/^@/, '') : null,
 		};
 		submittedAt.value = new Date().toLocaleString();
 

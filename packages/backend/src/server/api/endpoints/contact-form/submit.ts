@@ -132,10 +132,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					throw new ApiError(meta.errors.invalidReplyMethod);
 				}
 
-				// 先頭の@を取り除いた上で、username@domain形式かを検証する
+				// 先頭の@を取り除いた上で、username@domain形式かを検証する。
+				// JUICE: ローカルユーザーはこのサーバーのドメインを付与しなくても
+				// @usernameのみで通す(MFMの@メンション記法もホスト省略でローカル扱いになるため)
 				const misskeyUsername = ps.misskeyUsername.trim().replace(/^@/, '');
 				const parts = misskeyUsername.split('@');
-				if (
+				if (parts.length === 1) {
+					if (parts[0] === '' || !/^[a-zA-Z0-9_-]+$/.test(parts[0])) {
+						throw new ApiError(meta.errors.invalidReplyMethod);
+					}
+				} else if (
 					parts.length !== 2 || parts[0] === '' || parts[1] === '' ||
 					!/^[a-zA-Z0-9_-]+$/.test(parts[0]) ||
 					!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(parts[1])
