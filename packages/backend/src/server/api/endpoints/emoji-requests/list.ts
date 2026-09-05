@@ -44,6 +44,8 @@ export const paramDef = {
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
+		// JUICE: 差し替え申請の対象選択(自分の承認済み申請のみ一覧したい場合等)で使う
+		status: { type: 'string', enum: ['pending', 'approved', 'rejected'], nullable: true },
 	},
 	required: [],
 } as const;
@@ -66,6 +68,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.andWhere('request.userId = :userId', { userId: me.id })
 				.leftJoinAndSelect('request.file', 'file');
 
+			// JUICE
+			if (ps.status != null) query.andWhere('request.status = :status', { status: ps.status });
+
 			const requests = await query.limit(ps.limit).getMany();
 
 			return requests.map(request => ({
@@ -84,6 +89,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				rejectReason: request.rejectReason,
 				reviewedAt: request.reviewedAt?.toISOString() ?? null,
 				resultEmojiId: request.resultEmojiId,
+				targetEmojiId: request.targetEmojiId,
 			}));
 		});
 	}

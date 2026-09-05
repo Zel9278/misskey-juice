@@ -5,6 +5,9 @@
 # Intelij-IDEA
 /.idea
 
+# Obsidian
+/.obsidian
+
 # Node.js
 node_modules
 report.*.json

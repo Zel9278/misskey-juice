@@ -77,6 +77,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				// JUICE: 審査履歴に「誰が審査したか」を表示するために使う
 				reviewer: request.reviewer ? await this.userEntityService.pack(request.reviewer, me, { schema: 'UserLite' }) : null,
 				resultEmojiId: request.resultEmojiId,
+				targetEmojiId: request.targetEmojiId,
 				user: await this.userEntityService.pack(request.user ?? request.userId, me, { schema: 'UserLite' }),
 				fileUrl: request.file?.url ?? null,
 			})));

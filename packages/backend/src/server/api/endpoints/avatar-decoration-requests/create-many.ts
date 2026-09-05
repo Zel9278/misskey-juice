@@ -7,7 +7,7 @@ import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AvatarDecorationRequestsRepository, DriveFilesRepository, MiMeta } from '@/models/_.js';
+import type { AvatarDecorationRequestsRepository, AvatarDecorationsRepository, DriveFilesRepository, MiMeta } from '@/models/_.js';
 import { MiAvatarDecorationRequest } from '@/models/AvatarDecorationRequest.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
@@ -71,6 +71,22 @@ export const meta = {
 			code: 'CAPTCHA_FAILED',
 			id: '69d26e92-13f8-4149-991b-1c49a624b09b',
 		},
+		// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)関連
+		noSuchTargetAvatarDecoration: {
+			message: 'No such target avatar decoration.',
+			code: 'NO_SUCH_TARGET_AVATAR_DECORATION',
+			id: '6de2e31e-a24d-4329-8c97-1de32eb64486',
+		},
+		notAvatarDecorationOwner: {
+			message: 'You can only request to replace an avatar decoration that was created from your own approved request.',
+			code: 'NOT_AVATAR_DECORATION_OWNER',
+			id: '31c39dee-7be5-4b34-9a4b-71f74ff4c853',
+		},
+		duplicateReplacementRequest: {
+			message: 'You already have a pending replacement request for this avatar decoration.',
+			code: 'DUPLICATE_REPLACEMENT_REQUEST',
+			id: 'f2e5f50c-7bf0-44a3-8763-81f684630b98',
+		},
 	},
 
 	res: {
@@ -100,6 +116,9 @@ export const paramDef = {
 					description: { type: 'string', maxLength: 2048, default: '' },
 					category: { type: 'string', nullable: true, maxLength: 128 },
 					deleteFileAfterReview: { type: 'boolean', default: false },
+					// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)。指定した場合、
+					// name等の他のフィールドは無視され、承認されると対象デコレーションの画像のみが差し替わる
+					targetAvatarDecorationId: { type: 'string', format: 'misskey:id', nullable: true },
 				},
 				required: ['fileId', 'name'],
 			},
@@ -127,6 +146,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		@Inject(DI.avatarDecorationRequestsRepository)
 		private avatarDecorationRequestsRepository: AvatarDecorationRequestsRepository,
+
+		@Inject(DI.avatarDecorationsRepository)
+		private avatarDecorationsRepository: AvatarDecorationsRepository,
 
 		private idService: IdService,
 		private roleService: RoleService,
@@ -163,6 +185,34 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const pendingCount = await this.avatarDecorationRequestsRepository.countBy({ userId: me.id, status: 'pending' });
 			if (pendingCount + ps.requests.length > policies.avatarDecorationRequestLimit) throw new ApiError(meta.errors.tooManyPendingRequests);
 
+			// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)。対象は申請者自身の
+			// 承認済み申請(resultAvatarDecorationId)から作られたデコレーションのみに限定する。
+			// 同一バッチ内で同じ対象を複数指定した場合も弾く
+			const targetDecorationIdsInBatch = new Set<string>();
+			for (const req of ps.requests) {
+				if (req.targetAvatarDecorationId == null) continue;
+
+				if (targetDecorationIdsInBatch.has(req.targetAvatarDecorationId)) throw new ApiError(meta.errors.duplicateReplacementRequest);
+				targetDecorationIdsInBatch.add(req.targetAvatarDecorationId);
+
+				const targetDecoration = await this.avatarDecorationsRepository.findOneBy({ id: req.targetAvatarDecorationId });
+				if (targetDecoration == null) throw new ApiError(meta.errors.noSuchTargetAvatarDecoration);
+
+				const ownApprovedRequest = await this.avatarDecorationRequestsRepository.findOneBy({
+					userId: me.id,
+					resultAvatarDecorationId: req.targetAvatarDecorationId,
+					status: 'approved',
+				});
+				if (ownApprovedRequest == null) throw new ApiError(meta.errors.notAvatarDecorationOwner);
+
+				const duplicatePending = await this.avatarDecorationRequestsRepository.findOneBy({
+					userId: me.id,
+					targetAvatarDecorationId: req.targetAvatarDecorationId,
+					status: 'pending',
+				});
+				if (duplicatePending != null) throw new ApiError(meta.errors.duplicateReplacementRequest);
+			}
+
 			const newRequests = ps.requests.map((req, i) => ({
 				id: this.idService.gen(),
 				userId: me.id,
@@ -172,6 +222,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				category: req.category ?? null,
 				status: 'pending' as const,
 				deleteFileAfterReview: req.deleteFileAfterReview ?? false,
+				targetAvatarDecorationId: req.targetAvatarDecorationId ?? null,
 			}));
 
 			await this.db.transaction(async em => {
@@ -201,6 +252,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				rejectReason: null,
 				reviewedAt: null,
 				resultAvatarDecorationId: null,
+				targetAvatarDecorationId: request.targetAvatarDecorationId,
 			}));
 		});
 	}

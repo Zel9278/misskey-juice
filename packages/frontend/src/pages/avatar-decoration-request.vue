@@ -23,21 +23,57 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<div :class="$style.preview">
 						<div :class="$style.previewLabel">{{ i18n.ts._avatarDecorationRequestPage.preview }}</div>
-						<MkAvatar :class="$style.previewAvatar" :user="$i" :decorations="[{ url: draft.file.url, angle: 0, flipH: false, offsetX: 0, offsetY: 0 }]" forceShowDecoration/>
+						<div :class="$style.previewSwatches">
+							<div :class="[$style.previewSwatch, $style.light]">
+								<MkAvatar :class="$style.previewAvatar" :user="$i" :decorations="[decorationForPreview(draft)]" forceShowDecoration/>
+							</div>
+							<div :class="[$style.previewSwatch, $style.dark]">
+								<MkAvatar :class="$style.previewAvatar" :user="$i" :decorations="[decorationForPreview(draft)]" forceShowDecoration/>
+							</div>
+						</div>
+						<!-- JUICE: 装着ダイアログ(settings/avatar-decoration.dialog.vue)と同じ角度・位置・反転の調整UI -->
+						<div class="_gaps_s" :class="$style.previewControls">
+							<MkRange v-model="draft.previewAngle" continuousUpdate :min="-0.5" :max="0.5" :step="0.025" :textConverter="(v) => `${Math.floor(v * 360)}°`">
+								<template #label>{{ i18n.ts.angle }}</template>
+							</MkRange>
+							<MkRange v-model="draft.previewOffsetX" continuousUpdate :min="-0.25" :max="0.25" :step="0.025" :textConverter="(v) => `${Math.floor(v * 100)}%`">
+								<template #label>X {{ i18n.ts.position }}</template>
+							</MkRange>
+							<MkRange v-model="draft.previewOffsetY" continuousUpdate :min="-0.25" :max="0.25" :step="0.025" :textConverter="(v) => `${Math.floor(v * 100)}%`">
+								<template #label>Y {{ i18n.ts.position }}</template>
+							</MkRange>
+							<MkSwitch v-model="draft.previewFlipH">
+								<template #label>{{ i18n.ts.flip }}</template>
+							</MkSwitch>
+						</div>
+						<MkInfo>{{ i18n.ts._avatarDecorationRequestPage.previewAdjustHint }}</MkInfo>
 					</div>
 
-					<MkInput v-model="draft.name">
+					<!-- JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える) -->
+					<div class="_gaps_s">
+						<MkSwitch :modelValue="draft.targetAvatarDecorationId != null" @update:modelValue="(v) => onToggleReplacement(draft, v)">
+							<template #label>{{ i18n.ts._avatarDecorationRequestPage.replacementRequest }}</template>
+							<template #caption>{{ i18n.ts._avatarDecorationRequestPage.replacementRequestCaption }}</template>
+						</MkSwitch>
+						<MkInfo v-if="draft.targetAvatarDecorationId != null">
+							{{ i18n.ts._avatarDecorationRequestPage.replacementTarget }}: <b>{{ draft.name }}</b>
+							<button class="_textButton" @click="pickReplacementTarget(draft)">{{ i18n.ts._avatarDecorationRequestPage.changeTarget }}</button>
+						</MkInfo>
+					</div>
+
+					<MkInput v-model="draft.name" :readonly="draft.targetAvatarDecorationId != null">
 						<template #label>{{ i18n.ts.name }}</template>
 					</MkInput>
 
-					<MkTextarea v-model="draft.description">
-						<template #label>{{ i18n.ts._avatarDecorationRequestPage.description }}</template>
-					</MkTextarea>
+					<template v-if="draft.targetAvatarDecorationId == null">
+						<MkTextarea v-model="draft.description">
+							<template #label>{{ i18n.ts._avatarDecorationRequestPage.description }}</template>
+						</MkTextarea>
 
-					<MkInput v-model="draft.category">
-						<template #label>{{ i18n.ts._avatarDecorationRequestPage.category }}</template>
-					</MkInput>
-
+						<MkInput v-model="draft.category">
+							<template #label>{{ i18n.ts._avatarDecorationRequestPage.category }}</template>
+						</MkInput>
+					</template>
 					<MkSwitch v-model="draft.deleteFileAfterReview">
 						<template #label>{{ i18n.ts._avatarDecorationRequestPage.deleteFileAfterReview }}</template>
 					</MkSwitch>
@@ -72,6 +108,7 @@ import MkInfo from '@/components/MkInfo.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
+import MkRange from '@/components/MkRange.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import MkAvatarDecorationRequestItem from '@/components/MkAvatarDecorationRequestItem.vue';
@@ -105,9 +142,71 @@ type AvatarDecorationRequestDraft = {
 	description: string;
 	category: string;
 	deleteFileAfterReview: boolean;
+	// JUICE: プレビュー確認用の角度・位置・反転。装着ダイアログ(avatar-decoration.dialog.vue)と
+	// 同じUI・値域だが、これは申請データには含めない(実際の角度・位置は装着する各ユーザーが個別に
+	// 設定するものであり、デコレーション自体に固定の値は存在しないため)
+	previewAngle: number;
+	previewOffsetX: number;
+	previewOffsetY: number;
+	previewFlipH: boolean;
+	// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)の対象。nullなら通常の新規申請
+	targetAvatarDecorationId: string | null;
 };
 
 const drafts = ref<AvatarDecorationRequestDraft[]>([]);
+
+// JUICE: 差し替え申請の対象選択用。自分の承認済み申請(デコレーションが実際に作られたもの)のみを
+// 候補にする。初回に選択を試みたタイミングで一度だけ取得する
+let myApprovedAvatarDecorationRequests: Misskey.entities.AvatarDecorationRequestEntry[] | null = null;
+
+async function fetchMyApprovedAvatarDecorationRequests(): Promise<Misskey.entities.AvatarDecorationRequestEntry[]> {
+	if (myApprovedAvatarDecorationRequests == null) {
+		const fetched = await misskeyApi('avatar-decoration-requests/list', { status: 'approved', limit: 100 });
+		myApprovedAvatarDecorationRequests = fetched;
+		return fetched;
+	}
+	return myApprovedAvatarDecorationRequests;
+}
+
+async function pickReplacementTarget(draft: AvatarDecorationRequestDraft) {
+	const requests = await fetchMyApprovedAvatarDecorationRequests();
+	const eligible = requests.filter(r => r.resultAvatarDecorationId != null);
+	if (eligible.length === 0) {
+		os.alert({ type: 'info', text: i18n.ts._avatarDecorationRequestPage.noReplaceableAvatarDecorations });
+		draft.targetAvatarDecorationId = null;
+		return;
+	}
+
+	const { canceled, result } = await os.select({
+		title: i18n.ts._avatarDecorationRequestPage.selectTargetAvatarDecoration,
+		items: eligible.map(r => ({ value: r.resultAvatarDecorationId!, label: r.name })),
+	});
+	if (canceled || result == null) {
+		if (draft.targetAvatarDecorationId == null) return;
+	} else {
+		draft.targetAvatarDecorationId = result;
+		draft.name = eligible.find(r => r.resultAvatarDecorationId === result)?.name ?? draft.name;
+	}
+}
+
+function onToggleReplacement(draft: AvatarDecorationRequestDraft, enabled: boolean) {
+	if (enabled) {
+		pickReplacementTarget(draft);
+	} else {
+		draft.targetAvatarDecorationId = null;
+	}
+}
+
+// JUICE
+function decorationForPreview(draft: AvatarDecorationRequestDraft) {
+	return {
+		url: draft.file.url,
+		angle: draft.previewAngle,
+		flipH: draft.previewFlipH,
+		offsetX: draft.previewOffsetX,
+		offsetY: draft.previewOffsetY,
+	};
+}
 
 // JUICE
 const hcaptcha = ref<Captcha | undefined>();
@@ -147,6 +246,11 @@ function chooseFile(ev: PointerEvent) {
 				description: '',
 				category: '',
 				deleteFileAfterReview: false,
+				previewAngle: 0,
+				previewOffsetX: 0,
+				previewOffsetY: 0,
+				previewFlipH: false,
+				targetAvatarDecorationId: null,
 			});
 		}
 	});
@@ -166,6 +270,7 @@ function submit() {
 			description: d.description,
 			category: d.category || null,
 			deleteFileAfterReview: d.deleteFileAfterReview,
+			targetAvatarDecorationId: d.targetAvatarDecorationId,
 		})),
 		'hcaptcha-response': hCaptchaResponse.value,
 		'm-captcha-response': mCaptchaResponse.value,
@@ -230,17 +335,47 @@ definePage(() => ({
 .preview {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
 	gap: 8px;
 }
 
 .previewLabel {
 	font-size: 0.85em;
 	opacity: 0.7;
+	text-align: center;
+}
+
+// JUICE: 管理画面の新規作成ダイアログ(avatar-decoration-edit-dialog.vue)と同じ、
+// 明背景・暗背景それぞれでの見え方を並べて確認できるプレビュー
+.previewSwatches {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+
+.previewSwatch {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100px;
+	border-radius: var(--MI-radius);
+
+	&.light {
+		background: #eee;
+	}
+
+	&.dark {
+		background: #222;
+	}
 }
 
 .previewAvatar {
 	width: 80px;
 	height: 80px;
+}
+
+// JUICE: 装着ダイアログと同じ角度・位置・反転の調整UI
+.previewControls {
+	max-width: 320px;
+	margin: 0 auto;
 }
 </style>

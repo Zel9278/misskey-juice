@@ -73,6 +73,12 @@ export const packedEmojiRequestEntrySchema = {
 			optional: false, nullable: true,
 			format: 'id',
 		},
+		// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)の対象。通常の新規申請はnull
+		targetEmojiId: {
+			type: 'string',
+			optional: false, nullable: true,
+			format: 'id',
+		},
 	},
 } as const;
 

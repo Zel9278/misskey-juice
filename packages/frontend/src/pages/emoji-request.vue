@@ -43,28 +43,42 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkNote :mock="true" :note="exampleNoteFor(draft)" :class="$style.previewNote"/>
 					</div>
 
-					<MkInput v-model="draft.name" pattern="[a-z0-9_]" autocapitalize="off">
+					<!-- JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える) -->
+					<div class="_gaps_s">
+						<MkSwitch :modelValue="draft.targetEmojiId != null" @update:modelValue="(v) => onToggleReplacement(draft, v)">
+							<template #label>{{ i18n.ts._emojiRequestPage.replacementRequest }}</template>
+							<template #caption>{{ i18n.ts._emojiRequestPage.replacementRequestCaption }}</template>
+						</MkSwitch>
+						<MkInfo v-if="draft.targetEmojiId != null">
+							{{ i18n.ts._emojiRequestPage.replacementTarget }}: <b>{{ draft.name }}</b>
+							<button class="_textButton" @click="pickReplacementTarget(draft)">{{ i18n.ts._emojiRequestPage.changeTarget }}</button>
+						</MkInfo>
+					</div>
+
+					<MkInput v-model="draft.name" pattern="[a-z0-9_]" autocapitalize="off" :readonly="draft.targetEmojiId != null">
 						<template #label>{{ i18n.ts.name }}</template>
 					</MkInput>
 
-					<MkInput v-model="draft.category" :datalist="customEmojiCategories.filter(x => x != null)">
-						<template #label>{{ i18n.ts.category }}</template>
-					</MkInput>
+					<template v-if="draft.targetEmojiId == null">
+						<MkInput v-model="draft.category" :datalist="customEmojiCategories.filter(x => x != null)">
+							<template #label>{{ i18n.ts.category }}</template>
+						</MkInput>
 
-					<MkInput v-model="draft.aliases" autocapitalize="off">
-						<template #label>{{ i18n.ts.tags }}</template>
-						<template #caption>
-							{{ i18n.ts.theKeywordWhenSearchingForCustomEmoji }}<br/>
-							{{ i18n.ts.setMultipleBySeparatingWithSpace }}
-						</template>
-					</MkInput>
+						<MkInput v-model="draft.aliases" autocapitalize="off">
+							<template #label>{{ i18n.ts.tags }}</template>
+							<template #caption>
+								{{ i18n.ts.theKeywordWhenSearchingForCustomEmoji }}<br/>
+								{{ i18n.ts.setMultipleBySeparatingWithSpace }}
+							</template>
+						</MkInput>
 
-					<MkInput v-model="draft.license" :mfmAutocomplete="true">
-						<template #label>{{ i18n.ts.license }}</template>
-					</MkInput>
+						<MkInput v-model="draft.license" :mfmAutocomplete="true">
+							<template #label>{{ i18n.ts.license }}</template>
+						</MkInput>
 
-					<MkSwitch v-model="draft.isSensitive">{{ i18n.ts.sensitive }}</MkSwitch>
-					<MkSwitch v-model="draft.localOnly">{{ i18n.ts.localOnly }}</MkSwitch>
+						<MkSwitch v-model="draft.isSensitive">{{ i18n.ts.sensitive }}</MkSwitch>
+						<MkSwitch v-model="draft.localOnly">{{ i18n.ts.localOnly }}</MkSwitch>
+					</template>
 					<MkSwitch v-model="draft.deleteFileAfterReview">
 						<template #label>{{ i18n.ts._emojiRequestPage.deleteFileAfterReview }}</template>
 					</MkSwitch>
@@ -136,9 +150,53 @@ type EmojiRequestDraft = {
 	isSensitive: boolean;
 	localOnly: boolean;
 	deleteFileAfterReview: boolean;
+	// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)の対象。nullなら通常の新規申請
+	targetEmojiId: string | null;
 };
 
 const drafts = ref<EmojiRequestDraft[]>([]);
+
+// JUICE: 差し替え申請の対象選択用。自分の承認済み申請(絵文字が実際に作られたもの)のみを候補にする。
+// 初回に選択を試みたタイミングで一度だけ取得する
+let myApprovedEmojiRequests: Misskey.entities.EmojiRequestEntry[] | null = null;
+
+async function fetchMyApprovedEmojiRequests(): Promise<Misskey.entities.EmojiRequestEntry[]> {
+	if (myApprovedEmojiRequests == null) {
+		const fetched = await misskeyApi('emoji-requests/list', { status: 'approved', limit: 100 });
+		myApprovedEmojiRequests = fetched;
+		return fetched;
+	}
+	return myApprovedEmojiRequests;
+}
+
+async function pickReplacementTarget(draft: EmojiRequestDraft) {
+	const requests = await fetchMyApprovedEmojiRequests();
+	const eligible = requests.filter(r => r.resultEmojiId != null);
+	if (eligible.length === 0) {
+		os.alert({ type: 'info', text: i18n.ts._emojiRequestPage.noReplaceableEmojis });
+		draft.targetEmojiId = null;
+		return;
+	}
+
+	const { canceled, result } = await os.select({
+		title: i18n.ts._emojiRequestPage.selectTargetEmoji,
+		items: eligible.map(r => ({ value: r.resultEmojiId!, label: r.name })),
+	});
+	if (canceled || result == null) {
+		if (draft.targetEmojiId == null) return;
+	} else {
+		draft.targetEmojiId = result;
+		draft.name = eligible.find(r => r.resultEmojiId === result)?.name ?? draft.name;
+	}
+}
+
+function onToggleReplacement(draft: EmojiRequestDraft, enabled: boolean) {
+	if (enabled) {
+		pickReplacementTarget(draft);
+	} else {
+		draft.targetEmojiId = null;
+	}
+}
 
 // JUICE
 const hcaptcha = ref<Captcha | undefined>();
@@ -211,6 +269,7 @@ function chooseFile(ev: PointerEvent) {
 				isSensitive: false,
 				localOnly: false,
 				deleteFileAfterReview: false,
+				targetEmojiId: null,
 			});
 		}
 	});
@@ -233,6 +292,7 @@ function submit() {
 			isSensitive: d.isSensitive,
 			localOnly: d.localOnly,
 			deleteFileAfterReview: d.deleteFileAfterReview,
+			targetEmojiId: d.targetEmojiId,
 		})),
 		'hcaptcha-response': hCaptchaResponse.value,
 		'm-captcha-response': mCaptchaResponse.value,

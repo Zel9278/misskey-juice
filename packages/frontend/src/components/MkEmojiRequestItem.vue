@@ -16,6 +16,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</template>
 
 	<div class="_gaps_s">
+		<!-- JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える) -->
+		<div v-if="request.targetEmojiId != null"><span class="_juice">JUICE</span> {{ i18n.ts._emojiRequestPage.replacementRequestBadge }}</div>
 		<div v-if="request.category">{{ i18n.ts._emojiRequestPage.category }}: {{ request.category }}</div>
 		<div v-if="request.aliases.length > 0">{{ i18n.ts.tags }}: {{ request.aliases.join(' ') }}</div>
 		<div v-if="request.license">{{ i18n.ts._emojiRequestPage.license }}: {{ request.license }}</div>

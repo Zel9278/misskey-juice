@@ -16,7 +16,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</template>
 
 	<div class="_gaps_s">
-		<img v-if="request.fileUrl" :src="request.fileUrl" :class="$style.img"/>
+		<!-- JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)なら、現在の画像との比較を表示する -->
+		<div v-if="request.targetEmojiId != null" :class="$style.replacementNotice">
+			<span class="_juice">JUICE</span> {{ i18n.ts._emojiRequestApprovals.replacementRequest }}
+			<div :class="$style.comparison">
+				<div :class="$style.comparisonItem">
+					<div :class="$style.comparisonLabel">{{ i18n.ts._emojiRequestApprovals.currentImage }}</div>
+					<img v-if="currentTargetEmoji" :src="currentTargetEmoji.url" :class="$style.img"/>
+				</div>
+				<i class="ti ti-arrow-right"></i>
+				<div :class="$style.comparisonItem">
+					<div :class="$style.comparisonLabel">{{ i18n.ts._emojiRequestApprovals.newImage }}</div>
+					<img v-if="request.fileUrl" :src="request.fileUrl" :class="$style.img"/>
+				</div>
+			</div>
+		</div>
+		<img v-else-if="request.fileUrl" :src="request.fileUrl" :class="$style.img"/>
 		<div v-if="request.category">{{ i18n.ts._emojiRequestPage.category }}: {{ request.category }}</div>
 		<div v-if="request.aliases.length > 0">{{ i18n.ts.tags }}: {{ request.aliases.join(' ') }}</div>
 		<div v-if="request.license" class="_selectable">{{ i18n.ts._emojiRequestPage.license }}: {{ request.license }}</div>
@@ -30,11 +45,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
+import { customEmojisMap } from '@/custom-emojis.js';
 
 const props = defineProps<{
 	request: Misskey.entities.AdminEmojiRequestsListResponse[number];
@@ -44,10 +61,16 @@ const emit = defineEmits<{
 	(ev: 'resolved', requestId: string): void;
 }>();
 
+// JUICE: 差し替え申請の対象絵文字の現在の画像。IDでは引けないため、申請時点の名前(=対象絵文字の
+// 名前と一致するはず)で引く。審査までの間に対象絵文字が改名されていた場合は見つからないことがある
+const currentTargetEmoji = computed(() => customEmojisMap.get(props.request.name));
+
 async function approve() {
 	const confirm = await os.confirm({
 		type: 'question',
-		text: i18n.tsx._emojiRequestApprovals.approveConfirm({ name: props.request.name }),
+		text: props.request.targetEmojiId != null
+			? i18n.tsx._emojiRequestApprovals.approveReplacementConfirm({ name: props.request.name })
+			: i18n.tsx._emojiRequestApprovals.approveConfirm({ name: props.request.name }),
 	});
 	if (confirm.canceled) return;
 
@@ -78,5 +101,29 @@ async function reject() {
 	max-width: 100%;
 	max-height: 128px;
 	object-fit: contain;
+}
+
+.replacementNotice {
+	font-size: 0.9em;
+}
+
+.comparison {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+	margin-top: 8px;
+}
+
+.comparisonItem {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.comparisonLabel {
+	font-size: 0.85em;
+	opacity: 0.7;
 }
 </style>

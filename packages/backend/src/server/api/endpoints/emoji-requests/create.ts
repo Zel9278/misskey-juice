@@ -6,7 +6,7 @@
 import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { DriveFilesRepository, EmojiRequestsRepository, MiMeta } from '@/models/_.js';
+import type { DriveFilesRepository, EmojiRequestsRepository, EmojisRepository, MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
 import { RoleService } from '@/core/RoleService.js';
@@ -62,6 +62,22 @@ export const meta = {
 			code: 'CAPTCHA_FAILED',
 			id: 'e8f67388-909b-407a-851c-52311ed47c97',
 		},
+		// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)関連
+		noSuchTargetEmoji: {
+			message: 'No such target emoji.',
+			code: 'NO_SUCH_TARGET_EMOJI',
+			id: 'b0f83cca-b274-4768-b21a-01a9b85ffd5c',
+		},
+		notEmojiOwner: {
+			message: 'You can only request to replace an emoji that was created from your own approved request.',
+			code: 'NOT_EMOJI_OWNER',
+			id: 'e0e1a3f7-b710-4d65-bff5-2fe4cf0a5856',
+		},
+		duplicateReplacementRequest: {
+			message: 'You already have a pending replacement request for this emoji.',
+			code: 'DUPLICATE_REPLACEMENT_REQUEST',
+			id: '25386898-f700-4108-9f4e-a39326d1017e',
+		},
 	},
 
 	res: {
@@ -83,6 +99,9 @@ export const paramDef = {
 		isSensitive: { type: 'boolean', default: false },
 		localOnly: { type: 'boolean', default: false },
 		deleteFileAfterReview: { type: 'boolean', default: false },
+		// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)。指定した場合、name等の他の
+		// フィールドは無視され、承認されると対象絵文字の画像のみが差し替わる
+		targetEmojiId: { type: 'string', format: 'misskey:id', nullable: true },
 		// JUICE
 		'hcaptcha-response': { type: 'string', nullable: true },
 		'g-recaptcha-response': { type: 'string', nullable: true },
@@ -104,6 +123,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		@Inject(DI.emojiRequestsRepository)
 		private emojiRequestsRepository: EmojiRequestsRepository,
+
+		@Inject(DI.emojisRepository)
+		private emojisRepository: EmojisRepository,
 
 		private idService: IdService,
 		private roleService: RoleService,
@@ -136,6 +158,27 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const pendingCount = await this.emojiRequestsRepository.countBy({ userId: me.id, status: 'pending' });
 			if (pendingCount >= policies.emojiRequestLimit) throw new ApiError(meta.errors.tooManyPendingRequests);
 
+			// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)。対象は申請者自身の
+			// 承認済み申請(resultEmojiId)から作られた絵文字のみに限定する
+			if (ps.targetEmojiId != null) {
+				const targetEmoji = await this.emojisRepository.findOneBy({ id: ps.targetEmojiId });
+				if (targetEmoji == null) throw new ApiError(meta.errors.noSuchTargetEmoji);
+
+				const ownApprovedRequest = await this.emojiRequestsRepository.findOneBy({
+					userId: me.id,
+					resultEmojiId: ps.targetEmojiId,
+					status: 'approved',
+				});
+				if (ownApprovedRequest == null) throw new ApiError(meta.errors.notEmojiOwner);
+
+				const duplicatePending = await this.emojiRequestsRepository.findOneBy({
+					userId: me.id,
+					targetEmojiId: ps.targetEmojiId,
+					status: 'pending',
+				});
+				if (duplicatePending != null) throw new ApiError(meta.errors.duplicateReplacementRequest);
+			}
+
 			const request = await this.emojiRequestsRepository.insertOne({
 				id: this.idService.gen(),
 				userId: me.id,
@@ -148,6 +191,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				localOnly: ps.localOnly ?? false,
 				status: 'pending',
 				deleteFileAfterReview: ps.deleteFileAfterReview ?? false,
+				targetEmojiId: ps.targetEmojiId ?? null,
 			});
 
 			// JUICE: モデレータへ新規申請をリアルタイム通知(admin stream + SystemWebhook)
@@ -174,6 +218,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				rejectReason: request.rejectReason,
 				reviewedAt: request.reviewedAt?.toISOString() ?? null,
 				resultEmojiId: request.resultEmojiId,
+				targetEmojiId: request.targetEmojiId,
 			};
 		});
 	}

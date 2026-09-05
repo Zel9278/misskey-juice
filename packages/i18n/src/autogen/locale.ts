@@ -14562,6 +14562,34 @@ export interface Locale extends ILocale {
          * 審査者
          */
         "reviewedBy": string;
+        /**
+         * 差し替え申請にする
+         */
+        "replacementRequest": string;
+        /**
+         * 新しい絵文字としてではなく、自分が過去に申請して作成された既存の絵文字の画像だけを差し替えます。名前・カテゴリ・タグ等は変更されません
+         */
+        "replacementRequestCaption": string;
+        /**
+         * 差し替える絵文字を選択
+         */
+        "selectTargetEmoji": string;
+        /**
+         * 差し替え可能な絵文字がありません。自分の申請が承認され、絵文字として登録されているものだけが選べます
+         */
+        "noReplaceableEmojis": string;
+        /**
+         * 差し替え対象
+         */
+        "replacementTarget": string;
+        /**
+         * 変更
+         */
+        "changeTarget": string;
+        /**
+         * 差し替え申請
+         */
+        "replacementRequestBadge": string;
     };
     "_emojiRequestApprovals": {
         /**
@@ -14589,9 +14617,25 @@ export interface Locale extends ILocale {
          */
         "approveConfirm": ParameterizedString<"name">;
         /**
+         * 「{name}」の画像を差し替えますか？(名前・タグ等は変更されません)
+         */
+        "approveReplacementConfirm": ParameterizedString<"name">;
+        /**
          * 却下理由を入力してください
          */
         "rejectReasonTitle": string;
+        /**
+         * 差し替え申請
+         */
+        "replacementRequest": string;
+        /**
+         * 現在の画像
+         */
+        "currentImage": string;
+        /**
+         * 新しい画像
+         */
+        "newImage": string;
     };
     "_avatarDecorationRequestPage": {
         /**
@@ -14618,6 +14662,10 @@ export interface Locale extends ILocale {
          * プレビュー
          */
         "preview": string;
+        /**
+         * 角度・位置・反転はプレビュー確認用です。実際の角度・位置は、承認後に装着するユーザーごとに個別に設定されます
+         */
+        "previewAdjustHint": string;
         /**
          * 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できます
          */
@@ -14658,6 +14706,34 @@ export interface Locale extends ILocale {
          * 審査者
          */
         "reviewedBy": string;
+        /**
+         * 差し替え申請にする
+         */
+        "replacementRequest": string;
+        /**
+         * 新しいデコレーションとしてではなく、自分が過去に申請して作成された既存のデコレーションの画像だけを差し替えます。名前・説明・カテゴリ等は変更されません
+         */
+        "replacementRequestCaption": string;
+        /**
+         * 差し替えるデコレーションを選択
+         */
+        "selectTargetAvatarDecoration": string;
+        /**
+         * 差し替え可能なデコレーションがありません。自分の申請が承認され、デコレーションとして登録されているものだけが選べます
+         */
+        "noReplaceableAvatarDecorations": string;
+        /**
+         * 差し替え対象
+         */
+        "replacementTarget": string;
+        /**
+         * 変更
+         */
+        "changeTarget": string;
+        /**
+         * 差し替え申請
+         */
+        "replacementRequestBadge": string;
     };
     "_avatarDecorationRequestApprovals": {
         /**
@@ -14685,9 +14761,25 @@ export interface Locale extends ILocale {
          */
         "approveConfirm": ParameterizedString<"name">;
         /**
+         * 「{name}」の画像を差し替えますか？(名前・説明等は変更されません)
+         */
+        "approveReplacementConfirm": ParameterizedString<"name">;
+        /**
          * 却下理由を入力してください
          */
         "rejectReasonTitle": string;
+        /**
+         * 差し替え申請
+         */
+        "replacementRequest": string;
+        /**
+         * 現在の画像
+         */
+        "currentImage": string;
+        /**
+         * 新しい画像
+         */
+        "newImage": string;
     };
     "_juiceRanking": {
         /**

@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AvatarDecorationRequestsRepository, DriveFilesRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
+import type { AvatarDecorationRequestsRepository, AvatarDecorationsRepository, DriveFilesRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
@@ -50,6 +50,13 @@ export const meta = {
 			code: 'FILE_COPY_FAILED',
 			id: '53f9329a-3da2-45fe-9e22-8319076d4c70',
 		},
+		// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)の対象が、申請〜承認の間に
+		// 削除されていた場合
+		noSuchTargetAvatarDecoration: {
+			message: 'No such target avatar decoration.',
+			code: 'NO_SUCH_TARGET_AVATAR_DECORATION',
+			id: '2069a205-bb86-433e-8df8-ba64c745d2f3',
+		},
 	},
 } as const;
 
@@ -66,6 +73,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		@Inject(DI.avatarDecorationRequestsRepository)
 		private avatarDecorationRequestsRepository: AvatarDecorationRequestsRepository,
+
+		@Inject(DI.avatarDecorationsRepository)
+		private avatarDecorationsRepository: AvatarDecorationsRepository,
 
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
@@ -101,13 +111,26 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.fileCopyFailed);
 			}
 
-			const decoration = await this.avatarDecorationService.create({
-				name: request.name,
-				description: request.description,
-				url: decorationFile.url,
-				roleIdsThatCanBeUsedThisDecoration: [],
-				category: request.category,
-			}, me);
+			// JUICE: 差し替え申請なら対象デコレーションの画像のみを差し替え、そうでなければ従来通り新規作成
+			let decoration: { id: string; name: string };
+			if (request.targetAvatarDecorationId != null) {
+				const targetDecoration = await this.avatarDecorationsRepository.findOneBy({ id: request.targetAvatarDecorationId });
+				if (targetDecoration == null) throw new ApiError(meta.errors.noSuchTargetAvatarDecoration);
+
+				await this.avatarDecorationService.update(targetDecoration.id, {
+					url: decorationFile.url,
+				}, me);
+
+				decoration = targetDecoration;
+			} else {
+				decoration = await this.avatarDecorationService.create({
+					name: request.name,
+					description: request.description,
+					url: decorationFile.url,
+					roleIdsThatCanBeUsedThisDecoration: [],
+					category: request.category,
+				}, me);
+			}
 
 			await this.avatarDecorationRequestsRepository.update(request.id, {
 				status: 'approved',
@@ -123,6 +146,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				requesterHost: requester.host,
 				avatarDecorationId: decoration.id,
 				avatarDecorationName: decoration.name,
+				isReplacement: request.targetAvatarDecorationId != null,
 			});
 
 			if (request.deleteFileAfterReview) {

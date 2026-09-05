@@ -3901,6 +3901,13 @@ _emojiRequestPage:
   statusRejected: "却下"
   rejectReason: "却下理由"
   reviewedBy: "審査者"
+  replacementRequest: "差し替え申請にする"
+  replacementRequestCaption: "新しい絵文字としてではなく、自分が過去に申請して作成された既存の絵文字の画像だけを差し替えます。名前・カテゴリ・タグ等は変更されません"
+  selectTargetEmoji: "差し替える絵文字を選択"
+  noReplaceableEmojis: "差し替え可能な絵文字がありません。自分の申請が承認され、絵文字として登録されているものだけが選べます"
+  replacementTarget: "差し替え対象"
+  changeTarget: "変更"
+  replacementRequestBadge: "差し替え申請"
 
 _emojiRequestApprovals:
   title: "絵文字申請"
@@ -3909,7 +3916,11 @@ _emojiRequestApprovals:
   approve: "承認"
   reject: "却下"
   approveConfirm: "「{name}」を絵文字として登録しますか？"
+  approveReplacementConfirm: "「{name}」の画像を差し替えますか？(名前・タグ等は変更されません)"
   rejectReasonTitle: "却下理由を入力してください"
+  replacementRequest: "差し替え申請"
+  currentImage: "現在の画像"
+  newImage: "新しい画像"
 
 _avatarDecorationRequestPage:
   newRequest: "申請フォーム"
@@ -3918,6 +3929,7 @@ _avatarDecorationRequestPage:
   description: "説明"
   category: "カテゴリ"
   preview: "プレビュー"
+  previewAdjustHint: "角度・位置・反転はプレビュー確認用です。実際の角度・位置は、承認後に装着するユーザーごとに個別に設定されます"
   multipleRequestsHint: "複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できます"
   requestNumber: "{n}件目"
   deleteFileAfterReview: "審査後にこの画像をDriveから削除する"
@@ -3928,6 +3940,13 @@ _avatarDecorationRequestPage:
   statusRejected: "却下"
   rejectReason: "却下理由"
   reviewedBy: "審査者"
+  replacementRequest: "差し替え申請にする"
+  replacementRequestCaption: "新しいデコレーションとしてではなく、自分が過去に申請して作成された既存のデコレーションの画像だけを差し替えます。名前・説明・カテゴリ等は変更されません"
+  selectTargetAvatarDecoration: "差し替えるデコレーションを選択"
+  noReplaceableAvatarDecorations: "差し替え可能なデコレーションがありません。自分の申請が承認され、デコレーションとして登録されているものだけが選べます"
+  replacementTarget: "差し替え対象"
+  changeTarget: "変更"
+  replacementRequestBadge: "差し替え申請"
 
 _avatarDecorationRequestApprovals:
   title: "アバターデコレーション申請"
@@ -3936,7 +3955,11 @@ _avatarDecorationRequestApprovals:
   approve: "承認"
   reject: "却下"
   approveConfirm: "「{name}」をアバターデコレーションとして登録しますか？"
+  approveReplacementConfirm: "「{name}」の画像を差し替えますか？(名前・説明等は変更されません)"
   rejectReasonTitle: "却下理由を入力してください"
+  replacementRequest: "差し替え申請"
+  currentImage: "現在の画像"
+  newImage: "新しい画像"
 
 _juiceRanking:
   periodInfo: "集計期間: 直近{hours}時間ごと"

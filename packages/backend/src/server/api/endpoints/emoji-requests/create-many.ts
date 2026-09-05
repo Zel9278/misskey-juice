@@ -7,7 +7,7 @@ import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { DriveFilesRepository, EmojiRequestsRepository, MiMeta } from '@/models/_.js';
+import type { DriveFilesRepository, EmojiRequestsRepository, EmojisRepository, MiMeta } from '@/models/_.js';
 import { MiEmojiRequest } from '@/models/EmojiRequest.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
@@ -71,6 +71,22 @@ export const meta = {
 			code: 'CAPTCHA_FAILED',
 			id: 'ab428e25-8007-4bef-96f5-9a6b011bc509',
 		},
+		// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)関連
+		noSuchTargetEmoji: {
+			message: 'No such target emoji.',
+			code: 'NO_SUCH_TARGET_EMOJI',
+			id: 'd53965f6-1ddd-4c2f-b944-0ececa0e036e',
+		},
+		notEmojiOwner: {
+			message: 'You can only request to replace an emoji that was created from your own approved request.',
+			code: 'NOT_EMOJI_OWNER',
+			id: 'c3d0989f-a0ef-45a5-a93e-7e1793cb900c',
+		},
+		duplicateReplacementRequest: {
+			message: 'You already have a pending replacement request for this emoji.',
+			code: 'DUPLICATE_REPLACEMENT_REQUEST',
+			id: '411d70cb-e1e2-4588-aab3-75d2906dfcb6',
+		},
 	},
 
 	res: {
@@ -103,6 +119,9 @@ export const paramDef = {
 					isSensitive: { type: 'boolean', default: false },
 					localOnly: { type: 'boolean', default: false },
 					deleteFileAfterReview: { type: 'boolean', default: false },
+					// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)。指定した場合、
+					// name等の他のフィールドは無視され、承認されると対象絵文字の画像のみが差し替わる
+					targetEmojiId: { type: 'string', format: 'misskey:id', nullable: true },
 				},
 				required: ['fileId', 'name'],
 			},
@@ -130,6 +149,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		@Inject(DI.emojiRequestsRepository)
 		private emojiRequestsRepository: EmojiRequestsRepository,
+
+		@Inject(DI.emojisRepository)
+		private emojisRepository: EmojisRepository,
 
 		private idService: IdService,
 		private roleService: RoleService,
@@ -166,6 +188,34 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const pendingCount = await this.emojiRequestsRepository.countBy({ userId: me.id, status: 'pending' });
 			if (pendingCount + ps.requests.length > policies.emojiRequestLimit) throw new ApiError(meta.errors.tooManyPendingRequests);
 
+			// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)。対象は申請者自身の
+			// 承認済み申請(resultEmojiId)から作られた絵文字のみに限定する。同一バッチ内で
+			// 同じ対象を複数指定した場合も弾く
+			const targetEmojiIdsInBatch = new Set<string>();
+			for (const req of ps.requests) {
+				if (req.targetEmojiId == null) continue;
+
+				if (targetEmojiIdsInBatch.has(req.targetEmojiId)) throw new ApiError(meta.errors.duplicateReplacementRequest);
+				targetEmojiIdsInBatch.add(req.targetEmojiId);
+
+				const targetEmoji = await this.emojisRepository.findOneBy({ id: req.targetEmojiId });
+				if (targetEmoji == null) throw new ApiError(meta.errors.noSuchTargetEmoji);
+
+				const ownApprovedRequest = await this.emojiRequestsRepository.findOneBy({
+					userId: me.id,
+					resultEmojiId: req.targetEmojiId,
+					status: 'approved',
+				});
+				if (ownApprovedRequest == null) throw new ApiError(meta.errors.notEmojiOwner);
+
+				const duplicatePending = await this.emojiRequestsRepository.findOneBy({
+					userId: me.id,
+					targetEmojiId: req.targetEmojiId,
+					status: 'pending',
+				});
+				if (duplicatePending != null) throw new ApiError(meta.errors.duplicateReplacementRequest);
+			}
+
 			const newRequests = ps.requests.map((req, i) => ({
 				id: this.idService.gen(),
 				userId: me.id,
@@ -178,6 +228,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				localOnly: req.localOnly ?? false,
 				status: 'pending' as const,
 				deleteFileAfterReview: req.deleteFileAfterReview ?? false,
+				targetEmojiId: req.targetEmojiId ?? null,
 			}));
 
 			await this.db.transaction(async em => {
@@ -210,6 +261,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				rejectReason: null,
 				reviewedAt: null,
 				resultEmojiId: null,
+				targetEmojiId: request.targetEmojiId,
 			}));
 		});
 	}

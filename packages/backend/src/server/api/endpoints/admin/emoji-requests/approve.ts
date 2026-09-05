@@ -55,6 +55,13 @@ export const meta = {
 			code: 'FILE_COPY_FAILED',
 			id: 'd420533b-5ceb-4425-bfd2-b4d4c56063a2',
 		},
+		// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)の対象が、申請〜承認の間に
+		// 削除されていた場合
+		noSuchTargetEmoji: {
+			message: 'No such target emoji.',
+			code: 'NO_SUCH_TARGET_EMOJI',
+			id: 'c0ad6008-dc80-48f4-b664-95a79f845f3a',
+		},
 	},
 } as const;
 
@@ -96,8 +103,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (driveFile == null) throw new ApiError(meta.errors.noSuchFile);
 			if (!FILE_TYPE_IMAGE.includes(driveFile.type)) throw new ApiError(meta.errors.unsupportedFileType);
 
-			const isDuplicate = await this.customEmojiService.checkDuplicate(request.name);
-			if (isDuplicate) throw new ApiError(meta.errors.duplicateName);
+			// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)。この場合はname等の変更を
+			// 伴わないため、重複名チェックは不要
+			if (request.targetEmojiId == null) {
+				const isDuplicate = await this.customEmojiService.checkDuplicate(request.name);
+				if (isDuplicate) throw new ApiError(meta.errors.duplicateName);
+			}
 
 			const requester = await this.usersRepository.findOneByOrFail({ id: request.userId });
 
@@ -109,19 +120,35 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.fileCopyFailed);
 			}
 
-			const emoji = await this.customEmojiService.add({
-				originalUrl: emojiFile.url,
-				publicUrl: emojiFile.webpublicUrl ?? emojiFile.url,
-				fileType: emojiFile.webpublicType ?? emojiFile.type,
-				name: request.name,
-				category: request.category,
-				aliases: request.aliases,
-				host: null,
-				license: request.license,
-				isSensitive: request.isSensitive,
-				localOnly: request.localOnly,
-				roleIdsThatCanBeUsedThisEmojiAsReaction: [],
-			}, me);
+			// JUICE: 差し替え申請なら対象絵文字の画像のみを差し替え、そうでなければ従来通り新規作成
+			let emoji: { id: string; name: string };
+			if (request.targetEmojiId != null) {
+				const targetEmoji = await this.customEmojiService.getEmojiById(request.targetEmojiId);
+				if (targetEmoji == null) throw new ApiError(meta.errors.noSuchTargetEmoji);
+
+				await this.customEmojiService.update({
+					id: targetEmoji.id,
+					originalUrl: emojiFile.url,
+					publicUrl: emojiFile.webpublicUrl ?? emojiFile.url,
+					fileType: emojiFile.webpublicType ?? emojiFile.type,
+				}, me);
+
+				emoji = targetEmoji;
+			} else {
+				emoji = await this.customEmojiService.add({
+					originalUrl: emojiFile.url,
+					publicUrl: emojiFile.webpublicUrl ?? emojiFile.url,
+					fileType: emojiFile.webpublicType ?? emojiFile.type,
+					name: request.name,
+					category: request.category,
+					aliases: request.aliases,
+					host: null,
+					license: request.license,
+					isSensitive: request.isSensitive,
+					localOnly: request.localOnly,
+					roleIdsThatCanBeUsedThisEmojiAsReaction: [],
+				}, me);
+			}
 
 			await this.emojiRequestsRepository.update(request.id, {
 				status: 'approved',
@@ -137,6 +164,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				requesterHost: requester.host,
 				emojiId: emoji.id,
 				emojiName: emoji.name,
+				isReplacement: request.targetEmojiId != null,
 			});
 
 			if (request.deleteFileAfterReview) {

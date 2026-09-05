@@ -57,6 +57,12 @@ export const packedAvatarDecorationRequestEntrySchema = {
 			optional: false, nullable: true,
 			format: 'id',
 		},
+		// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)の対象。通常の新規申請はnull
+		targetAvatarDecorationId: {
+			type: 'string',
+			optional: false, nullable: true,
+			format: 'id',
+		},
 	},
 } as const;
 

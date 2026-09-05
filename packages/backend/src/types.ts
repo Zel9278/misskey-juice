@@ -436,6 +436,8 @@ export type ModerationLogPayloads = {
 		requesterHost: string | null;
 		emojiId: string;
 		emojiName: string;
+		// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)の承認かどうか
+		isReplacement: boolean;
 	};
 	rejectEmojiRequest: {
 		requestId: string;
@@ -452,6 +454,8 @@ export type ModerationLogPayloads = {
 		requesterHost: string | null;
 		avatarDecorationId: string;
 		avatarDecorationName: string;
+		// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)の承認かどうか
+		isReplacement: boolean;
 	};
 	rejectAvatarDecorationRequest: {
 		requestId: string;

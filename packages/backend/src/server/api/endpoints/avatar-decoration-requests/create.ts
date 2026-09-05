@@ -6,7 +6,7 @@
 import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AvatarDecorationRequestsRepository, DriveFilesRepository, MiMeta } from '@/models/_.js';
+import type { AvatarDecorationRequestsRepository, AvatarDecorationsRepository, DriveFilesRepository, MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
 import { RoleService } from '@/core/RoleService.js';
@@ -62,6 +62,22 @@ export const meta = {
 			code: 'CAPTCHA_FAILED',
 			id: '9d3f1c2e-6b8a-4c1e-9a2b-3e5c7d9f1a2c',
 		},
+		// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)関連
+		noSuchTargetAvatarDecoration: {
+			message: 'No such target avatar decoration.',
+			code: 'NO_SUCH_TARGET_AVATAR_DECORATION',
+			id: 'f903e6ab-a059-4ae5-b8f5-f2c073b7e423',
+		},
+		notAvatarDecorationOwner: {
+			message: 'You can only request to replace an avatar decoration that was created from your own approved request.',
+			code: 'NOT_AVATAR_DECORATION_OWNER',
+			id: 'eebe4860-b32f-48b4-a7c2-d5ef4712e01b',
+		},
+		duplicateReplacementRequest: {
+			message: 'You already have a pending replacement request for this avatar decoration.',
+			code: 'DUPLICATE_REPLACEMENT_REQUEST',
+			id: '16198780-409b-419a-8ca6-85c31d4b688d',
+		},
 	},
 
 	res: {
@@ -80,6 +96,9 @@ export const paramDef = {
 		description: { type: 'string', maxLength: 2048, default: '' },
 		category: { type: 'string', nullable: true, maxLength: 128 },
 		deleteFileAfterReview: { type: 'boolean', default: false },
+		// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)。指定した場合、
+		// name等の他のフィールドは無視され、承認されると対象デコレーションの画像のみが差し替わる
+		targetAvatarDecorationId: { type: 'string', format: 'misskey:id', nullable: true },
 		// JUICE
 		'hcaptcha-response': { type: 'string', nullable: true },
 		'g-recaptcha-response': { type: 'string', nullable: true },
@@ -101,6 +120,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		@Inject(DI.avatarDecorationRequestsRepository)
 		private avatarDecorationRequestsRepository: AvatarDecorationRequestsRepository,
+
+		@Inject(DI.avatarDecorationsRepository)
+		private avatarDecorationsRepository: AvatarDecorationsRepository,
 
 		private idService: IdService,
 		private roleService: RoleService,
@@ -133,6 +155,27 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const pendingCount = await this.avatarDecorationRequestsRepository.countBy({ userId: me.id, status: 'pending' });
 			if (pendingCount >= policies.avatarDecorationRequestLimit) throw new ApiError(meta.errors.tooManyPendingRequests);
 
+			// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)。対象は申請者自身の
+			// 承認済み申請(resultAvatarDecorationId)から作られたデコレーションのみに限定する
+			if (ps.targetAvatarDecorationId != null) {
+				const targetDecoration = await this.avatarDecorationsRepository.findOneBy({ id: ps.targetAvatarDecorationId });
+				if (targetDecoration == null) throw new ApiError(meta.errors.noSuchTargetAvatarDecoration);
+
+				const ownApprovedRequest = await this.avatarDecorationRequestsRepository.findOneBy({
+					userId: me.id,
+					resultAvatarDecorationId: ps.targetAvatarDecorationId,
+					status: 'approved',
+				});
+				if (ownApprovedRequest == null) throw new ApiError(meta.errors.notAvatarDecorationOwner);
+
+				const duplicatePending = await this.avatarDecorationRequestsRepository.findOneBy({
+					userId: me.id,
+					targetAvatarDecorationId: ps.targetAvatarDecorationId,
+					status: 'pending',
+				});
+				if (duplicatePending != null) throw new ApiError(meta.errors.duplicateReplacementRequest);
+			}
+
 			const request = await this.avatarDecorationRequestsRepository.insertOne({
 				id: this.idService.gen(),
 				userId: me.id,
@@ -142,6 +185,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				category: ps.category ?? null,
 				status: 'pending',
 				deleteFileAfterReview: ps.deleteFileAfterReview,
+				targetAvatarDecorationId: ps.targetAvatarDecorationId ?? null,
 			});
 
 			// JUICE: モデレータへ新規申請をリアルタイム通知(admin stream + SystemWebhook)
@@ -165,6 +209,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				rejectReason: request.rejectReason,
 				reviewedAt: request.reviewedAt?.toISOString() ?? null,
 				resultAvatarDecorationId: request.resultAvatarDecorationId,
+				targetAvatarDecorationId: request.targetAvatarDecorationId,
 			};
 		});
 	}

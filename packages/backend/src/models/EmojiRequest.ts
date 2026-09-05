@@ -131,4 +131,20 @@ export class MiEmojiRequest {
 		comment: 'Whether to delete the attached file from the requester\'s Drive once this request is reviewed (JUICE).',
 	})
 	public deleteFileAfterReview: boolean;
+
+	// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)の対象。nullなら通常の新規申請。
+	// 差し替え対象にできるのは、申請者自身の承認済み申請(resultEmojiId)から作られた絵文字のみ
+	@Index()
+	@Column({
+		...id(),
+		nullable: true,
+		comment: 'The ID of the emoji this request wants to replace the image of, if this is a replacement request (JUICE).',
+	})
+	public targetEmojiId: MiEmoji['id'] | null;
+
+	@ManyToOne(() => MiEmoji, {
+		onDelete: 'SET NULL',
+	})
+	@JoinColumn()
+	public targetEmoji: MiEmoji | null;
 }
