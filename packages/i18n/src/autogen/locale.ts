@@ -9167,9 +9167,25 @@ export interface Locale extends ILocale {
              */
             "avatarDecorationRequest": string;
             /**
+             * 絵文字・アバターデコレーション申請の「差し替え申請」(既存の画像だけを差し替え可能)
+             */
+            "requestReplacement": string;
+            /**
              * 絵文字・アバターデコレーション・承認式新規登録の各申請の承認/却下権限を、モデレーターに限らずロール単位で個別に付与可能
              */
             "roleApprovalDelegation": string;
+            /**
+             * 他人のリアクションをクリックして自分も同じリアクションを付けられる「相乗り」(リモートサーバーのカスタム絵文字にも対応)
+             */
+            "reactionPiggyback": string;
+            /**
+             * 投稿への言語タグ付与、タイムライン・ノート検索・リアクション検索での言語による絞り込み
+             */
+            "postLanguage": string;
+            /**
+             * ノート検索・リアクション検索の高度な絞り込みオプション(AND/OR・除外ワード・添付ファイル・CW・返信・投票・公開範囲)
+             */
+            "advancedNoteSearch": string;
             /**
              * 投稿数・リアクション数のユーザーランキング
              */
