@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 2026.7.0-juice+3.0
+
 ### Client
 - Fix: 投稿フォームの「…」メニューにある投稿の言語設定にJUICEバッジが表示されていなかった問題を修正。`MkMenu.vue`のメニュー項目のうちtype指定が無い通常のボタン項目(type: 'parent'/'link'以外)には、そもそもバッジを描画するテンプレート自体が無かった(型定義上も`badge`フィールドが存在しなかった)ため、対応を追加した
 - Fix: 「サーバー情報」ページの「JUICEについて」リンク、および`MkMenu.vue`のメニュー項目全般で、JUICEバッジの上端が省略記号用のoverflow: hiddenによって欠けて見えていた問題を修正。MkFolder等では既に対応済みだったが、FormLink(form/link.vue)・MkMenu.vueには同じ対応が漏れていた(タイムラインの言語フィルタ・リレー絞り込み等、既存のtype: 'parent'バッジにも影響していた)
