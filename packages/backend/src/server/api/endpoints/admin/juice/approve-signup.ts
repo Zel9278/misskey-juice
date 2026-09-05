@@ -69,9 +69,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.alreadyApproved);
 			}
 
-			await this.usersRepository.update(user.id, {
+			// JUICE: 冒頭のapprovedチェックと本更新の間に同時に別の審査(承認/却下)が割り込むTOCTOUを防ぐため、
+			// WHERE句にapproved=falseを含めた条件付きUPDATEで原子的に排他する
+			const updateResult = await this.usersRepository.update({ id: user.id, approved: false }, {
 				approved: true,
 			});
+			if (updateResult.affected === 0) throw new ApiError(meta.errors.alreadyApproved);
 
 			await this.signupApprovalChecksRepository.update({ userId: user.id }, {
 				status: 'approved',

@@ -134,12 +134,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}, me);
 			}
 
-			await this.avatarDecorationRequestsRepository.update(request.id, {
+			// JUICE: 冒頭のstatusチェックとこの更新の間(ファイル複製・デコレーション作成という低速な処理を挟む)に
+			// 同時に別の審査(承認/却下)が割り込むTOCTOUを防ぐため、WHERE句にstatus='pending'を含めた
+			// 条件付きUPDATEで原子的に排他する。負けた側は既にデコレーションを作成済みだが後続の通知・メールは送らない
+			const updateResult = await this.avatarDecorationRequestsRepository.update({ id: request.id, status: 'pending' }, {
 				status: 'approved',
 				reviewerId: me.id,
 				reviewedAt: new Date(),
 				resultAvatarDecorationId: decoration.id,
 			});
+			if (updateResult.affected === 0) throw new ApiError(meta.errors.alreadyReviewed);
 
 			this.moderationLogService.log(me, 'approveAvatarDecorationRequest', {
 				requestId: request.id,

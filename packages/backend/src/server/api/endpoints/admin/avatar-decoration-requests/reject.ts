@@ -73,12 +73,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const requester = await this.usersRepository.findOneByOrFail({ id: request.userId });
 
-			await this.avatarDecorationRequestsRepository.update(request.id, {
+			// JUICE: 冒頭のstatusチェックと本更新の間に同時に別の審査(承認/却下)が割り込むTOCTOUを防ぐため、
+			// WHERE句にstatus='pending'を含めた条件付きUPDATEで原子的に排他する
+			const updateResult = await this.avatarDecorationRequestsRepository.update({ id: request.id, status: 'pending' }, {
 				status: 'rejected',
 				reviewerId: me.id,
 				reviewedAt: new Date(),
 				rejectReason: ps.reason,
 			});
+			if (updateResult.affected === 0) throw new ApiError(meta.errors.alreadyReviewed);
 
 			this.moderationLogService.log(me, 'rejectAvatarDecorationRequest', {
 				requestId: request.id,

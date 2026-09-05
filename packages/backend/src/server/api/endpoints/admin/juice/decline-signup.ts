@@ -74,7 +74,23 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.alreadyApproved);
 			}
 
+			// user_profileはuserにON DELETE CASCADEされているため、削除前に読んでおく必要がある
 			const profile = await this.userProfilesRepository.findOneBy({ userId: user.id });
+
+			// 承認前(approved: false)のアカウントは、サインインもAPI利用も全面的にブロックされているため
+			// ノート・ファイル等の実データを一切持ち得ない。そのため DeleteAccountService の非同期キュー経由の
+			// 削除(ノート/ファイル削除 → soft delete → 後日キューワーカーが物理削除)は使わず、この場で
+			// 直接物理削除する。DeleteAccountService 経由だと、実際の usersRepository.delete() は非同期
+			// キュージョブが処理するまで発生しないため、却下直後に同じユーザー名で再登録しようとすると
+			// (used_username からは削除済みでも) user テーブルの重複チェックで弾かれてしまう。
+			// user_profile / user_keypair / role_assignment 等は外部キーの ON DELETE CASCADE で連鎖削除される。
+			//
+			// JUICE: 冒頭のapprovedチェックとこの削除の間に同時に承認(admin/juice/approve-signup)が
+			// 割り込むTOCTOUを防ぐため、WHERE句にapproved=falseを含めた条件付きDELETEで原子的に排他する。
+			// メール送信・ログ記録等の副作用は、この削除が実際に成功した場合にのみ行う
+			const deleteResult = await this.usersRepository.delete({ id: user.id, approved: false });
+			if (deleteResult.affected === 0) throw new ApiError(meta.errors.alreadyApproved);
+
 			if (profile?.email != null) {
 				const lang = await this.emailI18nService.resolveLang(profile.emailLang);
 				const i18n = this.emailI18nService.getI18n(lang);
@@ -90,7 +106,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				reason: ps.reason,
 			});
 
-			// ユーザー行を削除する前に引換コードの状態を更新しておく(JUICE)。
+			// ユーザー行を削除した後に引換コードの状態を更新する(JUICE)。
 			// FKはON DELETE SET NULLなので、削除後もこのレコード自体は残り、
 			// メールアドレスを持たない申請者でもコードから却下された理由を確認できる。
 			await this.signupApprovalChecksRepository.update({ userId: user.id }, {
@@ -99,15 +115,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				reviewerId: me.id,
 				reviewedAt: new Date(),
 			});
-
-			// 承認前(approved: false)のアカウントは、サインインもAPI利用も全面的にブロックされているため
-			// ノート・ファイル等の実データを一切持ち得ない。そのため DeleteAccountService の非同期キュー経由の
-			// 削除(ノート/ファイル削除 → soft delete → 後日キューワーカーが物理削除)は使わず、この場で
-			// 直接物理削除する。DeleteAccountService 経由だと、実際の usersRepository.delete() は非同期
-			// キュージョブが処理するまで発生しないため、却下直後に同じユーザー名で再登録しようとすると
-			// (used_username からは削除済みでも) user テーブルの重複チェックで弾かれてしまう。
-			// user_profile / user_keypair / role_assignment 等は外部キーの ON DELETE CASCADE で連鎖削除される。
-			await this.usersRepository.delete(user.id);
 
 			// 却下されたアカウントは一度も承認されておらず実質的に使われていないため、
 			// 通常のアカウント削除(used_usernameを残してユーザー名の再利用を防ぐ)とは異なり、

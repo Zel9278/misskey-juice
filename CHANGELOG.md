@@ -47,6 +47,7 @@
 - Feat: /api/emoji-requests/create、/create-many、/api/avatar-decoration-requests/create、/create-manyにtargetEmojiId/targetAvatarDecorationIdパラメータを追加(JUICE独自)。指定すると「差し替え申請」となり、承認時は新規作成の代わりに対象の画像のみを差し替える。対象は申請者自身の承認済み申請から作られたものに限定され、同一対象への差し替え申請の重複は拒否する。あわせて/api/emoji-requests/list、/api/avatar-decoration-requests/listにstatusでの絞り込みパラメータを追加
 - Feat: 絵文字申請・アバターデコレーション申請の承認/却下結果を、アプリ内通知でも受け取れるように(JUICE独自)。今まではメール通知(メアド未設定/未認証、または「結果をメールで受け取る」設定をオフにしていると届かない)のみだったため、通知欄からも承認/却下に気づけるようにした。他の通知種別と同様、設定画面から個別にON/OFFを切り替え可能
 - Feat: /api/contact-form/submit、/api/admin/contact-form/{list,show,update,delete} を追加(JUICE独自、misskey-tempuraを参考に実装)。設定はmeta本体ではなくJUICE独自のJuiceSettingsに集約している。SystemWebhookに新しいイベント種別`receivedContactForm`を追加
+- Fix: 絵文字申請・アバターデコレーション申請の承認/却下、承認式新規登録の承認/却下について、同一の申請・ユーザーに対して2件の審査リクエストがほぼ同時に処理されると、両方とも成功してしまう(状態の読み取りから書き込みまでの間に排他制御が無かった)問題を修正。条件付きUPDATE/DELETEで原子的に排他するようにした
 
 ## 2026.7.0-juice+2.5
 
