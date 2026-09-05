@@ -28,6 +28,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'resetPassword',
 					'unsetMfa',
 					'suspendRemoteInstance',
+					// JUICE
+					'cleanupOrphanedObjectStorageFiles',
 				].includes(log.type),
 				[$style.logRed]: [
 					'suspend',
@@ -53,6 +55,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				].includes(log.type)
 			}"
 		>{{ i18n.ts._moderationLogTypes[log.type] }}</b>
+		<span v-if="isJuiceLogType" class="_juice">JUICE</span>
 		<span v-if="log.type === 'updateUserNote'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 		<span v-else-if="log.type === 'suspend'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 		<span v-else-if="log.type === 'unsuspend'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
@@ -99,6 +102,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="log.type === 'rejectEmojiRequest'">: {{ log.info.requestedName }}</span>
 		<span v-else-if="log.type === 'approveAvatarDecorationRequest'">: {{ log.info.avatarDecorationName }}</span>
 		<span v-else-if="log.type === 'rejectAvatarDecorationRequest'">: {{ log.info.requestedName }}</span>
+		<span v-else-if="log.type === 'cleanupOrphanedObjectStorageFiles'">: {{ log.info.deletedCount }} / {{ log.info.scanned }}{{ log.info.dryRun ? ` (${i18n.ts._moderationLogTypes.cleanupDryRunSuffix})` : '' }}</span>
 	</template>
 	<template #icon>
 		<i v-if="log.type === 'updateServerSettings'" class="ti ti-settings"></i>
@@ -151,6 +155,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="log.type === 'rejectEmojiRequest'" class="ti ti-x"></i>
 		<i v-else-if="log.type === 'approveAvatarDecorationRequest'" class="ti ti-check"></i>
 		<i v-else-if="log.type === 'rejectAvatarDecorationRequest'" class="ti ti-x"></i>
+		<i v-else-if="log.type === 'updateJuiceSettings'" class="ti ti-settings"></i>
+		<i v-else-if="log.type === 'cleanupOrphanedObjectStorageFiles'" class="ti ti-trash"></i>
 	</template>
 	<template #suffix>
 		<MkTime :time="log.createdAt"/>
@@ -266,6 +272,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.requesterId}`" class="_link">@{{ log.info.requesterUsername }}{{ log.info.requesterHost ? '@' + log.info.requesterHost : '' }}</MkA></div>
 			<div class="_selectable">{{ i18n.ts._emojiRequestPage.rejectReason }}: {{ log.info.reason }}</div>
 		</template>
+		<template v-else-if="log.type === 'updateJuiceSettings'">
+			<div :class="$style.diff">
+				<CodeDiff :context="5" :hideHeader="true" :oldString="JSON5.stringify(log.info.before, null, '\t')" :newString="JSON5.stringify(log.info.after, null, '\t')" language="javascript" maxHeight="300px"/>
+			</div>
+		</template>
+		<template v-else-if="log.type === 'cleanupOrphanedObjectStorageFiles'">
+			<div>{{ i18n.ts._moderationLogTypes.cleanupScanned }}: {{ log.info.scanned }}</div>
+			<div>{{ i18n.ts._moderationLogTypes.cleanupDeleted }}: {{ log.info.deletedCount }}</div>
+			<div v-if="log.info.failedKeys.length > 0" class="_selectable">{{ i18n.ts._moderationLogTypes.cleanupFailed }}: {{ log.info.failedKeys.join(', ') }}</div>
+		</template>
 
 		<details>
 			<summary>raw</summary>
@@ -276,6 +292,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue';
 import * as Misskey from 'misskey-js';
 import { CodeDiff } from 'v-code-diff';
 import JSON5 from 'json5';
@@ -285,6 +302,19 @@ import MkFolder from '@/components/MkFolder.vue';
 const props = defineProps<{
 	log: Misskey.entities.ModerationLog;
 }>();
+
+// JUICE
+const juiceLogTypes: readonly string[] = [
+	'approveSignup',
+	'declineSignup',
+	'approveEmojiRequest',
+	'rejectEmojiRequest',
+	'approveAvatarDecorationRequest',
+	'rejectAvatarDecorationRequest',
+	'updateJuiceSettings',
+	'cleanupOrphanedObjectStorageFiles',
+];
+const isJuiceLogType = computed(() => juiceLogTypes.includes(props.log.type));
 </script>
 
 <style lang="scss" module>

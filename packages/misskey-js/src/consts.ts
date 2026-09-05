@@ -213,6 +213,15 @@ export const moderationLogTypes = [
 	'deleteGalleryPost',
 	'deleteChatRoom',
 	'updateProxyAccountDescription',
+	// JUICE
+	'updateJuiceSettings',
+	'approveSignup',
+	'declineSignup',
+	'approveEmojiRequest',
+	'rejectEmojiRequest',
+	'approveAvatarDecorationRequest',
+	'rejectAvatarDecorationRequest',
+	'cleanupOrphanedObjectStorageFiles',
 ] as const;
 
 export const rolePolicies = [
@@ -567,6 +576,10 @@ export type ModerationLogPayloads = {
 		after: string | null;
 	};
 	// JUICE
+	updateJuiceSettings: {
+		before: unknown;
+		after: unknown;
+	};
 	approveSignup: {
 		userId: string;
 		userUsername: string;

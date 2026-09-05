@@ -12292,6 +12292,22 @@ export interface Locale extends ILocale {
          */
         "cleanupOrphanedObjectStorageFiles": string;
         /**
+         * 確認のみ、実際には削除していません
+         */
+        "cleanupDryRunSuffix": string;
+        /**
+         * 走査件数
+         */
+        "cleanupScanned": string;
+        /**
+         * 削除件数
+         */
+        "cleanupDeleted": string;
+        /**
+         * 削除に失敗したキー
+         */
+        "cleanupFailed": string;
+        /**
          * ユーザーのモデレーションノート更新
          */
         "updateUserNote": string;
