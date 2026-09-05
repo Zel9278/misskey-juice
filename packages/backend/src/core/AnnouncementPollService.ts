@@ -4,9 +4,10 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { In } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import type { AnnouncementPollsRepository, AnnouncementPollVotesRepository, MiAnnouncement, MiAnnouncementPoll, MiAnnouncementPollVote, MiUser } from '@/models/_.js';
+import type { AnnouncementPollsRepository, AnnouncementPollVotesRepository, MiAnnouncement, MiAnnouncementPoll, MiUser } from '@/models/_.js';
+import { MiAnnouncementPollVote } from '@/models/AnnouncementPollVote.js';
 import type { IAnnouncementPoll } from '@/models/AnnouncementPoll.js';
 import { IdService } from '@/core/IdService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
@@ -16,6 +17,9 @@ import { bindThis } from '@/decorators.js';
 @Injectable()
 export class AnnouncementPollService {
 	constructor(
+		@Inject(DI.db)
+		private db: DataSource,
+
 		@Inject(DI.announcementPollsRepository)
 		private announcementPollsRepository: AnnouncementPollsRepository,
 
@@ -62,29 +66,36 @@ export class AnnouncementPollService {
 			throw new IdentifiableError('82a4344d-0c50-4a7b-bad2-1accc93a9307', 'Choice ID is invalid.');
 		}
 
-		const exist = await this.announcementPollVotesRepository.findBy({
-			announcementId: announcement.id,
-			userId: user.id,
-		});
+		// JUICE: 「既に投票済みか」チェックとINSERTを、ユーザー×お知らせ単位のadvisory lockで
+		// 直列化した上で同一トランザクション内で行う。そうしないと同時リクエストでこのチェックが
+		// 競合し、単一選択ポール(multiple: false)でも複数の選択肢に投票できてしまう(TOCTOU)
+		await this.db.transaction(async em => {
+			await em.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`${user.id}:${announcement.id}`]);
 
-		if (poll.multiple) {
-			if (exist.some(x => x.choice === choice)) {
+			const exist = await em.findBy(MiAnnouncementPollVote, {
+				announcementId: announcement.id,
+				userId: user.id,
+			});
+
+			if (poll.multiple) {
+				if (exist.some(x => x.choice === choice)) {
+					throw new IdentifiableError('0ac3fb2f-30f2-4642-b2ed-e57e0790679d', 'You have already voted.');
+				}
+			} else if (exist.length !== 0) {
 				throw new IdentifiableError('0ac3fb2f-30f2-4642-b2ed-e57e0790679d', 'You have already voted.');
 			}
-		} else if (exist.length !== 0) {
-			throw new IdentifiableError('0ac3fb2f-30f2-4642-b2ed-e57e0790679d', 'You have already voted.');
-		}
 
-		await this.announcementPollVotesRepository.insert({
-			id: this.idService.gen(),
-			announcementId: announcement.id,
-			userId: user.id,
-			choice,
+			await em.insert(MiAnnouncementPollVote, {
+				id: this.idService.gen(),
+				announcementId: announcement.id,
+				userId: user.id,
+				choice,
+			});
+
+			// Increment votes count
+			const index = choice + 1; // In SQL, array index is 1 based
+			await em.query(`UPDATE announcement_poll SET votes[${index}] = votes[${index}] + 1 WHERE "announcementId" = $1`, [poll.announcementId]);
 		});
-
-		// Increment votes count
-		const index = choice + 1; // In SQL, array index is 1 based
-		await this.announcementPollsRepository.query(`UPDATE announcement_poll SET votes[${index}] = votes[${index}] + 1 WHERE "announcementId" = '${poll.announcementId}'`);
 
 		this.globalEventService.publishBroadcastStream('announcementPollVoted', {
 			announcementId: announcement.id,

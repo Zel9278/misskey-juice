@@ -7,8 +7,9 @@ import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AvatarDecorationRequestsRepository, AvatarDecorationsRepository, DriveFilesRepository, MiMeta } from '@/models/_.js';
+import type { DriveFilesRepository, MiMeta } from '@/models/_.js';
 import { MiAvatarDecorationRequest } from '@/models/AvatarDecorationRequest.js';
+import { MiAvatarDecoration } from '@/models/AvatarDecoration.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
 import { RoleService } from '@/core/RoleService.js';
@@ -144,12 +145,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
-		@Inject(DI.avatarDecorationRequestsRepository)
-		private avatarDecorationRequestsRepository: AvatarDecorationRequestsRepository,
-
-		@Inject(DI.avatarDecorationsRepository)
-		private avatarDecorationsRepository: AvatarDecorationsRepository,
-
 		private idService: IdService,
 		private roleService: RoleService,
 		private juiceSettingsService: JuiceSettingsService,
@@ -182,51 +177,58 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}));
 
 			const policies = await this.roleService.getUserPolicies(me.id);
-			const pendingCount = await this.avatarDecorationRequestsRepository.countBy({ userId: me.id, status: 'pending' });
-			if (pendingCount + ps.requests.length > policies.avatarDecorationRequestLimit) throw new ApiError(meta.errors.tooManyPendingRequests);
 
-			// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)。対象は申請者自身の
-			// 承認済み申請(resultAvatarDecorationId)から作られたデコレーションのみに限定する。
-			// 同一バッチ内で同じ対象を複数指定した場合も弾く
-			const targetDecorationIdsInBatch = new Set<string>();
-			for (const req of ps.requests) {
-				if (req.targetAvatarDecorationId == null) continue;
+			// JUICE: pending件数の上限チェックからINSERTまでを、ユーザー単位のadvisory lockで
+			// 直列化した上で同一トランザクション内で行う。そうしないと、同時に複数リクエストを
+			// 投げることで上限チェック(SELECT)がINSERTと競合し、上限を超えてpending申請を
+			// 作成できてしまう(TOCTOU)
+			const newRequests = await this.db.transaction(async em => {
+				await em.query('SELECT pg_advisory_xact_lock(hashtext($1))', [me.id]);
 
-				if (targetDecorationIdsInBatch.has(req.targetAvatarDecorationId)) throw new ApiError(meta.errors.duplicateReplacementRequest);
-				targetDecorationIdsInBatch.add(req.targetAvatarDecorationId);
+				const pendingCount = await em.countBy(MiAvatarDecorationRequest, { userId: me.id, status: 'pending' });
+				if (pendingCount + ps.requests.length > policies.avatarDecorationRequestLimit) throw new ApiError(meta.errors.tooManyPendingRequests);
 
-				const targetDecoration = await this.avatarDecorationsRepository.findOneBy({ id: req.targetAvatarDecorationId });
-				if (targetDecoration == null) throw new ApiError(meta.errors.noSuchTargetAvatarDecoration);
+				// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)。対象は申請者自身の
+				// 承認済み申請(resultAvatarDecorationId)から作られたデコレーションのみに限定する。
+				// 同一バッチ内で同じ対象を複数指定した場合も弾く
+				const targetDecorationIdsInBatch = new Set<string>();
+				for (const req of ps.requests) {
+					if (req.targetAvatarDecorationId == null) continue;
 
-				const ownApprovedRequest = await this.avatarDecorationRequestsRepository.findOneBy({
+					if (targetDecorationIdsInBatch.has(req.targetAvatarDecorationId)) throw new ApiError(meta.errors.duplicateReplacementRequest);
+					targetDecorationIdsInBatch.add(req.targetAvatarDecorationId);
+
+					const targetDecoration = await em.findOneBy(MiAvatarDecoration, { id: req.targetAvatarDecorationId });
+					if (targetDecoration == null) throw new ApiError(meta.errors.noSuchTargetAvatarDecoration);
+
+					const ownApprovedRequest = await em.findOneBy(MiAvatarDecorationRequest, {
+						userId: me.id,
+						resultAvatarDecorationId: req.targetAvatarDecorationId,
+						status: 'approved',
+					});
+					if (ownApprovedRequest == null) throw new ApiError(meta.errors.notAvatarDecorationOwner);
+
+					const duplicatePending = await em.findOneBy(MiAvatarDecorationRequest, {
+						userId: me.id,
+						targetAvatarDecorationId: req.targetAvatarDecorationId,
+						status: 'pending',
+					});
+					if (duplicatePending != null) throw new ApiError(meta.errors.duplicateReplacementRequest);
+				}
+
+				const requests = ps.requests.map((req, i) => ({
+					id: this.idService.gen(),
 					userId: me.id,
-					resultAvatarDecorationId: req.targetAvatarDecorationId,
-					status: 'approved',
-				});
-				if (ownApprovedRequest == null) throw new ApiError(meta.errors.notAvatarDecorationOwner);
-
-				const duplicatePending = await this.avatarDecorationRequestsRepository.findOneBy({
-					userId: me.id,
-					targetAvatarDecorationId: req.targetAvatarDecorationId,
-					status: 'pending',
-				});
-				if (duplicatePending != null) throw new ApiError(meta.errors.duplicateReplacementRequest);
-			}
-
-			const newRequests = ps.requests.map((req, i) => ({
-				id: this.idService.gen(),
-				userId: me.id,
-				fileId: driveFiles[i].id,
-				name: req.name,
-				description: req.description ?? '',
-				category: req.category ?? null,
-				status: 'pending' as const,
-				deleteFileAfterReview: req.deleteFileAfterReview ?? false,
-				targetAvatarDecorationId: req.targetAvatarDecorationId ?? null,
-			}));
-
-			await this.db.transaction(async em => {
-				await em.insert(MiAvatarDecorationRequest, newRequests);
+					fileId: driveFiles[i].id,
+					name: req.name,
+					description: req.description ?? '',
+					category: req.category ?? null,
+					status: 'pending' as const,
+					deleteFileAfterReview: req.deleteFileAfterReview ?? false,
+					targetAvatarDecorationId: req.targetAvatarDecorationId ?? null,
+				}));
+				await em.insert(MiAvatarDecorationRequest, requests);
+				return requests;
 			});
 
 			const requester = await this.userEntityService.pack(me, null, { schema: 'UserLite' });

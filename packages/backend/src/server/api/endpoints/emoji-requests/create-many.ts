@@ -7,8 +7,9 @@ import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { DriveFilesRepository, EmojiRequestsRepository, EmojisRepository, MiMeta } from '@/models/_.js';
+import type { DriveFilesRepository, MiMeta } from '@/models/_.js';
 import { MiEmojiRequest } from '@/models/EmojiRequest.js';
+import { MiEmoji } from '@/models/Emoji.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
 import { RoleService } from '@/core/RoleService.js';
@@ -147,12 +148,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
 
-		@Inject(DI.emojiRequestsRepository)
-		private emojiRequestsRepository: EmojiRequestsRepository,
-
-		@Inject(DI.emojisRepository)
-		private emojisRepository: EmojisRepository,
-
 		private idService: IdService,
 		private roleService: RoleService,
 		private juiceSettingsService: JuiceSettingsService,
@@ -185,54 +180,61 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}));
 
 			const policies = await this.roleService.getUserPolicies(me.id);
-			const pendingCount = await this.emojiRequestsRepository.countBy({ userId: me.id, status: 'pending' });
-			if (pendingCount + ps.requests.length > policies.emojiRequestLimit) throw new ApiError(meta.errors.tooManyPendingRequests);
 
-			// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)。対象は申請者自身の
-			// 承認済み申請(resultEmojiId)から作られた絵文字のみに限定する。同一バッチ内で
-			// 同じ対象を複数指定した場合も弾く
-			const targetEmojiIdsInBatch = new Set<string>();
-			for (const req of ps.requests) {
-				if (req.targetEmojiId == null) continue;
+			// JUICE: pending件数の上限チェックからINSERTまでを、ユーザー単位のadvisory lockで
+			// 直列化した上で同一トランザクション内で行う。そうしないと、同時に複数リクエストを
+			// 投げることで上限チェック(SELECT)がINSERTと競合し、上限を超えてpending申請を
+			// 作成できてしまう(TOCTOU)
+			const newRequests = await this.db.transaction(async em => {
+				await em.query('SELECT pg_advisory_xact_lock(hashtext($1))', [me.id]);
 
-				if (targetEmojiIdsInBatch.has(req.targetEmojiId)) throw new ApiError(meta.errors.duplicateReplacementRequest);
-				targetEmojiIdsInBatch.add(req.targetEmojiId);
+				const pendingCount = await em.countBy(MiEmojiRequest, { userId: me.id, status: 'pending' });
+				if (pendingCount + ps.requests.length > policies.emojiRequestLimit) throw new ApiError(meta.errors.tooManyPendingRequests);
 
-				const targetEmoji = await this.emojisRepository.findOneBy({ id: req.targetEmojiId });
-				if (targetEmoji == null) throw new ApiError(meta.errors.noSuchTargetEmoji);
+				// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)。対象は申請者自身の
+				// 承認済み申請(resultEmojiId)から作られた絵文字のみに限定する。同一バッチ内で
+				// 同じ対象を複数指定した場合も弾く
+				const targetEmojiIdsInBatch = new Set<string>();
+				for (const req of ps.requests) {
+					if (req.targetEmojiId == null) continue;
 
-				const ownApprovedRequest = await this.emojiRequestsRepository.findOneBy({
+					if (targetEmojiIdsInBatch.has(req.targetEmojiId)) throw new ApiError(meta.errors.duplicateReplacementRequest);
+					targetEmojiIdsInBatch.add(req.targetEmojiId);
+
+					const targetEmoji = await em.findOneBy(MiEmoji, { id: req.targetEmojiId });
+					if (targetEmoji == null) throw new ApiError(meta.errors.noSuchTargetEmoji);
+
+					const ownApprovedRequest = await em.findOneBy(MiEmojiRequest, {
+						userId: me.id,
+						resultEmojiId: req.targetEmojiId,
+						status: 'approved',
+					});
+					if (ownApprovedRequest == null) throw new ApiError(meta.errors.notEmojiOwner);
+
+					const duplicatePending = await em.findOneBy(MiEmojiRequest, {
+						userId: me.id,
+						targetEmojiId: req.targetEmojiId,
+						status: 'pending',
+					});
+					if (duplicatePending != null) throw new ApiError(meta.errors.duplicateReplacementRequest);
+				}
+
+				const requests = ps.requests.map((req, i) => ({
+					id: this.idService.gen(),
 					userId: me.id,
-					resultEmojiId: req.targetEmojiId,
-					status: 'approved',
-				});
-				if (ownApprovedRequest == null) throw new ApiError(meta.errors.notEmojiOwner);
-
-				const duplicatePending = await this.emojiRequestsRepository.findOneBy({
-					userId: me.id,
-					targetEmojiId: req.targetEmojiId,
-					status: 'pending',
-				});
-				if (duplicatePending != null) throw new ApiError(meta.errors.duplicateReplacementRequest);
-			}
-
-			const newRequests = ps.requests.map((req, i) => ({
-				id: this.idService.gen(),
-				userId: me.id,
-				fileId: driveFiles[i].id,
-				name: req.name,
-				category: req.category ?? null,
-				aliases: req.aliases ?? [],
-				license: req.license ?? null,
-				isSensitive: req.isSensitive ?? false,
-				localOnly: req.localOnly ?? false,
-				status: 'pending' as const,
-				deleteFileAfterReview: req.deleteFileAfterReview ?? false,
-				targetEmojiId: req.targetEmojiId ?? null,
-			}));
-
-			await this.db.transaction(async em => {
-				await em.insert(MiEmojiRequest, newRequests);
+					fileId: driveFiles[i].id,
+					name: req.name,
+					category: req.category ?? null,
+					aliases: req.aliases ?? [],
+					license: req.license ?? null,
+					isSensitive: req.isSensitive ?? false,
+					localOnly: req.localOnly ?? false,
+					status: 'pending' as const,
+					deleteFileAfterReview: req.deleteFileAfterReview ?? false,
+					targetEmojiId: req.targetEmojiId ?? null,
+				}));
+				await em.insert(MiEmojiRequest, requests);
+				return requests;
 			});
 
 			const requester = await this.userEntityService.pack(me, null, { schema: 'UserLite' });
