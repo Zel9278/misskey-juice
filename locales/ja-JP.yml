@@ -4010,6 +4010,8 @@ _contactForm:
     misskeyUsernamePlaceholder: "@example@misskey.example.com"
     registeredUser: "登録ユーザー"
     submit: "送信する"
+    includeDeviceInfo: "デバイス情報を含める"
+    includeDeviceInfoCaption: "技術的な不具合報告の際、OS・ブラウザ・画面サイズ等の情報を本文の末尾に添えると解決に役立つことがあります。"
     contactFormDisabled: "現在お問い合わせを受け付けていません"
     contactFormDisabledDescription: "このサーバーでは現在お問い合わせフォームが無効になっています。\n他の方法でのお問い合わせ先が案内されている場合は、そちらをご利用ください。"
   _submitComplete:

@@ -3786,6 +3786,8 @@ _contactForm:
     subject: "Subject"
     subjectPlaceholder: "Enter the subject of your inquiry"
     submit: "Submit"
+    includeDeviceInfo: "Include device info"
+    includeDeviceInfoCaption: "For technical bug reports, including your OS, browser, and screen size at the end of the message can help us resolve the issue."
   _validation:
     contentLengthCaption: "{current} / {max} characters"
     contentTooLong: "The text exceeds the maximum length."

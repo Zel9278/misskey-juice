@@ -3786,6 +3786,8 @@ _contactForm:
     subject: "主题"
     subjectPlaceholder: "请输入咨询主题"
     submit: "提交"
+    includeDeviceInfo: "包含设备信息"
+    includeDeviceInfoCaption: "报告技术性问题时,在正文末尾附上操作系统、浏览器、屏幕尺寸等信息,有助于问题的排查与解决。"
   _validation:
     contentLengthCaption: "{current} / {max} 字"
     contentTooLong: "字数超过上限。"

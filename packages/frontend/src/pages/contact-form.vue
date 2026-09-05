@@ -122,6 +122,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</FormSection>
 
+				<FormSection>
+					<MkSwitch v-model="includeDeviceInfo">
+						<template #label>{{ i18n.ts._contactForm._userForm.includeDeviceInfo }}</template>
+						<template #caption>{{ i18n.ts._contactForm._userForm.includeDeviceInfoCaption }}</template>
+					</MkSwitch>
+					<MkFolder v-if="includeDeviceInfo" :defaultOpen="false" style="margin-top: 8px;">
+						<template #icon><i class="ti ti-report-search"></i></template>
+						<template #label>{{ i18n.ts.deviceInfo }}</template>
+						<MkCode lang="json" :code="deviceInfoText" style="max-height: 300px; overflow: auto;"/>
+					</MkFolder>
+				</FormSection>
+
 				<FormSection v-if="instance.enableHcaptcha">
 					<MkCaptcha ref="hcaptcha" v-model="captchaToken" provider="hcaptcha" :sitekey="instance.hcaptchaSiteKey"/>
 				</FormSection>
@@ -221,13 +233,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import MkRadios from '@/components/MkRadios.vue';
+import MkSwitch from '@/components/MkSwitch.vue';
+import MkFolder from '@/components/MkFolder.vue';
+import MkCode from '@/components/MkCode.vue';
 import MkCaptcha from '@/components/MkCaptcha.vue';
 import type { Captcha } from '@/components/MkCaptcha.vue';
 import FormSection from '@/components/form/section.vue';
@@ -239,6 +254,8 @@ import { instance } from '@/instance.js';
 import { definePage } from '@/page.js';
 import { juicePublicSettingsCache } from '@/cache.js';
 import { useContactFormCategories } from '@/composables/useContactFormCategories.js';
+import { getUserEnvironment } from '@/utility/get-user-environment.js';
+import type { UserEnvironment } from '@/utility/get-user-environment.js';
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
 const { fetchCategories, getCategoryLabel, getDefaultCategory, categoryOptions } = useContactFormCategories();
@@ -286,6 +303,18 @@ const recaptcha = ref<Captcha | undefined>();
 const turnstile = ref<Captcha | undefined>();
 const mcaptcha = ref<Captcha | undefined>();
 const testcaptcha = ref<Captcha | undefined>();
+
+// JUICE: 技術的な不具合報告に役立つよう、既存の「お問い合わせ」ページ(contact.vue)にある
+// デバイス情報表示と同じ情報を、任意でこのフォームの送信内容に含められるようにする
+const includeDeviceInfo = ref(false);
+const userEnv = ref<UserEnvironment | null>(null);
+const deviceInfoText = computed(() => userEnv.value ? JSON.stringify(userEnv.value, null, 2) : '');
+
+watch(includeDeviceInfo, async (v) => {
+	if (v && userEnv.value == null) {
+		userEnv.value = await getUserEnvironment();
+	}
+});
 
 function resetCaptcha() {
 	captchaToken.value = null;
@@ -410,9 +439,17 @@ async function submit() {
 	submitting.value = true;
 
 	try {
+		// JUICE: デバイス情報を含める場合、本文の末尾に付記する(サーバー側にデバイス情報専用の
+		// 項目は無いため)。文字数上限(10000文字)を超える場合は付記せず、本文の内容を優先する
+		let finalContent = content.value.trim();
+		if (includeDeviceInfo.value && userEnv.value != null) {
+			const withDeviceInfo = `${finalContent}\n\n--- ${i18n.ts.deviceInfo} ---\n${deviceInfoText.value}`;
+			if (withDeviceInfo.length <= 10000) finalContent = withDeviceInfo;
+		}
+
 		const payload: Misskey.entities.ContactFormSubmitRequest = {
 			subject: subject.value.trim(),
-			content: content.value.trim(),
+			content: finalContent,
 			category: category.value,
 			replyMethod: replyMethod.value,
 			name: name.value.trim() || undefined,

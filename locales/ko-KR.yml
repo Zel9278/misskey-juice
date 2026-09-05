@@ -3786,6 +3786,8 @@ _contactForm:
     subject: "제목"
     subjectPlaceholder: "문의 제목을 입력해 주세요"
     submit: "제출하기"
+    includeDeviceInfo: "기기 정보 포함하기"
+    includeDeviceInfoCaption: "기술적인 문제를 신고할 때, OS·브라우저·화면 크기 등의 정보를 본문 끝에 덧붙이면 해결에 도움이 될 수 있습니다."
   _validation:
     contentLengthCaption: "{current} / {max} 자"
     contentTooLong: "글자 수가 상한을 초과했습니다."

@@ -14966,6 +14966,14 @@ export interface Locale extends ILocale {
              */
             "submit": string;
             /**
+             * デバイス情報を含める
+             */
+            "includeDeviceInfo": string;
+            /**
+             * 技術的な不具合報告の際、OS・ブラウザ・画面サイズ等の情報を本文の末尾に添えると解決に役立つことがあります。
+             */
+            "includeDeviceInfoCaption": string;
+            /**
              * 現在お問い合わせを受け付けていません
              */
             "contactFormDisabled": string;

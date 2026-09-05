@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_gaps_m">
 			<!-- JUICE: misskey-tempuraのコンタクトフォームを参考に追加 -->
 			<div v-if="contactFormEnabled" style="text-align: center;">
-				<MkButton primary rounded to="/contact-form">
+				<MkButton primary rounded type="routerLink" to="/contact-form">
 					<i class="ti ti-mail"></i> {{ i18n.ts._contactForm._userForm.contactForm }}
 				</MkButton>
 			</div>
