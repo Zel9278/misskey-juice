@@ -97,6 +97,16 @@ defineProps<{
 	text-align: start;
 	overflow: hidden;
 	padding-right: 12px;
+
+	// JUICE: 省略記号のためのoverflow: hiddenが、周囲のテキストより背の高いバッジ
+	// (_juice/_beta/_modified、vertical-align: top等で行からはみ出す)の上端を切り取って
+	// しまうため、この中でだけバッジがテキストの行に自然に収まるよう打ち消す
+	:global(._juice),
+	:global(._beta),
+	:global(._modified) {
+		vertical-align: baseline;
+		transform: none;
+	}
 }
 
 .suffix {

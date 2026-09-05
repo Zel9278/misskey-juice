@@ -31,7 +31,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 										<i class="ti ti-edit"></i> {{ i18n.ts.addMemo }}
 									</button>
 									<button v-if="$i && !isEditingNickname && !nicknameDraft" class="_button add-note-button" @click="showNicknameTextarea">
-										<i class="ti ti-edit"></i> {{ i18n.ts._juice.addNickname }}
+										<i class="ti ti-edit"></i> {{ i18n.ts._juice.addNickname }}<span class="_juice">JUICE</span>
 									</button>
 								</div>
 							</div>
@@ -85,7 +85,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							></textarea>
 						</div>
 						<div v-if="isEditingNickname || nicknameDraft" class="memo" :class="{'no-memo': !nicknameDraft}">
-							<div class="heading">{{ i18n.ts._juice.nickname }}</div>
+							<div class="heading">{{ i18n.ts._juice.nickname }}<span class="_juice">JUICE</span></div>
 							<textarea
 								ref="nicknameTextareaEl"
 								v-model="nicknameDraft"
