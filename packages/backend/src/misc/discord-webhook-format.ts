@@ -21,6 +21,7 @@ import type {
 	EmojiRequestCreatedPayload,
 	SignupApplicationCreatedPayload,
 	AvatarDecorationRequestCreatedPayload,
+	ContactFormPayload,
 } from '@/core/SystemWebhookService.js';
 import type { UserWebhookPayload } from '@/core/UserWebhookService.js';
 
@@ -77,6 +78,11 @@ type Messages = {
 	signupApplicationCreatedTitle: string;
 	noReason: string;
 	applicantField: string;
+	contactFormReceivedTitle: string;
+	contactFormEmailField: string;
+	contactFormMisskeyUsernameField: string;
+	contactFormNameField: string;
+	contactFormRegisteredUserField: string;
 	unknownEventTitle: string;
 	unknownEventTypeLabel: string;
 	newNoteTitle: string;
@@ -115,6 +121,11 @@ const MESSAGES_JA: Messages = {
 	signupApplicationCreatedTitle: '📝 承認式登録の申請が届きました',
 	noReason: '*理由なし*',
 	applicantField: '申請者',
+	contactFormReceivedTitle: '✉️ お問い合わせが届きました',
+	contactFormEmailField: 'メールアドレス',
+	contactFormMisskeyUsernameField: 'Misskeyユーザー名',
+	contactFormNameField: '名前',
+	contactFormRegisteredUserField: '登録ユーザー',
 	unknownEventTitle: '📋 Webhook イベント',
 	unknownEventTypeLabel: 'イベントタイプ',
 	newNoteTitle: '📝 新しいノート',
@@ -153,6 +164,11 @@ const MESSAGES_EN: Messages = {
 	signupApplicationCreatedTitle: '📝 New signup application',
 	noReason: '*No reason given*',
 	applicantField: 'Applicant',
+	contactFormReceivedTitle: '✉️ New contact form submission',
+	contactFormEmailField: 'Email',
+	contactFormMisskeyUsernameField: 'Misskey username',
+	contactFormNameField: 'Name',
+	contactFormRegisteredUserField: 'Registered user',
 	unknownEventTitle: '📋 Webhook event',
 	unknownEventTypeLabel: 'Event type',
 	newNoteTitle: '📝 New note',
@@ -287,6 +303,28 @@ function formatAvatarDecorationRequestCreated(server: string, payload: AvatarDec
 	};
 }
 
+// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+function formatContactFormReceived(server: string, payload: ContactFormPayload, t: Messages): DiscordEmbed {
+	const fields: NonNullable<DiscordEmbed['fields']> = [
+		{ name: t.categoryField, value: payload.category, inline: true },
+	];
+	if (payload.replyMethod === 'email' && payload.email) {
+		fields.push({ name: t.contactFormEmailField, value: payload.email, inline: true });
+	} else if (payload.replyMethod === 'misskey' && payload.misskeyUsername) {
+		fields.push({ name: t.contactFormMisskeyUsernameField, value: `@${payload.misskeyUsername}`, inline: true });
+	}
+	if (payload.name) fields.push({ name: t.contactFormNameField, value: payload.name, inline: true });
+	if (payload.user) fields.push({ name: t.contactFormRegisteredUserField, value: formatUserLink(server, payload.user), inline: true });
+
+	return {
+		title: t.contactFormReceivedTitle,
+		description: `**${payload.subject}**\n${truncate(payload.content, NOTE_TEXT_LIMIT)}`,
+		color: COLORS.PURPLE,
+		fields,
+		footer: { text: server },
+	};
+}
+
 function formatUnknownEvent(server: string, type: string, t: Messages): DiscordEmbed {
 	return {
 		title: t.unknownEventTitle,
@@ -324,6 +362,9 @@ export function formatSystemWebhookForDiscord(type: SystemWebhookEventType, cont
 			break;
 		case 'avatarDecorationRequestCreated':
 			embed = formatAvatarDecorationRequestCreated(server, content as AvatarDecorationRequestCreatedPayload, t);
+			break;
+		case 'receivedContactForm':
+			embed = formatContactFormReceived(server, content as ContactFormPayload, t);
 			break;
 		default: {
 			const _: never = type;

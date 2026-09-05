@@ -482,3 +482,11 @@ export * as 'chat/rooms/invitations/outbox' from './endpoints/chat/rooms/invitat
 export * as 'chat/history' from './endpoints/chat/history.js';
 export * as 'chat/read-all' from './endpoints/chat/read-all.js';
 export * as 'v2/admin/emoji/list' from './endpoints/v2/admin/emoji/list.js';
+
+// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+export * as 'contact-form/submit' from './endpoints/contact-form/submit.js';
+export * as 'admin/contact-form/list' from './endpoints/admin/contact-form/list.js';
+export * as 'admin/contact-form/show' from './endpoints/admin/contact-form/show.js';
+export * as 'admin/contact-form/update' from './endpoints/admin/contact-form/update.js';
+export * as 'admin/contact-form/delete' from './endpoints/admin/contact-form/delete.js';
+export * as 'admin/contact-form/categories' from './endpoints/admin/contact-form/categories.js';

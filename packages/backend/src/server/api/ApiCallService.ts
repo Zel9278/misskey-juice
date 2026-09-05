@@ -16,6 +16,8 @@ import type { MiMeta, UserIpsRepository } from '@/models/_.js';
 import { createTemp } from '@/misc/create-temp.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
+import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { resolveContactFormSettings } from '@/models/JuiceSettings.js';
 import { TelemetryService } from '@/core/telemetry/TelemetryService.js';
 import type { Config } from '@/config.js';
 import { ApiError } from './error.js';
@@ -52,6 +54,7 @@ export class ApiCallService implements OnApplicationShutdown {
 		private rateLimiterService: RateLimiterService,
 		private roleService: RoleService,
 		private apiLoggerService: ApiLoggerService,
+		private juiceSettingsService: JuiceSettingsService,
 		private telemetryService: TelemetryService,
 	) {
 		this.logger = this.apiLoggerService.logger;
@@ -325,6 +328,12 @@ export class ApiCallService implements OnApplicationShutdown {
 			}
 
 			const limit = Object.assign({}, ep.meta.limit);
+
+			// JUICE: コンタクトフォームの送信回数制限は管理者設定で変更できるため、動的に上書きする
+			if (ep.name === 'contact-form/submit') {
+				const { contactFormLimit } = resolveContactFormSettings(await this.juiceSettingsService.fetch());
+				Object.assign(limit, { max: contactFormLimit });
+			}
 
 			if (limit.key == null) {
 				(limit as any).key = ep.name;

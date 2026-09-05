@@ -226,6 +226,11 @@ export const ROUTE_DEF = [{
 	path: '/contact',
 	component: page(() => import('@/pages/contact.vue')),
 }, {
+	// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+	path: '/contact-form',
+	name: 'contact-form-page',
+	component: page(() => import('@/pages/contact-form.vue')),
+}, {
 	path: '/about-misskey',
 	component: page(() => import('@/pages/about-misskey.vue')),
 }, {
@@ -538,6 +543,15 @@ export const ROUTE_DEF = [{
 		path: '/avatar-decoration-requests',
 		name: 'avatar-decoration-requests',
 		component: page(() => import('@/pages/admin/avatar-decoration-requests.vue')),
+	}, {
+		// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+		path: '/contact-form',
+		name: 'contact-form',
+		component: page(() => import('@/pages/admin/contact-form.vue')),
+	}, {
+		path: '/contact-form-categories',
+		name: 'contact-form-categories',
+		component: page(() => import('@/pages/admin/contact-form-categories.vue')),
 	}, {
 		path: '/invites',
 		name: 'invites',

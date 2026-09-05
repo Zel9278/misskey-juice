@@ -124,6 +124,8 @@ export const permissions = [
 	'read:admin:avatar-decoration-requests',
 	'write:admin:avatar-decoration-requests-approve',
 	'write:admin:avatar-decoration-requests-reject',
+	'read:admin:contact-form',
+	'write:admin:contact-form',
 	'write:admin:user-note',
 	'write:admin:roles',
 	'read:admin:roles',

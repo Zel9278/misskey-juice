@@ -89,6 +89,9 @@ const props = withDefaults(defineProps<{
 		relayTimelineEnabled: false,
 		latexEnabled: true,
 		reactionPiggybackOnRemoteEnabled: false,
+		contactFormEnabled: true,
+		contactFormRequireAuth: false,
+		contactFormCategories: [],
 	}),
 });
 

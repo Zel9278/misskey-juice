@@ -7,6 +7,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 <PageWithHeader>
 	<div class="_spacer" style="--MI_SPACER-w: 600px; --MI_SPACER-min: 20px;">
 		<div class="_gaps_m">
+			<!-- JUICE: misskey-tempuraのコンタクトフォームを参考に追加 -->
+			<div v-if="contactFormEnabled" style="text-align: center;">
+				<MkButton primary rounded to="/contact-form">
+					<i class="ti ti-mail"></i> {{ i18n.ts._contactForm._userForm.contactForm }}
+				</MkButton>
+			</div>
 			<MkKeyValue :copy="instance.maintainerName">
 				<template #key>{{ i18n.ts.administrator }}</template>
 				<template #value>
@@ -51,6 +57,17 @@ import MkKeyValue from '@/components/MkKeyValue.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkLink from '@/components/MkLink.vue';
 import MkCode from '@/components/MkCode.vue';
+import MkButton from '@/components/MkButton.vue';
+import { juicePublicSettingsCache } from '@/cache.js';
+
+// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+// 設定取得に失敗した場合にボタンが出なくなるのを避けるため、フェイルオープン(common.tsのメニュー表示と同じ方針)にする
+const contactFormEnabled = ref(true);
+juicePublicSettingsCache.fetch().then(settings => {
+	contactFormEnabled.value = settings.contactFormEnabled;
+}).catch(err => {
+	console.error('Failed to fetch juice public settings', err);
+});
 
 const userEnv = ref<UserEnvironment | null>(null);
 

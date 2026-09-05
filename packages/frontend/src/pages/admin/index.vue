@@ -286,6 +286,18 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		to: '/admin/avatar-decoration-requests',
 		active: currentPage.value?.route.name === 'avatar-decoration-requests',
 		badge: true,
+	}, {
+		icon: 'ti ti-mail',
+		text: i18n.ts._contactForm._adminList.list,
+		to: '/admin/contact-form',
+		active: currentPage.value?.route.name === 'contact-form',
+		badge: true,
+	}, {
+		icon: 'ti ti-forms',
+		text: i18n.ts._contactForm._category.categoryManagement,
+		to: '/admin/contact-form-categories',
+		active: currentPage.value?.route.name === 'contact-form-categories',
+		badge: true,
 	}],
 }, {
 	title: i18n.ts.info,

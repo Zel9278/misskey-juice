@@ -31,6 +31,23 @@ export const paramDef = {
 		relayTimelineEnabled: { type: 'boolean' },
 		latexEnabled: { type: 'boolean' },
 		reactionPiggybackOnRemoteEnabled: { type: 'boolean' },
+		contactFormEnabled: { type: 'boolean' },
+		contactFormLimit: { type: 'integer', minimum: 1, maximum: 100 },
+		contactFormRequireAuth: { type: 'boolean' },
+		contactFormCategories: {
+			type: 'array',
+			items: {
+				type: 'object',
+				properties: {
+					key: { type: 'string', minLength: 1, maxLength: 64 },
+					text: { type: 'string', minLength: 1, maxLength: 128 },
+					enabled: { type: 'boolean' },
+					order: { type: 'integer' },
+					isDefault: { type: 'boolean' },
+				},
+				required: ['key', 'text', 'enabled', 'order', 'isDefault'],
+			},
+		},
 	},
 } as const;
 
@@ -58,6 +75,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.relayTimelineEnabled !== undefined) set.relayTimelineEnabled = ps.relayTimelineEnabled;
 			if (ps.latexEnabled !== undefined) set.latexEnabled = ps.latexEnabled;
 			if (ps.reactionPiggybackOnRemoteEnabled !== undefined) set.reactionPiggybackOnRemoteEnabled = ps.reactionPiggybackOnRemoteEnabled;
+			if (ps.contactFormEnabled !== undefined) set.contactFormEnabled = ps.contactFormEnabled;
+			if (ps.contactFormLimit !== undefined) set.contactFormLimit = ps.contactFormLimit;
+			if (ps.contactFormRequireAuth !== undefined) set.contactFormRequireAuth = ps.contactFormRequireAuth;
+			if (ps.contactFormCategories !== undefined) set.contactFormCategories = ps.contactFormCategories;
 
 			const after = await this.juiceSettingsService.update(set);
 

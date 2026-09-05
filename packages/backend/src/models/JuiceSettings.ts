@@ -30,7 +30,24 @@ export interface JuiceSettingsValue {
 	latexEnabled?: boolean;
 	/** リモートのカスタム絵文字を使ったリアクションへの相乗り(既存リアクションをクリックして同じリアクションを付けること)を許可するか */
 	reactionPiggybackOnRemoteEnabled?: boolean;
+	/** コンタクトフォーム(お問い合わせ)機能を有効にするか */
+	contactFormEnabled?: boolean;
+	/** コンタクトフォームの送信回数制限(1時間あたり) */
+	contactFormLimit?: number;
+	/** コンタクトフォームの送信にログインを必須にするか */
+	contactFormRequireAuth?: boolean;
+	/** コンタクトフォームのカテゴリ一覧 */
+	contactFormCategories?: ContactFormCategory[];
 }
+
+// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+export type ContactFormCategory = {
+	key: string;
+	text: string;
+	enabled: boolean;
+	order: number;
+	isDefault: boolean;
+};
 
 /**
  * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
@@ -133,6 +150,33 @@ export function resolveReactionPiggybackSettings(settings: JuiceSettingsValue): 
 		// JUICE: リモートの絵文字画像を著作権者の許諾なく表示・使用することになりうるため、
 		// 既定は無効(サーバー管理者の自己責任でのオプトイン)とする
 		reactionPiggybackOnRemoteEnabled: settings.reactionPiggybackOnRemoteEnabled ?? false,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・juice/public-settings・contact-form/submit・ContactFormService等で共通利用する。
+ * カテゴリの既定値7種はmisskey-tempuraの初期値を踏襲する。
+ */
+export function resolveContactFormSettings(settings: JuiceSettingsValue): {
+	contactFormEnabled: boolean;
+	contactFormLimit: number;
+	contactFormRequireAuth: boolean;
+	contactFormCategories: ContactFormCategory[];
+} {
+	return {
+		contactFormEnabled: settings.contactFormEnabled ?? true,
+		contactFormLimit: settings.contactFormLimit ?? 3,
+		contactFormRequireAuth: settings.contactFormRequireAuth ?? false,
+		contactFormCategories: settings.contactFormCategories ?? [
+			{ key: 'general', text: '一般', enabled: true, order: 1, isDefault: true },
+			{ key: 'bug_report', text: 'バグ報告', enabled: true, order: 2, isDefault: false },
+			{ key: 'feature_request', text: '機能要望', enabled: true, order: 3, isDefault: false },
+			{ key: 'account_issue', text: 'アカウント関連', enabled: true, order: 4, isDefault: false },
+			{ key: 'technical_issue', text: '技術的な問題', enabled: true, order: 5, isDefault: false },
+			{ key: 'content_issue', text: 'コンテンツ関連', enabled: true, order: 6, isDefault: false },
+			{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
+		],
 	};
 }
 

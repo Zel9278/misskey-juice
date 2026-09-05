@@ -143,6 +143,35 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 				</SearchMarker>
 
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._contactForm._settings.title }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="contactFormEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._contactForm._settings.enable }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._contactForm._settings.enableDescription }}</template>
+								</MkSwitch>
+							</SearchMarker>
+
+							<SearchMarker>
+								<MkInput v-model="contactFormLimit" type="number" :min="1" :max="100" :disabled="!contactFormEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._contactForm._settings.limit }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._contactForm._settings.limitDescription }}</template>
+								</MkInput>
+							</SearchMarker>
+
+							<SearchMarker>
+								<MkSwitch v-model="contactFormRequireAuth" :disabled="!contactFormEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._contactForm._settings.requireAuth }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._contactForm._settings.requireAuthDescription }}</template>
+								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
 				<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 			</div>
 		</SearchMarker>
@@ -176,6 +205,9 @@ const rankingDisplayCount = ref(settings.rankingDisplayCount);
 const relayTimelineEnabled = ref(settings.relayTimelineEnabled);
 const latexEnabled = ref(settings.latexEnabled);
 const reactionPiggybackOnRemoteEnabled = ref(settings.reactionPiggybackOnRemoteEnabled);
+const contactFormEnabled = ref(settings.contactFormEnabled);
+const contactFormLimit = ref(settings.contactFormLimit);
+const contactFormRequireAuth = ref(settings.contactFormRequireAuth);
 
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
@@ -190,6 +222,9 @@ function save() {
 		relayTimelineEnabled: relayTimelineEnabled.value,
 		latexEnabled: latexEnabled.value,
 		reactionPiggybackOnRemoteEnabled: reactionPiggybackOnRemoteEnabled.value,
+		contactFormEnabled: contactFormEnabled.value,
+		contactFormLimit: contactFormLimit.value,
+		contactFormRequireAuth: contactFormRequireAuth.value,
 	});
 }
 

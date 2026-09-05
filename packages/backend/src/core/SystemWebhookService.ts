@@ -65,6 +65,26 @@ export type AvatarDecorationRequestCreatedPayload = {
 	requester: Packed<'UserLite'>;
 };
 
+// JUICE: misskey-tempuraのコンタクトフォームを参考に追加。コンタクトフォームが送信された時のWebhookペイロード
+// 注意: email/ipAddress/userAgentを含むため、このイベントを有効にしたSystemWebhookの送信先URLへ
+// 送信者のPIIが転送される。SystemWebhookの作成・編集自体はrequireModerator(要admin/system-webhook/*)の
+// ため、admin/contact-form/*と同じ信頼レベルだが、転送先が外部サービス(Discord等)になりうる点は
+// admin/contact-form/*のPII閲覧より一段見えにくい経路になるため、設定変更時は留意すること
+export type ContactFormPayload = {
+	id: string;
+	subject: string;
+	content: string;
+	name: string | null;
+	email: string | null;
+	misskeyUsername: string | null;
+	replyMethod: 'email' | 'misskey';
+	category: string;
+	status: 'pending' | 'in_progress' | 'resolved' | 'closed';
+	ipAddress: string | null;
+	userAgent: string | null;
+	user: Packed<'UserLite'> | null;
+};
+
 export type SystemWebhookPayload<T extends SystemWebhookEventType> =
 	T extends 'abuseReport' | 'abuseReportResolved' ? AbuseReportPayload :
 	T extends 'userCreated' ? Packed<'UserLite'> :
@@ -73,6 +93,7 @@ export type SystemWebhookPayload<T extends SystemWebhookEventType> =
 	T extends 'emojiRequestCreated' ? EmojiRequestCreatedPayload :
 	T extends 'signupApplicationCreated' ? SignupApplicationCreatedPayload :
 	T extends 'avatarDecorationRequestCreated' ? AvatarDecorationRequestCreatedPayload :
+	T extends 'receivedContactForm' ? ContactFormPayload :
 		never;
 
 @Injectable()

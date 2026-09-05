@@ -360,6 +360,23 @@ export class WebhookTestService {
 				});
 				break;
 			}
+			case 'receivedContactForm': {
+				send('receivedContactForm', {
+					id: 'dummy-contact-form-1',
+					subject: 'テストのお問い合わせ',
+					content: 'これはテスト用のお問い合わせ内容です。',
+					name: 'テストユーザー',
+					email: 'test@example.com',
+					misskeyUsername: null,
+					replyMethod: 'email',
+					category: 'other',
+					status: 'pending',
+					ipAddress: '192.0.2.1',
+					userAgent: 'Mozilla/5.0 (Test Browser)',
+					user: await this.toPackedUserLite(dummyUser1),
+				});
+				break;
+			}
 			default: {
 				const _exhaustiveAssertion: never = params.type;
 				return;

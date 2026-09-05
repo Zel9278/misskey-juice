@@ -84,6 +84,7 @@ import { ChannelFollowingService } from './ChannelFollowingService.js';
 import { ChatService } from './ChatService.js';
 import { RegistryApiService } from './RegistryApiService.js';
 import { ReversiService } from './ReversiService.js';
+import { ContactFormService } from './ContactFormService.js';
 import { PageService } from './PageService.js';
 
 import { ChartLoggerService } from './chart/ChartLoggerService.js';
@@ -139,6 +140,7 @@ import { FlashLikeEntityService } from './entities/FlashLikeEntityService.js';
 import { RoleEntityService } from './entities/RoleEntityService.js';
 import { ReversiGameEntityService } from './entities/ReversiGameEntityService.js';
 import { MetaEntityService } from './entities/MetaEntityService.js';
+import { ContactFormEntityService } from './entities/ContactFormEntityService.js';
 
 import { ApAudienceService } from './activitypub/ApAudienceService.js';
 import { ApDbResolverService } from './activitypub/ApDbResolverService.js';
@@ -299,6 +301,8 @@ const $RoleEntityService: Provider = { provide: 'RoleEntityService', useExisting
 const $ReversiGameEntityService: Provider = { provide: 'ReversiGameEntityService', useExisting: ReversiGameEntityService };
 const $MetaEntityService: Provider = { provide: 'MetaEntityService', useExisting: MetaEntityService };
 const $SystemWebhookEntityService: Provider = { provide: 'SystemWebhookEntityService', useExisting: SystemWebhookEntityService };
+const $ContactFormService: Provider = { provide: 'ContactFormService', useExisting: ContactFormService };
+const $ContactFormEntityService: Provider = { provide: 'ContactFormEntityService', useExisting: ContactFormEntityService };
 
 const $ApAudienceService: Provider = { provide: 'ApAudienceService', useExisting: ApAudienceService };
 const $ApDbResolverService: Provider = { provide: 'ApDbResolverService', useExisting: ApDbResolverService };
@@ -402,6 +406,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ChatService,
 		RegistryApiService,
 		ReversiService,
+		ContactFormService,
 		PageService,
 
 		ChartLoggerService,
@@ -459,6 +464,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ReversiGameEntityService,
 		MetaEntityService,
 		SystemWebhookEntityService,
+		ContactFormEntityService,
 
 		ApAudienceService,
 		ApDbResolverService,
@@ -559,6 +565,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$ChatService,
 		$RegistryApiService,
 		$ReversiService,
+		$ContactFormService,
 		$PageService,
 
 		$ChartLoggerService,
@@ -616,6 +623,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$ReversiGameEntityService,
 		$MetaEntityService,
 		$SystemWebhookEntityService,
+		$ContactFormEntityService,
 
 		$ApAudienceService,
 		$ApDbResolverService,
@@ -717,6 +725,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ChatService,
 		RegistryApiService,
 		ReversiService,
+		ContactFormService,
 		PageService,
 
 		FederationChart,
@@ -773,6 +782,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ReversiGameEntityService,
 		MetaEntityService,
 		SystemWebhookEntityService,
+		ContactFormEntityService,
 
 		ApAudienceService,
 		ApDbResolverService,
@@ -872,6 +882,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$ChatService,
 		$RegistryApiService,
 		$ReversiService,
+		$ContactFormService,
 		$PageService,
 
 		$FederationChart,
@@ -928,6 +939,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$ReversiGameEntityService,
 		$MetaEntityService,
 		$SystemWebhookEntityService,
+		$ContactFormEntityService,
 
 		$ApAudienceService,
 		$ApDbResolverService,

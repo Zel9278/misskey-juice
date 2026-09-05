@@ -62,11 +62,11 @@ describe('絵文字・アバターデコレーション申請の承認/却下結
 
 		const res = await api('i/notifications', {}, alice);
 		assert.strictEqual(res.status, 200);
-		const notification = res.body.find((n: { type: string }) => n.type === 'emojiRequestRejected');
+		const notification = res.body.find((n: { type: string }) => n.type === 'emojiRequestRejected') as { requestId: string; name: string; reason: string } | undefined;
 		assert.notStrictEqual(notification, undefined);
-		assert.strictEqual(notification.requestId, request.id);
-		assert.strictEqual(notification.name, request.name);
-		assert.strictEqual(notification.reason, 'テスト却下理由');
+		assert.strictEqual(notification!.requestId, request.id);
+		assert.strictEqual(notification!.name, request.name);
+		assert.strictEqual(notification!.reason, 'テスト却下理由');
 	});
 
 	test('アバターデコレーション申請を却下すると、申請者にアプリ内通知が届く', async () => {
@@ -87,10 +87,10 @@ describe('絵文字・アバターデコレーション申請の承認/却下結
 
 		const res = await api('i/notifications', {}, alice);
 		assert.strictEqual(res.status, 200);
-		const notification = res.body.find((n: { type: string }) => n.type === 'avatarDecorationRequestRejected');
+		const notification = res.body.find((n: { type: string }) => n.type === 'avatarDecorationRequestRejected') as { requestId: string; name: string; reason: string } | undefined;
 		assert.notStrictEqual(notification, undefined);
-		assert.strictEqual(notification.requestId, request.id);
-		assert.strictEqual(notification.name, request.name);
-		assert.strictEqual(notification.reason, 'テスト却下理由2');
+		assert.strictEqual(notification!.requestId, request.id);
+		assert.strictEqual(notification!.name, request.name);
+		assert.strictEqual(notification!.reason, 'テスト却下理由2');
 	});
 });

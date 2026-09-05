@@ -93,10 +93,12 @@ export async function openInstanceMenu(ev: PointerEvent) {
 	// 設定取得に失敗した場合はメニュー全体が開かなくなるのを避けるため、フェイルオープン(従来通り表示する)にする
 	let emojiRequestEnabled = true;
 	let avatarDecorationRequestEnabled = true;
+	let contactFormEnabled = true;
 	try {
 		const juicePublicSettings = await juicePublicSettingsCache.fetch();
 		emojiRequestEnabled = juicePublicSettings.emojiRequestEnabled;
 		avatarDecorationRequestEnabled = juicePublicSettings.avatarDecorationRequestEnabled;
+		contactFormEnabled = juicePublicSettings.contactFormEnabled;
 	} catch (err) {
 		console.error('Failed to fetch juice public settings', err);
 	}
@@ -177,6 +179,17 @@ export async function openInstanceMenu(ev: PointerEvent) {
 		icon: 'ti ti-help-circle',
 		to: '/contact',
 	});
+
+	// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+	if (contactFormEnabled) {
+		menuItems.push({
+			type: 'link',
+			text: i18n.ts._contactForm._userForm.contactForm,
+			icon: 'ti ti-mail',
+			to: '/contact-form',
+			badge: true,
+		});
+	}
 
 	if (instance.impressumUrl) {
 		menuItems.push({

@@ -164,6 +164,27 @@ type AdminCaptchaCurrentResponse = operations['admin___captcha___current']['resp
 type AdminCaptchaSaveRequest = operations['admin___captcha___save']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type AdminContactFormCategoriesResponse = operations['admin___contact-form___categories']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminContactFormDeleteRequest = operations['admin___contact-form___delete']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminContactFormListRequest = operations['admin___contact-form___list']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminContactFormListResponse = operations['admin___contact-form___list']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminContactFormShowRequest = operations['admin___contact-form___show']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminContactFormShowResponse = operations['admin___contact-form___show']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminContactFormUpdateRequest = operations['admin___contact-form___update']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type AdminDeleteAccountRequest = operations['admin___delete-account']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1416,6 +1437,15 @@ type ClipsUpdateRequest = operations['clips___update']['requestBody']['content']
 type ClipsUpdateResponse = operations['clips___update']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type ContactForm = components['schemas']['ContactForm'];
+
+// @public (undocumented)
+type ContactFormSubmitRequest = operations['contact-form___submit']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type ContactFormSubmitResponse = operations['contact-form___submit']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type DateString = string;
 
 // @public (undocumented)
@@ -1749,6 +1779,13 @@ declare namespace entities {
         AdminAvatarDecorationsUpdateRequest,
         AdminCaptchaCurrentResponse,
         AdminCaptchaSaveRequest,
+        AdminContactFormCategoriesResponse,
+        AdminContactFormDeleteRequest,
+        AdminContactFormListRequest,
+        AdminContactFormListResponse,
+        AdminContactFormShowRequest,
+        AdminContactFormShowResponse,
+        AdminContactFormUpdateRequest,
         AdminDeleteAccountRequest,
         AdminDeleteAllFilesOfAUserRequest,
         AdminDriveFilesRequest,
@@ -2019,6 +2056,8 @@ declare namespace entities {
         ClipsUnfavoriteRequest,
         ClipsUpdateRequest,
         ClipsUpdateResponse,
+        ContactFormSubmitRequest,
+        ContactFormSubmitResponse,
         DriveResponse,
         DriveFilesRequest,
         DriveFilesResponse,
@@ -2435,6 +2474,7 @@ declare namespace entities {
         App,
         Note,
         NoteDraft,
+        ContactForm,
         NoteReaction,
         NoteReactionWithNote,
         NoteFavorite,
@@ -3461,7 +3501,7 @@ type PartialRolePolicyOverride = Partial<{
 }>;
 
 // @public (undocumented)
-export const permissions: readonly ["read:account", "write:account", "read:blocks", "write:blocks", "read:drive", "write:drive", "read:favorites", "write:favorites", "read:following", "write:following", "read:messaging", "write:messaging", "read:mutes", "write:mutes", "write:notes", "read:notifications", "write:notifications", "read:reactions", "write:reactions", "write:votes", "read:pages", "write:pages", "write:page-likes", "read:page-likes", "read:user-groups", "write:user-groups", "read:channels", "write:channels", "read:gallery", "write:gallery", "read:gallery-likes", "write:gallery-likes", "read:flash", "write:flash", "read:flash-likes", "write:flash-likes", "read:emoji-requests", "write:emoji-requests", "read:avatar-decoration-requests", "write:avatar-decoration-requests", "read:admin:abuse-user-reports", "write:admin:delete-account", "write:admin:delete-all-files-of-a-user", "read:admin:index-stats", "read:admin:table-stats", "read:admin:user-ips", "read:admin:meta", "write:admin:reset-password", "write:admin:resolve-abuse-user-report", "write:admin:send-email", "read:admin:server-info", "read:admin:show-moderation-log", "read:admin:show-user", "write:admin:suspend-user", "write:admin:unset-mfa", "write:admin:unset-user-avatar", "write:admin:unset-user-banner", "write:admin:unsuspend-user", "write:admin:meta", "read:admin:juice-settings", "write:admin:juice-settings", "read:admin:juice-pending-signups", "read:admin:juice-signup-approval-history", "write:admin:juice-approve-signup", "write:admin:juice-decline-signup", "read:admin:emoji-requests", "write:admin:emoji-requests-approve", "write:admin:emoji-requests-reject", "read:admin:avatar-decoration-requests", "write:admin:avatar-decoration-requests-approve", "write:admin:avatar-decoration-requests-reject", "write:admin:user-note", "write:admin:roles", "read:admin:roles", "write:admin:relays", "read:admin:relays", "write:admin:invite-codes", "read:admin:invite-codes", "write:admin:announcements", "read:admin:announcements", "write:admin:avatar-decorations", "read:admin:avatar-decorations", "write:admin:federation", "write:admin:account", "read:admin:account", "write:admin:emoji", "read:admin:emoji", "write:admin:queue", "read:admin:queue", "write:admin:promo", "write:admin:drive", "read:admin:drive", "write:admin:ad", "read:admin:ad", "write:invite-codes", "read:invite-codes", "write:clip-favorite", "read:clip-favorite", "read:federation", "write:report-abuse", "write:chat", "read:chat"];
+export const permissions: readonly ["read:account", "write:account", "read:blocks", "write:blocks", "read:drive", "write:drive", "read:favorites", "write:favorites", "read:following", "write:following", "read:messaging", "write:messaging", "read:mutes", "write:mutes", "write:notes", "read:notifications", "write:notifications", "read:reactions", "write:reactions", "write:votes", "read:pages", "write:pages", "write:page-likes", "read:page-likes", "read:user-groups", "write:user-groups", "read:channels", "write:channels", "read:gallery", "write:gallery", "read:gallery-likes", "write:gallery-likes", "read:flash", "write:flash", "read:flash-likes", "write:flash-likes", "read:emoji-requests", "write:emoji-requests", "read:avatar-decoration-requests", "write:avatar-decoration-requests", "read:admin:abuse-user-reports", "write:admin:delete-account", "write:admin:delete-all-files-of-a-user", "read:admin:index-stats", "read:admin:table-stats", "read:admin:user-ips", "read:admin:meta", "write:admin:reset-password", "write:admin:resolve-abuse-user-report", "write:admin:send-email", "read:admin:server-info", "read:admin:show-moderation-log", "read:admin:show-user", "write:admin:suspend-user", "write:admin:unset-mfa", "write:admin:unset-user-avatar", "write:admin:unset-user-banner", "write:admin:unsuspend-user", "write:admin:meta", "read:admin:juice-settings", "write:admin:juice-settings", "read:admin:juice-pending-signups", "read:admin:juice-signup-approval-history", "write:admin:juice-approve-signup", "write:admin:juice-decline-signup", "read:admin:emoji-requests", "write:admin:emoji-requests-approve", "write:admin:emoji-requests-reject", "read:admin:avatar-decoration-requests", "write:admin:avatar-decoration-requests-approve", "write:admin:avatar-decoration-requests-reject", "read:admin:contact-form", "write:admin:contact-form", "write:admin:user-note", "write:admin:roles", "read:admin:roles", "write:admin:relays", "read:admin:relays", "write:admin:invite-codes", "read:admin:invite-codes", "write:admin:announcements", "read:admin:announcements", "write:admin:avatar-decorations", "read:admin:avatar-decorations", "write:admin:federation", "write:admin:account", "read:admin:account", "write:admin:emoji", "read:admin:emoji", "write:admin:queue", "read:admin:queue", "write:admin:promo", "write:admin:drive", "read:admin:drive", "write:admin:ad", "read:admin:ad", "write:invite-codes", "read:invite-codes", "write:clip-favorite", "read:clip-favorite", "read:federation", "write:report-abuse", "write:chat", "read:chat"];
 
 // @public (undocumented)
 type PingResponse = operations['ping']['responses']['200']['content']['application/json'];

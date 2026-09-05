@@ -10312,6 +10312,14 @@ export interface Locale extends ILocale {
          */
         "write:admin:avatar-decoration-requests-reject": string;
         /**
+         * お問い合わせの一覧を見る
+         */
+        "read:admin:contact-form": string;
+        /**
+         * お問い合わせを更新・削除する
+         */
+        "write:admin:contact-form": string;
+        /**
          * モデレーションノートを操作する
          */
         "write:admin:user-note": string;
@@ -12112,6 +12120,10 @@ export interface Locale extends ILocale {
              * アバターデコレーション申請があったとき
              */
             "avatarDecorationRequestCreated": string;
+            /**
+             * お問い合わせがあったとき
+             */
+            "receivedContactForm": string;
         };
         /**
          * Webhookを削除しますか？
@@ -14830,5 +14842,288 @@ export interface Locale extends ILocale {
          * まだランキングデータがありません。
          */
         "empty": string;
+    };
+    "_contactForm": {
+        "_userForm": {
+            /**
+             * お問い合わせフォーム
+             */
+            "contactForm": string;
+            /**
+             * お問い合わせ
+             */
+            "contactUs": string;
+            /**
+             * ご意見・不具合報告・その他のお問い合わせは、以下のフォームからお送りください。
+             */
+            "contactDescription": string;
+            /**
+             * カテゴリ
+             */
+            "category": string;
+            /**
+             * 件名
+             */
+            "subject": string;
+            /**
+             * お問い合わせの件名を入力してください
+             */
+            "subjectPlaceholder": string;
+            /**
+             * お問い合わせ内容
+             */
+            "content": string;
+            /**
+             * お問い合わせ内容を具体的にご記入ください(20文字以上)
+             */
+            "contentPlaceholder": string;
+            /**
+             * お名前
+             */
+            "name": string;
+            /**
+             * 任意項目です。ニックネーム等でも構いません。
+             */
+            "nameCaption": string;
+            /**
+             * 山田太郎
+             */
+            "namePlaceholder": string;
+            /**
+             * 返信方法
+             */
+            "replyMethod": string;
+            /**
+             * メールで返信
+             */
+            "replyByEmail": string;
+            /**
+             * Misskeyのユーザー名宛てに返信
+             */
+            "replyByMisskey": string;
+            /**
+             * メールアドレス
+             */
+            "email": string;
+            /**
+             * your@example.com
+             */
+            "emailPlaceholder": string;
+            /**
+             * ユーザー名
+             */
+            "misskeyUsername": string;
+            /**
+             * 「ユーザー名@ホスト名」の形式で入力してください。
+             */
+            "misskeyUsernameCaption": string;
+            /**
+             * @example@misskey.example.com
+             */
+            "misskeyUsernamePlaceholder": string;
+            /**
+             * 登録ユーザー
+             */
+            "registeredUser": string;
+            /**
+             * 送信する
+             */
+            "submit": string;
+            /**
+             * 現在お問い合わせを受け付けていません
+             */
+            "contactFormDisabled": string;
+            /**
+             * このサーバーでは現在お問い合わせフォームが無効になっています。
+             * 他の方法でのお問い合わせ先が案内されている場合は、そちらをご利用ください。
+             */
+            "contactFormDisabledDescription": string;
+        };
+        "_submitComplete": {
+            /**
+             * 送信しました
+             */
+            "complete": string;
+            /**
+             * お問い合わせありがとうございました。返信をお待ちください。
+             */
+            "completeDescription": string;
+            /**
+             * トップへ戻る
+             */
+            "goToTop": string;
+        };
+        "_adminList": {
+            /**
+             * お問い合わせ一覧
+             */
+            "list": string;
+            /**
+             * 該当するお問い合わせはありません。
+             */
+            "noContacts": string;
+            /**
+             * お問い合わせの取得に失敗しました。
+             */
+            "failedToLoadContactForms": string;
+        };
+        "_adminStatus": {
+            /**
+             * 状態を更新
+             */
+            "updateStatus": string;
+            /**
+             * 未対応
+             */
+            "pending": string;
+            /**
+             * 対応中
+             */
+            "inProgress": string;
+            /**
+             * 対応済み
+             */
+            "resolved": string;
+            /**
+             * クローズ
+             */
+            "closed": string;
+        };
+        "_adminDetail": {
+            /**
+             * お問い合わせ内容
+             */
+            "submittedContent": string;
+            /**
+             * 連絡先情報
+             */
+            "contactInfo": string;
+            /**
+             * IPアドレス
+             */
+            "ipAddress": string;
+            /**
+             * ユーザーエージェント
+             */
+            "userAgent": string;
+            /**
+             * 管理者メモ
+             */
+            "adminNote": string;
+            /**
+             * 担当者を割り当て
+             */
+            "assign": string;
+            /**
+             * 担当者
+             */
+            "assignedUser": string;
+            /**
+             * @ユーザー名 またはニックネームを入力
+             */
+            "placeholderAssignedUser": string;
+            /**
+             * 送信日時
+             */
+            "submittedAt": string;
+            /**
+             * 削除しました
+             */
+            "deleted": string;
+        };
+        "_category": {
+            /**
+             * カテゴリ管理
+             */
+            "categoryManagement": string;
+            /**
+             * 元に戻す
+             */
+            "reset": string;
+            /**
+             * キー(半角英数字)
+             */
+            "categoryKeyPlaceholder": string;
+            /**
+             * 表示名
+             */
+            "categoryTextPlaceholder": string;
+            /**
+             * 既定のカテゴリにする
+             */
+            "defaultCategory": string;
+            /**
+             * 表示順
+             */
+            "categoryOrderPlaceholder": string;
+            /**
+             * カテゴリを1つ以上設定してください。
+             */
+            "atLeastOneCategoryRequired": string;
+            /**
+             * 既定のカテゴリを1つだけ選択してください。
+             */
+            "selectOneDefaultCategory": string;
+            /**
+             * カテゴリのキーが重複しています。
+             */
+            "duplicateCategoryKey": string;
+            /**
+             * 新しいカテゴリ
+             */
+            "customCategory": string;
+        };
+        "_settings": {
+            /**
+             * コンタクトフォーム設定
+             */
+            "title": string;
+            /**
+             * コンタクトフォームを有効にする
+             */
+            "enable": string;
+            /**
+             * 無効にすると、お問い合わせフォームからの送信を受け付けなくなります。
+             */
+            "enableDescription": string;
+            /**
+             * 送信回数の上限(1時間あたり)
+             */
+            "limit": string;
+            /**
+             * 同一IPアドレスから1時間あたりに送信できる件数の上限です。
+             */
+            "limitDescription": string;
+            /**
+             * 送信にログインを必須にする
+             */
+            "requireAuth": string;
+            /**
+             * 有効にすると、ログインしていないユーザーはお問い合わせを送信できなくなります。
+             */
+            "requireAuthDescription": string;
+        };
+        "_validation": {
+            /**
+             * 「ユーザー名@ホスト名」の形式で入力してください。
+             */
+            "misskeyUsernameFormatError": string;
+            /**
+             * ユーザー名に使用できない文字が含まれています。
+             */
+            "misskeyUsernameCharacterError": string;
+            /**
+             * ホスト名の形式が正しくありません。
+             */
+            "misskeyUsernameDomainError": string;
+            /**
+             * {current} / {max} 文字
+             */
+            "contentLengthCaption": ParameterizedString<"current" | "max">;
+            /**
+             * 文字数が上限を超えています。
+             */
+            "contentTooLong": string;
+        };
     };
 }
