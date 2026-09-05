@@ -62,7 +62,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'update', reactions: Record<string, number>, myReactions: string[]): void;
+	(ev: 'update', reactions: Record<string, number>, myReactions: string[], reaction: string, added: boolean): void;
 }>();
 
 const pickerButtonEl = useTemplateRef('pickerButtonEl');
@@ -116,7 +116,7 @@ function applyLocally(reaction: string, delta: number) {
 
 	reactions.value = nextReactions;
 	myReactions.value = nextMyReactions;
-	emit('update', nextReactions, nextMyReactions);
+	emit('update', nextReactions, nextMyReactions, reaction, delta > 0);
 }
 
 async function toggle(reaction: string) {
@@ -155,7 +155,7 @@ async function toggle(reaction: string) {
 	} catch (err) {
 		reactions.value = previousReactions;
 		myReactions.value = previousMyReactions;
-		emit('update', previousReactions, previousMyReactions);
+		emit('update', previousReactions, previousMyReactions, reaction, !isReacted);
 		os.alert({
 			type: 'error',
 			text: i18n.ts.somethingHappened,

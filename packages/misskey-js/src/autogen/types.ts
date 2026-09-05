@@ -5595,6 +5595,8 @@ export type components = {
             reviewedAt: string | null;
             /** Format: id */
             resultEmojiId: string | null;
+            /** Format: id */
+            targetEmojiId: string | null;
         };
         EmojiRequestEntryDetailedAdmin: components['schemas']['EmojiRequestEntry'] & {
             user: components['schemas']['UserLite'];
@@ -5618,6 +5620,8 @@ export type components = {
             reviewedAt: string | null;
             /** Format: id */
             resultAvatarDecorationId: string | null;
+            /** Format: id */
+            targetAvatarDecorationId: string | null;
         };
         AvatarDecorationRequestEntryDetailedAdmin: components['schemas']['AvatarDecorationRequestEntry'] & {
             user: components['schemas']['UserLite'];
@@ -16081,6 +16085,8 @@ export interface operations {
                     category?: string | null;
                     /** @default false */
                     deleteFileAfterReview?: boolean;
+                    /** Format: misskey:id */
+                    targetAvatarDecorationId?: string | null;
                     'hcaptcha-response'?: string | null;
                     'g-recaptcha-response'?: string | null;
                     'm-captcha-response'?: string | null;
@@ -16168,6 +16174,8 @@ export interface operations {
                         category?: string | null;
                         /** @default false */
                         deleteFileAfterReview?: boolean;
+                        /** Format: misskey:id */
+                        targetAvatarDecorationId?: string | null;
                     }[];
                     'hcaptcha-response'?: string | null;
                     'g-recaptcha-response'?: string | null;
@@ -16253,6 +16261,8 @@ export interface operations {
                     sinceId?: string;
                     /** Format: misskey:id */
                     untilId?: string;
+                    /** @enum {string|null} */
+                    status?: 'pending' | 'approved' | 'rejected' | null;
                 };
             };
         };
@@ -22808,6 +22818,8 @@ export interface operations {
                     localOnly?: boolean;
                     /** @default false */
                     deleteFileAfterReview?: boolean;
+                    /** Format: misskey:id */
+                    targetEmojiId?: string | null;
                     'hcaptcha-response'?: string | null;
                     'g-recaptcha-response'?: string | null;
                     'm-captcha-response'?: string | null;
@@ -22900,6 +22912,8 @@ export interface operations {
                         localOnly?: boolean;
                         /** @default false */
                         deleteFileAfterReview?: boolean;
+                        /** Format: misskey:id */
+                        targetEmojiId?: string | null;
                     }[];
                     'hcaptcha-response'?: string | null;
                     'g-recaptcha-response'?: string | null;
@@ -22985,6 +22999,8 @@ export interface operations {
                     sinceId?: string;
                     /** Format: misskey:id */
                     untilId?: string;
+                    /** @enum {string|null} */
+                    status?: 'pending' | 'approved' | 'rejected' | null;
                 };
             };
         };

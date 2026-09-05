@@ -113,6 +113,27 @@ export type AnnouncementCreated = {
 	announcement: Announcement;
 };
 
+// JUICE
+export type AnnouncementReacted = {
+	announcementId: string;
+	reaction: string;
+	userId: string;
+};
+
+// JUICE
+export type AnnouncementUnreacted = {
+	announcementId: string;
+	reaction: string;
+	userId: string;
+};
+
+// JUICE
+export type AnnouncementPollVoted = {
+	announcementId: string;
+	choice: number;
+	userId: string;
+};
+
 export type SignupRequest = {
 	username: string;
 	password: string;
