@@ -37,6 +37,10 @@ export const notificationTypes = [
 	'test',
 	'login',
 	'loginFailed',
+	'emojiRequestApproved',
+	'emojiRequestRejected',
+	'avatarDecorationRequestApproved',
+	'avatarDecorationRequestRejected',
 	'createToken',
 ] as const;
 

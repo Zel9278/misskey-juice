@@ -37,6 +37,7 @@
 - Feat: ノートに言語(BCP 47言語タグ)を付与できるように(JUICE独自)。/api/notes/createにlangパラメータを追加し、未指定の場合は投稿者の表示言語設定が既定値として使われる。ActivityPubでの連合にはAS2標準のcontentMapを使用(Mastodon/Akkoma互換)
 - Feat: /api/notes/searchにlangパラメータを追加(JUICE独自)。ノートの言語(BCP 47言語タグ)との完全一致で絞り込める。sqlLike/sqlPgroonga・meilisearchの両プロバイダに対応
 - Feat: /api/emoji-requests/create、/create-many、/api/avatar-decoration-requests/create、/create-manyにtargetEmojiId/targetAvatarDecorationIdパラメータを追加(JUICE独自)。指定すると「差し替え申請」となり、承認時は新規作成の代わりに対象の画像のみを差し替える。対象は申請者自身の承認済み申請から作られたものに限定され、同一対象への差し替え申請の重複は拒否する。あわせて/api/emoji-requests/list、/api/avatar-decoration-requests/listにstatusでの絞り込みパラメータを追加
+- Feat: 絵文字申請・アバターデコレーション申請の承認/却下結果を、アプリ内通知でも受け取れるように(JUICE独自)。今まではメール通知(メアド未設定/未認証、または「結果をメールで受け取る」設定をオフにしていると届かない)のみだったため、通知欄からも承認/却下に気づけるようにした。他の通知種別と同様、設定画面から個別にON/OFFを切り替え可能
 
 ## 2026.7.0-juice+2.5
 

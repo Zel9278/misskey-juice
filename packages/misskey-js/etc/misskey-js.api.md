@@ -523,6 +523,20 @@ type AnnouncementCreated = {
 };
 
 // @public (undocumented)
+type AnnouncementPollVoted = {
+    announcementId: string;
+    choice: number;
+    userId: string;
+};
+
+// @public (undocumented)
+type AnnouncementReacted = {
+    announcementId: string;
+    reaction: string;
+    userId: string;
+};
+
+// @public (undocumented)
 type AnnouncementReaction = components['schemas']['AnnouncementReaction'];
 
 // @public (undocumented)
@@ -551,6 +565,13 @@ type AnnouncementsShowRequest = operations['announcements___show']['requestBody'
 
 // @public (undocumented)
 type AnnouncementsShowResponse = operations['announcements___show']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AnnouncementUnreacted = {
+    announcementId: string;
+    reaction: string;
+    userId: string;
+};
 
 // @public (undocumented)
 type Antenna = components['schemas']['Antenna'];
@@ -1670,6 +1691,9 @@ declare namespace entities {
         EmojiUpdated,
         EmojiDeleted,
         AnnouncementCreated,
+        AnnouncementReacted,
+        AnnouncementUnreacted,
+        AnnouncementPollVoted,
         SignupRequest,
         SignupSuccessResponse,
         SignupResponse,
@@ -3374,7 +3398,7 @@ type Notification_2 = components['schemas']['Notification'];
 type NotificationsCreateRequest = operations['notifications___create']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-export const notificationTypes: readonly ["note", "follow", "mention", "reply", "renote", "quote", "reaction", "pollEnded", "scheduledNotePosted", "scheduledNotePostFailed", "receiveFollowRequest", "followRequestAccepted", "app", "roleAssigned", "chatRoomInvitationReceived", "achievementEarned", "exportCompleted", "test", "login", "loginFailed", "createToken"];
+export const notificationTypes: readonly ["note", "follow", "mention", "reply", "renote", "quote", "reaction", "pollEnded", "scheduledNotePosted", "scheduledNotePostFailed", "receiveFollowRequest", "followRequestAccepted", "app", "roleAssigned", "chatRoomInvitationReceived", "achievementEarned", "exportCompleted", "test", "login", "loginFailed", "emojiRequestApproved", "emojiRequestRejected", "avatarDecorationRequestApproved", "avatarDecorationRequestRejected", "createToken"];
 
 // @public (undocumented)
 export function nyaize(text: string): string;
@@ -4018,8 +4042,8 @@ type VerifyEmailRequest = operations['verify-email']['requestBody']['content']['
 // Warnings were encountered during analysis:
 //
 // src/streaming.ts:57:3 - (ae-forgotten-export) The symbol "ReconnectingWebSocket" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:257:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:272:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
+// src/streaming.types.ts:260:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
+// src/streaming.types.ts:275:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

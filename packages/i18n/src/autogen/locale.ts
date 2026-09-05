@@ -11676,6 +11676,22 @@ export interface Locale extends ILocale {
          */
         "loginFailed": string;
         /**
+         * 絵文字申請「{name}」が承認されました
+         */
+        "emojiRequestApproved": ParameterizedString<"name">;
+        /**
+         * 絵文字申請「{name}」が却下されました
+         */
+        "emojiRequestRejected": ParameterizedString<"name">;
+        /**
+         * アバターデコレーション申請「{name}」が承認されました
+         */
+        "avatarDecorationRequestApproved": ParameterizedString<"name">;
+        /**
+         * アバターデコレーション申請「{name}」が却下されました
+         */
+        "avatarDecorationRequestRejected": ParameterizedString<"name">;
+        /**
          * アクセストークンが作成されました
          */
         "createToken": string;
@@ -11760,6 +11776,22 @@ export interface Locale extends ILocale {
              * ログイン失敗
              */
             "loginFailed": string;
+            /**
+             * 絵文字申請が承認された
+             */
+            "emojiRequestApproved": string;
+            /**
+             * 絵文字申請が却下された
+             */
+            "emojiRequestRejected": string;
+            /**
+             * アバターデコレーション申請が承認された
+             */
+            "avatarDecorationRequestApproved": string;
+            /**
+             * アバターデコレーション申請が却下された
+             */
+            "avatarDecorationRequestRejected": string;
             /**
              * アクセストークンの作成
              */

@@ -189,6 +189,15 @@ export class NotificationEntityService implements OnModuleInit {
 				exportedEntity: notification.exportedEntity,
 				fileId: notification.fileId,
 			} : {}),
+			...(notification.type === 'emojiRequestApproved' || notification.type === 'avatarDecorationRequestApproved' ? {
+				requestId: notification.requestId,
+				name: notification.name,
+			} : {}),
+			...(notification.type === 'emojiRequestRejected' || notification.type === 'avatarDecorationRequestRejected' ? {
+				requestId: notification.requestId,
+				name: notification.name,
+				reason: notification.reason,
+			} : {}),
 			...(notification.type === 'app' ? {
 				body: notification.customBody,
 				header: notification.customHeader,

@@ -22,6 +22,10 @@
  * exportCompleted - エクスポートが完了
  * login - ログイン
  * loginFailed - ログイン試行に失敗した(JUICE)
+ * emojiRequestApproved - 絵文字申請が承認された(JUICE)
+ * emojiRequestRejected - 絵文字申請が却下された(JUICE)
+ * avatarDecorationRequestApproved - アバターデコレーション申請が承認された(JUICE)
+ * avatarDecorationRequestRejected - アバターデコレーション申請が却下された(JUICE)
  * createToken - トークン作成
  * app - アプリ通知
  * test - テスト通知（サーバー側）
@@ -46,6 +50,11 @@ export const notificationTypes = [
 	'login',
 	// JUICE: misskey-tempuraを参考に追加
 	'loginFailed',
+	// JUICE
+	'emojiRequestApproved',
+	'emojiRequestRejected',
+	'avatarDecorationRequestApproved',
+	'avatarDecorationRequestRejected',
 	'createToken',
 	'app',
 	'test',

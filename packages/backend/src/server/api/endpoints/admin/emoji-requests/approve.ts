@@ -14,6 +14,7 @@ import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { DriveService } from '@/core/DriveService.js';
 import { EmailService } from '@/core/EmailService.js';
 import { EmailI18nService } from '@/core/EmailI18nService.js';
+import { NotificationService } from '@/core/NotificationService.js';
 import { FILE_TYPE_IMAGE } from '@/const.js';
 
 export const meta = {
@@ -93,6 +94,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveService: DriveService,
 		private emailService: EmailService,
 		private emailI18nService: EmailI18nService,
+		private notificationService: NotificationService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const request = await this.emojiRequestsRepository.findOneBy({ id: ps.requestId });
@@ -170,6 +172,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (request.deleteFileAfterReview) {
 				this.driveService.deleteFile(driveFile, false, me);
 			}
+
+			// JUICE: 申請者本人へアプリ内通知(メールとは別チャンネル、メール設定に関わらず常に送る)
+			this.notificationService.createNotification(request.userId, 'emojiRequestApproved', {
+				requestId: request.id,
+				name: request.name,
+			});
 
 			const profile = await this.userProfilesRepository.findOneBy({ userId: request.userId });
 			if (profile?.email != null && profile.emailVerified && profile.receiveEmojiRequestResultEmail) {
