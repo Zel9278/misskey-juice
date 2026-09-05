@@ -164,6 +164,7 @@ const features = [
 	{ icon: 'ti ti-math-function', text: i18n.ts._aboutJuice._features.latex },
 	{ icon: 'ti ti-tag', text: i18n.ts._aboutJuice._features.nickname },
 	{ icon: 'ti ti-shield-exclamation', text: i18n.ts._aboutJuice._features.loginFailedNotification },
+	{ icon: 'ti ti-mail', text: i18n.ts._aboutJuice._features.contactForm },
 ];
 
 // JUICE: この一覧に載っている機能が、どういう経路で実装されたかをざっくり示す

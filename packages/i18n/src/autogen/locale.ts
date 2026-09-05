@@ -9206,6 +9206,10 @@ export interface Locale extends ILocale {
              * ログイン試行の失敗をアカウント本人へ通知(アプリ内通知・メール)
              */
             "loginFailedNotification": string;
+            /**
+             * ログイン不要で送信できるお問い合わせフォーム(カテゴリ・返信方法選択、モデレーター向けの状態管理・担当者割り当て)
+             */
+            "contactForm": string;
         };
         /**
          * どういう経路で実装されたか
