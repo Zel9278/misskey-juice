@@ -51,7 +51,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { onUnmounted, reactive, ref } from 'vue';
+import { onUnmounted, reactive, ref, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import { useWidgetPropsManager } from './widget.js';
 import type { WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
@@ -59,12 +59,21 @@ import type { FormWithDefault, GetFormResultType } from '@/utility/form.js';
 import { useStream } from '@/stream.js';
 import kmg from '@/filters/kmg.js';
 import * as sound from '@/utility/sound.js';
+import { soundsTypes } from '@/utility/sound.js';
 import { deepClone } from '@/utility/clone.js';
 import { prefer } from '@/preferences.js';
 import { genId } from '@/utility/id.js';
 import { i18n } from '@/i18n.js';
 
 const name = 'jobQueue';
+
+// JUICE: 以前は鳴らす/鳴らさないの真偽値のみで、鳴る音自体(queue-jammed固定)は変更できなかった。
+// ドライブの音声(_driveFile_)はfileIdの追加指定が必要でこのシンプルなウィジェット設定には
+// 不向きなため対象外にし、プリインストールされたサウンドから選べるようにする
+const soundEnumOptions = [
+	{ label: i18n.ts.none, value: null },
+	...soundsTypes.filter((t): t is Exclude<typeof soundsTypes[number], null | '_driveFile_'> => t != null && t !== '_driveFile_').map(t => ({ label: t, value: t })),
+];
 
 const widgetPropsDef = {
 	transparent: {
@@ -73,9 +82,10 @@ const widgetPropsDef = {
 		default: false,
 	},
 	sound: {
-		type: 'boolean',
+		type: 'enum',
 		label: i18n.ts._widgetOptions._jobQueue.sound,
-		default: false,
+		enum: soundEnumOptions,
+		default: 'syuilo/queue-jammed',
 	},
 } satisfies FormWithDefault;
 
@@ -109,12 +119,16 @@ const prev = reactive({} as typeof current);
 const jammedAudioBuffer = ref<AudioBuffer | null>(null);
 const jammedSoundNodePlaying = ref<boolean>(false);
 
-if (prefer.s['sound.masterVolume']) {
-	sound.loadAudio('/client-assets/sounds/syuilo/queue-jammed.mp3').then(buf => {
+// JUICE: widgetProps.soundで選ばれたサウンドを読み込む。設定を変更したら都度読み込み直す
+watch(() => widgetProps.sound, (soundType) => {
+	jammedAudioBuffer.value = null;
+	if (soundType == null || !prefer.s['sound.masterVolume']) return;
+
+	sound.loadAudio(`/client-assets/sounds/${soundType}.mp3`).then(buf => {
 		if (!buf) throw new Error('[WidgetJobQueue] Failed to initialize AudioBuffer');
 		jammedAudioBuffer.value = buf;
 	});
-}
+}, { immediate: true });
 
 for (const domain of ['inbox', 'deliver']) {
 	const d = domain as 'inbox' | 'deliver';
@@ -130,7 +144,7 @@ const onStats = (stats: Misskey.entities.QueueStats) => {
 		current[d].waiting = stats[d].waiting;
 		current[d].delayed = stats[d].delayed;
 
-		if (current[d].waiting > 0 && widgetProps.sound && jammedAudioBuffer.value && !jammedSoundNodePlaying.value) {
+		if (current[d].waiting > 0 && widgetProps.sound != null && jammedAudioBuffer.value && !jammedSoundNodePlaying.value) {
 			const soundNode = sound.createSourceNode(jammedAudioBuffer.value, {}).soundSource;
 			if (soundNode != null) {
 				jammedSoundNodePlaying.value = true;

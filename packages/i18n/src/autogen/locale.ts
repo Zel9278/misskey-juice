@@ -10769,7 +10769,7 @@ export interface Locale extends ILocale {
         };
         "_jobQueue": {
             /**
-             * 音を鳴らす
+             * 鳴らす音
              */
             "sound": string;
         };

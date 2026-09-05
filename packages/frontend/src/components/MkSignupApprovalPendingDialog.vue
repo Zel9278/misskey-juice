@@ -17,6 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkButton rounded inline @click="copy()"><i class="ti ti-copy"></i> {{ i18n.ts.copy }}</MkButton>
 		</div>
 		<div :class="$style.buttons">
+			<MkButton inline rounded @click="checkStatus()">{{ i18n.ts._signupCheck.title }}</MkButton>
 			<MkButton inline primary rounded autofocus @click="close()">{{ i18n.ts.gotIt }}</MkButton>
 		</div>
 	</div>
@@ -29,6 +30,7 @@ import MkModal from '@/components/MkModal.vue';
 import MkButton from '@/components/MkButton.vue';
 import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
 import { i18n } from '@/i18n.js';
+import * as os from '@/os.js';
 
 const props = defineProps<{
 	text: string;
@@ -43,6 +45,12 @@ const modal = useTemplateRef('modal');
 
 function copy() {
 	copyToClipboard(props.code);
+}
+
+// JUICE: 審査状況確認ページへの導線をこのダイアログからも辿れるようにする
+function checkStatus() {
+	os.pageWindow('/signup-check');
+	close();
 }
 
 function close() {

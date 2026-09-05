@@ -2841,7 +2841,7 @@ _widgetOptions:
     showMs: "ミリ秒を表示"
     showLabel: "ラベルを表示"
   _jobQueue:
-    sound: "音を鳴らす"
+    sound: "鳴らす音"
   _rss:
     url: "RSSフィードのURL"
     refreshIntervalSec: "更新間隔(秒)"
