@@ -77,6 +77,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// user_profileはuserにON DELETE CASCADEされているため、削除前に読んでおく必要がある
 			const profile = await this.userProfilesRepository.findOneBy({ userId: user.id });
 
+			// JUICE: signup_approval_check.userIdはuserにON DELETE SET NULLされているため、
+			// user削除後にuserIdで検索してももう一致しない。削除前にidを控えておき、
+			// 後続の更新はこのidで行う
+			const check = await this.signupApprovalChecksRepository.findOneBy({ userId: user.id });
+
 			// 承認前(approved: false)のアカウントは、サインインもAPI利用も全面的にブロックされているため
 			// ノート・ファイル等の実データを一切持ち得ない。そのため DeleteAccountService の非同期キュー経由の
 			// 削除(ノート/ファイル削除 → soft delete → 後日キューワーカーが物理削除)は使わず、この場で
@@ -109,12 +114,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// ユーザー行を削除した後に引換コードの状態を更新する(JUICE)。
 			// FKはON DELETE SET NULLなので、削除後もこのレコード自体は残り、
 			// メールアドレスを持たない申請者でもコードから却下された理由を確認できる。
-			await this.signupApprovalChecksRepository.update({ userId: user.id }, {
-				status: 'declined',
-				reason: ps.reason,
-				reviewerId: me.id,
-				reviewedAt: new Date(),
-			});
+			// ただしuserIdカラム自体は削除と同時にNULLへ更新されてしまっているため、
+			// 削除前に控えておいたidで更新対象を特定する
+			if (check != null) {
+				await this.signupApprovalChecksRepository.update({ id: check.id }, {
+					status: 'declined',
+					reason: ps.reason,
+					reviewerId: me.id,
+					reviewedAt: new Date(),
+				});
+			}
 
 			// 却下されたアカウントは一度も承認されておらず実質的に使われていないため、
 			// 通常のアカウント削除(used_usernameを残してユーザー名の再利用を防ぐ)とは異なり、

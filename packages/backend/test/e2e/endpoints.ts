@@ -1483,6 +1483,18 @@ describe('Endpoints', () => {
 				relayTimelineEnabled: false,
 				latexEnabled: true,
 				reactionPiggybackOnRemoteEnabled: false,
+				contactFormEnabled: true,
+				contactFormLimit: 3,
+				contactFormRequireAuth: false,
+				contactFormCategories: [
+					{ key: 'general', text: '一般', enabled: true, order: 1, isDefault: true },
+					{ key: 'bug_report', text: 'バグ報告', enabled: true, order: 2, isDefault: false },
+					{ key: 'feature_request', text: '機能要望', enabled: true, order: 3, isDefault: false },
+					{ key: 'account_issue', text: 'アカウント関連', enabled: true, order: 4, isDefault: false },
+					{ key: 'technical_issue', text: '技術的な問題', enabled: true, order: 5, isDefault: false },
+					{ key: 'content_issue', text: 'コンテンツ関連', enabled: true, order: 6, isDefault: false },
+					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
+				],
 			});
 		});
 
@@ -2467,6 +2479,17 @@ describe('Endpoints', () => {
 				relayTimelineEnabled: false,
 				latexEnabled: true,
 				reactionPiggybackOnRemoteEnabled: false,
+				contactFormEnabled: true,
+				contactFormRequireAuth: false,
+				contactFormCategories: [
+					{ key: 'general', text: '一般', enabled: true, order: 1, isDefault: true },
+					{ key: 'bug_report', text: 'バグ報告', enabled: true, order: 2, isDefault: false },
+					{ key: 'feature_request', text: '機能要望', enabled: true, order: 3, isDefault: false },
+					{ key: 'account_issue', text: 'アカウント関連', enabled: true, order: 4, isDefault: false },
+					{ key: 'technical_issue', text: '技術的な問題', enabled: true, order: 5, isDefault: false },
+					{ key: 'content_issue', text: 'コンテンツ関連', enabled: true, order: 6, isDefault: false },
+					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
+				],
 			});
 		});
 

@@ -14,6 +14,7 @@ import type { MiMeta, UserProfilesRepository } from '@/models/_.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
+import { escapeHtml } from '@/misc/escape-html.js';
 
 @Injectable()
 export class EmailService {
@@ -125,7 +126,7 @@ export class EmailService {
 				<img src="${ this.meta.logoImageUrl ?? this.meta.iconUrl ?? iconUrl }"/>
 			</header>
 			<article>
-				<h1>${ subject }</h1>
+				<h1>${ escapeHtml(subject) }</h1>
 				<div>${ html }</div>
 			</article>
 			<footer>

@@ -181,9 +181,10 @@ async function reject() {
 	height: 80px;
 }
 
+// JUICE: 幅を絞ると装着ダイアログ版よりスライダーが細く見えてしまうため、
+// previewSwatchesと同じくカード幅いっぱいに広げる
 .previewControls {
-	max-width: 320px;
-	margin: 0 auto;
+	width: 100%;
 }
 
 .replacementNotice {

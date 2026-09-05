@@ -15,6 +15,7 @@ import { RoleService } from '@/core/RoleService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
+import { allSettled } from '@/misc/promise-tracker.js';
 import type {
 	EmojisRepository,
 	MiEmoji,
@@ -228,23 +229,40 @@ describe('ReactionService', () => {
 		}
 
 		async function createRole(data: Partial<MiRole> = {}) {
-			return await rolesRepository
-				.insert({
-					id: idService.gen(),
-					updatedAt: new Date(),
-					lastUsedAt: new Date(),
-					name: 'test role',
-					description: '',
-					...data,
-				})
-				.then(x => rolesRepository.findOneByOrFail(x.identifiers[0]));
+			const role = await roleService.create({
+				name: 'test role',
+				description: '',
+				...data,
+			});
+			// JUICE: rolesRepositoryへの直接insertだと、RoleServiceのrolesCache(1hキャッシュ)が
+			// 他のテストのリアクション相乗り処理(通知パックの過程でgetUserPolicies経由の
+			// getUserRolesが呼ばれ、rolesCacheが新規ロール作成前の一覧でキャッシュ済みになる)
+			// により先に埋まっていると、新規作成したロールがキャッシュに反映されないまま残る。
+			// RoleService.create()経由ならroleCreatedイベントでキャッシュも更新されるが、
+			// それもredis pub/sub経由の非同期伝播のため、実際にgetRoles()の結果に
+			// 現れるまで短時間ポーリングして待つ
+			for (let i = 0; i < 100; i++) {
+				const roles = await roleService.getRoles();
+				if (roles.some(r => r.id === role.id)) return role;
+				await new Promise(resolve => setTimeout(resolve, 10));
+			}
+			throw new Error('createRole: role creation cache did not propagate in time');
 		}
 
 		async function assignRole(user: MiUser, role: MiRole) {
 			// JUICE: roleAssignmentsRepositoryへの直接insertだと、RoleServiceの
 			// roleAssignmentByUserIdCache(5分キャッシュ)が更新されず、直後にgetUserRoles()
-			// を呼んでも反映されない。RoleService.assign()経由でキャッシュも正しく更新する
+			// を呼んでも反映されない。RoleService.assign()を使ってもキャッシュ更新自体は
+			// redis pub/sub経由で非同期に届くため、assign()の戻り値だけでは反映完了を
+			// 保証できない(直後にgetUserRoles()すると古いキャッシュを読むことがある)。
+			// 実際にgetUserRoles()の結果にロールが現れるまで短時間ポーリングして待つ
 			await roleService.assign(user.id, role.id);
+			for (let i = 0; i < 100; i++) {
+				const roles = await roleService.getUserRoles(user.id);
+				if (roles.some(r => r.id === role.id)) return;
+				await new Promise(resolve => setTimeout(resolve, 10));
+			}
+			throw new Error('assignRole: role assignment cache did not propagate in time');
 		}
 
 		async function reactedAs(noteId: MiNote['id'], userId: MiUser['id']) {
@@ -256,6 +274,11 @@ describe('ReactionService', () => {
 			app = await Test.createTestingModule({
 				imports: [GlobalModule, CoreModule],
 			}).compile();
+			// JUICE: TestingModule.compile()だけではonModuleInit()等のライフサイクルフックが走らない。
+			// NotificationEntityServiceはmoduleRef経由の循環依存解決をonModuleInit内で行っているため、
+			// init()を呼ばないとnoteEntityService等が未初期化のままになり、通知作成(reaction通知)を
+			// 経由するテストで例外になる
+			await app.init();
 			app.enableShutdownHooks();
 
 			service = app.get<ReactionService>(ReactionService);
@@ -273,6 +296,10 @@ describe('ReactionService', () => {
 		});
 
 		afterAll(async () => {
+			// JUICE: ReactionService.create()内のnotificationService.createNotification()はfire-and-forget
+			// (awaitされない)ため、テスト側で待ち切らずにapp.close()するとDIコンテナ破棄後に
+			// NotificationEntityService.pack()が走り、依存サービスがundefinedになって例外になることがある
+			await allSettled();
 			await app.close();
 		});
 
@@ -287,6 +314,10 @@ describe('ReactionService', () => {
 		});
 
 		afterEach(async () => {
+			// JUICE: service.create()内のnotificationService.createNotification()はfire-and-forget
+			// (awaitされない)ため、待たずに以下のdeleteAll()でノート等を消すと、非同期で走る
+			// NotificationEntityService.pack()がノート未検出の例外を投げることがある
+			await allSettled();
 			await noteReactionsRepository.deleteAll();
 			await roleAssignmentsRepository.deleteAll();
 			await rolesRepository.deleteAll();
