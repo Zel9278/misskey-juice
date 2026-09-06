@@ -7,7 +7,7 @@ import { Injectable } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { RoleService } from '@/core/RoleService.js';
-import { SystemWebhookService, type EmojiRequestCreatedPayload, type SignupApplicationCreatedPayload, type AvatarDecorationRequestCreatedPayload } from '@/core/SystemWebhookService.js';
+import { SystemWebhookService, type EmojiRequestCreatedPayload, type SignupApplicationCreatedPayload, type AvatarDecorationRequestCreatedPayload, type ContactFormPayload } from '@/core/SystemWebhookService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 
@@ -85,6 +85,33 @@ export class JuiceAdminNotificationService {
 			await this.systemWebhookService.enqueueSystemWebhook('avatarDecorationRequestCreated', payload);
 		} catch (err) {
 			this.logger.error('Failed to notify new avatar decoration request', { stack: err });
+		}
+	}
+
+	@bindThis
+	public async notifyNewContactForm(payload: ContactFormPayload): Promise<void> {
+		try {
+			const moderatorIds = await this.roleService.getModeratorIds({
+				includeAdmins: true,
+				excludeExpire: true,
+			});
+
+			// JUICE: 問い合わせ本文にはメールアドレス・IPアドレス等のPIIが含まれるため、
+			// リアルタイム通知(admin stream)にはPIIを含まない最小限の情報のみを載せる。
+			// Webhook側(enqueueSystemWebhook)は既存のContactFormPayloadをそのまま使う
+			const streamPayload = {
+				id: payload.id,
+				subject: payload.subject,
+				category: payload.category,
+			};
+
+			for (const moderatorId of moderatorIds) {
+				this.globalEventService.publishAdminStream(moderatorId, 'newContactForm', streamPayload);
+			}
+
+			await this.systemWebhookService.enqueueSystemWebhook('receivedContactForm', payload);
+		} catch (err) {
+			this.logger.error('Failed to notify new contact form', { stack: err });
 		}
 	}
 }

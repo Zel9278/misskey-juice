@@ -7,6 +7,96 @@
 
 // ブロックの中に入れないと、定義した変数がブラウザのグローバルスコープに登録されてしまい邪魔なので
 (async () => {
+	// JUICE: misskey-tempuraのSystemd(systemd風の起動ログ)を参考に追加。
+	// このスクリプトは<head>内で同期実行されるため、ほとんどの起動ステップは
+	// <body>(および_splash.tsxが出力する#tty)がまだDOMに存在しない時点で完了する。
+	// そのため各行のDOM要素は#ttyの有無にかかわらずいったん_pendingLinesに積んでおき、
+	// #ttyが実際に使えるようになった時点(通常はDOMContentLoaded経由のLoad App Script)で
+	// まとめて反映する。これにより、importAppScript()の開始タイミングを一切遅らせずに
+	// 起動ログを取りこぼさず表示できる
+	class Systemd {
+		constructor() {
+			this._ttyDom = null;
+			this._pendingLines = [];
+		}
+		get ttyDom() {
+			if (this._ttyDom == null && document.body != null) {
+				this._ttyDom = document.querySelector('#tty') ?? (() => {
+					const el = document.createElement('div');
+					el.id = 'tty';
+					document.body.appendChild(el);
+					return el;
+				})();
+				for (const line of this._pendingLines) {
+					this._ttyDom.appendChild(line);
+				}
+				this._pendingLines = [];
+			}
+			return this._ttyDom ?? null;
+		}
+		async start(id, promise) {
+			let state = { state: 'running' };
+			let lineDom = null;
+			const started = Date.now();
+			const formatLine = (statusClass, statusText, message) => {
+				const spanStatus = document.createElement('span');
+				spanStatus.textContent = statusText;
+				spanStatus.className = statusClass;
+				const spanMessage = document.createElement('span');
+				spanMessage.textContent = message;
+				const div = document.createElement('div');
+				div.className = 'tty-line';
+				div.append('[', spanStatus, '] ', spanMessage);
+				return div;
+			};
+			const render = () => {
+				const elapsed = ((Date.now() - started) / 1000).toFixed(3);
+				let line;
+				switch (state.state) {
+					case 'running':
+						line = formatLine('tty-status-running', ' ** ', `A start job is running for ${id} (${elapsed}s)`);
+						break;
+					case 'done':
+						line = formatLine('tty-status-ok', '  OK  ', `Finished ${id} in ${elapsed}s`);
+						break;
+					case 'failed':
+						line = formatLine('tty-status-failed', 'FAILED', `Failed ${id} in ${elapsed}s: ${state.message}`);
+						break;
+				}
+				const dom = this.ttyDom;
+				if (lineDom == null) {
+					lineDom = line;
+					if (dom != null) {
+						dom.appendChild(lineDom);
+					} else {
+						this._pendingLines.push(lineDom);
+					}
+				} else if (lineDom.isConnected) {
+					lineDom.replaceWith(line);
+					lineDom = line;
+				} else {
+					const idx = this._pendingLines.indexOf(lineDom);
+					if (idx !== -1) this._pendingLines[idx] = line;
+					lineDom = line;
+				}
+			};
+			render();
+			const interval = setInterval(render, 500);
+			try {
+				const res = await promise;
+				state = { state: 'done' };
+				return res;
+			} catch (e) {
+				state = { state: 'failed', message: e instanceof Error ? e.message : 'Unknown error' };
+				throw e;
+			} finally {
+				clearInterval(interval);
+				render();
+			}
+		}
+	}
+	const systemd = new Systemd();
+
 	window.onerror = (e) => {
 		console.error(e);
 		renderError('SOMETHING_HAPPENED', e);
@@ -25,25 +115,28 @@
 	//#region Detect language
 	const supportedLangs = LANGS;
 	/** @type { string } */
-	let lang = localStorage.getItem('lang');
-	if (lang == null || !supportedLangs.includes(lang)) {
-		if (supportedLangs.includes(navigator.language)) {
-			lang = navigator.language;
-		} else {
-			lang = supportedLangs.find(x => x.split('-')[0] === navigator.language);
+	let lang;
+	await systemd.start('Detect language', (async () => {
+		lang = localStorage.getItem('lang');
+		if (lang == null || !supportedLangs.includes(lang)) {
+			if (supportedLangs.includes(navigator.language)) {
+				lang = navigator.language;
+			} else {
+				lang = supportedLangs.find(x => x.split('-')[0] === navigator.language);
 
-			// Fallback
-			if (lang == null) lang = 'en-US';
+				// Fallback
+				if (lang == null) lang = 'en-US';
+			}
 		}
-	}
 
-	// for https://github.com/misskey-dev/misskey/issues/10202
-	if (lang == null || lang.toString == null || lang.toString() === 'null') {
-		console.error('invalid lang value detected!!!', typeof lang, lang);
-		lang = 'en-US';
-	}
+		// for https://github.com/misskey-dev/misskey/issues/10202
+		if (lang == null || lang.toString == null || lang.toString() === 'null') {
+			console.error('invalid lang value detected!!!', typeof lang, lang);
+			lang = 'en-US';
+		}
 
-	localStorage.setItem('lang', lang);
+		localStorage.setItem('lang', lang);
+	})());
 	//#endregion
 
 	//#region Script
@@ -57,10 +150,10 @@
 
 	// タイミングによっては、この時点でDOMの構築が済んでいる場合とそうでない場合とがある
 	if (document.readyState !== 'loading') {
-		importAppScript();
+		systemd.start('Load App Script', importAppScript());
 	} else {
 		window.addEventListener('DOMContentLoaded', () => {
-			importAppScript();
+			systemd.start('Load App Script', importAppScript());
 		});
 	}
 	//#endregion
@@ -78,47 +171,55 @@
 
 	//#region Theme
 	if (!isSafeMode) {
-		const theme = localStorage.getItem('theme');
-		if (theme) {
-			for (const [k, v] of Object.entries(JSON.parse(theme))) {
-				document.documentElement.style.setProperty(`--MI_THEME-${k}`, v.toString());
+		// JUICE: localStorageにthemeが無くても(=何もすることが無くても)ジョブとして表示し、
+		// systemd風ログが1行に痩せないようにする(tempuraを参考にした本来の狙いに合わせる)
+		await systemd.start('Apply theme', (async () => {
+			const theme = localStorage.getItem('theme');
+			if (theme) {
+				for (const [k, v] of Object.entries(JSON.parse(theme))) {
+					document.documentElement.style.setProperty(`--MI_THEME-${k}`, v.toString());
 
-				// HTMLの theme-color 適用
-				if (k === 'htmlThemeColor') {
-					for (const tag of document.head.children) {
-						if (tag.tagName === 'META' && tag.getAttribute('name') === 'theme-color') {
-							tag.setAttribute('content', v);
-							break;
+					// HTMLの theme-color 適用
+					if (k === 'htmlThemeColor') {
+						for (const tag of document.head.children) {
+							if (tag.tagName === 'META' && tag.getAttribute('name') === 'theme-color') {
+								tag.setAttribute('content', v);
+								break;
+							}
 						}
 					}
 				}
 			}
-		}
-	}
 
-	const colorScheme = localStorage.getItem('colorScheme');
-	if (colorScheme) {
-		document.documentElement.style.setProperty('color-scheme', colorScheme);
+			const colorScheme = localStorage.getItem('colorScheme');
+			if (colorScheme) {
+				document.documentElement.style.setProperty('color-scheme', colorScheme);
+			}
+		})());
 	}
 	//#endregion
 
-	const fontSize = localStorage.getItem('fontSize');
-	if (fontSize) {
-		document.documentElement.classList.add('f-' + fontSize);
-	}
+	await systemd.start('Apply font settings', (async () => {
+		const fontSize = localStorage.getItem('fontSize');
+		if (fontSize) {
+			document.documentElement.classList.add('f-' + fontSize);
+		}
 
-	const useSystemFont = localStorage.getItem('useSystemFont');
-	if (useSystemFont) {
-		document.documentElement.classList.add('useSystemFont');
-	}
+		const useSystemFont = localStorage.getItem('useSystemFont');
+		if (useSystemFont) {
+			document.documentElement.classList.add('useSystemFont');
+		}
+	})());
 
 	if (!isSafeMode) {
-		const customCss = localStorage.getItem('customCss');
-		if (customCss && customCss.length > 0) {
-			const style = document.createElement('style');
-			style.innerHTML = customCss;
-			document.head.appendChild(style);
-		}
+		await systemd.start('Apply custom CSS', (async () => {
+			const customCss = localStorage.getItem('customCss');
+			if (customCss && customCss.length > 0) {
+				const style = document.createElement('style');
+				style.innerHTML = customCss;
+				document.head.appendChild(style);
+			}
+		})());
 	}
 
 	async function addStyle(styleText) {

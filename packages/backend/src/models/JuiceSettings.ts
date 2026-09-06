@@ -22,11 +22,36 @@ export interface JuiceSettingsValue {
 	avatarDecorationRequestEnabled?: boolean;
 	/** ユーザーランキングの集計期間(時間単位) */
 	rankingAggregationPeriodHours?: number;
+	/** ユーザーランキングに表示する人数 */
+	rankingDisplayCount?: number;
 	/** リレーTL機能を有効にするか */
 	relayTimelineEnabled?: boolean;
 	/** LaTeX(数式)表示機能を有効にするか */
 	latexEnabled?: boolean;
+	/** リモートのカスタム絵文字を使ったリアクションへの相乗り(既存リアクションをクリックして同じリアクションを付けること)を許可するか */
+	reactionPiggybackOnRemoteEnabled?: boolean;
+	/** コンタクトフォーム(お問い合わせ)機能を有効にするか */
+	contactFormEnabled?: boolean;
+	/** コンタクトフォームの送信回数制限(1時間あたり) */
+	contactFormLimit?: number;
+	/** コンタクトフォームの送信にログインを必須にするか */
+	contactFormRequireAuth?: boolean;
+	/** コンタクトフォームのカテゴリ一覧 */
+	contactFormCategories?: ContactFormCategory[];
+	/** コンタクトフォーム本文の最大文字数 */
+	contactFormContentMaxLength?: number;
+	/** 起動時のスプラッシュ画面にロゴの下へランダム表示する文言一覧(misskey-tempuraのcustomSplashTextを参考) */
+	customSplashText?: string[];
 }
+
+// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+export type ContactFormCategory = {
+	key: string;
+	text: string;
+	enabled: boolean;
+	order: number;
+	isDefault: boolean;
+};
 
 /**
  * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
@@ -82,13 +107,15 @@ export function resolveAvatarDecorationRequestSettings(settings: JuiceSettingsVa
 
 /**
  * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
- * admin/juice/settings・JuiceUserRankingServiceの2箇所で共通利用する。
+ * admin/juice/settings・JuiceUserRankingService・juice/rankingの3箇所で共通利用する。
  */
 export function resolveRankingSettings(settings: JuiceSettingsValue): {
 	rankingAggregationPeriodHours: number;
+	rankingDisplayCount: number;
 } {
 	return {
 		rankingAggregationPeriodHours: settings.rankingAggregationPeriodHours ?? 12,
+		rankingDisplayCount: settings.rankingDisplayCount ?? 3,
 	};
 }
 
@@ -113,6 +140,61 @@ export function resolveLatexSettings(settings: JuiceSettingsValue): {
 } {
 	return {
 		latexEnabled: settings.latexEnabled ?? true,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * HtmlTemplateService(起動時スプラッシュ画面)・admin/juice/settingsの2箇所で共通利用する。
+ */
+export function resolveCustomSplashTextSettings(settings: JuiceSettingsValue): {
+	customSplashText: string[];
+} {
+	return {
+		customSplashText: settings.customSplashText ?? [],
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・juice/public-settingsの2箇所で共通利用する。
+ */
+export function resolveReactionPiggybackSettings(settings: JuiceSettingsValue): {
+	reactionPiggybackOnRemoteEnabled: boolean;
+} {
+	return {
+		// JUICE: リモートの絵文字画像を著作権者の許諾なく表示・使用することになりうるため、
+		// 既定は無効(サーバー管理者の自己責任でのオプトイン)とする
+		reactionPiggybackOnRemoteEnabled: settings.reactionPiggybackOnRemoteEnabled ?? false,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・juice/public-settings・contact-form/submit・ContactFormService等で共通利用する。
+ * カテゴリの既定値7種はmisskey-tempuraの初期値を踏襲する。
+ */
+export function resolveContactFormSettings(settings: JuiceSettingsValue): {
+	contactFormEnabled: boolean;
+	contactFormLimit: number;
+	contactFormRequireAuth: boolean;
+	contactFormCategories: ContactFormCategory[];
+	contactFormContentMaxLength: number;
+} {
+	return {
+		contactFormEnabled: settings.contactFormEnabled ?? true,
+		contactFormLimit: settings.contactFormLimit ?? 3,
+		contactFormRequireAuth: settings.contactFormRequireAuth ?? false,
+		contactFormContentMaxLength: settings.contactFormContentMaxLength ?? 10000,
+		contactFormCategories: settings.contactFormCategories ?? [
+			{ key: 'general', text: '一般', enabled: true, order: 1, isDefault: true },
+			{ key: 'bug_report', text: 'バグ報告', enabled: true, order: 2, isDefault: false },
+			{ key: 'feature_request', text: '機能要望', enabled: true, order: 3, isDefault: false },
+			{ key: 'account_issue', text: 'アカウント関連', enabled: true, order: 4, isDefault: false },
+			{ key: 'technical_issue', text: '技術的な問題', enabled: true, order: 5, isDefault: false },
+			{ key: 'content_issue', text: 'コンテンツ関連', enabled: true, order: 6, isDefault: false },
+			{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
+		],
 	};
 }
 

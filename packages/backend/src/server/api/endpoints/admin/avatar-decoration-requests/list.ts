@@ -56,7 +56,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const query = this.queryService.makePaginationQuery(this.avatarDecorationRequestsRepository.createQueryBuilder('request'), ps.sinceId, ps.untilId)
 				.andWhere('request.status = :status', { status: ps.state })
 				.leftJoinAndSelect('request.user', 'user')
-				.leftJoinAndSelect('request.file', 'file');
+				.leftJoinAndSelect('request.file', 'file')
+				.leftJoinAndSelect('request.reviewer', 'reviewer');
 
 			const requests = await query.limit(ps.limit).getMany();
 
@@ -70,7 +71,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				status: request.status,
 				rejectReason: request.rejectReason,
 				reviewedAt: request.reviewedAt?.toISOString() ?? null,
+				// JUICE: 審査履歴に「誰が審査したか」を表示するために使う
+				reviewer: request.reviewer ? await this.userEntityService.pack(request.reviewer, me, { schema: 'UserLite' }) : null,
 				resultAvatarDecorationId: request.resultAvatarDecorationId,
+				targetAvatarDecorationId: request.targetAvatarDecorationId,
 				user: await this.userEntityService.pack(request.user ?? request.userId, me, { schema: 'UserLite' }),
 				fileUrl: request.file?.url ?? null,
 			})));

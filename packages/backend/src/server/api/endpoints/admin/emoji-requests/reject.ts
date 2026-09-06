@@ -12,6 +12,7 @@ import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { DriveService } from '@/core/DriveService.js';
 import { EmailService } from '@/core/EmailService.js';
 import { EmailI18nService } from '@/core/EmailI18nService.js';
+import { NotificationService } from '@/core/NotificationService.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -63,6 +64,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveService: DriveService,
 		private emailService: EmailService,
 		private emailI18nService: EmailI18nService,
+		private notificationService: NotificationService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const request = await this.emojiRequestsRepository.findOneBy({ id: ps.requestId });
@@ -71,12 +73,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const requester = await this.usersRepository.findOneByOrFail({ id: request.userId });
 
-			await this.emojiRequestsRepository.update(request.id, {
+			// JUICE: 冒頭のstatusチェックと本更新の間に同時に別の審査(承認/却下)が割り込むTOCTOUを防ぐため、
+			// WHERE句にstatus='pending'を含めた条件付きUPDATEで原子的に排他する
+			const updateResult = await this.emojiRequestsRepository.update({ id: request.id, status: 'pending' }, {
 				status: 'rejected',
 				reviewerId: me.id,
 				reviewedAt: new Date(),
 				rejectReason: ps.reason,
 			});
+			if (updateResult.affected === 0) throw new ApiError(meta.errors.alreadyReviewed);
 
 			this.moderationLogService.log(me, 'rejectEmojiRequest', {
 				requestId: request.id,
@@ -93,6 +98,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					this.driveService.deleteFile(driveFile, false, me);
 				}
 			}
+
+			// JUICE: 申請者本人へアプリ内通知(メールとは別チャンネル、メール設定に関わらず常に送る)
+			this.notificationService.createNotification(request.userId, 'emojiRequestRejected', {
+				requestId: request.id,
+				name: request.name,
+				reason: ps.reason,
+			});
 
 			const profile = await this.userProfilesRepository.findOneBy({ userId: request.userId });
 			if (profile?.email != null && profile.emailVerified && profile.receiveEmojiRequestResultEmail) {

@@ -693,6 +693,7 @@ function getMenu() {
 		type: 'switch',
 		text: i18n.ts.aiGeneratedOnly,
 		icon: 'ti ti-sparkles',
+		badge: true,
 		ref: onlyAIGenerated,
 	}, {
 		type: 'switch',

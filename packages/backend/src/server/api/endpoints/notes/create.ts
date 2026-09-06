@@ -10,6 +10,7 @@ import { MAX_NOTE_TEXT_LENGTH } from '@/const.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { ApiError } from '../../error.js';
 
@@ -134,6 +135,8 @@ export const paramDef = {
 			type: 'string', format: 'misskey:id',
 		} },
 		cw: { type: 'string', nullable: true, minLength: 1, maxLength: 100 },
+		// JUICE: 未指定ならNoteCreateService側でユーザーの表示言語設定を既定値として使う
+		lang: { type: 'string', nullable: true, minLength: 1, maxLength: 32 },
 		localOnly: { type: 'boolean', default: false },
 		isAIGenerated: { type: 'boolean', default: false },
 		reactionAcceptance: { type: 'string', nullable: true, enum: [null, 'likeOnly', 'likeOnlyForRemote', 'nonSensitiveOnly', 'nonSensitiveOnlyForLocalLikeOnlyForRemote'], default: null },
@@ -219,9 +222,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		private noteEntityService: NoteEntityService,
 		private noteCreateService: NoteCreateService,
+		private cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
+				// JUICE: 未指定の場合はユーザーの表示言語設定を既定値として使う(Mastodonと同様の挙動)
+				const lang = ps.lang ?? (await this.cacheService.userProfileCache.fetch(me.id)).lang ?? null;
+
 				const note = await this.noteCreateService.fetchAndCreate(me, {
 					createdAt: new Date(),
 					fileIds: ps.fileIds ?? ps.mediaIds ?? [],
@@ -234,6 +241,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					replyId: ps.replyId ?? null,
 					renoteId: ps.renoteId ?? null,
 					cw: ps.cw ?? null,
+					lang,
 					localOnly: ps.localOnly,
 					isAIGenerated: ps.isAIGenerated,
 					reactionAcceptance: ps.reactionAcceptance,

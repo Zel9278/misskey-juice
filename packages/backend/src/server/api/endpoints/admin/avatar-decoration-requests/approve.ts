@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AvatarDecorationRequestsRepository, DriveFilesRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
+import type { AvatarDecorationRequestsRepository, AvatarDecorationsRepository, DriveFilesRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '@/server/api/error.js';
@@ -14,6 +14,7 @@ import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
 import { DriveService } from '@/core/DriveService.js';
 import { EmailService } from '@/core/EmailService.js';
 import { EmailI18nService } from '@/core/EmailI18nService.js';
+import { NotificationService } from '@/core/NotificationService.js';
 import { FILE_TYPE_IMAGE } from '@/const.js';
 
 export const meta = {
@@ -50,6 +51,20 @@ export const meta = {
 			code: 'FILE_COPY_FAILED',
 			id: '53f9329a-3da2-45fe-9e22-8319076d4c70',
 		},
+		// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)の対象が、申請〜承認の間に
+		// 削除されていた場合
+		noSuchTargetAvatarDecoration: {
+			message: 'No such target avatar decoration.',
+			code: 'NO_SUCH_TARGET_AVATAR_DECORATION',
+			id: '2069a205-bb86-433e-8df8-ba64c745d2f3',
+		},
+		// JUICE: 承認時に申請内容(名前・説明・カテゴリ)を編集したのに、その理由(editReason)が
+		// 指定されていない場合
+		editReasonRequired: {
+			message: 'A reason must be given when editing the request content upon approval.',
+			code: 'EDIT_REASON_REQUIRED',
+			id: '3a2f6e1d-7c9b-4a1e-9d5f-6b1c8e2a4f7d',
+		},
 	},
 } as const;
 
@@ -57,6 +72,13 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		requestId: { type: 'string', format: 'misskey:id' },
+		// JUICE: 承認時にモデレーターが申請内容を編集する場合に指定する(差し替え申請では無視される)。
+		// 各上限はavatar-decoration-requests/createと同じ(avatar_decoration_requestテーブルの
+		// 列定義に合わせる)。いずれか1つでも申請時点の値と異なる場合、editReasonの指定が必須になる
+		name: { type: 'string', minLength: 1, maxLength: 256 },
+		description: { type: 'string', maxLength: 2048 },
+		category: { type: 'string', nullable: true, maxLength: 128 },
+		editReason: { type: 'string', maxLength: 1024 },
 	},
 	required: ['requestId'],
 } as const;
@@ -66,6 +88,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		@Inject(DI.avatarDecorationRequestsRepository)
 		private avatarDecorationRequestsRepository: AvatarDecorationRequestsRepository,
+
+		@Inject(DI.avatarDecorationsRepository)
+		private avatarDecorationsRepository: AvatarDecorationsRepository,
 
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
@@ -81,6 +106,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private driveService: DriveService,
 		private emailService: EmailService,
 		private emailI18nService: EmailI18nService,
+		private notificationService: NotificationService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const request = await this.avatarDecorationRequestsRepository.findOneBy({ id: ps.requestId });
@@ -90,6 +116,21 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const driveFile = request.fileId == null ? null : await this.driveFilesRepository.findOneBy({ id: request.fileId });
 			if (driveFile == null) throw new ApiError(meta.errors.noSuchFile);
 			if (!FILE_TYPE_IMAGE.includes(driveFile.type)) throw new ApiError(meta.errors.unsupportedFileType);
+
+			// JUICE: 承認時にモデレーターが申請内容を編集できるようにする(差し替え申請ではnameを含む
+			// メタデータ自体を使わないため、編集は適用しない)
+			const isReplacement = request.targetAvatarDecorationId != null;
+			const effectiveName = (!isReplacement && ps.name !== undefined) ? ps.name : request.name;
+			const effectiveDescription = (!isReplacement && ps.description !== undefined) ? ps.description : request.description;
+			const effectiveCategory = (!isReplacement && ps.category !== undefined) ? ps.category : request.category;
+			const isEdited = !isReplacement && (
+				effectiveName !== request.name ||
+				effectiveDescription !== request.description ||
+				effectiveCategory !== request.category
+			);
+			if (isEdited && (ps.editReason == null || ps.editReason.trim() === '')) {
+				throw new ApiError(meta.errors.editReasonRequired);
+			}
 
 			const requester = await this.usersRepository.findOneByOrFail({ id: request.userId });
 
@@ -101,20 +142,44 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.fileCopyFailed);
 			}
 
-			const decoration = await this.avatarDecorationService.create({
-				name: request.name,
-				description: request.description,
-				url: decorationFile.url,
-				roleIdsThatCanBeUsedThisDecoration: [],
-				category: request.category,
-			}, me);
+			// JUICE: 差し替え申請なら対象デコレーションの画像のみを差し替え、そうでなければ従来通り新規作成
+			let decoration: { id: string; name: string };
+			if (request.targetAvatarDecorationId != null) {
+				const targetDecoration = await this.avatarDecorationsRepository.findOneBy({ id: request.targetAvatarDecorationId });
+				if (targetDecoration == null) throw new ApiError(meta.errors.noSuchTargetAvatarDecoration);
 
-			await this.avatarDecorationRequestsRepository.update(request.id, {
+				await this.avatarDecorationService.update(targetDecoration.id, {
+					url: decorationFile.url,
+				}, me);
+
+				decoration = targetDecoration;
+			} else {
+				decoration = await this.avatarDecorationService.create({
+					name: effectiveName,
+					description: effectiveDescription,
+					url: decorationFile.url,
+					roleIdsThatCanBeUsedThisDecoration: [],
+					category: effectiveCategory,
+				}, me);
+			}
+
+			// JUICE: 冒頭のstatusチェックとこの更新の間(ファイル複製・デコレーション作成という低速な処理を挟む)に
+			// 同時に別の審査(承認/却下)が割り込むTOCTOUを防ぐため、WHERE句にstatus='pending'を含めた
+			// 条件付きUPDATEで原子的に排他する。負けた側は既にデコレーションを作成済みだが後続の通知・メールは送らない
+			const updateResult = await this.avatarDecorationRequestsRepository.update({ id: request.id, status: 'pending' }, {
 				status: 'approved',
 				reviewerId: me.id,
 				reviewedAt: new Date(),
 				resultAvatarDecorationId: decoration.id,
+				// JUICE: 編集された場合、申請内容も実際に承認された(=編集後の)値に更新しておく
+				...(isEdited ? {
+					name: effectiveName,
+					description: effectiveDescription,
+					category: effectiveCategory,
+					editReason: ps.editReason,
+				} : {}),
 			});
+			if (updateResult.affected === 0) throw new ApiError(meta.errors.alreadyReviewed);
 
 			this.moderationLogService.log(me, 'approveAvatarDecorationRequest', {
 				requestId: request.id,
@@ -123,19 +188,36 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				requesterHost: requester.host,
 				avatarDecorationId: decoration.id,
 				avatarDecorationName: decoration.name,
+				isReplacement: request.targetAvatarDecorationId != null,
+				// JUICE: 承認時に申請内容を編集した場合、編集前の値と理由も記録しておく(監査用)
+				...(isEdited ? {
+					edited: true,
+					editReason: ps.editReason,
+					originalName: request.name,
+					originalDescription: request.description,
+					originalCategory: request.category,
+				} : {}),
 			});
 
 			if (request.deleteFileAfterReview) {
 				this.driveService.deleteFile(driveFile, false, me);
 			}
 
+			// JUICE: 申請者本人へアプリ内通知(メールとは別チャンネル、メール設定に関わらず常に送る)。
+			// 承認時に編集された場合があるため、申請時点の名前(request.name)ではなく実際に
+			// 作成/更新されたアバターデコレーションの名前(decoration.name)を使う
+			this.notificationService.createNotification(request.userId, 'avatarDecorationRequestApproved', {
+				requestId: request.id,
+				name: decoration.name,
+			});
+
 			const profile = await this.userProfilesRepository.findOneBy({ userId: request.userId });
 			if (profile?.email != null && profile.emailVerified && profile.receiveAvatarDecorationRequestResultEmail) {
 				const lang = await this.emailI18nService.resolveLang(profile.emailLang);
 				const i18n = this.emailI18nService.getI18n(lang);
-				this.emailService.sendEmail(profile.email, i18n.t('_email.avatarDecorationRequestApproved.subject', { name: request.name }),
-					i18n.t('_email.avatarDecorationRequestApproved.html', { name: request.name }),
-					i18n.t('_email.avatarDecorationRequestApproved.text', { name: request.name }));
+				this.emailService.sendEmail(profile.email, i18n.t('_email.avatarDecorationRequestApproved.subject', { name: decoration.name }),
+					i18n.t('_email.avatarDecorationRequestApproved.html', { name: decoration.name }),
+					i18n.t('_email.avatarDecorationRequestApproved.text', { name: decoration.name }));
 			}
 		});
 	}

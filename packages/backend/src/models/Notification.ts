@@ -114,6 +114,36 @@ export type MiNotification = {
 	id: string;
 	createdAt: string;
 } | {
+	// JUICE: 絵文字申請が承認されたとき
+	type: 'emojiRequestApproved';
+	id: string;
+	createdAt: string;
+	requestId: string;
+	name: string;
+} | {
+	// JUICE: 絵文字申請が却下されたとき
+	type: 'emojiRequestRejected';
+	id: string;
+	createdAt: string;
+	requestId: string;
+	name: string;
+	reason: string | null;
+} | {
+	// JUICE: アバターデコレーション申請が承認されたとき
+	type: 'avatarDecorationRequestApproved';
+	id: string;
+	createdAt: string;
+	requestId: string;
+	name: string;
+} | {
+	// JUICE: アバターデコレーション申請が却下されたとき
+	type: 'avatarDecorationRequestRejected';
+	id: string;
+	createdAt: string;
+	requestId: string;
+	name: string;
+	reason: string | null;
+} | {
 	type: 'createToken';
 	id: string;
 	createdAt: string;

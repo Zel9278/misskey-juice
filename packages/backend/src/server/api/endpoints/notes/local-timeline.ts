@@ -16,6 +16,8 @@ import { QueryService } from '@/core/QueryService.js';
 import { MiLocalUser } from '@/models/User.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
+import { CacheService } from '@/core/CacheService.js';
+import { isLanguageFiltered } from '@/misc/is-language-filtered.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -78,6 +80,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
 		private queryService: QueryService,
 		private channelMutingService: ChannelMutingService,
+		private cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
@@ -108,6 +111,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return await this.noteEntityService.packMany(timeline, me);
 			}
 
+			// JUICE: 表示言語の絞り込み(未ログインなら絞り込み無し)
+			const filteredLanguages = new Set(me ? (await this.cacheService.userProfileCache.fetch(me.id)).filteredLanguages : []);
+
 			const timeline = await this.fanoutTimelineEndpointService.timeline({
 				untilId,
 				sinceId,
@@ -122,6 +128,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					: ['localTimeline'],
 				alwaysIncludeMyNotes: true,
 				excludePureRenotes: !ps.withRenotes,
+				noteFilter: note => !isLanguageFiltered(note, filteredLanguages),
 				dbFallback: async (untilId, sinceId, limit) => await this.getFromDb({
 					untilId,
 					sinceId,
@@ -161,6 +168,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		this.queryService.generateBaseNoteFilteringQuery(query, me);
 		if (me) {
 			this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+			// JUICE: 表示言語の絞り込み
+			this.queryService.generateLanguageFilterQuery(query, me, true);
 
 			const mutedChannelIds = await this.channelMutingService
 				.list({ requestUserId: me.id }, { idOnly: true })

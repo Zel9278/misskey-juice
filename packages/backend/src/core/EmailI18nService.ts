@@ -49,8 +49,8 @@ const emailFallbackLocaleEnUS = {
 	},
 	signupDeclined: {
 		subject: 'Your registration has been declined',
-		html: 'Your account registration request has been declined.',
-		text: 'Your account registration request has been declined.',
+		html: 'Your account registration request has been declined. Reason: {reason}',
+		text: 'Your account registration request has been declined. Reason: {reason}',
 	},
 	emojiRequestApproved: {
 		subject: 'Your emoji request has been approved',

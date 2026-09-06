@@ -40,6 +40,7 @@ function createService() {
 		{} as never,
 		{} as never,
 		apiLoggerService as never,
+		{} as never,
 		telemetryService as never,
 	);
 	return { service, telemetryService };

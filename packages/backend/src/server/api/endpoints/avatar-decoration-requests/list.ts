@@ -44,6 +44,8 @@ export const paramDef = {
 		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
+		// JUICE: 差し替え申請の対象選択(自分の承認済み申請のみ一覧したい場合等)で使う
+		status: { type: 'string', enum: ['pending', 'approved', 'rejected'], nullable: true },
 	},
 	required: [],
 } as const;
@@ -63,7 +65,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (!avatarDecorationRequestEnabled) throw new ApiError(meta.errors.functionDisabled);
 
 			const query = this.queryService.makePaginationQuery(this.avatarDecorationRequestsRepository.createQueryBuilder('request'), ps.sinceId, ps.untilId)
-				.andWhere('request.userId = :userId', { userId: me.id });
+				.andWhere('request.userId = :userId', { userId: me.id })
+				.leftJoinAndSelect('request.file', 'file');
+
+			// JUICE
+			if (ps.status != null) query.andWhere('request.status = :status', { status: ps.status });
 
 			const requests = await query.limit(ps.limit).getMany();
 
@@ -71,6 +77,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				id: request.id,
 				createdAt: this.idService.parse(request.id).date.toISOString(),
 				fileId: request.fileId,
+				// JUICE: 一覧でサムネイル表示に使う
+				fileUrl: request.file?.url ?? null,
 				name: request.name,
 				description: request.description,
 				category: request.category,
@@ -78,6 +86,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				rejectReason: request.rejectReason,
 				reviewedAt: request.reviewedAt?.toISOString() ?? null,
 				resultAvatarDecorationId: request.resultAvatarDecorationId,
+				targetAvatarDecorationId: request.targetAvatarDecorationId,
 			}));
 		});
 	}

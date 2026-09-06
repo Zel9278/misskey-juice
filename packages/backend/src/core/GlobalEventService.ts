@@ -195,6 +195,13 @@ export interface AdminEventTypes {
 		category: string | null;
 		requester: Packed<'UserLite'>;
 	};
+	// JUICE: お問い合わせが送信された時のリアルタイム通知。本文にメールアドレス・IPアドレス等の
+	// PIIを含むため、こちらはWebhookペイロード(ContactFormPayload)と異なりPIIを含まない
+	newContactForm: {
+		id: string;
+		subject: string;
+		category: string;
+	};
 }
 
 export interface ChatEventTypes {
@@ -303,7 +310,7 @@ export interface InternalEventTypes {
 	userListMemberRemoved: { userListId: MiUserList['id']; memberId: MiUser['id']; };
 }
 
-type EventTypesToEventPayload<T> = EventUnionFromDictionary<UndefinedAsNullAll<SerializedAll<T>>>;
+export type EventTypesToEventPayload<T> = EventUnionFromDictionary<UndefinedAsNullAll<SerializedAll<T>>>;
 
 // name/messages(spec) pairs dictionary
 export type GlobalEvents = {

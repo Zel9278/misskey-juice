@@ -29,3 +29,13 @@ export const Block = {
 	...Inline,
 	args: { ...Inline.args, block: true },
 } satisfies StoryObj<typeof MkFormulaCore>;
+
+// JUICE: `{`のネストが深すぎる数式はレンダリングせず、フォールバック表示(生のformulaをテキストとして表示)になる。
+// ブラウザのタブがフリーズ・クラッシュしうる巨大なHTML生成を防ぐためのガード(MkFormulaCore.vue参照)
+export const DeeplyNested = {
+	...Inline,
+	args: {
+		...Inline.args,
+		formula: '\\sqrt{'.repeat(50) + 'x' + '}'.repeat(50),
+	},
+} satisfies StoryObj<typeof MkFormulaCore>;

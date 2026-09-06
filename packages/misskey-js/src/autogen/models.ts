@@ -16,6 +16,7 @@ export type AnnouncementReaction = components['schemas']['AnnouncementReaction']
 export type App = components['schemas']['App'];
 export type Note = components['schemas']['Note'];
 export type NoteDraft = components['schemas']['NoteDraft'];
+export type ContactForm = components['schemas']['ContactForm'];
 export type NoteReaction = components['schemas']['NoteReaction'];
 export type NoteReactionWithNote = components['schemas']['NoteReactionWithNote'];
 export type NoteFavorite = components['schemas']['NoteFavorite'];

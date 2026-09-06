@@ -610,6 +610,15 @@ export const packedMeDetailedOnlySchema = {
 				nullable: false, optional: false,
 			},
 		},
+		// JUICE: タイムラインに表示する言語の絞り込み(空なら絞り込み無し)
+		filteredLanguages: {
+			type: 'array',
+			nullable: false, optional: false,
+			items: {
+				type: 'string',
+				nullable: false, optional: false,
+			},
+		},
 		notificationRecieveConfig: {
 			type: 'object',
 			nullable: false, optional: false,
@@ -633,6 +642,10 @@ export const packedMeDetailedOnlySchema = {
 				test: { optional: true, ...notificationRecieveConfig },
 				login: { optional: true, ...notificationRecieveConfig },
 				loginFailed: { optional: true, ...notificationRecieveConfig },
+				emojiRequestApproved: { optional: true, ...notificationRecieveConfig },
+				emojiRequestRejected: { optional: true, ...notificationRecieveConfig },
+				avatarDecorationRequestApproved: { optional: true, ...notificationRecieveConfig },
+				avatarDecorationRequestRejected: { optional: true, ...notificationRecieveConfig },
 				createToken: { optional: true, ...notificationRecieveConfig },
 				exportCompleted: { optional: true, ...notificationRecieveConfig },
 			},

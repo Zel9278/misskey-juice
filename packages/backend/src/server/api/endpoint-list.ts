@@ -74,6 +74,7 @@ export * as 'admin/juice/approve-signup' from './endpoints/admin/juice/approve-s
 export * as 'admin/juice/decline-signup' from './endpoints/admin/juice/decline-signup.js';
 export * as 'admin/juice/pending-signups' from './endpoints/admin/juice/pending-signups.js';
 export * as 'admin/juice/settings' from './endpoints/admin/juice/settings.js';
+export * as 'admin/juice/signup-approval-history' from './endpoints/admin/juice/signup-approval-history.js';
 export * as 'admin/juice/update-settings' from './endpoints/admin/juice/update-settings.js';
 export * as 'admin/meta' from './endpoints/admin/meta.js';
 export * as 'admin/promo/create' from './endpoints/admin/promo/create.js';
@@ -147,6 +148,7 @@ export * as 'auth/session/generate' from './endpoints/auth/session/generate.js';
 export * as 'auth/session/show' from './endpoints/auth/session/show.js';
 export * as 'auth/session/userkey' from './endpoints/auth/session/userkey.js';
 export * as 'avatar-decoration-requests/create' from './endpoints/avatar-decoration-requests/create.js';
+export * as 'avatar-decoration-requests/create-many' from './endpoints/avatar-decoration-requests/create-many.js';
 export * as 'avatar-decoration-requests/list' from './endpoints/avatar-decoration-requests/list.js';
 export * as 'blocking/create' from './endpoints/blocking/create.js';
 export * as 'blocking/delete' from './endpoints/blocking/delete.js';
@@ -215,6 +217,7 @@ export * as 'drive/stream' from './endpoints/drive/stream.js';
 export * as 'email-address/available' from './endpoints/email-address/available.js';
 export * as 'emoji' from './endpoints/emoji.js';
 export * as 'emoji-requests/create' from './endpoints/emoji-requests/create.js';
+export * as 'emoji-requests/create-many' from './endpoints/emoji-requests/create-many.js';
 export * as 'emoji-requests/list' from './endpoints/emoji-requests/list.js';
 export * as 'emojis' from './endpoints/emojis.js';
 export * as 'endpoint' from './endpoints/endpoint.js';
@@ -479,3 +482,11 @@ export * as 'chat/rooms/invitations/outbox' from './endpoints/chat/rooms/invitat
 export * as 'chat/history' from './endpoints/chat/history.js';
 export * as 'chat/read-all' from './endpoints/chat/read-all.js';
 export * as 'v2/admin/emoji/list' from './endpoints/v2/admin/emoji/list.js';
+
+// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+export * as 'contact-form/submit' from './endpoints/contact-form/submit.js';
+export * as 'admin/contact-form/list' from './endpoints/admin/contact-form/list.js';
+export * as 'admin/contact-form/show' from './endpoints/admin/contact-form/show.js';
+export * as 'admin/contact-form/update' from './endpoints/admin/contact-form/update.js';
+export * as 'admin/contact-form/delete' from './endpoints/admin/contact-form/delete.js';
+export * as 'admin/contact-form/categories' from './endpoints/admin/contact-form/categories.js';

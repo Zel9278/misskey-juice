@@ -19,7 +19,7 @@ import { FlashService } from '@/core/FlashService.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
 import { AccountMoveService } from './AccountMoveService.js';
 import { AccountUpdateService } from './AccountUpdateService.js';
-import { AiService } from './AiService.js';
+import { SensitiveMediaDetectionService } from './SensitiveMediaDetectionService.js';
 import { AnnouncementService } from './AnnouncementService.js';
 import { AntennaService } from './AntennaService.js';
 import { AchievementService } from './AchievementService.js';
@@ -84,6 +84,7 @@ import { ChannelFollowingService } from './ChannelFollowingService.js';
 import { ChatService } from './ChatService.js';
 import { RegistryApiService } from './RegistryApiService.js';
 import { ReversiService } from './ReversiService.js';
+import { ContactFormService } from './ContactFormService.js';
 import { PageService } from './PageService.js';
 
 import { ChartLoggerService } from './chart/ChartLoggerService.js';
@@ -139,6 +140,7 @@ import { FlashLikeEntityService } from './entities/FlashLikeEntityService.js';
 import { RoleEntityService } from './entities/RoleEntityService.js';
 import { ReversiGameEntityService } from './entities/ReversiGameEntityService.js';
 import { MetaEntityService } from './entities/MetaEntityService.js';
+import { ContactFormEntityService } from './entities/ContactFormEntityService.js';
 
 import { ApAudienceService } from './activitypub/ApAudienceService.js';
 import { ApDbResolverService } from './activitypub/ApDbResolverService.js';
@@ -171,7 +173,7 @@ const $AbuseReportService: Provider = { provide: 'AbuseReportService', useExisti
 const $AbuseReportNotificationService: Provider = { provide: 'AbuseReportNotificationService', useExisting: AbuseReportNotificationService };
 const $AccountMoveService: Provider = { provide: 'AccountMoveService', useExisting: AccountMoveService };
 const $AccountUpdateService: Provider = { provide: 'AccountUpdateService', useExisting: AccountUpdateService };
-const $AiService: Provider = { provide: 'AiService', useExisting: AiService };
+const $SensitiveMediaDetectionService: Provider = { provide: 'SensitiveMediaDetectionService', useExisting: SensitiveMediaDetectionService };
 const $AnnouncementService: Provider = { provide: 'AnnouncementService', useExisting: AnnouncementService };
 const $AntennaService: Provider = { provide: 'AntennaService', useExisting: AntennaService };
 const $AchievementService: Provider = { provide: 'AchievementService', useExisting: AchievementService };
@@ -299,6 +301,8 @@ const $RoleEntityService: Provider = { provide: 'RoleEntityService', useExisting
 const $ReversiGameEntityService: Provider = { provide: 'ReversiGameEntityService', useExisting: ReversiGameEntityService };
 const $MetaEntityService: Provider = { provide: 'MetaEntityService', useExisting: MetaEntityService };
 const $SystemWebhookEntityService: Provider = { provide: 'SystemWebhookEntityService', useExisting: SystemWebhookEntityService };
+const $ContactFormService: Provider = { provide: 'ContactFormService', useExisting: ContactFormService };
+const $ContactFormEntityService: Provider = { provide: 'ContactFormEntityService', useExisting: ContactFormEntityService };
 
 const $ApAudienceService: Provider = { provide: 'ApAudienceService', useExisting: ApAudienceService };
 const $ApDbResolverService: Provider = { provide: 'ApDbResolverService', useExisting: ApDbResolverService };
@@ -331,7 +335,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		JuiceAdminNotificationService,
 		AccountMoveService,
 		AccountUpdateService,
-		AiService,
+		SensitiveMediaDetectionService,
 		AnnouncementService,
 		AntennaService,
 		AchievementService,
@@ -402,6 +406,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ChatService,
 		RegistryApiService,
 		ReversiService,
+		ContactFormService,
 		PageService,
 
 		ChartLoggerService,
@@ -459,6 +464,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ReversiGameEntityService,
 		MetaEntityService,
 		SystemWebhookEntityService,
+		ContactFormEntityService,
 
 		ApAudienceService,
 		ApDbResolverService,
@@ -488,7 +494,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$AbuseReportNotificationService,
 		$AccountMoveService,
 		$AccountUpdateService,
-		$AiService,
+		$SensitiveMediaDetectionService,
 		$AnnouncementService,
 		$AntennaService,
 		$AchievementService,
@@ -559,6 +565,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$ChatService,
 		$RegistryApiService,
 		$ReversiService,
+		$ContactFormService,
 		$PageService,
 
 		$ChartLoggerService,
@@ -616,6 +623,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$ReversiGameEntityService,
 		$MetaEntityService,
 		$SystemWebhookEntityService,
+		$ContactFormEntityService,
 
 		$ApAudienceService,
 		$ApDbResolverService,
@@ -646,7 +654,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		JuiceAdminNotificationService,
 		AccountMoveService,
 		AccountUpdateService,
-		AiService,
+		SensitiveMediaDetectionService,
 		AnnouncementService,
 		AntennaService,
 		AchievementService,
@@ -717,6 +725,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ChatService,
 		RegistryApiService,
 		ReversiService,
+		ContactFormService,
 		PageService,
 
 		FederationChart,
@@ -773,6 +782,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		ReversiGameEntityService,
 		MetaEntityService,
 		SystemWebhookEntityService,
+		ContactFormEntityService,
 
 		ApAudienceService,
 		ApDbResolverService,
@@ -802,7 +812,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$AbuseReportNotificationService,
 		$AccountMoveService,
 		$AccountUpdateService,
-		$AiService,
+		$SensitiveMediaDetectionService,
 		$AnnouncementService,
 		$AntennaService,
 		$AchievementService,
@@ -872,6 +882,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$ChatService,
 		$RegistryApiService,
 		$ReversiService,
+		$ContactFormService,
 		$PageService,
 
 		$FederationChart,
@@ -928,6 +939,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$ReversiGameEntityService,
 		$MetaEntityService,
 		$SystemWebhookEntityService,
+		$ContactFormEntityService,
 
 		$ApAudienceService,
 		$ApDbResolverService,

@@ -20,6 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		:reactionEmojis="props.reactionEmojis"
 		:count="count"
 		:isInitial="initialReactions.has(reaction)"
+		:note="props.note"
 		:noteId="props.noteId"
 		:myReaction="props.myReaction"
 		@reactionToggled="onMockToggleReaction"
@@ -30,16 +31,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import * as Misskey from 'misskey-js';
-import { inject, watch, ref } from 'vue';
+import { computed, inject, watch, ref } from 'vue';
 import { TransitionGroup } from 'vue';
-import { isSupportedEmoji } from '@@/js/emojilist.js';
+import { getUnicodeEmojiOrNull } from '@@/js/emojilist.js';
+import { getEmojiNameFromReaction, isLocalCustomEmojiReaction } from '@@/js/emoji-name.js';
 import XReaction from '@/components/MkReactionsViewer.reaction.vue';
 import { $i } from '@/i.js';
 import { prefer } from '@/preferences.js';
 import { customEmojisMap } from '@/custom-emojis.js';
 import { DI } from '@/di.js';
+import { checkReactionPermissions } from '@/utility/check-reaction-permissions.js';
+import { juicePublicSettingsCache } from '@/cache.js';
 
 const props = withDefaults(defineProps<{
+	note: Misskey.entities.Note;
 	noteId: Misskey.entities.Note['id'];
 	reactions: Misskey.entities.Note['reactions'];
 	reactionEmojis: Misskey.entities.Note['reactionEmojis'];
@@ -73,10 +78,26 @@ function onMockToggleReaction(emoji: string, count: number) {
 	emit('mockUpdateMyReaction', emoji, (count - _reactions.value[i][1]));
 }
 
-function canReact(reaction: string) {
+// JUICE: リモートのカスタム絵文字を使ったリアクションへの相乗りが管理者設定で有効化されているか。
+// MkReactionsViewer.reaction.vueのcanToggleと同じ設定を参照し、「利用可能」表示と実際にクリック
+// できるかどうかの判定を一致させる
+const reactionPiggybackOnRemoteEnabled = computed(() => juicePublicSettingsCache.value.value?.reactionPiggybackOnRemoteEnabled ?? false);
+
+// JUICE: MkReactionsViewer.reaction.vueのcanToggleと同じロジックで判定する。以前はロール制限・
+// センシティブ・ローカル限定を無視しており、実際にはクリックできない(権限が無い)リアクションが
+// 「利用可能」として先頭に表示されうる不整合があった
+function canReact(reaction: string): boolean {
 	if (!$i) return false;
-	// TODO: CheckPermissions
-	return !reaction.match(/@\w/) && (customEmojisMap.has(reaction) || isSupportedEmoji(reaction));
+
+	// JUICE: リモートホスト付きのカスタム絵文字は権限情報をローカルで持っていないため、
+	// MkReactionsViewer.reaction.vueのcanToggleと同じくpiggyback設定に従う
+	if (reaction[0] === ':' && !isLocalCustomEmojiReaction(reaction)) {
+		return reactionPiggybackOnRemoteEnabled.value;
+	}
+
+	const emoji = isLocalCustomEmojiReaction(reaction) ? customEmojisMap.get(getEmojiNameFromReaction(reaction)) : getUnicodeEmojiOrNull(reaction);
+	if (emoji == null) return false;
+	return checkReactionPermissions($i, props.note, emoji);
 }
 
 watch([() => props.reactions, () => props.maxNumber], ([newSource, maxNumber]) => {
@@ -91,25 +112,32 @@ watch([() => props.reactions, () => props.maxNumber], ([newSource, maxNumber]) =
 		}
 	}
 
-	const newReactionsNames = newReactions.map(([x]) => x);
+	const sorted = Object.entries(newSource);
+	if (prefer.s.showAvailableReactionsFirstInNote) {
+		// ソートの比較関数内で評価すると同じ絵文字に対して何度も実行されるため、事前に1回だけ評価しておく
+		const canReactCache = new Map<string, boolean>();
+		for (const [emoji] of sorted) {
+			canReactCache.set(emoji, canReact(emoji));
+		}
+		sorted.sort(([emojiA, countA], [emojiB, countB]) => {
+			const canReactA = canReactCache.get(emojiA)!;
+			const canReactB = canReactCache.get(emojiB)!;
+			if (canReactA !== canReactB) return canReactA ? -1 : 1;
+			return countB - countA;
+		});
+	} else {
+		sorted.sort(([, countA], [, countB]) => countB - countA);
+	}
+
+	const newReactionsNames = new Set(newReactions.map(([x]) => x));
 	newReactions = [
 		...newReactions,
-		...Object.entries(newSource)
-			.sort(([emojiA, countA], [emojiB, countB]) => {
-				if (prefer.s.showAvailableReactionsFirstInNote) {
-					if (!canReact(emojiA) && canReact(emojiB)) return 1;
-					if (canReact(emojiA) && !canReact(emojiB)) return -1;
-					return countB - countA;
-				} else {
-					return countB - countA;
-				}
-			})
-			.filter(([y], i) => i < maxNumber && !newReactionsNames.includes(y)),
+		...sorted.filter(([y], i) => i < maxNumber && !newReactionsNames.has(y)),
 	];
 
 	newReactions = newReactions.slice(0, props.maxNumber);
 
-	if (props.myReaction && !newReactions.map(([x]) => x).includes(props.myReaction)) {
+	if (props.myReaction && !newReactions.some(([x]) => x === props.myReaction)) {
 		newReactions.push([props.myReaction, newSource[props.myReaction]]);
 	}
 

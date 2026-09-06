@@ -47,7 +47,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'update', choices: AnnouncementPollChoice[]): void;
+	(ev: 'update', choices: AnnouncementPollChoice[], choice: number): void;
 }>();
 
 const choices = ref<AnnouncementPollChoice[]>(props.choices.map(c => ({ ...c })));
@@ -93,9 +93,10 @@ if (!closed.value) {
 const voting = ref(false);
 
 /**
- * お知らせはノートの`pollVoted`ストリームのようなフロント側の購読を持たないため、
- * MkPoll.vueとは異なり投票成功時にローカルで件数を楽観的に更新する(MkAnnouncementReactions.vueと同じ方針)。
- * 失敗時は投票前の状態に巻き戻す。
+ * MkPoll.vueとは異なり、投票操作の起点はこのコンポーネント側にしかないため、
+ * 投票成功時にローカルで件数を楽観的に更新する(MkAnnouncementReactions.vueと同じ方針)。
+ * 失敗時は投票前の状態に巻き戻す。他ユーザーの投票は親コンポーネントがbroadcastストリームを
+ * 購読して反映する。
  */
 const vote = async (id: number) => {
 	if (props.readOnly || voting.value || closed.value) return;
@@ -119,7 +120,7 @@ const vote = async (id: number) => {
 		const next = choices.value.map((c, i) => i === id ? { ...c, votes: c.votes + 1, isVoted: true } : c);
 		choices.value = next;
 		if (!showResult.value) showResult.value = !props.multiple;
-		emit('update', next);
+		emit('update', next, id);
 
 		try {
 			await misskeyApi('announcements/polls/vote', {
@@ -128,7 +129,7 @@ const vote = async (id: number) => {
 			});
 		} catch (err) {
 			choices.value = previous;
-			emit('update', previous);
+			emit('update', previous, id);
 			os.alert({
 				type: 'error',
 				text: i18n.ts.somethingHappened,

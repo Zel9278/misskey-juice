@@ -91,6 +91,7 @@ import {
 	MiChatRoomMembership,
 	MiChatRoomInvitation,
 	MiChatApproval,
+	MiContactForm,
 } from './_.js';
 import type { Provider } from '@nestjs/common';
 import type { DataSource } from 'typeorm';
@@ -170,6 +171,12 @@ const $noteReactionsRepository: Provider = {
 const $noteDraftsRepository: Provider = {
 	provide: DI.noteDraftsRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiNoteDraft).extend(miRepository as MiRepository<MiNoteDraft>),
+	inject: [DI.db],
+};
+
+const $contactFormsRepository: Provider = {
+	provide: DI.contactFormsRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiContactForm).extend(miRepository as MiRepository<MiContactForm>),
 	inject: [DI.db],
 };
 
@@ -610,6 +617,7 @@ const $reversiGamesRepository: Provider = {
 		$noteThreadMutingsRepository,
 		$noteReactionsRepository,
 		$noteDraftsRepository,
+		$contactFormsRepository,
 		$pollsRepository,
 		$pollVotesRepository,
 		$userProfilesRepository,
@@ -695,6 +703,7 @@ const $reversiGamesRepository: Provider = {
 		$noteThreadMutingsRepository,
 		$noteReactionsRepository,
 		$noteDraftsRepository,
+		$contactFormsRepository,
 		$pollsRepository,
 		$pollVotesRepository,
 		$userProfilesRepository,

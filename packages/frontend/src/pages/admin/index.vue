@@ -17,6 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkInfo v-if="thereArePendingEmojiRequests" warn>{{ i18n.ts._juice.thereArePendingEmojiRequestsWarning }} <MkA to="/admin/emoji-requests" class="_link">{{ i18n.ts.check }}</MkA></MkInfo>
 					<MkInfo v-if="thereArePendingSignupApplications" warn>{{ i18n.ts._juice.thereArePendingSignupApplicationsWarning }} <MkA to="/admin/juice-approvals" class="_link">{{ i18n.ts.check }}</MkA></MkInfo>
 					<MkInfo v-if="thereArePendingAvatarDecorationRequests" warn>{{ i18n.ts._juice.thereArePendingAvatarDecorationRequestsWarning }} <MkA to="/admin/avatar-decoration-requests" class="_link">{{ i18n.ts.check }}</MkA></MkInfo>
+					<MkInfo v-if="thereArePendingContactForms" warn>{{ i18n.ts._juice.thereArePendingContactFormsWarning }} <MkA to="/admin/contact-form" class="_link">{{ i18n.ts.check }}</MkA></MkInfo>
 					<MkInfo v-if="noMaintainerInformation" warn>{{ i18n.ts.noMaintainerInformationWarning }} <MkA to="/admin/settings" class="_link">{{ i18n.ts.configure }}</MkA></MkInfo>
 					<MkInfo v-if="noInquiryUrl" warn>{{ i18n.ts.noInquiryUrlWarning }} <MkA to="/admin/settings" class="_link">{{ i18n.ts.configure }}</MkA></MkInfo>
 					<MkInfo v-if="noBotProtection" warn>{{ i18n.ts.noBotProtectionWarning }} <MkA to="/admin/security" class="_link">{{ i18n.ts.configure }}</MkA></MkInfo>
@@ -79,6 +80,7 @@ const thereIsUnresolvedAbuseReport = ref(false);
 const thereArePendingEmojiRequests = ref(false);
 const thereArePendingSignupApplications = ref(false);
 const thereArePendingAvatarDecorationRequests = ref(false);
+const thereArePendingContactForms = ref(false);
 const currentPage = computed(() => router.currentRef.value.child);
 
 misskeyApi('admin/abuse-user-reports', {
@@ -109,6 +111,14 @@ misskeyApi('admin/avatar-decoration-requests/list', {
 	limit: 1,
 }).then(requests => {
 	if (requests.length > 0) thereArePendingAvatarDecorationRequests.value = true;
+});
+
+// JUICE
+misskeyApi('admin/contact-form/list', {
+	status: 'pending',
+	limit: 1,
+}).then(contactForms => {
+	if (contactForms.length > 0) thereArePendingContactForms.value = true;
 });
 
 const NARROW_THRESHOLD = 600;
@@ -286,6 +296,18 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		to: '/admin/avatar-decoration-requests',
 		active: currentPage.value?.route.name === 'avatar-decoration-requests',
 		badge: true,
+	}, {
+		icon: 'ti ti-mail',
+		text: i18n.ts._contactForm._adminList.list,
+		to: '/admin/contact-form',
+		active: currentPage.value?.route.name === 'contact-form',
+		badge: true,
+	}, {
+		icon: 'ti ti-forms',
+		text: i18n.ts._contactForm._category.categoryManagement,
+		to: '/admin/contact-form-categories',
+		active: currentPage.value?.route.name === 'contact-form-categories',
+		badge: true,
 	}],
 }, {
 	title: i18n.ts.info,
@@ -321,6 +343,11 @@ function onNewAvatarDecorationRequest() {
 	thereArePendingAvatarDecorationRequests.value = true;
 }
 
+function onNewContactForm() {
+	os.toast(i18n.ts._juice.newContactFormToast);
+	thereArePendingContactForms.value = true;
+}
+
 onMounted(() => {
 	if (el.value != null) {
 		ro.observe(el.value);
@@ -347,6 +374,7 @@ onActivated(() => {
 	adminConnection.on('newEmojiRequest', onNewEmojiRequest);
 	adminConnection.on('newSignupApplication', onNewSignupApplication);
 	adminConnection.on('newAvatarDecorationRequest', onNewAvatarDecorationRequest);
+	adminConnection.on('newContactForm', onNewContactForm);
 });
 
 onDeactivated(() => {
@@ -354,6 +382,7 @@ onDeactivated(() => {
 	adminConnection.off('newEmojiRequest', onNewEmojiRequest);
 	adminConnection.off('newSignupApplication', onNewSignupApplication);
 	adminConnection.off('newAvatarDecorationRequest', onNewAvatarDecorationRequest);
+	adminConnection.off('newContactForm', onNewContactForm);
 });
 
 onUnmounted(() => {

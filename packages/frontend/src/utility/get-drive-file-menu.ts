@@ -138,6 +138,7 @@ export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Miss
 	}, {
 		text: file.isAIGenerated ? i18n.ts.unmarkAsAIGenerated : i18n.ts.markAsAIGenerated,
 		icon: 'ti ti-sparkles',
+		badge: true,
 		action: () => toggleAIGenerated(file),
 	}, {
 		text: i18n.ts.describeFile,

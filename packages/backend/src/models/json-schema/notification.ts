@@ -386,6 +386,94 @@ export const packedNotificationSchema = {
 			},
 		},
 	}, {
+		// JUICE: 絵文字申請が承認されたとき
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['emojiRequestApproved'],
+			},
+			requestId: {
+				type: 'string',
+				optional: false, nullable: false,
+				format: 'id',
+			},
+			name: {
+				type: 'string',
+				optional: false, nullable: false,
+			},
+		},
+	}, {
+		// JUICE: 絵文字申請が却下されたとき
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['emojiRequestRejected'],
+			},
+			requestId: {
+				type: 'string',
+				optional: false, nullable: false,
+				format: 'id',
+			},
+			name: {
+				type: 'string',
+				optional: false, nullable: false,
+			},
+			reason: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+		},
+	}, {
+		// JUICE: アバターデコレーション申請が承認されたとき
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['avatarDecorationRequestApproved'],
+			},
+			requestId: {
+				type: 'string',
+				optional: false, nullable: false,
+				format: 'id',
+			},
+			name: {
+				type: 'string',
+				optional: false, nullable: false,
+			},
+		},
+	}, {
+		// JUICE: アバターデコレーション申請が却下されたとき
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['avatarDecorationRequestRejected'],
+			},
+			requestId: {
+				type: 'string',
+				optional: false, nullable: false,
+				format: 'id',
+			},
+			name: {
+				type: 'string',
+				optional: false, nullable: false,
+			},
+			reason: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+		},
+	}, {
 		type: 'object',
 		properties: {
 			...baseSchema.properties,

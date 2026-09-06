@@ -4,7 +4,7 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import type { InstancesRepository, NoteReactionsRepository } from '@/models/_.js';
+import type { AvatarDecorationsRepository, DriveFilesRepository, InstancesRepository, NoteReactionsRepository, RolesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import NotesChart from '@/core/chart/charts/notes.js';
@@ -55,6 +55,20 @@ export const meta = {
 				type: 'number',
 				optional: false, nullable: false,
 			},
+			// JUICE: コントロールパネルのStats(admin/overview.stats.vue)にアバターデコレーション・
+			// ロール・ファイルの登録件数も表示できるように追加
+			avatarDecorationsCount: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
+			rolesCount: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
+			filesCount: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
 		},
 	},
 } as const;
@@ -74,6 +88,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.noteReactionsRepository)
 		private noteReactionsRepository: NoteReactionsRepository,
 
+		@Inject(DI.avatarDecorationsRepository)
+		private avatarDecorationsRepository: AvatarDecorationsRepository,
+
+		@Inject(DI.rolesRepository)
+		private rolesRepository: RolesRepository,
+
+		@Inject(DI.driveFilesRepository)
+		private driveFilesRepository: DriveFilesRepository,
+
 		private notesChart: NotesChart,
 		private usersChart: UsersChart,
 	) {
@@ -90,10 +113,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				reactionsCount,
 				//originalReactionsCount,
 				instances,
+				avatarDecorationsCount,
+				rolesCount,
+				filesCount,
 			] = await Promise.all([
 				this.noteReactionsRepository.count({ cache: 3600000 }), // 1 hour
 				//this.noteReactionsRepository.count({ where: { userHost: IsNull() }, cache: 3600000 }),
 				this.instancesRepository.count({ cache: 3600000 }),
+				// JUICE
+				this.avatarDecorationsRepository.count({ cache: 3600000 }),
+				this.rolesRepository.count({ cache: 3600000 }),
+				this.driveFilesRepository.count({ cache: 3600000 }),
 			]);
 
 			return {
@@ -106,6 +136,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				instances,
 				driveUsageLocal: 0,
 				driveUsageRemote: 0,
+				avatarDecorationsCount,
+				rolesCount,
+				filesCount,
 			};
 		});
 	}

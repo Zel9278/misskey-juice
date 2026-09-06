@@ -98,7 +98,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<button v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.fromDrive + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromDrive"><i class="ti ti-cloud-download"></i></button>
 			<button v-tooltip="i18n.ts.poll" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: poll }]" @click="togglePoll"><i class="ti ti-chart-arrows"></i></button>
 			<button v-tooltip="i18n.ts.useCw" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]" @click="useCw = !useCw"><i class="ti ti-eye-off"></i></button>
-			<button v-tooltip="i18n.ts.aiGenerated" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: isAIGenerated }]" @click="isAIGenerated = !isAIGenerated"><i class="ti ti-sparkles"></i></button>
+			<button v-tooltip="i18n.ts.aiGenerated" class="_button" :class="[$style.footerButton, $style.footerButtonJuice, { [$style.footerButtonActive]: isAIGenerated }]" @click="isAIGenerated = !isAIGenerated"><i class="ti ti-sparkles"></i></button>
 			<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
 			<button v-tooltip="i18n.ts.mention" class="_button" :class="$style.footerButton" @click="insertMention"><i class="ti ti-at"></i></button>
 			<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
@@ -120,7 +120,7 @@ import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
 import insertTextAtCursor from 'insert-text-at-cursor';
 import { toASCII } from 'punycode.js';
-import { host, url } from '@@/js/config.js';
+import { host, url, langs } from '@@/js/config.js';
 import MkUploaderItems from './MkUploaderItems.vue';
 import type { ShallowRef } from 'vue';
 import type { PostFormProps } from '@/types/post-form.js';
@@ -213,6 +213,8 @@ if (props.initialVisibleUsers) {
 	props.initialVisibleUsers.forEach(u => pushVisibleUser(u));
 }
 const reactionAcceptance = ref(store.s.reactionAcceptance);
+// JUICE: nullなら投稿時にサーバー側でユーザーの表示言語設定が既定値として使われる
+const lang = ref<string | null>(null);
 const scheduledAt = ref<number | null>(null);
 const draghover = ref(false);
 const quoteId = ref<string | null>(null);
@@ -614,6 +616,20 @@ async function toggleReactionAcceptance() {
 	reactionAcceptance.value = select.result;
 }
 
+// JUICE
+async function toggleLang() {
+	const select = await os.select({
+		title: i18n.ts._postLanguage.title,
+		items: [
+			{ value: null, label: i18n.ts._postLanguage.auto },
+			...langs.map(([k, v]) => ({ value: k as string | null, label: v })),
+		],
+		default: lang.value,
+	});
+	if (select.canceled) return;
+	lang.value = select.result;
+}
+
 //#region その他の設定メニューpopup
 function showOtherSettings() {
 	let reactionAcceptanceIcon = 'ti ti-icons';
@@ -655,6 +671,15 @@ function showOtherSettings() {
 		caption: reactionAcceptanceCaption,
 		action: () => {
 			toggleReactionAcceptance();
+		},
+	}, {
+		// JUICE
+		icon: 'ti ti-language',
+		text: i18n.ts._postLanguage.title,
+		caption: lang.value ? (langs.find(([k]) => k === lang.value)?.[1] ?? lang.value) : i18n.ts._postLanguage.auto,
+		badge: true,
+		action: () => {
+			toggleLang();
 		},
 	}, { type: 'divider' }, {
 		type: 'button',
@@ -1042,6 +1067,7 @@ async function post(ev?: PointerEvent) {
 		visibility: visibility.value,
 		visibleUserIds: visibility.value === 'specified' ? visibleUsers.value.map(u => u.id) : undefined,
 		reactionAcceptance: reactionAcceptance.value,
+		lang: lang.value, // JUICE
 	};
 
 	if (withHashtags.value && hashtags.value && hashtags.value.trim() !== '') {
@@ -1876,6 +1902,24 @@ html[data-color-scheme=light] .preview {
 
 	&:hover {
 		background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.05));
+	}
+
+	// JUICE: 本家に無いJUICE独自ボタンであることを示す小さいドット。アイコンのみでラベル文字が
+	// 無いため、_juiceの文字バッジではなくMkPageHeader.tabs.vueのアイコン専用タブと同じ
+	// 小さいドット方式を採用する(色はJUICEブランドカラーで固定)
+	&.footerButtonJuice {
+		position: relative;
+
+		&::after {
+			content: '';
+			position: absolute;
+			top: 2px;
+			right: 2px;
+			width: 6px;
+			height: 6px;
+			border-radius: 100%;
+			background: #f2841f;
+		}
 	}
 
 	&.footerButtonActive {

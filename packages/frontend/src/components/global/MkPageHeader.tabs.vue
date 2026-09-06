@@ -279,6 +279,14 @@ onUnmounted(() => {
 	&.animate {
 		transition: width .15s linear, padding-left .15s linear;
 	}
+
+	// JUICE: ._juice本来のvertical-align: middle + transform: translateY(-1px)は、
+	// タブバーの固定高さ(--height)とoverflow-y: hiddenの組み合わせだと上端が欠けて見えるため、
+	// このタブ内でのみ打ち消してテキストの行に自然に収まるようにする
+	:global(._juice) {
+		vertical-align: baseline;
+		transform: none;
+	}
 }
 
 .tabHighlight {

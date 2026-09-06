@@ -226,6 +226,11 @@ export const ROUTE_DEF = [{
 	path: '/contact',
 	component: page(() => import('@/pages/contact.vue')),
 }, {
+	// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+	path: '/contact-form',
+	name: 'contact-form-page',
+	component: page(() => import('@/pages/contact-form.vue')),
+}, {
 	path: '/about-misskey',
 	component: page(() => import('@/pages/about-misskey.vue')),
 }, {
@@ -377,6 +382,21 @@ export const ROUTE_DEF = [{
 	name: 'avatarDecorations',
 	component: page(() => import('@/pages/avatar-decorations.vue')),
 }, {
+	// JUICE: /admin配下(iAmModeratorガード)の同名ページと同一コンポーネントを、
+	// モデレーターでなくてもロールポリシー(canApproveEmojiRequests等)経由で到達できるよう
+	// トップレベルにも登録する(custom-emojis-managerと同じ方式)
+	path: '/emoji-requests-manager',
+	component: page(() => import('@/pages/admin/emoji-requests.vue')),
+}, {
+	path: '/avatar-decoration-requests-manager',
+	component: page(() => import('@/pages/admin/avatar-decoration-requests.vue')),
+}, {
+	path: '/signup-approvals-manager',
+	component: page(() => import('@/pages/admin/juice-approvals.vue')),
+}, {
+	path: '/contact-form-manager',
+	component: page(() => import('@/pages/admin/contact-form.vue')),
+}, {
 	path: '/registry/keys/:domain/:path(*)?',
 	component: page(() => import('@/pages/registry.keys.vue')),
 }, {
@@ -526,6 +546,15 @@ export const ROUTE_DEF = [{
 		path: '/avatar-decoration-requests',
 		name: 'avatar-decoration-requests',
 		component: page(() => import('@/pages/admin/avatar-decoration-requests.vue')),
+	}, {
+		// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+		path: '/contact-form',
+		name: 'contact-form',
+		component: page(() => import('@/pages/admin/contact-form.vue')),
+	}, {
+		path: '/contact-form-categories',
+		name: 'contact-form-categories',
+		component: page(() => import('@/pages/admin/contact-form-categories.vue')),
 	}, {
 		path: '/invites',
 		name: 'invites',

@@ -27,8 +27,33 @@ export const paramDef = {
 		emojiRequestEnabled: { type: 'boolean' },
 		avatarDecorationRequestEnabled: { type: 'boolean' },
 		rankingAggregationPeriodHours: { type: 'integer', minimum: 1 },
+		rankingDisplayCount: { type: 'integer', minimum: 1, maximum: 100 },
 		relayTimelineEnabled: { type: 'boolean' },
 		latexEnabled: { type: 'boolean' },
+		reactionPiggybackOnRemoteEnabled: { type: 'boolean' },
+		contactFormEnabled: { type: 'boolean' },
+		contactFormLimit: { type: 'integer', minimum: 1, maximum: 100 },
+		contactFormRequireAuth: { type: 'boolean' },
+		contactFormContentMaxLength: { type: 'integer', minimum: 20, maximum: 10000 },
+		contactFormCategories: {
+			type: 'array',
+			items: {
+				type: 'object',
+				properties: {
+					key: { type: 'string', minLength: 1, maxLength: 64 },
+					text: { type: 'string', minLength: 1, maxLength: 128 },
+					enabled: { type: 'boolean' },
+					order: { type: 'integer' },
+					isDefault: { type: 'boolean' },
+				},
+				required: ['key', 'text', 'enabled', 'order', 'isDefault'],
+			},
+		},
+		customSplashText: {
+			type: 'array',
+			maxItems: 20,
+			items: { type: 'string', maxLength: 256 },
+		},
 	},
 } as const;
 
@@ -52,8 +77,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.emojiRequestEnabled !== undefined) set.emojiRequestEnabled = ps.emojiRequestEnabled;
 			if (ps.avatarDecorationRequestEnabled !== undefined) set.avatarDecorationRequestEnabled = ps.avatarDecorationRequestEnabled;
 			if (ps.rankingAggregationPeriodHours !== undefined) set.rankingAggregationPeriodHours = ps.rankingAggregationPeriodHours;
+			if (ps.rankingDisplayCount !== undefined) set.rankingDisplayCount = ps.rankingDisplayCount;
 			if (ps.relayTimelineEnabled !== undefined) set.relayTimelineEnabled = ps.relayTimelineEnabled;
 			if (ps.latexEnabled !== undefined) set.latexEnabled = ps.latexEnabled;
+			if (ps.reactionPiggybackOnRemoteEnabled !== undefined) set.reactionPiggybackOnRemoteEnabled = ps.reactionPiggybackOnRemoteEnabled;
+			if (ps.contactFormEnabled !== undefined) set.contactFormEnabled = ps.contactFormEnabled;
+			if (ps.contactFormLimit !== undefined) set.contactFormLimit = ps.contactFormLimit;
+			if (ps.contactFormRequireAuth !== undefined) set.contactFormRequireAuth = ps.contactFormRequireAuth;
+			if (ps.contactFormContentMaxLength !== undefined) set.contactFormContentMaxLength = ps.contactFormContentMaxLength;
+			if (ps.contactFormCategories !== undefined) set.contactFormCategories = ps.contactFormCategories;
+			if (ps.customSplashText !== undefined) set.customSplashText = ps.customSplashText;
 
 			const after = await this.juiceSettingsService.update(set);
 

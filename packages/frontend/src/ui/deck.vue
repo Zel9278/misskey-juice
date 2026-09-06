@@ -114,6 +114,7 @@ import XMentionsColumn from '@/ui/deck/mentions-column.vue';
 import XDirectColumn from '@/ui/deck/direct-column.vue';
 import XRoleTimelineColumn from '@/ui/deck/role-timeline-column.vue';
 import XChatColumn from '@/ui/deck/chat-column.vue';
+import XFavoritesColumn from '@/ui/deck/favorites-column.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import { mainRouter } from '@/router.js';
 import { columns, layout, columnTypes, switchProfileMenu, addColumn as addColumnToStore, deleteProfile as deleteProfile_ } from '@/deck.js';
@@ -137,6 +138,7 @@ const columnComponents = {
 	direct: XDirectColumn,
 	roleTimeline: XRoleTimelineColumn,
 	chat: XChatColumn,
+	favorites: XFavoritesColumn,
 };
 
 mainRouter.navHook = (path, flag): boolean => {
@@ -182,6 +184,8 @@ async function addColumn(ev: PointerEvent) {
 		title: i18n.ts._deck.addColumn,
 		items: columnTypes.filter(column => column !== 'chat' || $i == null || $i.policies.chatAvailability !== 'unavailable').map(column => ({
 			value: column, label: i18n.ts._deck._columns[column],
+			// JUICE: 本家に無い独自のカラム種別であることを示すバッジを表示する
+			badge: column === 'favorites',
 		})),
 	});
 	if (canceled || column == null) return;

@@ -445,6 +445,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkSwitch>
 			</template>
 		</XFolder>
+
+		<XFolder v-if="matchQuery([i18n.ts._role._options.canProcessContactForms, 'canProcessContactForms'])" v-model:policyMeta="policyMetaModel.canProcessContactForms" :isBaseRole="isBaseRole" :readonly="readonly">
+			<template #label>{{ i18n.ts._role._options.canProcessContactForms }}<span class="_juice">JUICE</span></template>
+			<template #valueText>{{ valuesModel.canProcessContactForms ? i18n.ts.yes : i18n.ts.no }}</template>
+			<template #default="{ disabled }">
+				<MkSwitch v-model="valuesModel.canProcessContactForms" :disabled="disabled">
+					<template #label>{{ i18n.ts.enable }}</template>
+				</MkSwitch>
+			</template>
+		</XFolder>
 	</div>
 </template>
 

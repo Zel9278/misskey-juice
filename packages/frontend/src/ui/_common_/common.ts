@@ -48,6 +48,49 @@ function toolsMenuItems(): MenuItem[] {
 		});
 	}
 
+	// JUICE: モデレーター/管理者、またはロールポリシーで個別に承認権限を持つユーザー向けに、
+	// コントロールパネル(/admin、iAmModeratorのみでガード)を経由しなくても各承認画面へ
+	// 到達できるようにする(custom-emojis-manager/avatar-decorationsと同じ方式)
+	if ($i && ($i.isModerator || $i.isAdmin || $i.policies.canApproveEmojiRequests)) {
+		items.push({
+			type: 'link',
+			to: '/emoji-requests-manager',
+			text: i18n.ts._emojiRequestApprovals.title,
+			icon: 'ti ti-mood-plus',
+			badge: true,
+		});
+	}
+
+	if ($i && ($i.isModerator || $i.isAdmin || $i.policies.canApproveAvatarDecorationRequests)) {
+		items.push({
+			type: 'link',
+			to: '/avatar-decoration-requests-manager',
+			text: i18n.ts._avatarDecorationRequestApprovals.title,
+			icon: 'ti ti-sparkles',
+			badge: true,
+		});
+	}
+
+	if ($i && ($i.isModerator || $i.isAdmin || $i.policies.canApproveSignups)) {
+		items.push({
+			type: 'link',
+			to: '/signup-approvals-manager',
+			text: i18n.ts._juiceApprovals.title,
+			icon: 'ti ti-user-question',
+			badge: true,
+		});
+	}
+
+	if ($i && ($i.isModerator || $i.isAdmin || $i.policies.canProcessContactForms)) {
+		items.push({
+			type: 'link',
+			to: '/contact-form-manager',
+			text: i18n.ts._contactForm._adminList.list,
+			icon: 'ti ti-mail',
+			badge: true,
+		});
+	}
+
 	return items;
 }
 
@@ -60,10 +103,12 @@ export async function openInstanceMenu(ev: PointerEvent) {
 	// 設定取得に失敗した場合はメニュー全体が開かなくなるのを避けるため、フェイルオープン(従来通り表示する)にする
 	let emojiRequestEnabled = true;
 	let avatarDecorationRequestEnabled = true;
+	let contactFormEnabled = true;
 	try {
 		const juicePublicSettings = await juicePublicSettingsCache.fetch();
 		emojiRequestEnabled = juicePublicSettings.emojiRequestEnabled;
 		avatarDecorationRequestEnabled = juicePublicSettings.avatarDecorationRequestEnabled;
+		contactFormEnabled = juicePublicSettings.contactFormEnabled;
 	} catch (err) {
 		console.error('Failed to fetch juice public settings', err);
 	}
@@ -144,6 +189,17 @@ export async function openInstanceMenu(ev: PointerEvent) {
 		icon: 'ti ti-help-circle',
 		to: '/contact',
 	});
+
+	// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+	if (contactFormEnabled) {
+		menuItems.push({
+			type: 'link',
+			text: i18n.ts._contactForm._userForm.contactForm,
+			icon: 'ti ti-mail',
+			to: '/contact-form',
+			badge: true,
+		});
+	}
 
 	if (instance.impressumUrl) {
 		menuItems.push({

@@ -12,6 +12,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkUserName :user="note.user"/>
 	</MkA>
 	<div v-if="note.user.isBot" :class="$style.isBot">bot</div>
+	<!-- JUICE: 投稿1件ごとに出る要素のため、他のJUICEバッジ(設定画面・メニュー等、1画面に数回しか出ない箇所)とは異なり
+	     意図的にJUICEバッジを付けていない(タイムライン上で常時大量に表示されると視認性を損なうため) -->
 	<div v-if="isAIGenerated" v-tooltip="i18n.ts.aiGenerated" :class="$style.aiGenerated" :aria-label="i18n.ts.aiGenerated" role="img"><i class="ti ti-sparkles"></i></div>
 	<div :class="$style.username"><MkAcct :user="note.user"/></div>
 	<div v-if="note.user.badgeRoles" :class="$style.badgeRoles">

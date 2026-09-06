@@ -224,6 +224,32 @@ async function composeNotification(data: PushNotificationDataMap[keyof PushNotif
 						data,
 					}];
 
+				case 'emojiRequestApproved':
+					return [i18n.tsx._notification.emojiRequestApproved({ name: data.body.name }), {
+						badge: iconUrl('circle-check'),
+						data,
+					}];
+
+				case 'emojiRequestRejected':
+					// JUICE: 専用バッジ画像が無いため、bellを流用(タイトル文言で却下であることは伝わる)
+					return [i18n.tsx._notification.emojiRequestRejected({ name: data.body.name }), {
+						badge: iconUrl('bell'),
+						data,
+					}];
+
+				case 'avatarDecorationRequestApproved':
+					return [i18n.tsx._notification.avatarDecorationRequestApproved({ name: data.body.name }), {
+						badge: iconUrl('circle-check'),
+						data,
+					}];
+
+				case 'avatarDecorationRequestRejected':
+					// JUICE: 専用バッジ画像が無いため、bellを流用(タイトル文言で却下であることは伝わる)
+					return [i18n.tsx._notification.avatarDecorationRequestRejected({ name: data.body.name }), {
+						badge: iconUrl('bell'),
+						data,
+					}];
+
 				case 'exportCompleted': {
 					const entityName = {
 						antenna: i18n.ts.antennas,

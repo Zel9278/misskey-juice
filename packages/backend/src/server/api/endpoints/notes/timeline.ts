@@ -18,6 +18,7 @@ import { MiLocalUser } from '@/models/User.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
 import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
+import { isLanguageFiltered } from '@/misc/is-language-filtered.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -50,6 +51,8 @@ export const paramDef = {
 		includeLocalRenotes: { type: 'boolean', default: true },
 		withFiles: { type: 'boolean', default: false },
 		withRenotes: { type: 'boolean', default: true },
+		// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
+		localOnly: { type: 'boolean', default: false },
 	},
 	required: [],
 } as const;
@@ -87,6 +90,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					includeLocalRenotes: ps.includeLocalRenotes,
 					withFiles: ps.withFiles,
 					withRenotes: ps.withRenotes,
+					localOnly: ps.localOnly,
 				}, me);
 
 				process.nextTick(() => {
@@ -98,9 +102,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const [
 				followings,
+				profile,
 			] = await Promise.all([
 				this.cacheService.userFollowingsCache.fetch(me.id),
+				this.cacheService.userProfileCache.fetch(me.id),
 			]);
+			// JUICE
+			const filteredLanguages = new Set(profile.filteredLanguages);
 
 			const timeline = this.fanoutTimelineEndpointService.timeline({
 				untilId,
@@ -117,6 +125,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						if (!Object.hasOwn(followings, note.reply.userId) && note.reply.userId !== me.id) return false;
 					}
 
+					// JUICE: 表示言語の絞り込み
+					if (isLanguageFiltered(note, filteredLanguages)) return false;
+
+					// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
+					if (ps.localOnly && note.userHost != null) return false;
+
 					return true;
 				},
 				dbFallback: async (untilId, sinceId, limit) => await this.getFromDb({
@@ -128,6 +142,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					includeLocalRenotes: ps.includeLocalRenotes,
 					withFiles: ps.withFiles,
 					withRenotes: ps.withRenotes,
+					localOnly: ps.localOnly,
 				}, me),
 			});
 
@@ -139,7 +154,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		});
 	}
 
-	private async getFromDb(ps: { untilId: string | null; sinceId: string | null; limit: number; includeMyRenotes: boolean; includeRenotedMyNotes: boolean; includeLocalRenotes: boolean; withFiles: boolean; withRenotes: boolean; }, me: MiLocalUser) {
+	private async getFromDb(ps: { untilId: string | null; sinceId: string | null; limit: number; includeMyRenotes: boolean; includeRenotedMyNotes: boolean; includeLocalRenotes: boolean; withFiles: boolean; withRenotes: boolean; localOnly: boolean; }, me: MiLocalUser) {
 		const followees = await this.userFollowingService.getFollowees(me.id);
 
 		const mutingChannelIds = await this.channelMutingService
@@ -216,6 +231,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		this.queryService.generateVisibilityQuery(query, me);
 		this.queryService.generateBaseNoteFilteringQuery(query, me);
 		this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+		// JUICE: 表示言語の絞り込み
+		this.queryService.generateLanguageFilterQuery(query, me, true);
 
 		if (ps.includeMyRenotes === false) {
 			query.andWhere(new Brackets(qb => {
@@ -249,6 +266,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		if (ps.withFiles) {
 			query.andWhere('note.fileIds != \'{}\'');
+		}
+
+		// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
+		if (ps.localOnly) {
+			query.andWhere('note.userHost IS NULL');
 		}
 
 		if (ps.withRenotes === false) {

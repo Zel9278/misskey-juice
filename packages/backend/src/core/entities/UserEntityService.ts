@@ -634,6 +634,7 @@ export class UserEntityService implements OnModuleInit {
 				mutedWords: profile!.mutedWords,
 				hardMutedWords: profile!.hardMutedWords,
 				mutedInstances: profile!.mutedInstances,
+				filteredLanguages: profile!.filteredLanguages, // JUICE
 				mutingNotificationTypes: [], // 後方互換性のため
 				notificationRecieveConfig: profile!.notificationRecieveConfig,
 				emailNotificationTypes: profile!.emailNotificationTypes,

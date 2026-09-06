@@ -14,6 +14,9 @@ import {
 } from './autogen/models.js';
 import {
 	AnnouncementCreated,
+	AnnouncementPollVoted,
+	AnnouncementReacted,
+	AnnouncementUnreacted,
 	EmojiAdded, EmojiDeleted,
 	EmojiUpdated,
 	PageEvent,
@@ -71,6 +74,7 @@ export type Channels = {
 		params: {
 			withRenotes?: boolean;
 			withFiles?: boolean;
+			localOnly?: boolean;
 		};
 		events: {
 			note: (payload: Note) => void;
@@ -234,6 +238,12 @@ export type Channels = {
 				category: string | null;
 				requester: UserLite;
 			};
+			// JUICE: お問い合わせが送信されたとき(PIIを含まない要約のみ)
+			newContactForm: {
+				id: string;
+				subject: string;
+				category: string;
+			};
 		};
 		receives: null;
 	};
@@ -364,4 +374,8 @@ export type BroadcastEvents = {
 	emojiUpdated: (payload: EmojiUpdated) => void;
 	emojiDeleted: (payload: EmojiDeleted) => void;
 	announcementCreated: (payload: AnnouncementCreated) => void;
+	// JUICE
+	announcementReacted: (payload: AnnouncementReacted) => void;
+	announcementUnreacted: (payload: AnnouncementUnreacted) => void;
+	announcementPollVoted: (payload: AnnouncementPollVoted) => void;
 };

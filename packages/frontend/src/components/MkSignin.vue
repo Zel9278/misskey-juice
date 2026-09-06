@@ -307,11 +307,15 @@ function onSigninApiError(err?: any): void {
 			break;
 		}
 		case '9f2f084b-af33-4f06-93cf-8a7fe04c6786': {
-			// JUICE: 承認待ちアカウント
-			os.alert({
+			// JUICE: 承認待ちアカウント。審査状況確認ページへの導線も添える
+			os.confirm({
 				type: 'error',
 				title: i18n.ts.accountNotApproved,
 				text: i18n.ts.accountNotApprovedDescription,
+				okText: i18n.ts._signupCheck.title,
+				cancelText: i18n.ts.gotIt,
+			}).then(({ canceled }) => {
+				if (!canceled) os.pageWindow('/signup-check');
 			});
 			break;
 		}

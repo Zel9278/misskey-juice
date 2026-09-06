@@ -241,6 +241,56 @@ export type paths = {
          */
         post: operations['admin___captcha___save'];
     };
+    '/admin/contact-form/categories': {
+        /**
+         * admin/contact-form/categories
+         * @description No description provided.
+         *
+         *     **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+         *     **Credential required**: *Yes* / **Permission**: *read:admin:contact-form*
+         */
+        post: operations['admin___contact-form___categories'];
+    };
+    '/admin/contact-form/delete': {
+        /**
+         * admin/contact-form/delete
+         * @description No description provided.
+         *
+         *     **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+         *     **Credential required**: *Yes* / **Permission**: *write:admin:contact-form*
+         */
+        post: operations['admin___contact-form___delete'];
+    };
+    '/admin/contact-form/list': {
+        /**
+         * admin/contact-form/list
+         * @description No description provided.
+         *
+         *     **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+         *     **Credential required**: *Yes* / **Permission**: *read:admin:contact-form*
+         */
+        post: operations['admin___contact-form___list'];
+    };
+    '/admin/contact-form/show': {
+        /**
+         * admin/contact-form/show
+         * @description No description provided.
+         *
+         *     **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+         *     **Credential required**: *Yes* / **Permission**: *read:admin:contact-form*
+         */
+        post: operations['admin___contact-form___show'];
+    };
+    '/admin/contact-form/update': {
+        /**
+         * admin/contact-form/update
+         * @description No description provided.
+         *
+         *     **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+         *     **Credential required**: *Yes* / **Permission**: *write:admin:contact-form*
+         */
+        post: operations['admin___contact-form___update'];
+    };
     '/admin/delete-account': {
         /**
          * admin/delete-account
@@ -575,6 +625,15 @@ export type paths = {
          */
         post: operations['admin___juice___settings'];
     };
+    '/admin/juice/signup-approval-history': {
+        /**
+         * admin/juice/signup-approval-history
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *read:admin:juice-signup-approval-history*
+         */
+        post: operations['admin___juice___signup-approval-history'];
+    };
     '/admin/juice/update-settings': {
         /**
          * admin/juice/update-settings
@@ -724,7 +783,7 @@ export type paths = {
          * admin/queue/stats
          * @description No description provided.
          *
-         *     **Credential required**: *Yes* / **Permission**: *read:admin:emoji*
+         *     **Credential required**: *Yes* / **Permission**: *read:admin:queue*
          */
         post: operations['admin___queue___stats'];
     };
@@ -1238,6 +1297,15 @@ export type paths = {
          *     **Credential required**: *Yes* / **Permission**: *write:avatar-decoration-requests*
          */
         post: operations['avatar-decoration-requests___create'];
+    };
+    '/avatar-decoration-requests/create-many': {
+        /**
+         * avatar-decoration-requests/create-many
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:avatar-decoration-requests*
+         */
+        post: operations['avatar-decoration-requests___create-many'];
     };
     '/avatar-decoration-requests/list': {
         /**
@@ -1869,6 +1937,15 @@ export type paths = {
          */
         post: operations['clips___update'];
     };
+    '/contact-form/submit': {
+        /**
+         * contact-form/submit
+         * @description No description provided.
+         *
+         *     **Credential required**: *No*
+         */
+        post: operations['contact-form___submit'];
+    };
     '/drive': {
         /**
          * drive
@@ -2075,6 +2152,15 @@ export type paths = {
          *     **Credential required**: *Yes* / **Permission**: *write:emoji-requests*
          */
         post: operations['emoji-requests___create'];
+    };
+    '/emoji-requests/create-many': {
+        /**
+         * emoji-requests/create-many
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:emoji-requests*
+         */
+        post: operations['emoji-requests___create-many'];
     };
     '/emoji-requests/list': {
         /**
@@ -3000,10 +3086,9 @@ export type paths = {
     '/i/revoke-token': {
         /**
          * i/revoke-token
-         * @description No description provided.
+         * @description Revoke an access token of the authenticated user. Requires credential. When called with an access token (third-party app), only the token currently in use can be revoked.
          *
-         *     **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
-         *     **Credential required**: *Yes*
+         *     **Credential required**: *No*
          */
         post: operations['i___revoke-token'];
     };
@@ -4431,6 +4516,7 @@ export type components = {
             mutedWords: string[][];
             hardMutedWords: string[][];
             mutedInstances: string[];
+            filteredLanguages: string[];
             notificationRecieveConfig: {
                 note?: {
                     /** @enum {string} */
@@ -4603,6 +4689,42 @@ export type components = {
                     /** Format: misskey:id */
                     userListId: string;
                 };
+                emojiRequestApproved?: {
+                    /** @enum {string} */
+                    type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
+                } | {
+                    /** @enum {string} */
+                    type: 'list';
+                    /** Format: misskey:id */
+                    userListId: string;
+                };
+                emojiRequestRejected?: {
+                    /** @enum {string} */
+                    type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
+                } | {
+                    /** @enum {string} */
+                    type: 'list';
+                    /** Format: misskey:id */
+                    userListId: string;
+                };
+                avatarDecorationRequestApproved?: {
+                    /** @enum {string} */
+                    type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
+                } | {
+                    /** @enum {string} */
+                    type: 'list';
+                    /** Format: misskey:id */
+                    userListId: string;
+                };
+                avatarDecorationRequestRejected?: {
+                    /** @enum {string} */
+                    type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
+                } | {
+                    /** @enum {string} */
+                    type: 'list';
+                    /** Format: misskey:id */
+                    userListId: string;
+                };
                 createToken?: {
                     /** @enum {string} */
                     type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
@@ -4753,6 +4875,7 @@ export type components = {
             deletedAt?: string | null;
             text: string | null;
             cw?: string | null;
+            lang?: string | null;
             /** Format: id */
             userId: string;
             user: components['schemas']['UserLite'];
@@ -4875,6 +4998,30 @@ export type components = {
             reactionAcceptance: 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote' | null;
             scheduledAt: number | null;
             isActuallyScheduled: boolean;
+        };
+        ContactForm: {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string | null;
+            subject: string;
+            content: string;
+            name: string | null;
+            email: string | null;
+            misskeyUsername: string | null;
+            /** @enum {string} */
+            replyMethod: 'email' | 'misskey';
+            category: string;
+            /** @enum {string} */
+            status: 'pending' | 'in_progress' | 'resolved' | 'closed';
+            adminNote: string | null;
+            ipAddress: string | null;
+            userAgent: string | null;
+            user: components['schemas']['UserLite'] | null;
+            assignedUser: components['schemas']['UserLite'] | null;
+            assignedNickname: string | null;
         };
         NoteReaction: {
             /** Format: id */
@@ -5079,6 +5226,48 @@ export type components = {
             createdAt: string;
             /** @enum {string} */
             type: 'loginFailed';
+        } | {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
+            type: 'emojiRequestApproved';
+            /** Format: id */
+            requestId: string;
+            name: string;
+        } | {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
+            type: 'emojiRequestRejected';
+            /** Format: id */
+            requestId: string;
+            name: string;
+            reason: string | null;
+        } | {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
+            type: 'avatarDecorationRequestApproved';
+            /** Format: id */
+            requestId: string;
+            name: string;
+        } | {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
+            type: 'avatarDecorationRequestRejected';
+            /** Format: id */
+            requestId: string;
+            name: string;
+            reason: string | null;
         } | {
             /** Format: id */
             id: string;
@@ -5552,6 +5741,7 @@ export type components = {
             createdAt: string;
             /** Format: id */
             fileId: string | null;
+            fileUrl: string | null;
             name: string;
             category: string | null;
             license: string | null;
@@ -5565,10 +5755,12 @@ export type components = {
             reviewedAt: string | null;
             /** Format: id */
             resultEmojiId: string | null;
+            /** Format: id */
+            targetEmojiId: string | null;
         };
         EmojiRequestEntryDetailedAdmin: components['schemas']['EmojiRequestEntry'] & {
             user: components['schemas']['UserLite'];
-            fileUrl: string | null;
+            reviewer: components['schemas']['UserLite'] | null;
         };
         AvatarDecorationRequestEntry: {
             /** Format: id */
@@ -5577,6 +5769,7 @@ export type components = {
             createdAt: string;
             /** Format: id */
             fileId: string | null;
+            fileUrl: string | null;
             name: string;
             description: string;
             category: string | null;
@@ -5587,10 +5780,12 @@ export type components = {
             reviewedAt: string | null;
             /** Format: id */
             resultAvatarDecorationId: string | null;
+            /** Format: id */
+            targetAvatarDecorationId: string | null;
         };
         AvatarDecorationRequestEntryDetailedAdmin: components['schemas']['AvatarDecorationRequestEntry'] & {
             user: components['schemas']['UserLite'];
-            fileUrl: string | null;
+            reviewer: components['schemas']['UserLite'] | null;
         };
         Flash: {
             /**
@@ -5758,6 +5953,7 @@ export type components = {
             canApproveEmojiRequests: boolean;
             canApproveAvatarDecorationRequests: boolean;
             canApproveSignups: boolean;
+            canProcessContactForms: boolean;
         };
         ReversiGameLite: {
             /** Format: id */
@@ -5980,7 +6176,7 @@ export type components = {
             latestSentAt: string | null;
             latestStatus: number | null;
             name: string;
-            on: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated' | 'avatarDecorationRequestCreated')[];
+            on: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated' | 'avatarDecorationRequestCreated' | 'receivedContactForm')[];
             url: string;
             secret: string;
         };
@@ -7402,6 +7598,10 @@ export interface operations {
                 'application/json': {
                     /** Format: misskey:id */
                     requestId: string;
+                    name?: string;
+                    description?: string;
+                    category?: string | null;
+                    editReason?: string;
                 };
             };
         };
@@ -8044,6 +8244,343 @@ export interface operations {
             };
         };
     };
+    'admin___contact-form___categories': {
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        key: string;
+                        text: string;
+                        enabled: boolean;
+                        order: number;
+                        isDefault: boolean;
+                    }[];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'admin___contact-form___delete': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    contactFormId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'admin___contact-form___list': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** @default 10 */
+                    limit?: number;
+                    /** Format: misskey:id */
+                    sinceId?: string;
+                    /** Format: misskey:id */
+                    untilId?: string;
+                    /** @enum {string|null} */
+                    status?: 'pending' | 'in_progress' | 'resolved' | 'closed' | null;
+                    category?: string | null;
+                    /** Format: misskey:id */
+                    assignedUserId?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['ContactForm'][];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'admin___contact-form___show': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    contactFormId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['ContactForm'];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'admin___contact-form___update': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    contactFormId: string;
+                    /** @enum {string|null} */
+                    status?: 'pending' | 'in_progress' | 'resolved' | 'closed' | null;
+                    adminNote?: string | null;
+                    /** Format: misskey:id */
+                    assignedUserId?: string | null;
+                    assignedNickname?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'admin___delete-account': {
         requestBody: {
             content: {
@@ -8572,6 +9109,13 @@ export interface operations {
                 'application/json': {
                     /** Format: misskey:id */
                     requestId: string;
+                    name?: string;
+                    category?: string | null;
+                    aliases?: string[];
+                    license?: string | null;
+                    isSensitive?: boolean;
+                    localOnly?: boolean;
+                    editReason?: string;
                 };
             };
         };
@@ -10362,6 +10906,7 @@ export interface operations {
                 'application/json': {
                     /** Format: misskey:id */
                     userId: string;
+                    reason: string;
                 };
             };
         };
@@ -10513,9 +11058,111 @@ export interface operations {
                         emojiRequestEnabled: boolean;
                         avatarDecorationRequestEnabled: boolean;
                         rankingAggregationPeriodHours: number;
+                        rankingDisplayCount: number;
                         relayTimelineEnabled: boolean;
                         latexEnabled: boolean;
+                        reactionPiggybackOnRemoteEnabled: boolean;
+                        contactFormEnabled: boolean;
+                        contactFormLimit: number;
+                        contactFormRequireAuth: boolean;
+                        contactFormContentMaxLength: number;
+                        contactFormCategories: {
+                            key: string;
+                            text: string;
+                            enabled: boolean;
+                            order: number;
+                            isDefault: boolean;
+                        }[];
+                        customSplashText: string[];
                     };
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'admin___juice___signup-approval-history': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /**
+                     * @default approved
+                     * @enum {string}
+                     */
+                    state?: 'approved' | 'declined';
+                    /** @default 10 */
+                    limit?: number;
+                    /** Format: misskey:id */
+                    sinceId?: string;
+                    /** Format: misskey:id */
+                    untilId?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /** Format: id */
+                        id: string;
+                        /** Format: date-time */
+                        createdAt: string;
+                        username: string | null;
+                        signupReason: string | null;
+                        /** @enum {string} */
+                        status: 'approved' | 'declined';
+                        reason: string | null;
+                        /** Format: date-time */
+                        reviewedAt: string | null;
+                        reviewer: components['schemas']['UserLite'] | null;
+                    }[];
                 };
             };
             /** @description Client error */
@@ -10576,8 +11223,22 @@ export interface operations {
                     emojiRequestEnabled?: boolean;
                     avatarDecorationRequestEnabled?: boolean;
                     rankingAggregationPeriodHours?: number;
+                    rankingDisplayCount?: number;
                     relayTimelineEnabled?: boolean;
                     latexEnabled?: boolean;
+                    reactionPiggybackOnRemoteEnabled?: boolean;
+                    contactFormEnabled?: boolean;
+                    contactFormLimit?: number;
+                    contactFormRequireAuth?: boolean;
+                    contactFormContentMaxLength?: number;
+                    contactFormCategories?: {
+                        key: string;
+                        text: string;
+                        enabled: boolean;
+                        order: number;
+                        isDefault: boolean;
+                    }[];
+                    customSplashText?: string[];
                 };
             };
         };
@@ -11097,7 +11758,7 @@ export interface operations {
                 'application/json': {
                     /** @enum {string} */
                     queue: 'system' | 'endedPollNotification' | 'postScheduledNote' | 'deliver' | 'inbox' | 'db' | 'relationship' | 'objectStorage' | 'userWebhookDeliver' | 'systemWebhookDeliver';
-                    state: ('active' | 'wait' | 'delayed' | 'completed' | 'failed' | 'paused')[];
+                    state: ('active' | 'wait' | 'delayed' | 'completed' | 'failed')[];
                     search?: string;
                 };
             };
@@ -13437,7 +14098,7 @@ export interface operations {
                 'application/json': {
                     isActive: boolean;
                     name: string;
-                    on: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated' | 'avatarDecorationRequestCreated')[];
+                    on: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated' | 'avatarDecorationRequestCreated' | 'receivedContactForm')[];
                     url: string;
                     /** @default  */
                     secret?: string;
@@ -13569,7 +14230,7 @@ export interface operations {
             content: {
                 'application/json': {
                     isActive?: boolean;
-                    on?: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated' | 'avatarDecorationRequestCreated')[];
+                    on?: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated' | 'avatarDecorationRequestCreated' | 'receivedContactForm')[];
                 };
             };
         };
@@ -13703,7 +14364,7 @@ export interface operations {
                     /** Format: misskey:id */
                     webhookId: string;
                     /** @enum {string} */
-                    type: 'abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated' | 'avatarDecorationRequestCreated';
+                    type: 'abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated' | 'avatarDecorationRequestCreated' | 'receivedContactForm';
                     override?: {
                         url?: string;
                         secret?: string;
@@ -13782,7 +14443,7 @@ export interface operations {
                     id: string;
                     isActive: boolean;
                     name: string;
-                    on: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated' | 'avatarDecorationRequestCreated')[];
+                    on: ('abuseReport' | 'abuseReportResolved' | 'userCreated' | 'inactiveModeratorsWarning' | 'inactiveModeratorsInvitationOnlyChanged' | 'emojiRequestCreated' | 'signupApplicationCreated' | 'avatarDecorationRequestCreated' | 'receivedContactForm')[];
                     url: string;
                     /** @default  */
                     secret?: string;
@@ -15957,6 +16618,8 @@ export interface operations {
                     category?: string | null;
                     /** @default false */
                     deleteFileAfterReview?: boolean;
+                    /** Format: misskey:id */
+                    targetAvatarDecorationId?: string | null;
                     'hcaptcha-response'?: string | null;
                     'g-recaptcha-response'?: string | null;
                     'm-captcha-response'?: string | null;
@@ -16031,6 +16694,96 @@ export interface operations {
             };
         };
     };
+    'avatar-decoration-requests___create-many': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    requests: {
+                        /** Format: misskey:id */
+                        fileId: string;
+                        name: string;
+                        /** @default  */
+                        description?: string;
+                        category?: string | null;
+                        /** @default false */
+                        deleteFileAfterReview?: boolean;
+                        /** Format: misskey:id */
+                        targetAvatarDecorationId?: string | null;
+                    }[];
+                    'hcaptcha-response'?: string | null;
+                    'g-recaptcha-response'?: string | null;
+                    'm-captcha-response'?: string | null;
+                    'turnstile-response'?: string | null;
+                    'testcaptcha-response'?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['AvatarDecorationRequestEntry'][];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'avatar-decoration-requests___list': {
         requestBody: {
             content: {
@@ -16041,6 +16794,8 @@ export interface operations {
                     sinceId?: string;
                     /** Format: misskey:id */
                     untilId?: string;
+                    /** @enum {string|null} */
+                    status?: 'pending' | 'approved' | 'rejected' | null;
                 };
             };
         };
@@ -21016,6 +21771,95 @@ export interface operations {
             };
         };
     };
+    'contact-form___submit': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    subject: string;
+                    content: string;
+                    /** @enum {string} */
+                    replyMethod: 'email' | 'misskey';
+                    email?: string | null;
+                    misskeyUsername?: string | null;
+                    name?: string | null;
+                    category?: string | null;
+                    'hcaptcha-response'?: string | null;
+                    'g-recaptcha-response'?: string | null;
+                    'm-captcha-response'?: string | null;
+                    'turnstile-response'?: string | null;
+                    'testcaptcha-response'?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /** Format: misskey:id */
+                        id: string;
+                    };
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     drive: {
         responses: {
             /** @description OK (with results) */
@@ -22518,6 +23362,7 @@ export interface operations {
             content: {
                 'application/json': {
                     name: string;
+                    host?: string | null;
                 };
             };
         };
@@ -22595,6 +23440,8 @@ export interface operations {
                     localOnly?: boolean;
                     /** @default false */
                     deleteFileAfterReview?: boolean;
+                    /** Format: misskey:id */
+                    targetEmojiId?: string | null;
                     'hcaptcha-response'?: string | null;
                     'g-recaptcha-response'?: string | null;
                     'm-captcha-response'?: string | null;
@@ -22669,6 +23516,101 @@ export interface operations {
             };
         };
     };
+    'emoji-requests___create-many': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    requests: {
+                        /** Format: misskey:id */
+                        fileId: string;
+                        name: string;
+                        category?: string | null;
+                        /** @default [] */
+                        aliases?: string[];
+                        license?: string | null;
+                        /** @default false */
+                        isSensitive?: boolean;
+                        /** @default false */
+                        localOnly?: boolean;
+                        /** @default false */
+                        deleteFileAfterReview?: boolean;
+                        /** Format: misskey:id */
+                        targetEmojiId?: string | null;
+                    }[];
+                    'hcaptcha-response'?: string | null;
+                    'g-recaptcha-response'?: string | null;
+                    'm-captcha-response'?: string | null;
+                    'turnstile-response'?: string | null;
+                    'testcaptcha-response'?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['EmojiRequestEntry'][];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'emoji-requests___list': {
         requestBody: {
             content: {
@@ -22679,6 +23621,8 @@ export interface operations {
                     sinceId?: string;
                     /** Format: misskey:id */
                     untilId?: string;
+                    /** @enum {string|null} */
+                    status?: 'pending' | 'approved' | 'rejected' | null;
                 };
             };
         };
@@ -28543,8 +29487,8 @@ export interface operations {
                     untilDate?: number;
                     /** @default true */
                     markAsRead?: boolean;
-                    includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
-                    excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+                    includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+                    excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
                 };
             };
         };
@@ -28628,8 +29572,8 @@ export interface operations {
                     untilDate?: number;
                     /** @default true */
                     markAsRead?: boolean;
-                    includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
-                    excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+                    includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+                    excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
                 };
             };
         };
@@ -29832,6 +30776,7 @@ export interface operations {
                     mutedWords?: (string[] | string)[];
                     hardMutedWords?: (string[] | string)[];
                     mutedInstances?: string[];
+                    filteredLanguages?: string[];
                     notificationRecieveConfig?: {
                         note?: {
                             /** @enum {string} */
@@ -30818,6 +31763,17 @@ export interface operations {
                         avatarDecorationRequestEnabled: boolean;
                         relayTimelineEnabled: boolean;
                         latexEnabled: boolean;
+                        reactionPiggybackOnRemoteEnabled: boolean;
+                        contactFormEnabled: boolean;
+                        contactFormRequireAuth: boolean;
+                        contactFormContentMaxLength: number;
+                        contactFormCategories: {
+                            key: string;
+                            text: string;
+                            enabled: boolean;
+                            order: number;
+                            isDefault: boolean;
+                        }[];
                     };
                 };
             };
@@ -31023,6 +31979,7 @@ export interface operations {
                     'application/json': {
                         /** @enum {string} */
                         status: 'pending' | 'approved' | 'declined' | 'notFound';
+                        reason: string | null;
                     };
                 };
             };
@@ -31795,6 +32752,7 @@ export interface operations {
                     visibility?: 'public' | 'home' | 'followers' | 'specified';
                     visibleUserIds?: string[];
                     cw?: string | null;
+                    lang?: string | null;
                     /** @default false */
                     localOnly?: boolean;
                     /** @default false */
@@ -33546,7 +34504,8 @@ export interface operations {
         requestBody: {
             content: {
                 'application/json': {
-                    query: string;
+                    /** @default  */
+                    query?: string;
                     rangeStartAt?: number | null;
                     rangeEndAt?: number | null;
                     /** Format: misskey:id */
@@ -33571,6 +34530,42 @@ export interface operations {
                      * @default null
                      */
                     channelId?: string | null;
+                    /**
+                     * @default all
+                     * @enum {string}
+                     */
+                    visibility?: 'all' | 'public' | 'home' | 'followers' | 'specified';
+                    /**
+                     * @default all
+                     * @enum {string}
+                     */
+                    hasFiles?: 'all' | 'with' | 'without';
+                    /**
+                     * @default all
+                     * @enum {string}
+                     */
+                    hasCw?: 'all' | 'with' | 'without';
+                    /**
+                     * @default all
+                     * @enum {string}
+                     */
+                    hasReply?: 'all' | 'with' | 'without';
+                    /**
+                     * @default all
+                     * @enum {string}
+                     */
+                    hasPoll?: 'all' | 'with' | 'without';
+                    /**
+                     * @default and
+                     * @enum {string}
+                     */
+                    searchOperator?: 'and' | 'or';
+                    /** @default [] */
+                    excludeWords?: string[];
+                    /** @default null */
+                    myReaction?: string | null;
+                    /** @default null */
+                    lang?: string | null;
                 };
             };
         };
@@ -34086,6 +35081,8 @@ export interface operations {
                     withFiles?: boolean;
                     /** @default true */
                     withRenotes?: boolean;
+                    /** @default false */
+                    localOnly?: boolean;
                 };
             };
         };
@@ -36675,6 +37672,9 @@ export interface operations {
                         instances: number;
                         driveUsageLocal: number;
                         driveUsageRemote: number;
+                        avatarDecorationsCount: number;
+                        rolesCount: number;
+                        filesCount: number;
                     };
                 };
             };

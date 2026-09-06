@@ -9,47 +9,80 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkInfo v-if="!enabled">{{ i18n.ts._emojiRequestPage.disabled }}</MkInfo>
 		<template v-else>
 			<div v-if="tab === 'form'" class="_gaps_m">
-				<div v-if="file" :class="$style.imgs">
-					<div style="background: #000;" :class="$style.imgContainer">
-						<img :src="file.url" :class="$style.img"/>
-					</div>
-					<div style="background: #222;" :class="$style.imgContainer">
-						<img :src="file.url" :class="$style.img"/>
-					</div>
-					<div style="background: #ddd;" :class="$style.imgContainer">
-						<img :src="file.url" :class="$style.img"/>
-					</div>
-					<div style="background: #fff;" :class="$style.imgContainer">
-						<img :src="file.url" :class="$style.img"/>
-					</div>
-				</div>
 				<MkButton rounded style="margin: 0 auto;" @click="chooseFile">{{ i18n.ts.selectFile }}</MkButton>
+				<!-- JUICE: 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できる -->
+				<MkInfo v-if="drafts.length === 0">{{ i18n.ts._emojiRequestPage.multipleRequestsHint }}</MkInfo>
 
-				<MkInput v-model="name" pattern="[a-z0-9_]" autocapitalize="off">
-					<template #label>{{ i18n.ts.name }}</template>
-				</MkInput>
+				<div v-for="(draft, i) in drafts" :key="draft.key" class="_gaps_s" :class="$style.draftCard">
+					<div v-if="drafts.length > 1" :class="$style.draftHeader">
+						<span>{{ i18n.tsx._emojiRequestPage.requestNumber({ n: i + 1 }) }}</span>
+						<button class="_button" :class="$style.draftRemoveButton" @click="removeDraft(draft.key)">
+							<i class="ti ti-x"></i>
+						</button>
+					</div>
 
-				<MkInput v-model="category" :datalist="customEmojiCategories.filter(x => x != null)">
-					<template #label>{{ i18n.ts.category }}</template>
-				</MkInput>
+					<div :class="$style.imgs">
+						<div style="background: #000;" :class="$style.imgContainer">
+							<img :src="draft.previewUrl" :class="$style.img"/>
+						</div>
+						<div style="background: #222;" :class="$style.imgContainer">
+							<img :src="draft.previewUrl" :class="$style.img"/>
+						</div>
+						<div style="background: #ddd;" :class="$style.imgContainer">
+							<img :src="draft.previewUrl" :class="$style.img"/>
+						</div>
+						<div style="background: #fff;" :class="$style.imgContainer">
+							<img :src="draft.previewUrl" :class="$style.img"/>
+						</div>
+					</div>
 
-				<MkInput v-model="aliases" autocapitalize="off">
-					<template #label>{{ i18n.ts.tags }}</template>
-					<template #caption>
-						{{ i18n.ts.theKeywordWhenSearchingForCustomEmoji }}<br/>
-						{{ i18n.ts.setMultipleBySeparatingWithSpace }}
+					<!-- JUICE: この絵文字をノートにリアクションした場合の見た目のサンプルをMkNote(mockモード)で表示する -->
+					<div :class="$style.reactionPreview">
+						<div :class="$style.previewLabel">{{ i18n.ts._emojiRequestPage.preview }}</div>
+						<div :class="$style.previewCaption">{{ i18n.ts._emojiRequestPage.previewCaption }}</div>
+						<MkNote :mock="true" :note="exampleNoteFor(draft)" :class="$style.previewNote"/>
+					</div>
+
+					<!-- JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える) -->
+					<div class="_gaps_s">
+						<MkSwitch :modelValue="draft.targetEmojiId != null" @update:modelValue="(v) => onToggleReplacement(draft, v)">
+							<template #label>{{ i18n.ts._emojiRequestPage.replacementRequest }}</template>
+							<template #caption>{{ i18n.ts._emojiRequestPage.replacementRequestCaption }}</template>
+						</MkSwitch>
+						<MkInfo v-if="draft.targetEmojiId != null">
+							{{ i18n.ts._emojiRequestPage.replacementTarget }}: <b>{{ draft.name }}</b>
+							<button class="_textButton" @click="pickReplacementTarget(draft)">{{ i18n.ts._emojiRequestPage.changeTarget }}</button>
+						</MkInfo>
+					</div>
+
+					<MkInput v-model="draft.name" pattern="[a-z0-9_]" autocapitalize="off" :readonly="draft.targetEmojiId != null">
+						<template #label>{{ i18n.ts.name }}</template>
+					</MkInput>
+
+					<template v-if="draft.targetEmojiId == null">
+						<MkInput v-model="draft.category" :datalist="customEmojiCategories.filter(x => x != null)">
+							<template #label>{{ i18n.ts.category }}</template>
+						</MkInput>
+
+						<MkInput v-model="draft.aliases" autocapitalize="off">
+							<template #label>{{ i18n.ts.tags }}</template>
+							<template #caption>
+								{{ i18n.ts.theKeywordWhenSearchingForCustomEmoji }}<br/>
+								{{ i18n.ts.setMultipleBySeparatingWithSpace }}
+							</template>
+						</MkInput>
+
+						<MkInput v-model="draft.license" :mfmAutocomplete="true">
+							<template #label>{{ i18n.ts.license }}</template>
+						</MkInput>
+
+						<MkSwitch v-model="draft.isSensitive">{{ i18n.ts.sensitive }}</MkSwitch>
+						<MkSwitch v-model="draft.localOnly">{{ i18n.ts.localOnly }}</MkSwitch>
 					</template>
-				</MkInput>
-
-				<MkInput v-model="license" :mfmAutocomplete="true">
-					<template #label>{{ i18n.ts.license }}</template>
-				</MkInput>
-
-				<MkSwitch v-model="isSensitive">{{ i18n.ts.sensitive }}</MkSwitch>
-				<MkSwitch v-model="localOnly">{{ i18n.ts.localOnly }}</MkSwitch>
-				<MkSwitch v-model="deleteFileAfterReview">
-					<template #label>{{ i18n.ts._emojiRequestPage.deleteFileAfterReview }}</template>
-				</MkSwitch>
+					<MkSwitch v-model="draft.deleteFileAfterReview">
+						<template #label>{{ i18n.ts._emojiRequestPage.deleteFileAfterReview }}</template>
+					</MkSwitch>
+				</div>
 
 				<MkCaptcha v-if="instance.enableHcaptcha" ref="hcaptcha" v-model="hCaptchaResponse" provider="hcaptcha" :sitekey="instance.hcaptchaSiteKey"/>
 				<MkCaptcha v-if="instance.enableMcaptcha" ref="mcaptcha" v-model="mCaptchaResponse" provider="mcaptcha" :sitekey="instance.mcaptchaSiteKey" :instanceUrl="instance.mcaptchaInstanceUrl"/>
@@ -59,9 +92,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<MkButton primary rounded :disabled="shouldDisableSubmitting" @click="submit"><i class="ti ti-check"></i> {{ i18n.ts._emojiRequestPage.submit }}</MkButton>
 			</div>
-			<div v-else-if="tab === 'list'" class="_gaps">
-				<MkInfo v-if="paginator.items.value.length === 0 && !paginator.fetching.value">{{ i18n.ts._emojiRequestPage.noRequests }}</MkInfo>
-				<MkPagination v-slot="{items}" :paginator="paginator">
+			<div v-else-if="tab === 'pending'" class="_gaps">
+				<MkInfo v-if="pendingPaginator.items.value.length === 0 && !pendingPaginator.fetching.value">{{ i18n.ts._emojiRequestPage.noPendingRequests }}</MkInfo>
+				<MkPagination v-slot="{items}" :paginator="pendingPaginator">
+					<div class="_gaps">
+						<MkEmojiRequestItem v-for="request in items" :key="request.id" :request="request"/>
+					</div>
+				</MkPagination>
+			</div>
+			<div v-else-if="tab === 'result'" class="_gaps">
+				<MkSelect v-model="resultStatus" style="margin: 0;" :items="resultStatusDef">
+					<template #label>{{ i18n.ts.state }}</template>
+				</MkSelect>
+				<MkInfo v-if="resultPaginator.items.value.length === 0 && !resultPaginator.fetching.value">{{ i18n.ts._emojiRequestPage.noRequests }}</MkInfo>
+				<MkPagination v-slot="{items}" :paginator="resultPaginator">
 					<div class="_gaps">
 						<MkEmojiRequestItem v-for="request in items" :key="request.id" :request="request"/>
 					</div>
@@ -73,18 +117,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, markRaw, ref } from 'vue';
+import { computed, markRaw, onUnmounted, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkInfo from '@/components/MkInfo.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkButton from '@/components/MkButton.vue';
+import MkSelect from '@/components/MkSelect.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import MkEmojiRequestItem from '@/components/MkEmojiRequestItem.vue';
+import MkNote from '@/components/MkNote.vue';
 import type { Captcha } from '@/components/MkCaptcha.vue';
 import MkCaptcha from '@/components/MkCaptcha.vue';
 import * as os from '@/os.js';
-import { selectFile } from '@/utility/drive.js';
+import { selectFileDeferred, uploadFile } from '@/utility/drive.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { customEmojiCategories } from '@/custom-emojis.js';
 import { i18n } from '@/i18n.js';
@@ -92,8 +138,10 @@ import { definePage } from '@/page.js';
 import { Paginator } from '@/utility/paginator.js';
 import { ensureSignin } from '@/i.js';
 import { instance } from '@/instance.js';
+import { genId } from '@/utility/id.js';
+import { buildMockLocalCustomEmojiReaction } from '@/utility/mock-note-reaction.js';
 
-ensureSignin();
+const $i = ensureSignin();
 
 const enabled = ref(true);
 misskeyApi('juice/public-settings').then(res => {
@@ -101,14 +149,72 @@ misskeyApi('juice/public-settings').then(res => {
 });
 
 const tab = ref('form');
-const file = ref<Misskey.entities.DriveFile | null>(null);
-const name = ref('');
-const category = ref('');
-const aliases = ref('');
-const license = ref('');
-const isSensitive = ref(false);
-const localOnly = ref(false);
-const deleteFileAfterReview = ref(false);
+
+// JUICE: 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できる。
+// 1件だけ選んだ場合も内部的には要素数1のdraftsとして扱う(見た目は従来通り単一フォーム)
+type EmojiRequestDraft = {
+	key: string;
+	// JUICE: 「PCからアップロード」の場合はこの時点ではまだDriveにアップロードしておらず、
+	// 生のFileのまま保持する(申請の送信時にuploadFile()する)。「ドライブから選択」
+	// 「URLから」は従来通り、選択した時点で既にアップロード済みのDriveFile
+	file: File | Misskey.entities.DriveFile;
+	// JUICE: プレビュー表示用のURL。fileが生のFileの場合はURL.createObjectURLで作った
+	// ローカルURLなので、ドラフトを破棄する際は必ずrevokeDraftPreview()で解放すること
+	previewUrl: string;
+	name: string;
+	category: string;
+	aliases: string;
+	license: string;
+	isSensitive: boolean;
+	localOnly: boolean;
+	deleteFileAfterReview: boolean;
+	// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)の対象。nullなら通常の新規申請
+	targetEmojiId: string | null;
+};
+
+const drafts = ref<EmojiRequestDraft[]>([]);
+
+// JUICE: 差し替え申請の対象選択用。自分の承認済み申請(絵文字が実際に作られたもの)のみを候補にする。
+// 初回に選択を試みたタイミングで一度だけ取得する
+let myApprovedEmojiRequests: Misskey.entities.EmojiRequestEntry[] | null = null;
+
+async function fetchMyApprovedEmojiRequests(): Promise<Misskey.entities.EmojiRequestEntry[]> {
+	if (myApprovedEmojiRequests == null) {
+		const fetched = await misskeyApi('emoji-requests/list', { status: 'approved', limit: 100 });
+		myApprovedEmojiRequests = fetched;
+		return fetched;
+	}
+	return myApprovedEmojiRequests;
+}
+
+async function pickReplacementTarget(draft: EmojiRequestDraft) {
+	const requests = await fetchMyApprovedEmojiRequests();
+	const eligible = requests.filter(r => r.resultEmojiId != null);
+	if (eligible.length === 0) {
+		os.alert({ type: 'info', text: i18n.ts._emojiRequestPage.noReplaceableEmojis });
+		draft.targetEmojiId = null;
+		return;
+	}
+
+	const { canceled, result } = await os.select({
+		title: i18n.ts._emojiRequestPage.selectTargetEmoji,
+		items: eligible.map(r => ({ value: r.resultEmojiId!, label: r.name })),
+	});
+	if (canceled || result == null) {
+		if (draft.targetEmojiId == null) return;
+	} else {
+		draft.targetEmojiId = result;
+		draft.name = eligible.find(r => r.resultEmojiId === result)?.name ?? draft.name;
+	}
+}
+
+function onToggleReplacement(draft: EmojiRequestDraft, enabled: boolean) {
+	if (enabled) {
+		pickReplacementTarget(draft);
+	} else {
+		draft.targetEmojiId = null;
+	}
+}
 
 // JUICE
 const hcaptcha = ref<Captcha | undefined>();
@@ -122,8 +228,38 @@ const reCaptchaResponse = ref<string | null>(null);
 const turnstileResponse = ref<string | null>(null);
 const testcaptchaResponse = ref<string | null>(null);
 
+// JUICE: 申請中の絵文字をリアクションとして使った場合の見た目のプレビュー用。
+// まだ承認されていない(=正式な絵文字として登録されていない)画像のため、
+// note.reactionEmojisでプレビュー用URL(draft.previewUrl。PCから選択した場合はまだ
+// Driveにアップロードしていないローカルなblob URL)を直接差し込んで表示する
+// (MkReactionsViewer.reaction.vue参照。既存のアバターデコレーション申請の
+// プレビュー(MkAvatarのdecorations上書き)と同じ考え方)
+function exampleNoteFor(draft: EmojiRequestDraft): Misskey.entities.Note {
+	const previewName = draft.name || 'preview';
+	return {
+		id: '0000000000',
+		createdAt: new Date().toISOString(),
+		userId: $i.id,
+		user: $i,
+		text: i18n.ts._emojiRequestPage.previewSampleNoteText,
+		cw: null,
+		visibility: 'public',
+		localOnly: false,
+		isAIGenerated: false,
+		reactionAcceptance: null,
+		renoteCount: 0,
+		repliesCount: 0,
+		reactionCount: 1,
+		...buildMockLocalCustomEmojiReaction(previewName, draft.previewUrl),
+		fileIds: [],
+		files: [],
+		replyId: null,
+		renoteId: null,
+	};
+}
+
 const shouldDisableSubmitting = computed((): boolean => {
-	return !file.value || !name.value ||
+	return drafts.value.length === 0 || drafts.value.some(d => !d.name) ||
 		instance.enableHcaptcha && !hCaptchaResponse.value ||
 		instance.enableMcaptcha && !mCaptchaResponse.value ||
 		instance.enableRecaptcha && !reCaptchaResponse.value ||
@@ -131,51 +267,107 @@ const shouldDisableSubmitting = computed((): boolean => {
 		instance.enableTestcaptcha && !testcaptchaResponse.value;
 });
 
-const paginator = markRaw(new Paginator('emoji-requests/list', {
+// JUICE: 「自分の申請」を審査待ち/結果の2タブに分割し、それぞれ別のPaginatorで絞り込んで取得する
+const pendingPaginator = markRaw(new Paginator('emoji-requests/list', {
 	limit: 10,
+	params: { status: 'pending' },
+}));
+
+const resultStatus = ref<'approved' | 'rejected'>('approved');
+const resultStatusDef = [
+	{ value: 'approved', label: i18n.ts._emojiRequestPage.statusApproved },
+	{ value: 'rejected', label: i18n.ts._emojiRequestPage.statusRejected },
+];
+const resultPaginator = markRaw(new Paginator('emoji-requests/list', {
+	limit: 10,
+	computedParams: computed(() => ({ status: resultStatus.value })),
 }));
 
 function chooseFile(ev: PointerEvent) {
-	selectFile({
+	selectFileDeferred({
 		anchorElement: ev.currentTarget ?? ev.target,
-		multiple: false,
-	}).then(f => {
-		file.value = f;
-		const candidate = f.name.replace(/\.(.+)$/, '');
-		if (candidate.match(/^[a-z0-9_]+$/)) {
-			name.value = candidate;
+		multiple: true,
+	}).then(files => {
+		for (const f of files) {
+			const candidate = f.name.replace(/\.(.+)$/, '');
+			drafts.value.push({
+				key: genId(),
+				file: f,
+				previewUrl: f instanceof File ? URL.createObjectURL(f) : f.url,
+				name: candidate.match(/^[a-z0-9_]+$/) ? candidate : '',
+				category: '',
+				aliases: '',
+				license: '',
+				isSensitive: false,
+				localOnly: false,
+				deleteFileAfterReview: false,
+				targetEmojiId: null,
+			});
 		}
 	});
 }
 
-function submit() {
-	if (file.value == null || !name.value) return;
+// JUICE: PCから選択した生のFileのプレビュー用に作ったURL.createObjectURLは、
+// 使い終わったら必ず解放する(ドライブ/URL経由のDriveFileのurlはそのままなので対象外)
+function revokeDraftPreview(draft: EmojiRequestDraft) {
+	if (!(draft.file instanceof File)) return;
+	URL.revokeObjectURL(draft.previewUrl);
+}
 
-	os.apiWithDialog('emoji-requests/create', {
-		fileId: file.value.id,
-		name: name.value,
-		category: category.value || null,
-		aliases: aliases.value.split(' ').filter(x => x !== ''),
-		license: license.value || null,
-		isSensitive: isSensitive.value,
-		localOnly: localOnly.value,
-		deleteFileAfterReview: deleteFileAfterReview.value,
+function removeDraft(key: string) {
+	const draft = drafts.value.find(d => d.key === key);
+	if (draft) revokeDraftPreview(draft);
+	drafts.value = drafts.value.filter(d => d.key !== key);
+}
+
+// JUICE: 「PCからアップロード」を選んだドラフトはこの時点まだDriveに上がっていないため、
+// 申請の送信直前にここでアップロードしてfileIdを確定する
+async function resolveFileId(file: File | Misskey.entities.DriveFile): Promise<string> {
+	if (file instanceof File) {
+		const { filePromise } = uploadFile(file, { name: file.name });
+		const driveFile = await filePromise;
+		return driveFile.id;
+	}
+	return file.id;
+}
+
+async function submit() {
+	if (drafts.value.length === 0 || drafts.value.some(d => !d.name)) return;
+
+	const done = os.waiting();
+	let fileIds: string[];
+	try {
+		fileIds = await Promise.all(drafts.value.map(d => resolveFileId(d.file)));
+	} catch {
+		done();
+		return;
+	}
+	done({ success: true });
+
+	os.apiWithDialog('emoji-requests/create-many', {
+		requests: drafts.value.map((d, i) => ({
+			fileId: fileIds[i],
+			name: d.name,
+			category: d.category || null,
+			aliases: d.aliases.split(' ').filter(x => x !== ''),
+			license: d.license || null,
+			isSensitive: d.isSensitive,
+			localOnly: d.localOnly,
+			deleteFileAfterReview: d.deleteFileAfterReview,
+			targetEmojiId: d.targetEmojiId,
+		})),
 		'hcaptcha-response': hCaptchaResponse.value,
 		'm-captcha-response': mCaptchaResponse.value,
 		'g-recaptcha-response': reCaptchaResponse.value,
 		'turnstile-response': turnstileResponse.value,
 		'testcaptcha-response': testcaptchaResponse.value,
-	}).then(request => {
-		paginator.prepend(request);
-		file.value = null;
-		name.value = '';
-		category.value = '';
-		aliases.value = '';
-		license.value = '';
-		isSensitive.value = false;
-		localOnly.value = false;
-		deleteFileAfterReview.value = false;
-		tab.value = 'list';
+	}).then(requests => {
+		for (const request of requests) {
+			pendingPaginator.prepend(request);
+		}
+		drafts.value.forEach(revokeDraftPreview);
+		drafts.value = [];
+		tab.value = 'pending';
 	}).catch(() => {
 		// JUICE: captcha検証失敗時などにウィジェットをリセットし、再送信できるようにする
 		hcaptcha.value?.reset?.();
@@ -193,10 +385,19 @@ const headerTabs = computed(() => [{
 	title: i18n.ts._emojiRequestPage.newRequest,
 	icon: 'ti ti-plus',
 }, {
-	key: 'list',
-	title: i18n.ts._emojiRequestPage.myRequests,
-	icon: 'ti ti-list',
+	key: 'pending',
+	title: i18n.ts._emojiRequestPage.pendingRequests,
+	icon: 'ti ti-clock',
+}, {
+	key: 'result',
+	title: i18n.ts._emojiRequestPage.requestResults,
+	icon: 'ti ti-list-check',
 }]);
+
+// JUICE: 送信せずにページを離れた場合、PC選択分の未使用プレビューURLを解放しておく
+onUnmounted(() => {
+	drafts.value.forEach(revokeDraftPreview);
+});
 
 definePage(() => ({
 	title: i18n.ts._juice.emojiRequest,
@@ -205,6 +406,26 @@ definePage(() => ({
 </script>
 
 <style lang="scss" module>
+.draftCard {
+	padding: 16px;
+	border-radius: var(--MI-radius);
+	border: var(--MI_THEME-panelBorder);
+	background: var(--MI_THEME-panel);
+}
+
+.draftHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-weight: bold;
+}
+
+.draftRemoveButton {
+	width: 32px;
+	height: 32px;
+	color: #ff2a2a;
+}
+
 .imgs {
 	display: flex;
 	gap: 8px;
@@ -222,5 +443,31 @@ definePage(() => ({
 	height: 64px;
 	width: 64px;
 	object-fit: contain;
+}
+
+.reactionPreview {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.previewLabel {
+	font-size: 0.85em;
+	opacity: 0.7;
+}
+
+.previewCaption {
+	font-size: 0.85em;
+	opacity: 0.7;
+	text-align: center;
+}
+
+.previewNote {
+	width: 100%;
+	border-radius: var(--MI-radius);
+	border: var(--MI_THEME-panelBorder);
+	background: var(--MI_THEME-panel);
+	pointer-events: none;
 }
 </style>

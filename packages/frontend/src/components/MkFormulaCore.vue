@@ -17,6 +17,7 @@ import katex from 'katex';
 // KaTeXのCSSはグローバルな固定クラス名(.katex等)に依存しており、CSS Modulesでスコープできない。
 // このコンポーネントは動的import経由でしか読み込まれないため、非同期chunkとして遅延ロードされる。
 import 'katex/dist/katex.min.css';
+import { isFormulaTooComplex } from '@/utility/formula-safety.js';
 
 const props = defineProps<{
 	formula: string;
@@ -24,6 +25,12 @@ const props = defineProps<{
 }>();
 
 const compiled = computed((): { html: string; failed: boolean } => {
+	// JUICE: ブラウザのタブをフリーズ・クラッシュさせうる複雑すぎる数式はレンダリングを試みない
+	// (詳細は utility/formula-safety.ts のコメント参照)
+	if (isFormulaTooComplex(props.formula)) {
+		return { html: '', failed: true };
+	}
+
 	try {
 		// throwOnError: false でも KaTeX 内部の ParseError 以外(スタックオーバーフロー等)は
 		// 素通しされうるため、html を確定できた場合だけ v-html に渡す。失敗時は formula を

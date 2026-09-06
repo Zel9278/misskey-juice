@@ -37,6 +37,10 @@ export const notificationTypes = [
 	'test',
 	'login',
 	'loginFailed',
+	'emojiRequestApproved',
+	'emojiRequestRejected',
+	'avatarDecorationRequestApproved',
+	'avatarDecorationRequestRejected',
 	'createToken',
 ] as const;
 
@@ -111,6 +115,7 @@ export const permissions = [
 	'read:admin:juice-settings',
 	'write:admin:juice-settings',
 	'read:admin:juice-pending-signups',
+	'read:admin:juice-signup-approval-history',
 	'write:admin:juice-approve-signup',
 	'write:admin:juice-decline-signup',
 	'read:admin:emoji-requests',
@@ -119,6 +124,8 @@ export const permissions = [
 	'read:admin:avatar-decoration-requests',
 	'write:admin:avatar-decoration-requests-approve',
 	'write:admin:avatar-decoration-requests-reject',
+	'read:admin:contact-form',
+	'write:admin:contact-form',
 	'write:admin:user-note',
 	'write:admin:roles',
 	'read:admin:roles',
@@ -206,6 +213,15 @@ export const moderationLogTypes = [
 	'deleteGalleryPost',
 	'deleteChatRoom',
 	'updateProxyAccountDescription',
+	// JUICE
+	'updateJuiceSettings',
+	'approveSignup',
+	'declineSignup',
+	'approveEmojiRequest',
+	'rejectEmojiRequest',
+	'approveAvatarDecorationRequest',
+	'rejectAvatarDecorationRequest',
+	'cleanupOrphanedObjectStorageFiles',
 ] as const;
 
 export const rolePolicies = [
@@ -558,5 +574,77 @@ export type ModerationLogPayloads = {
 	updateProxyAccountDescription: {
 		before: string | null;
 		after: string | null;
-	}
+	};
+	// JUICE
+	updateJuiceSettings: {
+		before: unknown;
+		after: unknown;
+	};
+	approveSignup: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+	};
+	declineSignup: {
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
+		reason: string;
+	};
+	approveEmojiRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		emojiId: string;
+		emojiName: string;
+		isReplacement?: boolean;
+		// JUICE: 承認時に申請内容を編集した場合の編集前の値・理由
+		edited?: boolean;
+		editReason?: string;
+		originalName?: string;
+		originalCategory?: string | null;
+		originalAliases?: string[];
+		originalLicense?: string | null;
+		originalIsSensitive?: boolean;
+		originalLocalOnly?: boolean;
+	};
+	rejectEmojiRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		requestedName: string;
+		reason: string;
+	};
+	approveAvatarDecorationRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		avatarDecorationId: string;
+		avatarDecorationName: string;
+		isReplacement?: boolean;
+		// JUICE: 承認時に申請内容を編集した場合の編集前の値・理由
+		edited?: boolean;
+		editReason?: string;
+		originalName?: string;
+		originalDescription?: string;
+		originalCategory?: string | null;
+	};
+	rejectAvatarDecorationRequest: {
+		requestId: string;
+		requesterId: string;
+		requesterUsername: string;
+		requesterHost: string | null;
+		requestedName: string;
+		reason: string;
+	};
+	cleanupOrphanedObjectStorageFiles: {
+		dryRun: boolean;
+		scanned: number;
+		deletedCount: number;
+		deletedKeys: string[];
+		failedKeys: string[];
+	};
 };

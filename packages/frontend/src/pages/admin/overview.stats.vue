@@ -55,6 +55,34 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div class="label">Online</div>
 				</div>
 			</div>
+			<!-- JUICE: アバターデコレーション・ロール・ファイルの登録件数タイルを追加 -->
+			<div class="item _panel avatarDecorations">
+				<div class="icon"><i class="ti ti-sparkles"></i></div>
+				<div class="body">
+					<div class="value">
+						<MkNumber :value="stats.avatarDecorationsCount" style="margin-right: 0.5em;"/>
+					</div>
+					<div class="label">Avatar decorations<span class="_juice">JUICE</span></div>
+				</div>
+			</div>
+			<div class="item _panel roles">
+				<div class="icon"><i class="ti ti-badges"></i></div>
+				<div class="body">
+					<div class="value">
+						<MkNumber :value="stats.rolesCount" style="margin-right: 0.5em;"/>
+					</div>
+					<div class="label">Roles<span class="_juice">JUICE</span></div>
+				</div>
+			</div>
+			<div class="item _panel files">
+				<div class="icon"><i class="ti ti-cloud"></i></div>
+				<div class="body">
+					<div class="value">
+						<MkNumber :value="stats.filesCount" style="margin-right: 0.5em;"/>
+					</div>
+					<div class="label">Files<span class="_juice">JUICE</span></div>
+				</div>
+			</div>
 		</div>
 		<MkError v-else/>
 	</Transition>
@@ -152,6 +180,27 @@ onMounted(async () => {
 				> .icon {
 					background: #8a00d126;
 					color: #c01ac3;
+				}
+			}
+
+			&.avatarDecorations {
+				> .icon {
+					background: #ff2e6326;
+					color: #ff2e63;
+				}
+			}
+
+			&.roles {
+				> .icon {
+					background: #00b39226;
+					color: #00b392;
+				}
+			}
+
+			&.files {
+				> .icon {
+					background: #4a6ee026;
+					color: #4a6ee0;
 				}
 			}
 

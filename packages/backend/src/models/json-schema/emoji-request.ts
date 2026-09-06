@@ -21,6 +21,11 @@ export const packedEmojiRequestEntrySchema = {
 			optional: false, nullable: true,
 			format: 'id',
 		},
+		// JUICE: 申請一覧でサムネイル表示に使う。承認/却下後にファイルが削除されていればnull
+		fileUrl: {
+			type: 'string',
+			optional: false, nullable: true,
+		},
 		name: {
 			type: 'string',
 			optional: false, nullable: false,
@@ -68,10 +73,18 @@ export const packedEmojiRequestEntrySchema = {
 			optional: false, nullable: true,
 			format: 'id',
 		},
+		// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)の対象。通常の新規申請はnull
+		targetEmojiId: {
+			type: 'string',
+			optional: false, nullable: true,
+			format: 'id',
+		},
 	},
 } as const;
 
 // 管理画面の一覧では申請者の情報も併せて表示する必要があるため、Simple版とは別に用意する(JUICE)。
+// reviewer(審査したモデレーター)もここでのみ公開する。通報機能のassigneeと同様、申請者本人に
+// 個人を特定して晒すと逆恨み等のリスクがあるため、一般ユーザー向けのEntry schemaには含めない。
 export const packedEmojiRequestEntryDetailedAdminSchema = {
 	type: 'object',
 	allOf: [
@@ -87,9 +100,11 @@ export const packedEmojiRequestEntryDetailedAdminSchema = {
 					optional: false, nullable: false,
 					ref: 'UserLite',
 				},
-				fileUrl: {
-					type: 'string',
+				// JUICE: 審査履歴に「誰が審査したか」を表示するために使う。未審査(pending)の間はnull
+				reviewer: {
+					type: 'object',
 					optional: false, nullable: true,
+					ref: 'UserLite',
 				},
 			},
 		},

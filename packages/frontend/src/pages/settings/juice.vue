@@ -42,18 +42,43 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #label><SearchLabel>{{ i18n.ts._juice.relayTimelineFilter }}</SearchLabel></template>
 				<div class="_gaps_s">
 					<MkInfo v-if="relays.length === 0">{{ i18n.ts._juice.relayTimelineFilterEmpty }}</MkInfo>
-					<template v-else>
-						<MkInfo>{{ i18n.ts._juice.relayTimelineFilterCaption }}</MkInfo>
-						<MkSwitch
-							v-for="relay in relays"
-							:key="relay.id"
-							:modelValue="isRelaySelected(relay.id)"
-							@update:modelValue="(v) => onChangeRelayFilter(relay.id, v)"
-						>
-							<template #label>{{ relay.host }}</template>
-						</MkSwitch>
-					</template>
+					<!-- JUICE: リレー数が多いと一覧が縦に長くなり設定画面を圧迫するため、折りたたみ式にしている -->
+					<MkFolder v-else>
+						<template #label>{{ relaySelectedCountLabel }}</template>
+						<div class="_gaps_s">
+							<MkInfo>{{ i18n.ts._juice.relayTimelineFilterCaption }}</MkInfo>
+							<MkSwitch
+								v-for="relay in relays"
+								:key="relay.id"
+								:modelValue="isRelaySelected(relay.id)"
+								@update:modelValue="(v) => onChangeRelayFilter(relay.id, v)"
+							>
+								<template #label>{{ relay.host }}</template>
+							</MkSwitch>
+						</div>
+					</MkFolder>
 				</div>
+			</FormSection>
+		</SearchMarker>
+
+		<SearchMarker :keywords="['language', 'timeline', 'filter']">
+			<FormSection>
+				<template #label><SearchLabel>{{ i18n.ts._juice.filteredLanguages }}</SearchLabel></template>
+				<!-- JUICE: 対応言語が40件超あり、全展開すると設定画面が非常に長くなり操作の邪魔になるため、折りたたみ式にしている -->
+				<MkFolder>
+					<template #label>{{ languageSelectedCountLabel }}</template>
+					<div class="_gaps_s">
+						<MkInfo>{{ i18n.ts._juice.filteredLanguagesCaption }}</MkInfo>
+						<MkSwitch
+							v-for="[code, label] in langs"
+							:key="code"
+							:modelValue="isLanguageFilterSelected(code)"
+							@update:modelValue="(v) => onChangeLanguageFilter(code, v)"
+						>
+							<template #label>{{ label }}</template>
+						</MkSwitch>
+					</div>
+				</MkFolder>
 			</FormSection>
 		</SearchMarker>
 
@@ -106,6 +131,7 @@ import FormLink from '@/components/form/link.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
+import MkFolder from '@/components/MkFolder.vue';
 import MkRadios from '@/components/MkRadios.vue';
 import MkDisableSection from '@/components/MkDisableSection.vue';
 import { misskeyApi } from '@/utility/misskey-api.js';
@@ -143,6 +169,33 @@ function onChangeRelayFilter(id: string, checked: boolean) {
 		? [...prefer.s.relayTimelineFilter, id]
 		: prefer.s.relayTimelineFilter.filter(x => x !== id));
 }
+
+// JUICE: 折りたたみの見出しに現在の選択状況を表示する(未選択=すべて表示中であることが分かるように)
+const relaySelectedCountLabel = computed(() => prefer.r.relayTimelineFilter.value.length === 0
+	? i18n.ts.all
+	: i18n.tsx._juice.nSelected({ n: prefer.r.relayTimelineFilter.value.length }));
+
+// JUICE: タイムライン(ホーム・ローカル・グローバル)に表示する言語の絞り込み。
+// リレーフィルタと異なりサーバー側(アカウント)の設定なので、i/updateへ保存する
+const filteredLanguages = ref($i.filteredLanguages);
+
+function isLanguageFilterSelected(code: string): boolean {
+	return filteredLanguages.value.includes(code);
+}
+
+function onChangeLanguageFilter(code: string, checked: boolean) {
+	filteredLanguages.value = checked
+		? [...filteredLanguages.value, code]
+		: filteredLanguages.value.filter(x => x !== code);
+	misskeyApi('i/update', {
+		filteredLanguages: filteredLanguages.value,
+	});
+}
+
+// JUICE: 折りたたみの見出しに現在の選択状況を表示する(未選択=すべて表示中であることが分かるように)
+const languageSelectedCountLabel = computed(() => filteredLanguages.value.length === 0
+	? i18n.ts.all
+	: i18n.tsx._juice.nSelected({ n: filteredLanguages.value.length }));
 
 // JUICE: ウィジェットパネル/ドロワーを画面のどちら側に表示するか
 const widgetsSide = prefer.model('widgetsSide');

@@ -34,6 +34,7 @@ describe('NoteCreateService', () => {
 			text: null,
 			name: null,
 			cw: null,
+			lang: null,
 			userId: 'some-user-id',
 			user: null,
 			localOnly: false,

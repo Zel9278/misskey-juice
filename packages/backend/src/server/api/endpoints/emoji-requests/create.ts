@@ -5,8 +5,11 @@
 
 import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { DriveFilesRepository, EmojiRequestsRepository, MiMeta } from '@/models/_.js';
+import type { DriveFilesRepository, MiMeta } from '@/models/_.js';
+import { MiEmojiRequest } from '@/models/EmojiRequest.js';
+import { MiEmoji } from '@/models/Emoji.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
 import { RoleService } from '@/core/RoleService.js';
@@ -62,6 +65,22 @@ export const meta = {
 			code: 'CAPTCHA_FAILED',
 			id: 'e8f67388-909b-407a-851c-52311ed47c97',
 		},
+		// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)関連
+		noSuchTargetEmoji: {
+			message: 'No such target emoji.',
+			code: 'NO_SUCH_TARGET_EMOJI',
+			id: 'b0f83cca-b274-4768-b21a-01a9b85ffd5c',
+		},
+		notEmojiOwner: {
+			message: 'You can only request to replace an emoji that was created from your own approved request.',
+			code: 'NOT_EMOJI_OWNER',
+			id: 'e0e1a3f7-b710-4d65-bff5-2fe4cf0a5856',
+		},
+		duplicateReplacementRequest: {
+			message: 'You already have a pending replacement request for this emoji.',
+			code: 'DUPLICATE_REPLACEMENT_REQUEST',
+			id: '25386898-f700-4108-9f4e-a39326d1017e',
+		},
 	},
 
 	res: {
@@ -83,6 +102,9 @@ export const paramDef = {
 		isSensitive: { type: 'boolean', default: false },
 		localOnly: { type: 'boolean', default: false },
 		deleteFileAfterReview: { type: 'boolean', default: false },
+		// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)。指定した場合、name等の他の
+		// フィールドは無視され、承認されると対象絵文字の画像のみが差し替わる
+		targetEmojiId: { type: 'string', format: 'misskey:id', nullable: true },
 		// JUICE
 		'hcaptcha-response': { type: 'string', nullable: true },
 		'g-recaptcha-response': { type: 'string', nullable: true },
@@ -99,11 +121,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.meta)
 		private serverSettings: MiMeta,
 
+		@Inject(DI.db)
+		private db: DataSource,
+
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
-
-		@Inject(DI.emojiRequestsRepository)
-		private emojiRequestsRepository: EmojiRequestsRepository,
 
 		private idService: IdService,
 		private roleService: RoleService,
@@ -133,21 +155,54 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (!FILE_TYPE_IMAGE.includes(driveFile.type)) throw new ApiError(meta.errors.unsupportedFileType);
 
 			const policies = await this.roleService.getUserPolicies(me.id);
-			const pendingCount = await this.emojiRequestsRepository.countBy({ userId: me.id, status: 'pending' });
-			if (pendingCount >= policies.emojiRequestLimit) throw new ApiError(meta.errors.tooManyPendingRequests);
 
-			const request = await this.emojiRequestsRepository.insertOne({
-				id: this.idService.gen(),
-				userId: me.id,
-				fileId: driveFile.id,
-				name: ps.name,
-				category: ps.category ?? null,
-				aliases: ps.aliases ?? [],
-				license: ps.license ?? null,
-				isSensitive: ps.isSensitive ?? false,
-				localOnly: ps.localOnly ?? false,
-				status: 'pending',
-				deleteFileAfterReview: ps.deleteFileAfterReview ?? false,
+			// JUICE: pending件数の上限チェックからINSERTまでを、ユーザー単位のadvisory lockで
+			// 直列化した上で同一トランザクション内で行う。そうしないと、同時に複数リクエストを
+			// 投げることで上限チェック(SELECT)がINSERTと競合し、上限を超えてpending申請を
+			// 作成できてしまう(TOCTOU)
+			const request = await this.db.transaction(async em => {
+				await em.query('SELECT pg_advisory_xact_lock(hashtext($1))', [me.id]);
+
+				const pendingCount = await em.countBy(MiEmojiRequest, { userId: me.id, status: 'pending' });
+				if (pendingCount >= policies.emojiRequestLimit) throw new ApiError(meta.errors.tooManyPendingRequests);
+
+				// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)。対象は申請者自身の
+				// 承認済み申請(resultEmojiId)から作られた絵文字のみに限定する
+				if (ps.targetEmojiId != null) {
+					const targetEmoji = await em.findOneBy(MiEmoji, { id: ps.targetEmojiId });
+					if (targetEmoji == null) throw new ApiError(meta.errors.noSuchTargetEmoji);
+
+					const ownApprovedRequest = await em.findOneBy(MiEmojiRequest, {
+						userId: me.id,
+						resultEmojiId: ps.targetEmojiId,
+						status: 'approved',
+					});
+					if (ownApprovedRequest == null) throw new ApiError(meta.errors.notEmojiOwner);
+
+					const duplicatePending = await em.findOneBy(MiEmojiRequest, {
+						userId: me.id,
+						targetEmojiId: ps.targetEmojiId,
+						status: 'pending',
+					});
+					if (duplicatePending != null) throw new ApiError(meta.errors.duplicateReplacementRequest);
+				}
+
+				const newRequest = {
+					id: this.idService.gen(),
+					userId: me.id,
+					fileId: driveFile.id,
+					name: ps.name,
+					category: ps.category ?? null,
+					aliases: ps.aliases ?? [],
+					license: ps.license ?? null,
+					isSensitive: ps.isSensitive ?? false,
+					localOnly: ps.localOnly ?? false,
+					status: 'pending' as const,
+					deleteFileAfterReview: ps.deleteFileAfterReview ?? false,
+					targetEmojiId: ps.targetEmojiId ?? null,
+				};
+				await em.insert(MiEmojiRequest, newRequest);
+				return newRequest;
 			});
 
 			// JUICE: モデレータへ新規申請をリアルタイム通知(admin stream + SystemWebhook)
@@ -162,6 +217,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				id: request.id,
 				createdAt: this.idService.parse(request.id).date.toISOString(),
 				fileId: request.fileId,
+				// JUICE: 一覧でサムネイル表示に使う
+				fileUrl: driveFile.url,
 				name: request.name,
 				category: request.category,
 				aliases: request.aliases,
@@ -169,9 +226,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				isSensitive: request.isSensitive,
 				localOnly: request.localOnly,
 				status: request.status,
-				rejectReason: request.rejectReason,
-				reviewedAt: request.reviewedAt?.toISOString() ?? null,
-				resultEmojiId: request.resultEmojiId,
+				rejectReason: null,
+				reviewedAt: null,
+				resultEmojiId: null,
+				targetEmojiId: request.targetEmojiId,
 			};
 		});
 	}

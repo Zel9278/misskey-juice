@@ -15,6 +15,8 @@ import vary from 'vary';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import * as Acct from '@/misc/acct.js';
+import { escapeHtml } from '@/misc/escape-html.js';
+import { stripHtmlTags } from '@/misc/strip-html-tags.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { PageEntityService } from '@/core/entities/PageEntityService.js';
@@ -145,12 +147,14 @@ export class ClientServerService {
 	@bindThis
 	private async manifestHandler(reply: FastifyReply) {
 		let manifest = {
+			// JUICE: name/shortNameはOSネイティブのPWAアイコンツールチップ等プレーンテキストとして
+			// 表示されるため、HTMLタグがそのまま可視化されないようあらかじめ除去しておく
 			// 空文字列の場合右辺を使いたいため
 			// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-			'short_name': this.meta.shortName || this.meta.name || this.config.host,
+			'short_name': stripHtmlTags(this.meta.shortName || this.meta.name || this.config.host),
 			// 空文字列の場合右辺を使いたいため
 			// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-			'name': this.meta.name || this.config.host,
+			'name': stripHtmlTags(this.meta.name || this.config.host),
 			'start_url': '/',
 			'display': 'standalone',
 			'background_color': '#313a42',
@@ -419,7 +423,10 @@ export class ClientServerService {
 
 		// OpenSearch XML
 		fastify.get('/opensearch.xml', async (request, reply) => {
-			const name = this.meta.name ?? 'Misskey';
+			// JUICE: ShortName/DescriptionはブラウザのアドレスバーやプルダウンにOSネイティブの
+			// プレーンテキストとして表示されるため、HTMLタグを除去した上でXMLとして安全にエスケープする
+			// (元は無加工の文字列結合で、不正なXMLになりうる上タグの記号がそのまま可視化されていた)
+			const name = escapeHtml(stripHtmlTags(this.meta.name ?? 'Misskey'));
 			let content = '';
 			content += '<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">';
 			content += `<ShortName>${name}</ShortName>`;
@@ -439,8 +446,11 @@ export class ClientServerService {
 			reply.header('Cache-Control', 'public, max-age=30');
 			return await HtmlTemplateService.replyHtml(reply, BasePage({
 				img: this.meta.bannerUrl ?? undefined,
-				title: this.meta.name ?? 'Misskey',
-				desc: this.meta.description ?? undefined,
+				// JUICE: <title>・og:title・og:description・opensearchのtitle属性等
+				// プレーンテキスト表示箇所(埋め込みURLプレビューカードの元にもなる)へ渡るため、
+				// HTMLタグを除去しておく(info-card.tsxのようにHTML表示を意図した場所は対象外)
+				title: stripHtmlTags(this.meta.name ?? 'Misskey'),
+				desc: this.meta.description != null ? stripHtmlTags(this.meta.description) : undefined,
 				...(await this.htmlTemplateService.getCommonData()),
 				...data,
 			}));
@@ -806,7 +816,8 @@ export class ClientServerService {
 
 			reply.header('Cache-Control', 'public, max-age=3600');
 			return await HtmlTemplateService.replyHtml(reply, BaseEmbed({
-				title: this.meta.name ?? 'Misskey',
+				// JUICE: embedページの<title>等プレーンテキスト表示箇所へ渡るため、HTMLタグを除去しておく
+				title: stripHtmlTags(this.meta.name ?? 'Misskey'),
 				...(await this.htmlTemplateService.getCommonData()),
 				embedCtxJson: htmlSafeJsonStringify({
 					user: _user,
@@ -836,7 +847,8 @@ export class ClientServerService {
 
 			reply.header('Cache-Control', 'public, max-age=3600');
 			return await HtmlTemplateService.replyHtml(reply, BaseEmbed({
-				title: this.meta.name ?? 'Misskey',
+				// JUICE: embedページの<title>等プレーンテキスト表示箇所へ渡るため、HTMLタグを除去しておく
+				title: stripHtmlTags(this.meta.name ?? 'Misskey'),
 				...(await this.htmlTemplateService.getCommonData()),
 				embedCtxJson: htmlSafeJsonStringify({
 					note: _note,
@@ -857,7 +869,8 @@ export class ClientServerService {
 
 			reply.header('Cache-Control', 'public, max-age=3600');
 			return await HtmlTemplateService.replyHtml(reply, BaseEmbed({
-				title: this.meta.name ?? 'Misskey',
+				// JUICE: embedページの<title>等プレーンテキスト表示箇所へ渡るため、HTMLタグを除去しておく
+				title: stripHtmlTags(this.meta.name ?? 'Misskey'),
 				...(await this.htmlTemplateService.getCommonData()),
 				embedCtxJson: htmlSafeJsonStringify({
 					clip: _clip,
@@ -870,7 +883,8 @@ export class ClientServerService {
 
 			reply.header('Cache-Control', 'public, max-age=3600');
 			return await HtmlTemplateService.replyHtml(reply, BaseEmbed({
-				title: this.meta.name ?? 'Misskey',
+				// JUICE: embedページの<title>等プレーンテキスト表示箇所へ渡るため、HTMLタグを除去しておく
+				title: stripHtmlTags(this.meta.name ?? 'Misskey'),
 				...(await this.htmlTemplateService.getCommonData()),
 			}));
 		});

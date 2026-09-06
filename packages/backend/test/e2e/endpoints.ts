@@ -1479,8 +1479,24 @@ describe('Endpoints', () => {
 				emojiRequestEnabled: false,
 				avatarDecorationRequestEnabled: false,
 				rankingAggregationPeriodHours: 12,
+				rankingDisplayCount: 3,
 				relayTimelineEnabled: false,
 				latexEnabled: true,
+				reactionPiggybackOnRemoteEnabled: false,
+				contactFormEnabled: true,
+				contactFormLimit: 3,
+				contactFormRequireAuth: false,
+				contactFormContentMaxLength: 10000,
+				contactFormCategories: [
+					{ key: 'general', text: '一般', enabled: true, order: 1, isDefault: true },
+					{ key: 'bug_report', text: 'バグ報告', enabled: true, order: 2, isDefault: false },
+					{ key: 'feature_request', text: '機能要望', enabled: true, order: 3, isDefault: false },
+					{ key: 'account_issue', text: 'アカウント関連', enabled: true, order: 4, isDefault: false },
+					{ key: 'technical_issue', text: '技術的な問題', enabled: true, order: 5, isDefault: false },
+					{ key: 'content_issue', text: 'コンテンツ関連', enabled: true, order: 6, isDefault: false },
+					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
+				],
+				customSplashText: [],
 			});
 		});
 
@@ -1565,6 +1581,76 @@ describe('Endpoints', () => {
 				reason: 'role-based approver',
 			}, approver);
 			assert.strictEqual(reject.status, 204);
+
+			// JUICE: 却下したユーザー(モデレーターでない権限付与ユーザー)がreviewerとして記録されることを確認
+			const rejectedList = await api('admin/emoji-requests/list', { state: 'rejected' }, approver);
+			assert.strictEqual(rejectedList.status, 200);
+			const rejected = (rejectedList.body as any[]).find((r: any) => r.id === created.body.id);
+			assert.notStrictEqual(rejected, undefined);
+			assert.strictEqual(rejected.reviewer.id, approver.id);
+		});
+	});
+
+	// JUICE: 同一画面から複数件をまとめて申請できるemoji-requests/create-manyのe2eテスト
+	describe('emoji-requests/create-many', () => {
+		beforeAll(async () => {
+			await api('admin/juice/update-settings', { emojiRequestEnabled: true }, alice);
+		});
+
+		afterAll(async () => {
+			await api('admin/juice/update-settings', { emojiRequestEnabled: false }, alice);
+		});
+
+		test('複数件をまとめて作成できる', async () => {
+			const file1 = await uploadFile(bob);
+			const file2 = await uploadFile(bob);
+			const created = await api('emoji-requests/create-many', {
+				requests: [
+					{ fileId: file1.body!.id, name: 'batch_emoji_one' },
+					{ fileId: file2.body!.id, name: 'batch_emoji_two' },
+				],
+			}, bob);
+			assert.strictEqual(created.status, 200);
+			assert.strictEqual((created.body as any[]).length, 2);
+			assert.strictEqual((created.body as any[])[0].name, 'batch_emoji_one');
+			assert.strictEqual((created.body as any[])[1].name, 'batch_emoji_two');
+
+			const list = await api('admin/emoji-requests/list', { state: 'pending' }, alice);
+			assert.strictEqual(list.status, 200);
+			for (const item of created.body as any[]) {
+				assert.notStrictEqual((list.body as any[]).find((r: any) => r.id === item.id), undefined);
+				await api('admin/emoji-requests/reject', { requestId: item.id, reason: 'cleanup' }, alice);
+			}
+		});
+
+		test('1件でも無効なファイルがあれば全体が拒否され、有効な方も作成されない', async () => {
+			const file1 = await uploadFile(bob);
+
+			const created = await api('emoji-requests/create-many', {
+				requests: [
+					{ fileId: file1.body!.id, name: 'batch_valid_notcreated' },
+					{ fileId: '000000000000000000000000', name: 'batch_invalid_notcreated' },
+				],
+			}, bob);
+			assert.strictEqual(created.status, 400);
+			assert.strictEqual(castAsError(created.body as any).error.code, 'NO_SUCH_FILE');
+
+			const after = await api('emoji-requests/list', { limit: 100 }, bob);
+			assert.strictEqual((after.body as any[]).some((r: any) => r.name === 'batch_valid_notcreated'), false);
+		});
+
+		test('申請数の上限を超えるバッチは全体が拒否される', async () => {
+			// JUICE: emojiRequestLimitの既定値は3。既にpending中の申請が無い前提で、
+			// 上限を超える4件を一度に送って拒否されることを確認する
+			const files = await Promise.all([1, 2, 3, 4].map(() => uploadFile(bob)));
+			const created = await api('emoji-requests/create-many', {
+				requests: files.map((f, i) => ({ fileId: f.body!.id, name: `batch_over_limit_${i}` })),
+			}, bob);
+			assert.strictEqual(created.status, 400);
+			assert.strictEqual(castAsError(created.body as any).error.code, 'TOO_MANY_PENDING_REQUESTS');
+
+			const after = await api('emoji-requests/list', { limit: 100 }, bob);
+			assert.strictEqual((after.body as any[]).some((r: any) => r.name.startsWith('batch_over_limit_')), false);
 		});
 	});
 
@@ -1670,6 +1756,15 @@ describe('Endpoints', () => {
 			assert.notStrictEqual(reviewed, undefined);
 			assert.strictEqual(reviewed!.status, 'rejected');
 			assert.strictEqual(reviewed!.rejectReason, '不適切な画像のため');
+			// JUICE: reviewer(審査したモデレーター)は通報のassigneeと同様、申請者自身には公開しない
+			assert.strictEqual((reviewed as any).reviewer, undefined);
+
+			// JUICE: reviewerは管理画面向けの一覧でのみ公開される
+			const adminList = await api('admin/avatar-decoration-requests/list', { state: 'rejected' }, alice);
+			assert.strictEqual(adminList.status, 200);
+			const adminReviewed = (adminList.body as any[]).find((r: any) => r.id === created.body.id);
+			assert.notStrictEqual(adminReviewed, undefined);
+			assert.strictEqual(adminReviewed.reviewer.id, alice.id);
 		});
 
 		test('一般ユーザーは管理者用エンドポイントを使えない', async () => {
@@ -1712,6 +1807,69 @@ describe('Endpoints', () => {
 				reason: 'role-based approver',
 			}, approver);
 			assert.strictEqual(reject.status, 204);
+		});
+	});
+
+	// JUICE: 同一画面から複数件をまとめて申請できるavatar-decoration-requests/create-manyのe2eテスト
+	describe('avatar-decoration-requests/create-many', () => {
+		beforeAll(async () => {
+			await api('admin/juice/update-settings', { avatarDecorationRequestEnabled: true }, alice);
+		});
+
+		afterAll(async () => {
+			await api('admin/juice/update-settings', { avatarDecorationRequestEnabled: false }, alice);
+		});
+
+		test('複数件をまとめて作成できる', async () => {
+			const file1 = await uploadFile(bob);
+			const file2 = await uploadFile(bob);
+			const created = await api('avatar-decoration-requests/create-many', {
+				requests: [
+					{ fileId: file1.body!.id, name: 'batch_deco_one' },
+					{ fileId: file2.body!.id, name: 'batch_deco_two' },
+				],
+			}, bob);
+			assert.strictEqual(created.status, 200);
+			assert.strictEqual((created.body as any[]).length, 2);
+			assert.strictEqual((created.body as any[])[0].name, 'batch_deco_one');
+			assert.strictEqual((created.body as any[])[1].name, 'batch_deco_two');
+
+			const list = await api('admin/avatar-decoration-requests/list', { state: 'pending' }, alice);
+			assert.strictEqual(list.status, 200);
+			for (const item of created.body as any[]) {
+				assert.notStrictEqual((list.body as any[]).find((r: any) => r.id === item.id), undefined);
+				await api('admin/avatar-decoration-requests/reject', { requestId: item.id, reason: 'cleanup' }, alice);
+			}
+		});
+
+		test('1件でも無効なファイルがあれば全体が拒否され、有効な方も作成されない', async () => {
+			const file1 = await uploadFile(bob);
+
+			const created = await api('avatar-decoration-requests/create-many', {
+				requests: [
+					{ fileId: file1.body!.id, name: 'batch_deco_valid_notcreated' },
+					{ fileId: '000000000000000000000000', name: 'batch_deco_invalid_notcreated' },
+				],
+			}, bob);
+			assert.strictEqual(created.status, 400);
+			assert.strictEqual(castAsError(created.body as any).error.code, 'NO_SUCH_FILE');
+
+			const after = await api('avatar-decoration-requests/list', { limit: 100 }, bob);
+			assert.strictEqual((after.body as any[]).some((r: any) => r.name === 'batch_deco_valid_notcreated'), false);
+		});
+
+		test('申請数の上限を超えるバッチは全体が拒否される', async () => {
+			// JUICE: avatarDecorationRequestLimitの既定値は3。既にpending中の申請が無い前提で、
+			// 上限を超える4件を一度に送って拒否されることを確認する
+			const files = await Promise.all([1, 2, 3, 4].map(() => uploadFile(bob)));
+			const created = await api('avatar-decoration-requests/create-many', {
+				requests: files.map((f, i) => ({ fileId: f.body!.id, name: `batch_deco_over_limit_${i}` })),
+			}, bob);
+			assert.strictEqual(created.status, 400);
+			assert.strictEqual(castAsError(created.body as any).error.code, 'TOO_MANY_PENDING_REQUESTS');
+
+			const after = await api('avatar-decoration-requests/list', { limit: 100 }, bob);
+			assert.strictEqual((after.body as any[]).some((r: any) => r.name.startsWith('batch_deco_over_limit_')), false);
 		});
 	});
 
@@ -2120,7 +2278,7 @@ describe('Endpoints', () => {
 			assert.strictEqual(approveRes.status, 403);
 			assert.strictEqual(castAsError(approveRes.body as any).error.code, 'ROLE_PERMISSION_DENIED');
 
-			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, bob);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id, reason: 'test decline reason' }, bob);
 			assert.strictEqual(declineRes.status, 403);
 			assert.strictEqual(castAsError(declineRes.body as any).error.code, 'ROLE_PERMISSION_DENIED');
 		});
@@ -2186,7 +2344,7 @@ describe('Endpoints', () => {
 			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
 			assert.ok(target);
 
-			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id, reason: 'test decline reason' }, alice);
 			assert.strictEqual(declineRes.status, 204);
 
 			// 却下は承認前アカウントの物理削除(user行が即座に消える)なので、
@@ -2204,7 +2362,7 @@ describe('Endpoints', () => {
 			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
 			assert.ok(target);
 
-			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id, reason: 'test decline reason' }, alice);
 			assert.strictEqual(declineRes.status, 204);
 
 			// 却下された時点で一度も承認されていないため、通常のアカウント削除と異なり
@@ -2223,7 +2381,7 @@ describe('Endpoints', () => {
 
 			const res = await api('juice/signup-check-status', { code: checkCode });
 			assert.strictEqual(res.status, 200);
-			assert.deepStrictEqual(res.body, { status: 'pending' });
+			assert.deepStrictEqual(res.body, { status: 'pending', reason: null });
 		});
 
 		test('signup-check-status: 承認するとapprovedになる', async () => {
@@ -2240,10 +2398,10 @@ describe('Endpoints', () => {
 
 			const res = await api('juice/signup-check-status', { code: checkCode });
 			assert.strictEqual(res.status, 200);
-			assert.deepStrictEqual(res.body, { status: 'approved' });
+			assert.deepStrictEqual(res.body, { status: 'approved', reason: null });
 		});
 
-		test('signup-check-status: 却下してユーザーが削除された後もdeclinedを確認できる', async () => {
+		test('signup-check-status: 却下してユーザーが削除された後もdeclinedと理由を確認できる', async () => {
 			const username = randomString();
 			const signupRes = await api('signup', { username, password: 'test', reason: 'test' });
 			assert.strictEqual(signupRes.status, 200);
@@ -2252,18 +2410,63 @@ describe('Endpoints', () => {
 			const list = await api('admin/juice/pending-signups', {}, alice);
 			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
 			assert.ok(target);
-			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id, reason: 'test decline reason' }, alice);
 			assert.strictEqual(declineRes.status, 204);
 
 			const res = await api('juice/signup-check-status', { code: checkCode });
 			assert.strictEqual(res.status, 200);
-			assert.deepStrictEqual(res.body, { status: 'declined' });
+			assert.deepStrictEqual(res.body, { status: 'declined', reason: 'test decline reason' });
+		});
+
+		// JUICE: 承認/却下履歴一覧(admin/juice/signup-approval-history)のe2eテスト。
+		// 却下されたアカウントは物理削除されるため、username/signupReasonのスナップショットが
+		// 削除後も参照できること、reviewerが管理画面向けにのみ記録されることを確認する。
+		test('signup-approval-history: 承認するとusername・reason・reviewerが履歴に記録される', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'approve history test reason' });
+			assert.strictEqual(signupRes.status, 200);
+
+			const list = await api('admin/juice/pending-signups', {}, alice);
+			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
+			assert.ok(target);
+			const approveRes = await api('admin/juice/approve-signup', { userId: target.id }, alice);
+			assert.strictEqual(approveRes.status, 204);
+
+			const history = await api('admin/juice/signup-approval-history', { state: 'approved' }, alice);
+			assert.strictEqual(history.status, 200);
+			const entry = (history.body as any[]).find((e: any) => e.username === username);
+			assert.notStrictEqual(entry, undefined);
+			assert.strictEqual(entry.signupReason, 'approve history test reason');
+			assert.strictEqual(entry.status, 'approved');
+			assert.strictEqual(entry.reviewer.id, alice.id);
+			assert.notStrictEqual(entry.reviewedAt, null);
+		});
+
+		test('signup-approval-history: 却下してユーザーが削除された後もusername・signupReasonのスナップショットが残る', async () => {
+			const username = randomString();
+			const signupRes = await api('signup', { username, password: 'test', reason: 'decline history test reason' });
+			assert.strictEqual(signupRes.status, 200);
+
+			const list = await api('admin/juice/pending-signups', {}, alice);
+			const target = (list.body as Array<{ id: string, username: string }>).find(u => u.username === username);
+			assert.ok(target);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id, reason: 'decline history test reason for reject' }, alice);
+			assert.strictEqual(declineRes.status, 204);
+
+			const history = await api('admin/juice/signup-approval-history', { state: 'declined' }, alice);
+			assert.strictEqual(history.status, 200);
+			const entry = (history.body as any[]).find((e: any) => e.username === username);
+			assert.notStrictEqual(entry, undefined);
+			assert.strictEqual(entry.signupReason, 'decline history test reason');
+			assert.strictEqual(entry.reason, 'decline history test reason for reject');
+			assert.strictEqual(entry.status, 'declined');
+			assert.strictEqual(entry.reviewer.id, alice.id);
 		});
 
 		test('signup-check-status: 存在しないコードはnotFoundを返す', async () => {
 			const res = await api('juice/signup-check-status', { code: 'no-such-code' });
 			assert.strictEqual(res.status, 200);
-			assert.deepStrictEqual(res.body, { status: 'notFound' });
+			assert.deepStrictEqual(res.body, { status: 'notFound', reason: null });
 		});
 
 		test('juice/public-settings は無認証で現在の設定を反映する', async () => {
@@ -2277,6 +2480,19 @@ describe('Endpoints', () => {
 				avatarDecorationRequestEnabled: false,
 				relayTimelineEnabled: false,
 				latexEnabled: true,
+				reactionPiggybackOnRemoteEnabled: false,
+				contactFormEnabled: true,
+				contactFormRequireAuth: false,
+				contactFormContentMaxLength: 10000,
+				contactFormCategories: [
+					{ key: 'general', text: '一般', enabled: true, order: 1, isDefault: true },
+					{ key: 'bug_report', text: 'バグ報告', enabled: true, order: 2, isDefault: false },
+					{ key: 'feature_request', text: '機能要望', enabled: true, order: 3, isDefault: false },
+					{ key: 'account_issue', text: 'アカウント関連', enabled: true, order: 4, isDefault: false },
+					{ key: 'technical_issue', text: '技術的な問題', enabled: true, order: 5, isDefault: false },
+					{ key: 'content_issue', text: 'コンテンツ関連', enabled: true, order: 6, isDefault: false },
+					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
+				],
 			});
 		});
 
@@ -2287,7 +2503,7 @@ describe('Endpoints', () => {
 		});
 
 		test('存在しないユーザーは却下できない', async () => {
-			const res = await api('admin/juice/decline-signup', { userId: '000000000000000000000000' }, alice);
+			const res = await api('admin/juice/decline-signup', { userId: '000000000000000000000000', reason: 'test decline reason' }, alice);
 			assert.strictEqual(res.status, 404);
 			assert.strictEqual(castAsError(res.body as any).error.code, 'NO_SUCH_USER');
 		});
@@ -2321,7 +2537,7 @@ describe('Endpoints', () => {
 			const approveRes = await api('admin/juice/approve-signup', { userId: target.id }, alice);
 			assert.strictEqual(approveRes.status, 204);
 
-			const declineRes = await api('admin/juice/decline-signup', { userId: target.id }, alice);
+			const declineRes = await api('admin/juice/decline-signup', { userId: target.id, reason: 'test decline reason' }, alice);
 			assert.strictEqual(declineRes.status, 400);
 			assert.strictEqual(castAsError(declineRes.body as any).error.code, 'ALREADY_APPROVED');
 		});

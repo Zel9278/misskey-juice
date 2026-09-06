@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveLatexSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -47,6 +47,10 @@ export const meta = {
 				type: 'number',
 				optional: false, nullable: false,
 			},
+			rankingDisplayCount: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
 			relayTimelineEnabled: {
 				type: 'boolean',
 				optional: false, nullable: false,
@@ -54,6 +58,46 @@ export const meta = {
 			latexEnabled: {
 				type: 'boolean',
 				optional: false, nullable: false,
+			},
+			reactionPiggybackOnRemoteEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			contactFormEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			contactFormLimit: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
+			contactFormRequireAuth: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			contactFormContentMaxLength: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
+			contactFormCategories: {
+				type: 'array',
+				optional: false, nullable: false,
+				items: {
+					type: 'object',
+					optional: false, nullable: false,
+					properties: {
+						key: { type: 'string', optional: false, nullable: false },
+						text: { type: 'string', optional: false, nullable: false },
+						enabled: { type: 'boolean', optional: false, nullable: false },
+						order: { type: 'number', optional: false, nullable: false },
+						isDefault: { type: 'boolean', optional: false, nullable: false },
+					},
+				},
+			},
+			customSplashText: {
+				type: 'array',
+				optional: false, nullable: false,
+				items: { type: 'string', optional: false, nullable: false },
 			},
 		},
 	},
@@ -79,6 +123,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...resolveRankingSettings(settings),
 				...resolveRelayTimelineSettings(settings),
 				...resolveLatexSettings(settings),
+				...resolveReactionPiggybackSettings(settings),
+				...resolveContactFormSettings(settings),
+				...resolveCustomSplashTextSettings(settings),
 			};
 		});
 	}

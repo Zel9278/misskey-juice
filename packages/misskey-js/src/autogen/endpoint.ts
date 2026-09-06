@@ -41,6 +41,13 @@ import type {
 	AdminAvatarDecorationsUpdateRequest,
 	AdminCaptchaCurrentResponse,
 	AdminCaptchaSaveRequest,
+	AdminContactFormCategoriesResponse,
+	AdminContactFormDeleteRequest,
+	AdminContactFormListRequest,
+	AdminContactFormListResponse,
+	AdminContactFormShowRequest,
+	AdminContactFormShowResponse,
+	AdminContactFormUpdateRequest,
 	AdminDeleteAccountRequest,
 	AdminDeleteAllFilesOfAUserRequest,
 	AdminDriveFilesRequest,
@@ -88,6 +95,8 @@ import type {
 	AdminJuicePendingSignupsRequest,
 	AdminJuicePendingSignupsResponse,
 	AdminJuiceSettingsResponse,
+	AdminJuiceSignupApprovalHistoryRequest,
+	AdminJuiceSignupApprovalHistoryResponse,
 	AdminJuiceUpdateSettingsRequest,
 	AdminMetaResponse,
 	AdminPromoCreateRequest,
@@ -193,6 +202,8 @@ import type {
 	AuthSessionUserkeyResponse,
 	AvatarDecorationRequestsCreateRequest,
 	AvatarDecorationRequestsCreateResponse,
+	AvatarDecorationRequestsCreateManyRequest,
+	AvatarDecorationRequestsCreateManyResponse,
 	AvatarDecorationRequestsListRequest,
 	AvatarDecorationRequestsListResponse,
 	BlockingCreateRequest,
@@ -307,6 +318,8 @@ import type {
 	ClipsUnfavoriteRequest,
 	ClipsUpdateRequest,
 	ClipsUpdateResponse,
+	ContactFormSubmitRequest,
+	ContactFormSubmitResponse,
 	DriveResponse,
 	DriveFilesRequest,
 	DriveFilesResponse,
@@ -348,6 +361,8 @@ import type {
 	EmojiResponse,
 	EmojiRequestsCreateRequest,
 	EmojiRequestsCreateResponse,
+	EmojiRequestsCreateManyRequest,
+	EmojiRequestsCreateManyResponse,
 	EmojiRequestsListRequest,
 	EmojiRequestsListResponse,
 	EmojisResponse,
@@ -735,6 +750,11 @@ export type Endpoints = {
 	'admin/avatar-decorations/update': { req: AdminAvatarDecorationsUpdateRequest; res: EmptyResponse };
 	'admin/captcha/current': { req: EmptyRequest; res: AdminCaptchaCurrentResponse };
 	'admin/captcha/save': { req: AdminCaptchaSaveRequest; res: EmptyResponse };
+	'admin/contact-form/categories': { req: EmptyRequest; res: AdminContactFormCategoriesResponse };
+	'admin/contact-form/delete': { req: AdminContactFormDeleteRequest; res: EmptyResponse };
+	'admin/contact-form/list': { req: AdminContactFormListRequest; res: AdminContactFormListResponse };
+	'admin/contact-form/show': { req: AdminContactFormShowRequest; res: AdminContactFormShowResponse };
+	'admin/contact-form/update': { req: AdminContactFormUpdateRequest; res: EmptyResponse };
 	'admin/delete-account': { req: AdminDeleteAccountRequest; res: EmptyResponse };
 	'admin/delete-all-files-of-a-user': { req: AdminDeleteAllFilesOfAUserRequest; res: EmptyResponse };
 	'admin/drive/clean-remote-files': { req: EmptyRequest; res: EmptyResponse };
@@ -772,6 +792,7 @@ export type Endpoints = {
 	'admin/juice/decline-signup': { req: AdminJuiceDeclineSignupRequest; res: EmptyResponse };
 	'admin/juice/pending-signups': { req: AdminJuicePendingSignupsRequest; res: AdminJuicePendingSignupsResponse };
 	'admin/juice/settings': { req: EmptyRequest; res: AdminJuiceSettingsResponse };
+	'admin/juice/signup-approval-history': { req: AdminJuiceSignupApprovalHistoryRequest; res: AdminJuiceSignupApprovalHistoryResponse };
 	'admin/juice/update-settings': { req: AdminJuiceUpdateSettingsRequest; res: EmptyResponse };
 	'admin/meta': { req: EmptyRequest; res: AdminMetaResponse };
 	'admin/promo/create': { req: AdminPromoCreateRequest; res: EmptyResponse };
@@ -845,6 +866,7 @@ export type Endpoints = {
 	'auth/session/show': { req: AuthSessionShowRequest; res: AuthSessionShowResponse };
 	'auth/session/userkey': { req: AuthSessionUserkeyRequest; res: AuthSessionUserkeyResponse };
 	'avatar-decoration-requests/create': { req: AvatarDecorationRequestsCreateRequest; res: AvatarDecorationRequestsCreateResponse };
+	'avatar-decoration-requests/create-many': { req: AvatarDecorationRequestsCreateManyRequest; res: AvatarDecorationRequestsCreateManyResponse };
 	'avatar-decoration-requests/list': { req: AvatarDecorationRequestsListRequest; res: AvatarDecorationRequestsListResponse };
 	'blocking/create': { req: BlockingCreateRequest; res: BlockingCreateResponse };
 	'blocking/delete': { req: BlockingDeleteRequest; res: BlockingDeleteResponse };
@@ -915,6 +937,7 @@ export type Endpoints = {
 	'clips/show': { req: ClipsShowRequest; res: ClipsShowResponse };
 	'clips/unfavorite': { req: ClipsUnfavoriteRequest; res: EmptyResponse };
 	'clips/update': { req: ClipsUpdateRequest; res: ClipsUpdateResponse };
+	'contact-form/submit': { req: ContactFormSubmitRequest; res: ContactFormSubmitResponse };
 	'drive': { req: EmptyRequest; res: DriveResponse };
 	'drive/files': { req: DriveFilesRequest; res: DriveFilesResponse };
 	'drive/files/attached-chat-messages': { req: DriveFilesAttachedChatMessagesRequest; res: DriveFilesAttachedChatMessagesResponse };
@@ -938,6 +961,7 @@ export type Endpoints = {
 	'email-address/available': { req: EmailAddressAvailableRequest; res: EmailAddressAvailableResponse };
 	'emoji': { req: EmojiRequest; res: EmojiResponse };
 	'emoji-requests/create': { req: EmojiRequestsCreateRequest; res: EmojiRequestsCreateResponse };
+	'emoji-requests/create-many': { req: EmojiRequestsCreateManyRequest; res: EmojiRequestsCreateManyResponse };
 	'emoji-requests/list': { req: EmojiRequestsListRequest; res: EmojiRequestsListResponse };
 	'emojis': { req: EmptyRequest; res: EmojisResponse };
 	'endpoint': { req: EndpointRequest; res: EndpointResponse };

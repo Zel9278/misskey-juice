@@ -3,12 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+// JUICE: misskey-tempuraのtty(systemd風起動ログ)・customSplashText(ロゴ下のランダム文言)を参考に追加
 export function Splash(props: {
 	icon?: string | null;
+	customSplashText?: string[] | null;
 }) {
+	const splashText = getRandomSplashText(props.customSplashText);
+
 	return (
 		<div id="splash">
+			<div id="tty"></div>
 			<img id="splashIcon" src={props.icon || '/static-assets/splash.png'} />
+			{splashText != null ? <span id="splashText" safe>{splashText}</span> : null}
 			<div id="splashSpinner">
 				<svg class="spinner bg" viewBox="0 0 152 152" xmlns="http://www.w3.org/2000/svg">
 					<g transform="matrix(1,0,0,1,12,12)">
@@ -23,4 +29,9 @@ export function Splash(props: {
 			</div>
 		</div>
 	);
+}
+
+function getRandomSplashText(customSplashText: string[] | null | undefined): string | null {
+	if (customSplashText == null || customSplashText.length === 0) return null;
+	return customSplashText[Math.floor(Math.random() * customSplashText.length)];
 }

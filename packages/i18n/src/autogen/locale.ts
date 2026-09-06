@@ -4201,6 +4201,10 @@ export interface Locale extends ILocale {
      */
     "cannotLoad": string;
     /**
+     * プレビューできません
+     */
+    "cannotPreview": string;
+    /**
      * プロフィール表示回数
      */
     "numberOfProfileView": string;
@@ -5735,6 +5739,10 @@ export interface Locale extends ILocale {
      * スペースで区切るとAND指定になり、改行で区切るとOR指定になります。スラッシュで囲むと正規表現になります。一致した場合、サムネイルが表示されなくなります。
      */
     "urlPreviewSensitiveListDescription": string;
+    /**
+     * ピクセルアート拡大モード
+     */
+    "pixelatedZoom": string;
     "_imageEditing": {
         "_vars": {
             /**
@@ -8385,6 +8393,10 @@ export interface Locale extends ILocale {
              * 承認式新規登録の承認・却下
              */
             "canApproveSignups": string;
+            /**
+             * お問い合わせの処理(ステータス変更・担当者割り当て・削除)
+             */
+            "canProcessContactForms": string;
         };
         "_condition": {
             /**
@@ -8828,13 +8840,13 @@ export interface Locale extends ILocale {
              */
             "subject": string;
             /**
-             * アカウントの登録申請は却下されました。
+             * アカウントの登録申請は却下されました。理由: {reason}
              */
-            "html": string;
+            "html": ParameterizedString<"reason">;
             /**
-             * アカウントの登録申請は却下されました。
+             * アカウントの登録申請は却下されました。理由: {reason}
              */
-            "text": string;
+            "text": ParameterizedString<"reason">;
         };
         "emojiRequestApproved": {
             /**
@@ -9167,9 +9179,25 @@ export interface Locale extends ILocale {
              */
             "avatarDecorationRequest": string;
             /**
+             * 絵文字・アバターデコレーション申請の「差し替え申請」(既存の画像だけを差し替え可能)
+             */
+            "requestReplacement": string;
+            /**
              * 絵文字・アバターデコレーション・承認式新規登録の各申請の承認/却下権限を、モデレーターに限らずロール単位で個別に付与可能
              */
             "roleApprovalDelegation": string;
+            /**
+             * 他人のリアクションをクリックして自分も同じリアクションを付けられる「相乗り」(リモートサーバーのカスタム絵文字にも対応)
+             */
+            "reactionPiggyback": string;
+            /**
+             * 投稿への言語タグ付与、タイムライン・ノート検索・リアクション検索での言語による絞り込み
+             */
+            "postLanguage": string;
+            /**
+             * ノート検索・リアクション検索の高度な絞り込みオプション(AND/OR・除外ワード・添付ファイル・CW・返信・投票・公開範囲)
+             */
+            "advancedNoteSearch": string;
             /**
              * 投稿数・リアクション数のユーザーランキング
              */
@@ -9206,6 +9234,10 @@ export interface Locale extends ILocale {
              * ログイン試行の失敗をアカウント本人へ通知(アプリ内通知・メール)
              */
             "loginFailedNotification": string;
+            /**
+             * ログイン不要で送信できるお問い合わせフォーム(カテゴリ・返信方法選択、モデレーター向けの状態管理・担当者割り当て)
+             */
+            "contactForm": string;
         };
         /**
          * どういう経路で実装されたか
@@ -10276,6 +10308,10 @@ export interface Locale extends ILocale {
          */
         "read:admin:juice-pending-signups": string;
         /**
+         * 承認済み・却下済みのユーザー登録申請の履歴(審査したモデレーターを含む)を見る
+         */
+        "read:admin:juice-signup-approval-history": string;
+        /**
          * ユーザーの登録を承認する
          */
         "write:admin:juice-approve-signup": string;
@@ -10307,6 +10343,14 @@ export interface Locale extends ILocale {
          * アバターデコレーション申請を却下する
          */
         "write:admin:avatar-decoration-requests-reject": string;
+        /**
+         * お問い合わせの一覧を見る
+         */
+        "read:admin:contact-form": string;
+        /**
+         * お問い合わせを更新・削除する
+         */
+        "write:admin:contact-form": string;
         /**
          * モデレーションノートを操作する
          */
@@ -10765,7 +10809,7 @@ export interface Locale extends ILocale {
         };
         "_jobQueue": {
             /**
-             * 音を鳴らす
+             * 鳴らす音
              */
             "sound": string;
         };
@@ -10949,6 +10993,16 @@ export interface Locale extends ILocale {
          * 他サーバーへの配信を行いません
          */
         "disableFederationDescription": string;
+    };
+    "_postLanguage": {
+        /**
+         * 投稿の言語
+         */
+        "title": string;
+        /**
+         * 自動(表示言語の設定に従う)
+         */
+        "auto": string;
     };
     "_postForm": {
         /**
@@ -11662,6 +11716,22 @@ export interface Locale extends ILocale {
          */
         "loginFailed": string;
         /**
+         * 絵文字申請「{name}」が承認されました
+         */
+        "emojiRequestApproved": ParameterizedString<"name">;
+        /**
+         * 絵文字申請「{name}」が却下されました
+         */
+        "emojiRequestRejected": ParameterizedString<"name">;
+        /**
+         * アバターデコレーション申請「{name}」が承認されました
+         */
+        "avatarDecorationRequestApproved": ParameterizedString<"name">;
+        /**
+         * アバターデコレーション申請「{name}」が却下されました
+         */
+        "avatarDecorationRequestRejected": ParameterizedString<"name">;
+        /**
          * アクセストークンが作成されました
          */
         "createToken": string;
@@ -11746,6 +11816,22 @@ export interface Locale extends ILocale {
              * ログイン失敗
              */
             "loginFailed": string;
+            /**
+             * 絵文字申請が承認された
+             */
+            "emojiRequestApproved": string;
+            /**
+             * 絵文字申請が却下された
+             */
+            "emojiRequestRejected": string;
+            /**
+             * アバターデコレーション申請が承認された
+             */
+            "avatarDecorationRequestApproved": string;
+            /**
+             * アバターデコレーション申請が却下された
+             */
+            "avatarDecorationRequestRejected": string;
             /**
              * アクセストークンの作成
              */
@@ -11946,6 +12032,10 @@ export interface Locale extends ILocale {
              * ダイレクトメッセージ
              */
             "chat": string;
+            /**
+             * お気に入り
+             */
+            "favorites": string;
         };
     };
     "_dialog": {
@@ -12066,6 +12156,10 @@ export interface Locale extends ILocale {
              * アバターデコレーション申請があったとき
              */
             "avatarDecorationRequestCreated": string;
+            /**
+             * お問い合わせがあったとき
+             */
+            "receivedContactForm": string;
         };
         /**
          * Webhookを削除しますか？
@@ -12209,6 +12303,26 @@ export interface Locale extends ILocale {
          * アバターデコレーション申請を却下
          */
         "rejectAvatarDecorationRequest": string;
+        /**
+         * 孤立したオブジェクトストレージファイルの整理
+         */
+        "cleanupOrphanedObjectStorageFiles": string;
+        /**
+         * 確認のみ、実際には削除していません
+         */
+        "cleanupDryRunSuffix": string;
+        /**
+         * 走査件数
+         */
+        "cleanupScanned": string;
+        /**
+         * 削除件数
+         */
+        "cleanupDeleted": string;
+        /**
+         * 削除に失敗したキー
+         */
+        "cleanupFailed": string;
         /**
          * ユーザーのモデレーションノート更新
          */
@@ -13350,6 +13464,94 @@ export interface Locale extends ILocale {
          * 投稿日時to
          */
         "postTo": string;
+        /**
+         * 複数のキーワードをスペースで区切ると、既定ではすべてを含む投稿だけが検索されます(AND検索)。「OR」「-」等の記号を検索欄に入力しても構文としては扱われません。いずれかを含む投稿の検索や特定の単語の除外は、下の「高度な検索オプション」から行えます。
+         */
+        "queryHint": string;
+        /**
+         * 高度な検索オプション
+         */
+        "advancedSearch": string;
+        /**
+         * 複数キーワードの検索方法
+         */
+        "searchOperatorLabel": string;
+        /**
+         * すべて含む(AND)
+         */
+        "searchOperatorAnd": string;
+        /**
+         * いずれかを含む(OR)
+         */
+        "searchOperatorOr": string;
+        /**
+         * 除外ワード
+         */
+        "excludeWords": string;
+        /**
+         * カンマ区切りで、検索結果から除外したい単語を指定できます
+         */
+        "excludeWordsCaption": string;
+        /**
+         * 添付ファイル
+         */
+        "hasFilesLabel": string;
+        /**
+         * 閲覧注意(CW)
+         */
+        "hasCwLabel": string;
+        /**
+         * 返信
+         */
+        "hasReplyLabel": string;
+        /**
+         * 投票
+         */
+        "hasPollLabel": string;
+        /**
+         * あり
+         */
+        "optionWith": string;
+        /**
+         * なし
+         */
+        "optionWithout": string;
+        /**
+         * 投稿の言語
+         */
+        "langLabel": string;
+        /**
+         * 自分のリアクション
+         */
+        "myReactionLabel": string;
+        /**
+         * 自分が過去に投稿へ付けたリアクションをもとに投稿を検索します。下から絞り込み方を選び、「検索」を押してください。
+         */
+        "myReactionPageHint": string;
+        /**
+         * 何かしらリアクションした投稿
+         */
+        "myReactionAny": string;
+        /**
+         * これまでに何かしらのリアクションを付けたすべての投稿が対象になります
+         */
+        "myReactionAnyCaption": string;
+        /**
+         * 特定のリアクションをした投稿
+         */
+        "myReactionSpecific": string;
+        /**
+         * 下のボタンから絵文字を選ぶと、そのリアクションを付けた投稿だけに絞り込めます
+         */
+        "myReactionSpecificCaption": string;
+        /**
+         * リアクションを選択
+         */
+        "selectReaction": string;
+        /**
+         * キーワードで絞り込む(省略可)
+         */
+        "narrowByKeywordPlaceholder": string;
     };
     "_serverSetupWizard": {
         /**
@@ -14205,6 +14407,10 @@ export interface Locale extends ILocale {
          */
         "rankingPeriodHours": string;
         /**
+         * 表示する人数
+         */
+        "rankingDisplayCount": string;
+        /**
          * リレータイムライン
          */
         "relayTimeline": string;
@@ -14237,6 +14443,30 @@ export interface Locale extends ILocale {
          */
         "relayTimelineFilterEmpty": string;
         /**
+         * 起動画面
+         */
+        "splashSettingsTitle": string;
+        /**
+         * 起動画面の表示文言
+         */
+        "customSplashText": string;
+        /**
+         * 起動時のロード画面にロゴの下へランダムで1つ表示する文言です。1行に1件入力してください(空行は無視されます)。何も設定しない場合は表示されません。
+         */
+        "customSplashTextDescription": string;
+        /**
+         * {current} / {max} 行
+         */
+        "customSplashTextLineCountCaption": ParameterizedString<"current" | "max">;
+        /**
+         * 設定できる行数の上限を超えています。
+         */
+        "customSplashTextTooManyLines": string;
+        /**
+         * 1行あたりの文字数上限(256文字)を超えている行が{n}件あります。
+         */
+        "customSplashTextLineTooLong": ParameterizedString<"n">;
+        /**
          * ウィジェットの表示位置
          */
         "widgetsSide": string;
@@ -14256,6 +14486,26 @@ export interface Locale extends ILocale {
          * 無効にすると、ノートなどに含まれる数式は整形されず、ソースがそのままコードとして表示されます。
          */
         "latexEnabledCaption": string;
+        /**
+         * リアクションの相乗り
+         */
+        "reactionPiggyback": string;
+        /**
+         * リモートのリアクションへの相乗りを許可する
+         */
+        "reactionPiggybackOnRemoteEnabled": string;
+        /**
+         * 他のサーバーのカスタム絵文字によるリアクションをクリックして、自分も同じリアクションを付けられるようにします(ローカルのカスタム絵文字・Unicode絵文字によるリアクションへの相乗りには影響しません)。有効にすると、他のサーバーの絵文字画像を著作権者の許諾なく表示・使用することになる可能性があります。有効化は管理者の自己責任で行ってください。
+         */
+        "reactionPiggybackOnRemoteEnabledCaption": string;
+        /**
+         * タイムラインに表示する言語
+         */
+        "filteredLanguages": string;
+        /**
+         * チェックした言語の投稿だけをホーム・ローカル・グローバルタイムラインに表示します。1つもチェックしない場合は、すべての言語の投稿を表示します。言語が指定されていない投稿は、この設定に関わらず常に表示されます。
+         */
+        "filteredLanguagesCaption": string;
         /**
          * 投票を追加
          */
@@ -14277,6 +14527,10 @@ export interface Locale extends ILocale {
          */
         "thereArePendingAvatarDecorationRequestsWarning": string;
         /**
+         * 未対応のお問い合わせがあります。
+         */
+        "thereArePendingContactFormsWarning": string;
+        /**
          * 新しい絵文字申請があります。
          */
         "newEmojiRequestToast": string;
@@ -14289,6 +14543,10 @@ export interface Locale extends ILocale {
          */
         "newAvatarDecorationRequestToast": string;
         /**
+         * 新しいお問い合わせがあります。
+         */
+        "newContactFormToast": string;
+        /**
          * ニックネーム
          */
         "nickname": string;
@@ -14296,6 +14554,14 @@ export interface Locale extends ILocale {
          * ニックネームを設定
          */
         "addNickname": string;
+        /**
+         * ローカルユーザーの投稿だけ表示
+         */
+        "localOnlyInHomeTimeline": string;
+        /**
+         * {n}件選択中
+         */
+        "nSelected": ParameterizedString<"n">;
     };
     "_juiceApprovals": {
         /**
@@ -14306,6 +14572,10 @@ export interface Locale extends ILocale {
          * 承認待ちのユーザーはいません。
          */
         "noPendingSignups": string;
+        /**
+         * この状態の登録申請はありません。
+         */
+        "noHistory": string;
         /**
          * 登録理由
          */
@@ -14323,9 +14593,37 @@ export interface Locale extends ILocale {
          */
         "approveConfirm": ParameterizedString<"username">;
         /**
-         * @{username} の登録を却下しますか？アカウントは削除されます。この操作は取り消せません。
+         * 却下理由を入力してください
          */
-        "declineConfirm": ParameterizedString<"username">;
+        "declineReasonTitle": string;
+        /**
+         * @{username} のアカウントは削除されます。この操作は取り消せません。
+         */
+        "declineWarning": ParameterizedString<"username">;
+        /**
+         * 審査待ち
+         */
+        "statusPending": string;
+        /**
+         * 承認済み
+         */
+        "statusApproved": string;
+        /**
+         * 却下
+         */
+        "statusDeclined": string;
+        /**
+         * 却下理由
+         */
+        "declineReason": string;
+        /**
+         * 審査者
+         */
+        "reviewedBy": string;
+        /**
+         * この申請は履歴機能の追加より前に処理されたため、詳細情報の一部は表示できません。
+         */
+        "historySnapshotUnavailable": string;
     };
     "_emojiRequestPage": {
         /**
@@ -14333,9 +14631,13 @@ export interface Locale extends ILocale {
          */
         "newRequest": string;
         /**
-         * 自分の申請一覧
+         * 審査待ち
          */
-        "myRequests": string;
+        "pendingRequests": string;
+        /**
+         * 結果
+         */
+        "requestResults": string;
         /**
          * この機能は現在無効になっています。
          */
@@ -14349,6 +14651,26 @@ export interface Locale extends ILocale {
          */
         "license": string;
         /**
+         * プレビュー
+         */
+        "preview": string;
+        /**
+         * この絵文字をノートにリアクションしたときの見た目のサンプルです
+         */
+        "previewCaption": string;
+        /**
+         * これはサンプルのノートです
+         */
+        "previewSampleNoteText": string;
+        /**
+         * 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できます
+         */
+        "multipleRequestsHint": string;
+        /**
+         * {n}件目
+         */
+        "requestNumber": ParameterizedString<"n">;
+        /**
          * 審査後にこの画像をDriveから削除する
          */
         "deleteFileAfterReview": string;
@@ -14360,6 +14682,10 @@ export interface Locale extends ILocale {
          * 申請はまだありません。
          */
         "noRequests": string;
+        /**
+         * 審査待ちの申請はありません。
+         */
+        "noPendingRequests": string;
         /**
          * 審査待ち
          */
@@ -14376,6 +14702,38 @@ export interface Locale extends ILocale {
          * 却下理由
          */
         "rejectReason": string;
+        /**
+         * 審査者
+         */
+        "reviewedBy": string;
+        /**
+         * 差し替え申請にする
+         */
+        "replacementRequest": string;
+        /**
+         * 新しい絵文字としてではなく、自分が過去に申請して作成された既存の絵文字の画像だけを差し替えます。名前・カテゴリ・タグ等は変更されません
+         */
+        "replacementRequestCaption": string;
+        /**
+         * 差し替える絵文字を選択
+         */
+        "selectTargetEmoji": string;
+        /**
+         * 差し替え可能な絵文字がありません。自分の申請が承認され、絵文字として登録されているものだけが選べます
+         */
+        "noReplaceableEmojis": string;
+        /**
+         * 差し替え対象
+         */
+        "replacementTarget": string;
+        /**
+         * 変更
+         */
+        "changeTarget": string;
+        /**
+         * 差し替え申請
+         */
+        "replacementRequestBadge": string;
     };
     "_emojiRequestApprovals": {
         /**
@@ -14386,6 +14744,10 @@ export interface Locale extends ILocale {
          * 審査待ちの絵文字申請はありません。
          */
         "noPendingRequests": string;
+        /**
+         * この状態の絵文字申請はありません。
+         */
+        "noRequests": string;
         /**
          * 承認
          */
@@ -14399,9 +14761,45 @@ export interface Locale extends ILocale {
          */
         "approveConfirm": ParameterizedString<"name">;
         /**
+         * 「{name}」の画像を差し替えますか？(名前・タグ等は変更されません)
+         */
+        "approveReplacementConfirm": ParameterizedString<"name">;
+        /**
          * 却下理由を入力してください
          */
         "rejectReasonTitle": string;
+        /**
+         * 差し替え申請
+         */
+        "replacementRequest": string;
+        /**
+         * 現在の画像
+         */
+        "currentImage": string;
+        /**
+         * 新しい画像
+         */
+        "newImage": string;
+        /**
+         * 承認前に内容を編集する
+         */
+        "editOnApprove": string;
+        /**
+         * 編集理由
+         */
+        "editReason": string;
+        /**
+         * 内容を変更した理由を入力してください(承認履歴に記録されます)
+         */
+        "editReasonCaption": string;
+        /**
+         * 内容を編集する場合は、編集理由の入力が必須です。
+         */
+        "editReasonRequiredError": string;
+        /**
+         * 編集前の内容
+         */
+        "beforeEdit": string;
     };
     "_avatarDecorationRequestPage": {
         /**
@@ -14409,9 +14807,13 @@ export interface Locale extends ILocale {
          */
         "newRequest": string;
         /**
-         * 自分の申請一覧
+         * 審査待ち
          */
-        "myRequests": string;
+        "pendingRequests": string;
+        /**
+         * 結果
+         */
+        "requestResults": string;
         /**
          * この機能は現在無効になっています。
          */
@@ -14429,6 +14831,18 @@ export interface Locale extends ILocale {
          */
         "preview": string;
         /**
+         * 角度・位置・反転はプレビュー確認用です。実際の角度・位置は、承認後に装着するユーザーごとに個別に設定されます
+         */
+        "previewAdjustHint": string;
+        /**
+         * 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できます
+         */
+        "multipleRequestsHint": string;
+        /**
+         * {n}件目
+         */
+        "requestNumber": ParameterizedString<"n">;
+        /**
          * 審査後にこの画像をDriveから削除する
          */
         "deleteFileAfterReview": string;
@@ -14440,6 +14854,10 @@ export interface Locale extends ILocale {
          * 申請はまだありません。
          */
         "noRequests": string;
+        /**
+         * 審査待ちの申請はありません。
+         */
+        "noPendingRequests": string;
         /**
          * 審査待ち
          */
@@ -14456,6 +14874,38 @@ export interface Locale extends ILocale {
          * 却下理由
          */
         "rejectReason": string;
+        /**
+         * 審査者
+         */
+        "reviewedBy": string;
+        /**
+         * 差し替え申請にする
+         */
+        "replacementRequest": string;
+        /**
+         * 新しいデコレーションとしてではなく、自分が過去に申請して作成された既存のデコレーションの画像だけを差し替えます。名前・説明・カテゴリ等は変更されません
+         */
+        "replacementRequestCaption": string;
+        /**
+         * 差し替えるデコレーションを選択
+         */
+        "selectTargetAvatarDecoration": string;
+        /**
+         * 差し替え可能なデコレーションがありません。自分の申請が承認され、デコレーションとして登録されているものだけが選べます
+         */
+        "noReplaceableAvatarDecorations": string;
+        /**
+         * 差し替え対象
+         */
+        "replacementTarget": string;
+        /**
+         * 変更
+         */
+        "changeTarget": string;
+        /**
+         * 差し替え申請
+         */
+        "replacementRequestBadge": string;
     };
     "_avatarDecorationRequestApprovals": {
         /**
@@ -14466,6 +14916,10 @@ export interface Locale extends ILocale {
          * 審査待ちのアバターデコレーション申請はありません。
          */
         "noPendingRequests": string;
+        /**
+         * この状態のアバターデコレーション申請はありません。
+         */
+        "noRequests": string;
         /**
          * 承認
          */
@@ -14479,9 +14933,45 @@ export interface Locale extends ILocale {
          */
         "approveConfirm": ParameterizedString<"name">;
         /**
+         * 「{name}」の画像を差し替えますか？(名前・説明等は変更されません)
+         */
+        "approveReplacementConfirm": ParameterizedString<"name">;
+        /**
          * 却下理由を入力してください
          */
         "rejectReasonTitle": string;
+        /**
+         * 差し替え申請
+         */
+        "replacementRequest": string;
+        /**
+         * 現在の画像
+         */
+        "currentImage": string;
+        /**
+         * 新しい画像
+         */
+        "newImage": string;
+        /**
+         * 承認前に内容を編集する
+         */
+        "editOnApprove": string;
+        /**
+         * 編集理由
+         */
+        "editReason": string;
+        /**
+         * 内容を変更した理由を入力してください(承認履歴に記録されます)
+         */
+        "editReasonCaption": string;
+        /**
+         * 内容を編集する場合は、編集理由の入力が必須です。
+         */
+        "editReasonRequiredError": string;
+        /**
+         * 編集前の内容
+         */
+        "beforeEdit": string;
     };
     "_juiceRanking": {
         /**
@@ -14500,5 +14990,308 @@ export interface Locale extends ILocale {
          * まだランキングデータがありません。
          */
         "empty": string;
+    };
+    "_contactForm": {
+        "_userForm": {
+            /**
+             * お問い合わせフォーム
+             */
+            "contactForm": string;
+            /**
+             * お問い合わせ
+             */
+            "contactUs": string;
+            /**
+             * ご意見・不具合報告・その他のお問い合わせは、以下のフォームからお送りください。
+             */
+            "contactDescription": string;
+            /**
+             * カテゴリ
+             */
+            "category": string;
+            /**
+             * 件名
+             */
+            "subject": string;
+            /**
+             * お問い合わせの件名を入力してください
+             */
+            "subjectPlaceholder": string;
+            /**
+             * お問い合わせ内容
+             */
+            "content": string;
+            /**
+             * お問い合わせ内容を具体的にご記入ください(20文字以上)
+             */
+            "contentPlaceholder": string;
+            /**
+             * お名前
+             */
+            "name": string;
+            /**
+             * 任意項目です。ニックネーム等でも構いません。
+             */
+            "nameCaption": string;
+            /**
+             * 山田太郎
+             */
+            "namePlaceholder": string;
+            /**
+             * 返信方法
+             */
+            "replyMethod": string;
+            /**
+             * メールで返信
+             */
+            "replyByEmail": string;
+            /**
+             * Misskeyのユーザー名宛てに返信
+             */
+            "replyByMisskey": string;
+            /**
+             * メールアドレス
+             */
+            "email": string;
+            /**
+             * your@example.com
+             */
+            "emailPlaceholder": string;
+            /**
+             * ユーザー名
+             */
+            "misskeyUsername": string;
+            /**
+             * ローカルユーザーは「@ユーザー名」、リモートユーザーは「@ユーザー名@ホスト名」の形式で入力してください。
+             */
+            "misskeyUsernameCaption": string;
+            /**
+             * @example
+             */
+            "misskeyUsernamePlaceholder": string;
+            /**
+             * 登録ユーザー
+             */
+            "registeredUser": string;
+            /**
+             * 送信する
+             */
+            "submit": string;
+            /**
+             * デバイス情報を含める
+             */
+            "includeDeviceInfo": string;
+            /**
+             * 技術的な不具合報告の際、OS・ブラウザ・画面サイズ等の情報を本文の末尾に添えると解決に役立つことがあります。
+             */
+            "includeDeviceInfoCaption": string;
+            /**
+             * 現在お問い合わせを受け付けていません
+             */
+            "contactFormDisabled": string;
+            /**
+             * このサーバーでは現在お問い合わせフォームが無効になっています。
+             * 他の方法でのお問い合わせ先が案内されている場合は、そちらをご利用ください。
+             */
+            "contactFormDisabledDescription": string;
+        };
+        "_submitComplete": {
+            /**
+             * 送信しました
+             */
+            "complete": string;
+            /**
+             * お問い合わせありがとうございました。返信をお待ちください。
+             */
+            "completeDescription": string;
+            /**
+             * トップへ戻る
+             */
+            "goToTop": string;
+        };
+        "_adminList": {
+            /**
+             * お問い合わせ一覧
+             */
+            "list": string;
+            /**
+             * 該当するお問い合わせはありません。
+             */
+            "noContacts": string;
+            /**
+             * お問い合わせの取得に失敗しました。
+             */
+            "failedToLoadContactForms": string;
+        };
+        "_adminStatus": {
+            /**
+             * 状態を更新
+             */
+            "updateStatus": string;
+            /**
+             * 未対応
+             */
+            "pending": string;
+            /**
+             * 対応中
+             */
+            "inProgress": string;
+            /**
+             * 対応済み
+             */
+            "resolved": string;
+            /**
+             * クローズ
+             */
+            "closed": string;
+        };
+        "_adminDetail": {
+            /**
+             * お問い合わせ内容
+             */
+            "submittedContent": string;
+            /**
+             * 連絡先情報
+             */
+            "contactInfo": string;
+            /**
+             * IPアドレス
+             */
+            "ipAddress": string;
+            /**
+             * ユーザーエージェント
+             */
+            "userAgent": string;
+            /**
+             * 管理者メモ
+             */
+            "adminNote": string;
+            /**
+             * 担当者を割り当て
+             */
+            "assign": string;
+            /**
+             * 担当者
+             */
+            "assignedUser": string;
+            /**
+             * @ユーザー名 またはニックネームを入力
+             */
+            "placeholderAssignedUser": string;
+            /**
+             * 送信日時
+             */
+            "submittedAt": string;
+            /**
+             * 削除しました
+             */
+            "deleted": string;
+            /**
+             * モデレーターのみ閲覧可能です
+             */
+            "piiHiddenForNonModerator": string;
+        };
+        "_category": {
+            /**
+             * カテゴリ管理
+             */
+            "categoryManagement": string;
+            /**
+             * 元に戻す
+             */
+            "reset": string;
+            /**
+             * キー(半角英数字)
+             */
+            "categoryKeyPlaceholder": string;
+            /**
+             * 表示名
+             */
+            "categoryTextPlaceholder": string;
+            /**
+             * 既定のカテゴリにする
+             */
+            "defaultCategory": string;
+            /**
+             * 表示順
+             */
+            "categoryOrderPlaceholder": string;
+            /**
+             * カテゴリを1つ以上設定してください。
+             */
+            "atLeastOneCategoryRequired": string;
+            /**
+             * 既定のカテゴリを1つだけ選択してください。
+             */
+            "selectOneDefaultCategory": string;
+            /**
+             * カテゴリのキーが重複しています。
+             */
+            "duplicateCategoryKey": string;
+            /**
+             * 新しいカテゴリ
+             */
+            "customCategory": string;
+        };
+        "_settings": {
+            /**
+             * コンタクトフォーム設定
+             */
+            "title": string;
+            /**
+             * コンタクトフォームを有効にする
+             */
+            "enable": string;
+            /**
+             * 無効にすると、お問い合わせフォームからの送信を受け付けなくなります。
+             */
+            "enableDescription": string;
+            /**
+             * 送信回数の上限(1時間あたり)
+             */
+            "limit": string;
+            /**
+             * 同一IPアドレスから1時間あたりに送信できる件数の上限です。
+             */
+            "limitDescription": string;
+            /**
+             * 送信にログインを必須にする
+             */
+            "requireAuth": string;
+            /**
+             * 有効にすると、ログインしていないユーザーはお問い合わせを送信できなくなります。
+             */
+            "requireAuthDescription": string;
+            /**
+             * お問い合わせ内容の最大文字数
+             */
+            "contentMaxLength": string;
+            /**
+             * お問い合わせ内容(本文)に入力できる文字数の上限です。20〜10000の範囲で設定できます。
+             */
+            "contentMaxLengthDescription": string;
+        };
+        "_validation": {
+            /**
+             * 「ユーザー名@ホスト名」の形式で入力してください。
+             */
+            "misskeyUsernameFormatError": string;
+            /**
+             * ユーザー名に使用できない文字が含まれています。
+             */
+            "misskeyUsernameCharacterError": string;
+            /**
+             * ホスト名の形式が正しくありません。
+             */
+            "misskeyUsernameDomainError": string;
+            /**
+             * {current} / {max} 文字
+             */
+            "contentLengthCaption": ParameterizedString<"current" | "max">;
+            /**
+             * 文字数が上限を超えています。
+             */
+            "contentTooLong": string;
+        };
     };
 }

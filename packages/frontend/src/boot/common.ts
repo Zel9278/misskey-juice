@@ -27,6 +27,7 @@ import { deckStore } from '@/ui/deck/deck-store.js';
 import { analytics, initAnalytics } from '@/analytics.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { fetchCustomEmojis } from '@/custom-emojis.js';
+import { juicePublicSettingsCache } from '@/cache.js';
 import { prefer } from '@/preferences.js';
 import { $i } from '@/i.js';
 import { launchPlugins } from '@/plugin.js';
@@ -245,6 +246,11 @@ export async function common(createVue: () => Promise<App<Element>>) {
 	try {
 		await fetchCustomEmojis();
 	} catch (err) { /* empty */ }
+
+	// JUICE: リアクションの相乗り可否判定(MkReactionsViewer.reaction.vue)は、この値を
+	// juicePublicSettingsCache.value経由で同期的に参照するだけで自身では取得しに行かないため、
+	// 起動時に一度取得しておき、値が読める状態にしておく
+	juicePublicSettingsCache.fetch().catch(() => { /* empty */ });
 
 	// analytics
 	fetchInstanceMetaPromise.then(async () => {

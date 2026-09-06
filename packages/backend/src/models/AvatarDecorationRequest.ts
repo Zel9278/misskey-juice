@@ -76,6 +76,14 @@ export class MiAvatarDecorationRequest {
 	})
 	public rejectReason: string | null;
 
+	// JUICE: 承認時にモデレーターが内容(名前・説明・カテゴリ)を編集した場合、その理由。
+	// 編集していなければnull
+	@Column('text', {
+		nullable: true,
+		comment: 'The reason given by the moderator/admin for editing this request\'s content upon approval, if edited (JUICE).',
+	})
+	public editReason: string | null;
+
 	@Index()
 	@Column({
 		...id(),
@@ -113,4 +121,21 @@ export class MiAvatarDecorationRequest {
 		comment: 'Whether to delete the attached file from the requester\'s Drive once this request is reviewed (JUICE).',
 	})
 	public deleteFileAfterReview: boolean;
+
+	// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)の対象。nullなら通常の新規申請。
+	// 差し替え対象にできるのは、申請者自身の承認済み申請(resultAvatarDecorationId)から
+	// 作られたデコレーションのみ
+	@Index()
+	@Column({
+		...id(),
+		nullable: true,
+		comment: 'The ID of the avatar decoration this request wants to replace the image of, if this is a replacement request (JUICE).',
+	})
+	public targetAvatarDecorationId: MiAvatarDecoration['id'] | null;
+
+	@ManyToOne(() => MiAvatarDecoration, {
+		onDelete: 'SET NULL',
+	})
+	@JoinColumn()
+	public targetAvatarDecoration: MiAvatarDecoration | null;
 }

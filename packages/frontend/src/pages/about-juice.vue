@@ -154,7 +154,11 @@ const features = [
 	{ icon: 'ti ti-sparkles', text: i18n.ts._aboutJuice._features.aiGenerated },
 	{ icon: 'ti ti-mood-plus', text: i18n.ts._aboutJuice._features.emojiRequest },
 	{ icon: 'ti ti-frame', text: i18n.ts._aboutJuice._features.avatarDecorationRequest },
+	{ icon: 'ti ti-replace', text: i18n.ts._aboutJuice._features.requestReplacement },
 	{ icon: 'ti ti-shield-check', text: i18n.ts._aboutJuice._features.roleApprovalDelegation },
+	{ icon: 'ti ti-arrows-join', text: i18n.ts._aboutJuice._features.reactionPiggyback },
+	{ icon: 'ti ti-world-search', text: i18n.ts._aboutJuice._features.postLanguage },
+	{ icon: 'ti ti-filter-search', text: i18n.ts._aboutJuice._features.advancedNoteSearch },
 	{ icon: 'ti ti-trophy', text: i18n.ts._aboutJuice._features.ranking },
 	{ icon: 'ti ti-broadcast', text: i18n.ts._aboutJuice._features.relayTimeline },
 	{ icon: 'ti ti-language', text: i18n.ts._aboutJuice._features.emailI18n },
@@ -164,6 +168,7 @@ const features = [
 	{ icon: 'ti ti-math-function', text: i18n.ts._aboutJuice._features.latex },
 	{ icon: 'ti ti-tag', text: i18n.ts._aboutJuice._features.nickname },
 	{ icon: 'ti ti-shield-exclamation', text: i18n.ts._aboutJuice._features.loginFailedNotification },
+	{ icon: 'ti ti-mail', text: i18n.ts._aboutJuice._features.contactForm },
 ];
 
 // JUICE: この一覧に載っている機能が、どういう経路で実装されたかをざっくり示す

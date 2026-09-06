@@ -84,6 +84,7 @@ import { packedChatRoomInvitationSchema } from '@/models/json-schema/chat-room-i
 import { packedChatRoomMembershipSchema } from '@/models/json-schema/chat-room-membership.js';
 import { packedAchievementNameSchema, packedAchievementSchema } from '@/models/json-schema/achievement.js';
 import { packedNoteDraftSchema } from '@/models/json-schema/note-draft.js';
+import { packedContactFormSchema } from '@/models/json-schema/contact-form.js';
 
 export const refs = {
 	UserLite: packedUserLiteSchema,
@@ -103,6 +104,7 @@ export const refs = {
 	App: packedAppSchema,
 	Note: packedNoteSchema,
 	NoteDraft: packedNoteDraftSchema,
+	ContactForm: packedContactFormSchema,
 	NoteReaction: packedNoteReactionSchema,
 	NoteReactionWithNote: packedNoteReactionWithNoteSchema,
 	NoteFavorite: packedNoteFavoriteSchema,

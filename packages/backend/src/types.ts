@@ -22,6 +22,10 @@
  * exportCompleted - エクスポートが完了
  * login - ログイン
  * loginFailed - ログイン試行に失敗した(JUICE)
+ * emojiRequestApproved - 絵文字申請が承認された(JUICE)
+ * emojiRequestRejected - 絵文字申請が却下された(JUICE)
+ * avatarDecorationRequestApproved - アバターデコレーション申請が承認された(JUICE)
+ * avatarDecorationRequestRejected - アバターデコレーション申請が却下された(JUICE)
  * createToken - トークン作成
  * app - アプリ通知
  * test - テスト通知（サーバー側）
@@ -46,6 +50,11 @@ export const notificationTypes = [
 	'login',
 	// JUICE: misskey-tempuraを参考に追加
 	'loginFailed',
+	// JUICE
+	'emojiRequestApproved',
+	'emojiRequestRejected',
+	'avatarDecorationRequestApproved',
+	'avatarDecorationRequestRejected',
 	'createToken',
 	'app',
 	'test',
@@ -427,6 +436,7 @@ export type ModerationLogPayloads = {
 		userId: string;
 		userUsername: string;
 		userHost: string | null;
+		reason: string;
 	};
 	approveEmojiRequest: {
 		requestId: string;
@@ -435,6 +445,8 @@ export type ModerationLogPayloads = {
 		requesterHost: string | null;
 		emojiId: string;
 		emojiName: string;
+		// JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える)の承認かどうか
+		isReplacement: boolean;
 	};
 	rejectEmojiRequest: {
 		requestId: string;
@@ -451,6 +463,8 @@ export type ModerationLogPayloads = {
 		requesterHost: string | null;
 		avatarDecorationId: string;
 		avatarDecorationName: string;
+		// JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える)の承認かどうか
+		isReplacement: boolean;
 	};
 	rejectAvatarDecorationRequest: {
 		requestId: string;

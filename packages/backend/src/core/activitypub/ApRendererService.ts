@@ -475,6 +475,8 @@ export class ApRendererService {
 			attributedTo,
 			summary: summary ?? undefined,
 			content: content ?? undefined,
+			// JUICE: 言語タグ付きノートをAS2標準のcontentMapでも連合する(Mastodon/Akkoma互換)
+			...(note.lang && content != null ? { contentMap: { [note.lang]: content } } : {}),
 			...(noMisskeyContent ? {} : {
 				_misskey_content: text,
 				source: {

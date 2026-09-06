@@ -66,14 +66,18 @@ export class SignupApiService {
 
 	// 承認待ちの申請者がメールアドレスなしでも審査状況を確認できるよう、
 	// 引換コードを発行してsignup_approval_checkに記録する(JUICE)。
+	// username/signupReasonは、却下時にuserテーブル側のレコードが削除された後も
+	// 履歴として参照できるようスナップショットとして複製しておく。
 	@bindThis
-	private async issueApprovalCheckCode(userId: string): Promise<string> {
+	private async issueApprovalCheckCode(userId: string, username: string, signupReason: string | null): Promise<string> {
 		const code = secureRndstr(32, { chars: L_CHARS });
 		await this.signupApprovalChecksRepository.insertOne({
 			id: this.idService.gen(),
 			code,
 			userId,
 			status: 'pending',
+			username,
+			signupReason,
 		});
 		return code;
 	}
@@ -286,7 +290,7 @@ export class SignupApiService {
 				}
 
 				if (approvalRequiredForThisSignup) {
-					const checkCode = await this.issueApprovalCheckCode(account.id);
+					const checkCode = await this.issueApprovalCheckCode(account.id, account.username, reason ?? null);
 					// JUICE: モデレータへ新規申請をリアルタイム通知(admin stream + SystemWebhook)
 					await this.juiceAdminNotificationService.notifyNewSignupApplication({
 						applicant: await this.userEntityService.pack(account, null, { schema: 'UserLite' }),
@@ -364,7 +368,7 @@ export class SignupApiService {
 					i18n.t('_email.signupPendingApproval.html'),
 					i18n.t('_email.signupPendingApproval.text'));
 
-				const checkCode = await this.issueApprovalCheckCode(account.id);
+				const checkCode = await this.issueApprovalCheckCode(account.id, account.username, pendingUser.reason ?? null);
 				// JUICE: モデレータへ新規申請をリアルタイム通知(admin stream + SystemWebhook)
 				await this.juiceAdminNotificationService.notifyNewSignupApplication({
 					applicant: await this.userEntityService.pack(account, null, { schema: 'UserLite' }),

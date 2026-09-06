@@ -18,6 +18,9 @@ export const TIPS = [
 	'tl.social',
 	'tl.global',
 	'abuses',
+	// JUICE: misskey-tempuraのコンタクトフォームを参考に追加
+	'contactForms',
+	'contactFormCategories',
 ] as const;
 
 export function closeTip(tip: typeof TIPS[number]) {

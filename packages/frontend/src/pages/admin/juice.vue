@@ -89,6 +89,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 									<template #label><SearchLabel>{{ i18n.ts._juice.rankingPeriodHours }}</SearchLabel></template>
 								</MkInput>
 							</SearchMarker>
+							<SearchMarker>
+								<MkInput v-model="rankingDisplayCount" type="number" :min="1" :max="100">
+									<template #label><SearchLabel>{{ i18n.ts._juice.rankingDisplayCount }}</SearchLabel></template>
+								</MkInput>
+							</SearchMarker>
 						</div>
 					</MkFolder>
 				</SearchMarker>
@@ -123,7 +128,81 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 				</SearchMarker>
 
-				<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.reactionPiggyback }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="reactionPiggybackOnRemoteEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.reactionPiggybackOnRemoteEnabled }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.reactionPiggybackOnRemoteEnabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._contactForm._settings.title }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="contactFormEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._contactForm._settings.enable }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._contactForm._settings.enableDescription }}</template>
+								</MkSwitch>
+							</SearchMarker>
+
+							<SearchMarker>
+								<MkInput v-model="contactFormLimit" type="number" :min="1" :max="100" :disabled="!contactFormEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._contactForm._settings.limit }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._contactForm._settings.limitDescription }}</template>
+								</MkInput>
+							</SearchMarker>
+
+							<SearchMarker>
+								<MkSwitch v-model="contactFormRequireAuth" :disabled="!contactFormEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._contactForm._settings.requireAuth }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._contactForm._settings.requireAuthDescription }}</template>
+								</MkSwitch>
+							</SearchMarker>
+
+							<SearchMarker>
+								<MkInput v-model="contactFormContentMaxLength" type="number" :min="20" :max="10000" :disabled="!contactFormEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._contactForm._settings.contentMaxLength }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._contactForm._settings.contentMaxLengthDescription }}</template>
+								</MkInput>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.splashSettingsTitle }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkTextarea v-model="customSplashTextInput">
+									<template #label><SearchLabel>{{ i18n.ts._juice.customSplashText }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.customSplashTextDescription }} {{ i18n.tsx._juice.customSplashTextLineCountCaption({ current: customSplashTextLines.length, max: CUSTOM_SPLASH_TEXT_MAX_ITEMS }) }}</template>
+								</MkTextarea>
+								<div v-if="customSplashTextTooManyLines" :class="$style.fieldError">
+									<i class="ti ti-exclamation-triangle" style="margin-right: 4px;"></i>
+									{{ i18n.ts._juice.customSplashTextTooManyLines }}
+								</div>
+								<div v-if="customSplashTextTooLongLineCount > 0" :class="$style.fieldError">
+									<i class="ti ti-exclamation-triangle" style="margin-right: 4px;"></i>
+									{{ i18n.tsx._juice.customSplashTextLineTooLong({ n: customSplashTextTooLongLineCount }) }}
+								</div>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<MkButton primary :disabled="customSplashTextTooManyLines || customSplashTextTooLongLineCount > 0" @click="save">{{ i18n.ts.save }}</MkButton>
 			</div>
 		</SearchMarker>
 	</div>
@@ -136,6 +215,7 @@ import { langs } from '@@/js/config.js';
 import MkFolder from '@/components/MkFolder.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkInput from '@/components/MkInput.vue';
+import MkTextarea from '@/components/MkTextarea.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
@@ -152,8 +232,22 @@ const defaultEmailLang = ref(settings.defaultEmailLang);
 const emojiRequestEnabled = ref(settings.emojiRequestEnabled);
 const avatarDecorationRequestEnabled = ref(settings.avatarDecorationRequestEnabled);
 const rankingAggregationPeriodHours = ref(settings.rankingAggregationPeriodHours);
+const rankingDisplayCount = ref(settings.rankingDisplayCount);
 const relayTimelineEnabled = ref(settings.relayTimelineEnabled);
 const latexEnabled = ref(settings.latexEnabled);
+const reactionPiggybackOnRemoteEnabled = ref(settings.reactionPiggybackOnRemoteEnabled);
+const contactFormEnabled = ref(settings.contactFormEnabled);
+const contactFormLimit = ref(settings.contactFormLimit);
+const contactFormRequireAuth = ref(settings.contactFormRequireAuth);
+const contactFormContentMaxLength = ref(settings.contactFormContentMaxLength);
+// JUICE: 配列を1行1件のテキストエリアとして編集する(空行は無視する)。
+// 上限(行数・1行あたりの文字数)はadmin/juice/update-settingsのparamDefと合わせている
+const customSplashTextInput = ref(settings.customSplashText.join('\n'));
+const CUSTOM_SPLASH_TEXT_MAX_ITEMS = 20;
+const CUSTOM_SPLASH_TEXT_MAX_LENGTH = 256;
+const customSplashTextLines = computed(() => customSplashTextInput.value.split('\n').map(x => x.trim()).filter(x => x.length > 0));
+const customSplashTextTooManyLines = computed(() => customSplashTextLines.value.length > CUSTOM_SPLASH_TEXT_MAX_ITEMS);
+const customSplashTextTooLongLineCount = computed(() => customSplashTextLines.value.filter(x => x.length > CUSTOM_SPLASH_TEXT_MAX_LENGTH).length);
 
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
@@ -164,8 +258,15 @@ function save() {
 		emojiRequestEnabled: emojiRequestEnabled.value,
 		avatarDecorationRequestEnabled: avatarDecorationRequestEnabled.value,
 		rankingAggregationPeriodHours: rankingAggregationPeriodHours.value,
+		rankingDisplayCount: rankingDisplayCount.value,
 		relayTimelineEnabled: relayTimelineEnabled.value,
 		latexEnabled: latexEnabled.value,
+		reactionPiggybackOnRemoteEnabled: reactionPiggybackOnRemoteEnabled.value,
+		contactFormEnabled: contactFormEnabled.value,
+		contactFormLimit: contactFormLimit.value,
+		contactFormRequireAuth: contactFormRequireAuth.value,
+		contactFormContentMaxLength: contactFormContentMaxLength.value,
+		customSplashText: customSplashTextLines.value,
 	});
 }
 
@@ -178,3 +279,11 @@ definePage(() => ({
 	icon: 'ti ti-droplet',
 }));
 </script>
+
+<style lang="scss" module>
+.fieldError {
+	margin-top: 8px;
+	color: var(--MI_THEME-error);
+	font-size: 0.9em;
+}
+</style>

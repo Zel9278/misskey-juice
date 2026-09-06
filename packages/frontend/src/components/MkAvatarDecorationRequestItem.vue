@@ -5,15 +5,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <MkFolder>
-	<template #icon><i v-if="request.fileId" class="ti ti-sparkles"></i></template>
+	<!-- JUICE: サムネイルで申請中の画像そのものを表示する。承認/却下後にファイルが削除されている場合はアイコンにフォールバック -->
+	<template #icon>
+		<img v-if="request.fileUrl" :src="request.fileUrl" :class="$style.thumbnail" alt=""/>
+		<i v-else-if="request.fileId" class="ti ti-sparkles"></i>
+	</template>
 	<template #label>{{ request.name }}</template>
 	<template #suffix>
 		<span :class="[$style.status, $style[statusClass]]">{{ statusLabel }}</span>
 	</template>
 
 	<div class="_gaps_s">
-		<div v-if="request.description">{{ i18n.ts._avatarDecorationRequestPage.description }}: {{ request.description }}</div>
-		<div v-if="request.category">{{ i18n.ts._avatarDecorationRequestPage.category }}: {{ request.category }}</div>
+		<!-- JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える) -->
+		<div v-if="request.targetAvatarDecorationId != null"><span class="_juice">JUICE</span> {{ i18n.ts._avatarDecorationRequestPage.replacementRequestBadge }}</div>
+		<div>{{ i18n.ts._avatarDecorationRequestPage.description }}: {{ request.description || i18n.ts.none }}</div>
+		<div>{{ i18n.ts._avatarDecorationRequestPage.category }}: {{ request.category || i18n.ts.none }}</div>
 		<div v-if="request.status === 'rejected'" class="_selectable">
 			{{ i18n.ts._avatarDecorationRequestPage.rejectReason }}: {{ request.rejectReason }}
 		</div>
@@ -49,6 +55,15 @@ const statusClass = computed(() => {
 </script>
 
 <style lang="scss" module>
+.thumbnail {
+	display: block;
+	width: 28px;
+	height: 28px;
+	object-fit: contain;
+	border-radius: 4px;
+	background: var(--MI_THEME-panel);
+}
+
 .status {
 	display: inline-block;
 	padding: 2px 8px;
@@ -62,11 +77,11 @@ const statusClass = computed(() => {
 
 .statusApproved {
 	background: var(--MI_THEME-success);
-	color: #fff;
+	color: var(--MI_THEME-fgOnAccent);
 }
 
 .statusRejected {
 	background: var(--MI_THEME-error);
-	color: #fff;
+	color: var(--MI_THEME-fgOnAccent);
 }
 </style>
