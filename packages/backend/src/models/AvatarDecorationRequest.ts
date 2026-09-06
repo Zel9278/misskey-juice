@@ -76,6 +76,14 @@ export class MiAvatarDecorationRequest {
 	})
 	public rejectReason: string | null;
 
+	// JUICE: 承認時にモデレーターが内容(名前・説明・カテゴリ)を編集した場合、その理由。
+	// 編集していなければnull
+	@Column('text', {
+		nullable: true,
+		comment: 'The reason given by the moderator/admin for editing this request\'s content upon approval, if edited (JUICE).',
+	})
+	public editReason: string | null;
+
 	@Index()
 	@Column({
 		...id(),

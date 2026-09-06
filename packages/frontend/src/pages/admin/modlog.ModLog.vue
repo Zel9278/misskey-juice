@@ -260,6 +260,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</template>
 		<template v-else-if="log.type === 'approveEmojiRequest'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.requesterId}`" class="_link">@{{ log.info.requesterUsername }}{{ log.info.requesterHost ? '@' + log.info.requesterHost : '' }}</MkA></div>
+			<!-- JUICE: 承認時に申請内容が編集された場合、編集理由と編集前の値を表示する -->
+			<template v-if="log.info.edited">
+				<div class="_selectable">{{ i18n.ts._emojiRequestApprovals.editReason }}: {{ log.info.editReason }}</div>
+				<div class="_selectable">{{ i18n.ts._emojiRequestApprovals.beforeEdit }}: {{ log.info.originalName }} / {{ log.info.originalCategory }} / {{ (log.info.originalAliases ?? []).join(' ') }} / {{ log.info.originalLicense }}<template v-if="log.info.originalIsSensitive"> / {{ i18n.ts.sensitive }}</template><template v-if="log.info.originalLocalOnly"> / {{ i18n.ts.localOnly }}</template></div>
+			</template>
 		</template>
 		<template v-else-if="log.type === 'rejectEmojiRequest'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.requesterId}`" class="_link">@{{ log.info.requesterUsername }}{{ log.info.requesterHost ? '@' + log.info.requesterHost : '' }}</MkA></div>
@@ -267,6 +272,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</template>
 		<template v-else-if="log.type === 'approveAvatarDecorationRequest'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.requesterId}`" class="_link">@{{ log.info.requesterUsername }}{{ log.info.requesterHost ? '@' + log.info.requesterHost : '' }}</MkA></div>
+			<!-- JUICE: 承認時に申請内容が編集された場合、編集理由と編集前の値を表示する -->
+			<template v-if="log.info.edited">
+				<div class="_selectable">{{ i18n.ts._avatarDecorationRequestApprovals.editReason }}: {{ log.info.editReason }}</div>
+				<div class="_selectable">{{ i18n.ts._avatarDecorationRequestApprovals.beforeEdit }}: {{ log.info.originalName }} / {{ log.info.originalDescription }} / {{ log.info.originalCategory }}</div>
+			</template>
 		</template>
 		<template v-else-if="log.type === 'rejectAvatarDecorationRequest'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.requesterId}`" class="_link">@{{ log.info.requesterUsername }}{{ log.info.requesterHost ? '@' + log.info.requesterHost : '' }}</MkA></div>

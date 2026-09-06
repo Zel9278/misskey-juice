@@ -267,6 +267,38 @@ export async function selectFile<
 	return opts.multiple ? (files as MR) : (files[0]! as MR);
 }
 
+// JUICE: 「PCからアップロード」を選んだ場合はDriveへ即アップロードせず、生のFileのまま返す
+// (呼び出し側が申請の送信時など任意のタイミングでuploadFile()するのを想定)。
+// 「ドライブから選択」「URLから」はどのみち既存のDriveFileを参照するだけなので従来通り
+function selectDeferred(anchorElement: HTMLElement | EventTarget | null, label: string | null, multiple: boolean): Promise<(File | Misskey.entities.DriveFile)[]> {
+	return new Promise((res) => {
+		os.popupMenu([label ? {
+			text: label,
+			type: 'label',
+		} : null, {
+			text: i18n.ts.upload,
+			icon: 'ti ti-upload',
+			action: () => os.chooseFileFromPc({ multiple }).then(files => res(files)),
+		}, {
+			text: i18n.ts.fromDrive,
+			icon: 'ti ti-cloud',
+			action: () => chooseDriveFile({ multiple }).then(files => res(files)),
+		}, {
+			text: i18n.ts.fromUrl,
+			icon: 'ti ti-link',
+			action: () => chooseFileFromUrl().then(file => res([file])),
+		}], anchorElement);
+	});
+}
+
+export async function selectFileDeferred(opts: {
+	anchorElement: HTMLElement | EventTarget | null;
+	multiple?: boolean;
+	label?: string | null;
+}): Promise<(File | Misskey.entities.DriveFile)[]> {
+	return await selectDeferred(opts.anchorElement, opts.label ?? null, opts.multiple ?? false);
+}
+
 export async function createCroppedImageDriveFileFromImageDriveFile(imageDriveFile: Misskey.entities.DriveFile, options: {
 	aspectRatio: number | null;
 }): Promise<Misskey.entities.DriveFile> {

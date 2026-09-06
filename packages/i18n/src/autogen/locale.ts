@@ -14780,6 +14780,26 @@ export interface Locale extends ILocale {
          * 新しい画像
          */
         "newImage": string;
+        /**
+         * 承認前に内容を編集する
+         */
+        "editOnApprove": string;
+        /**
+         * 編集理由
+         */
+        "editReason": string;
+        /**
+         * 内容を変更した理由を入力してください(承認履歴に記録されます)
+         */
+        "editReasonCaption": string;
+        /**
+         * 内容を編集する場合は、編集理由の入力が必須です。
+         */
+        "editReasonRequiredError": string;
+        /**
+         * 編集前の内容
+         */
+        "beforeEdit": string;
     };
     "_avatarDecorationRequestPage": {
         /**
@@ -14932,6 +14952,26 @@ export interface Locale extends ILocale {
          * 新しい画像
          */
         "newImage": string;
+        /**
+         * 承認前に内容を編集する
+         */
+        "editOnApprove": string;
+        /**
+         * 編集理由
+         */
+        "editReason": string;
+        /**
+         * 内容を変更した理由を入力してください(承認履歴に記録されます)
+         */
+        "editReasonCaption": string;
+        /**
+         * 内容を編集する場合は、編集理由の入力が必須です。
+         */
+        "editReasonRequiredError": string;
+        /**
+         * 編集前の内容
+         */
+        "beforeEdit": string;
     };
     "_juiceRanking": {
         /**

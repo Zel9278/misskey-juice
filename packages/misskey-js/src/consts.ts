@@ -598,6 +598,16 @@ export type ModerationLogPayloads = {
 		requesterHost: string | null;
 		emojiId: string;
 		emojiName: string;
+		isReplacement?: boolean;
+		// JUICE: 承認時に申請内容を編集した場合の編集前の値・理由
+		edited?: boolean;
+		editReason?: string;
+		originalName?: string;
+		originalCategory?: string | null;
+		originalAliases?: string[];
+		originalLicense?: string | null;
+		originalIsSensitive?: boolean;
+		originalLocalOnly?: boolean;
 	};
 	rejectEmojiRequest: {
 		requestId: string;
@@ -614,6 +624,13 @@ export type ModerationLogPayloads = {
 		requesterHost: string | null;
 		avatarDecorationId: string;
 		avatarDecorationName: string;
+		isReplacement?: boolean;
+		// JUICE: 承認時に申請内容を編集した場合の編集前の値・理由
+		edited?: boolean;
+		editReason?: string;
+		originalName?: string;
+		originalDescription?: string;
+		originalCategory?: string | null;
 	};
 	rejectAvatarDecorationRequest: {
 		requestId: string;

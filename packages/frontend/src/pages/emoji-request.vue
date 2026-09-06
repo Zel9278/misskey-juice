@@ -23,16 +23,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 					<div :class="$style.imgs">
 						<div style="background: #000;" :class="$style.imgContainer">
-							<img :src="draft.file.url" :class="$style.img"/>
+							<img :src="draft.previewUrl" :class="$style.img"/>
 						</div>
 						<div style="background: #222;" :class="$style.imgContainer">
-							<img :src="draft.file.url" :class="$style.img"/>
+							<img :src="draft.previewUrl" :class="$style.img"/>
 						</div>
 						<div style="background: #ddd;" :class="$style.imgContainer">
-							<img :src="draft.file.url" :class="$style.img"/>
+							<img :src="draft.previewUrl" :class="$style.img"/>
 						</div>
 						<div style="background: #fff;" :class="$style.imgContainer">
-							<img :src="draft.file.url" :class="$style.img"/>
+							<img :src="draft.previewUrl" :class="$style.img"/>
 						</div>
 					</div>
 
@@ -117,7 +117,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, markRaw, ref } from 'vue';
+import { computed, markRaw, onUnmounted, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkInfo from '@/components/MkInfo.vue';
 import MkInput from '@/components/MkInput.vue';
@@ -130,7 +130,7 @@ import MkNote from '@/components/MkNote.vue';
 import type { Captcha } from '@/components/MkCaptcha.vue';
 import MkCaptcha from '@/components/MkCaptcha.vue';
 import * as os from '@/os.js';
-import { selectFile } from '@/utility/drive.js';
+import { selectFileDeferred, uploadFile } from '@/utility/drive.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { customEmojiCategories } from '@/custom-emojis.js';
 import { i18n } from '@/i18n.js';
@@ -154,7 +154,13 @@ const tab = ref('form');
 // 1件だけ選んだ場合も内部的には要素数1のdraftsとして扱う(見た目は従来通り単一フォーム)
 type EmojiRequestDraft = {
 	key: string;
-	file: Misskey.entities.DriveFile;
+	// JUICE: 「PCからアップロード」の場合はこの時点ではまだDriveにアップロードしておらず、
+	// 生のFileのまま保持する(申請の送信時にuploadFile()する)。「ドライブから選択」
+	// 「URLから」は従来通り、選択した時点で既にアップロード済みのDriveFile
+	file: File | Misskey.entities.DriveFile;
+	// JUICE: プレビュー表示用のURL。fileが生のFileの場合はURL.createObjectURLで作った
+	// ローカルURLなので、ドラフトを破棄する際は必ずrevokeDraftPreview()で解放すること
+	previewUrl: string;
 	name: string;
 	category: string;
 	aliases: string;
@@ -224,7 +230,8 @@ const testcaptchaResponse = ref<string | null>(null);
 
 // JUICE: 申請中の絵文字をリアクションとして使った場合の見た目のプレビュー用。
 // まだ承認されていない(=正式な絵文字として登録されていない)画像のため、
-// note.reactionEmojisでアップロード直後(=draft.file.url)を直接差し込んで表示する
+// note.reactionEmojisでプレビュー用URL(draft.previewUrl。PCから選択した場合はまだ
+// Driveにアップロードしていないローカルなblob URL)を直接差し込んで表示する
 // (MkReactionsViewer.reaction.vue参照。既存のアバターデコレーション申請の
 // プレビュー(MkAvatarのdecorations上書き)と同じ考え方)
 function exampleNoteFor(draft: EmojiRequestDraft): Misskey.entities.Note {
@@ -243,7 +250,7 @@ function exampleNoteFor(draft: EmojiRequestDraft): Misskey.entities.Note {
 		renoteCount: 0,
 		repliesCount: 0,
 		reactionCount: 1,
-		...buildMockLocalCustomEmojiReaction(previewName, draft.file.url),
+		...buildMockLocalCustomEmojiReaction(previewName, draft.previewUrl),
 		fileIds: [],
 		files: [],
 		replyId: null,
@@ -277,7 +284,7 @@ const resultPaginator = markRaw(new Paginator('emoji-requests/list', {
 }));
 
 function chooseFile(ev: PointerEvent) {
-	selectFile({
+	selectFileDeferred({
 		anchorElement: ev.currentTarget ?? ev.target,
 		multiple: true,
 	}).then(files => {
@@ -286,6 +293,7 @@ function chooseFile(ev: PointerEvent) {
 			drafts.value.push({
 				key: genId(),
 				file: f,
+				previewUrl: f instanceof File ? URL.createObjectURL(f) : f.url,
 				name: candidate.match(/^[a-z0-9_]+$/) ? candidate : '',
 				category: '',
 				aliases: '',
@@ -299,16 +307,46 @@ function chooseFile(ev: PointerEvent) {
 	});
 }
 
+// JUICE: PCから選択した生のFileのプレビュー用に作ったURL.createObjectURLは、
+// 使い終わったら必ず解放する(ドライブ/URL経由のDriveFileのurlはそのままなので対象外)
+function revokeDraftPreview(draft: EmojiRequestDraft) {
+	if (!(draft.file instanceof File)) return;
+	URL.revokeObjectURL(draft.previewUrl);
+}
+
 function removeDraft(key: string) {
+	const draft = drafts.value.find(d => d.key === key);
+	if (draft) revokeDraftPreview(draft);
 	drafts.value = drafts.value.filter(d => d.key !== key);
 }
 
-function submit() {
+// JUICE: 「PCからアップロード」を選んだドラフトはこの時点まだDriveに上がっていないため、
+// 申請の送信直前にここでアップロードしてfileIdを確定する
+async function resolveFileId(file: File | Misskey.entities.DriveFile): Promise<string> {
+	if (file instanceof File) {
+		const { filePromise } = uploadFile(file, { name: file.name });
+		const driveFile = await filePromise;
+		return driveFile.id;
+	}
+	return file.id;
+}
+
+async function submit() {
 	if (drafts.value.length === 0 || drafts.value.some(d => !d.name)) return;
 
+	const done = os.waiting();
+	let fileIds: string[];
+	try {
+		fileIds = await Promise.all(drafts.value.map(d => resolveFileId(d.file)));
+	} catch {
+		done();
+		return;
+	}
+	done({ success: true });
+
 	os.apiWithDialog('emoji-requests/create-many', {
-		requests: drafts.value.map(d => ({
-			fileId: d.file.id,
+		requests: drafts.value.map((d, i) => ({
+			fileId: fileIds[i],
 			name: d.name,
 			category: d.category || null,
 			aliases: d.aliases.split(' ').filter(x => x !== ''),
@@ -327,6 +365,7 @@ function submit() {
 		for (const request of requests) {
 			pendingPaginator.prepend(request);
 		}
+		drafts.value.forEach(revokeDraftPreview);
 		drafts.value = [];
 		tab.value = 'pending';
 	}).catch(() => {
@@ -354,6 +393,11 @@ const headerTabs = computed(() => [{
 	title: i18n.ts._emojiRequestPage.requestResults,
 	icon: 'ti ti-list-check',
 }]);
+
+// JUICE: 送信せずにページを離れた場合、PC選択分の未使用プレビューURLを解放しておく
+onUnmounted(() => {
+	drafts.value.forEach(revokeDraftPreview);
+});
 
 definePage(() => ({
 	title: i18n.ts._juice.emojiRequest,

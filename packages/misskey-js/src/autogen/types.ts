@@ -7598,6 +7598,10 @@ export interface operations {
                 'application/json': {
                     /** Format: misskey:id */
                     requestId: string;
+                    name?: string;
+                    description?: string;
+                    category?: string | null;
+                    editReason?: string;
                 };
             };
         };
@@ -9105,6 +9109,13 @@ export interface operations {
                 'application/json': {
                     /** Format: misskey:id */
                     requestId: string;
+                    name?: string;
+                    category?: string | null;
+                    aliases?: string[];
+                    license?: string | null;
+                    isSensitive?: boolean;
+                    localOnly?: boolean;
+                    editReason?: string;
                 };
             };
         };
@@ -37661,6 +37672,9 @@ export interface operations {
                         instances: number;
                         driveUsageLocal: number;
                         driveUsageRemote: number;
+                        avatarDecorationsCount: number;
+                        rolesCount: number;
+                        filesCount: number;
                     };
                 };
             };

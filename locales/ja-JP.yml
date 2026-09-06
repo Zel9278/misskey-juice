@@ -3957,6 +3957,11 @@ _emojiRequestApprovals:
   replacementRequest: "差し替え申請"
   currentImage: "現在の画像"
   newImage: "新しい画像"
+  editOnApprove: "承認前に内容を編集する"
+  editReason: "編集理由"
+  editReasonCaption: "内容を変更した理由を入力してください(承認履歴に記録されます)"
+  editReasonRequiredError: "内容を編集する場合は、編集理由の入力が必須です。"
+  beforeEdit: "編集前の内容"
 
 _avatarDecorationRequestPage:
   newRequest: "申請フォーム"
@@ -3998,6 +4003,11 @@ _avatarDecorationRequestApprovals:
   replacementRequest: "差し替え申請"
   currentImage: "現在の画像"
   newImage: "新しい画像"
+  editOnApprove: "承認前に内容を編集する"
+  editReason: "編集理由"
+  editReasonCaption: "内容を変更した理由を入力してください(承認履歴に記録されます)"
+  editReasonRequiredError: "内容を編集する場合は、編集理由の入力が必須です。"
+  beforeEdit: "編集前の内容"
 
 _juiceRanking:
   periodInfo: "集計期間: 直近{hours}時間ごと"

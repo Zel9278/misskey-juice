@@ -40,18 +40,49 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-if="request.status === 'rejected'" class="_selectable">{{ i18n.ts._emojiRequestPage.rejectReason }}: {{ request.rejectReason }}</div>
 		<!-- JUICE: 審査済みの申請には「誰がいつ審査したか」を表示する -->
 		<div v-if="request.reviewer">{{ i18n.ts._emojiRequestPage.reviewedBy }}: <MkAcct :user="request.reviewer"/><template v-if="request.reviewedAt"> (<MkTime :time="request.reviewedAt"/>)</template></div>
+
+		<!-- JUICE: 承認前にモデレーターが申請内容を編集できるようにする(差し替え申請は対象外) -->
+		<template v-if="request.status === 'pending' && request.targetEmojiId == null">
+			<MkSwitch v-model="editMode">
+				<template #label>{{ i18n.ts._emojiRequestApprovals.editOnApprove }}<span class="_juice">JUICE</span></template>
+			</MkSwitch>
+			<template v-if="editMode">
+				<MkInput v-model="editName" pattern="[a-zA-Z0-9_]+" autocapitalize="off">
+					<template #label>{{ i18n.ts.name }}</template>
+				</MkInput>
+				<MkInput v-model="editCategory" :datalist="customEmojiCategories.filter(x => x != null)">
+					<template #label>{{ i18n.ts.category }}</template>
+				</MkInput>
+				<MkInput v-model="editAliases" autocapitalize="off">
+					<template #label>{{ i18n.ts.tags }}</template>
+					<template #caption>{{ i18n.ts.setMultipleBySeparatingWithSpace }}</template>
+				</MkInput>
+				<MkInput v-model="editLicense" :mfmAutocomplete="true">
+					<template #label>{{ i18n.ts.license }}</template>
+				</MkInput>
+				<MkSwitch v-model="editIsSensitive">{{ i18n.ts.sensitive }}</MkSwitch>
+				<MkSwitch v-model="editLocalOnly">{{ i18n.ts.localOnly }}</MkSwitch>
+				<MkTextarea v-model="editReason">
+					<template #label>{{ i18n.ts._emojiRequestApprovals.editReason }}</template>
+					<template #caption>{{ i18n.ts._emojiRequestApprovals.editReasonCaption }}</template>
+				</MkTextarea>
+			</template>
+		</template>
 	</div>
 </MkFolder>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
+import MkInput from '@/components/MkInput.vue';
+import MkSwitch from '@/components/MkSwitch.vue';
+import MkTextarea from '@/components/MkTextarea.vue';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
-import { customEmojisMap } from '@/custom-emojis.js';
+import { customEmojisMap, customEmojiCategories } from '@/custom-emojis.js';
 
 const props = defineProps<{
 	request: Misskey.entities.AdminEmojiRequestsListResponse[number];
@@ -65,17 +96,45 @@ const emit = defineEmits<{
 // 名前と一致するはず)で引く。審査までの間に対象絵文字が改名されていた場合は見つからないことがある
 const currentTargetEmoji = computed(() => customEmojisMap.get(props.request.name));
 
+// JUICE: 承認前の申請内容編集用。申請時点の値で初期化しておく
+const editMode = ref(false);
+const editName = ref(props.request.name);
+const editCategory = ref(props.request.category ?? '');
+const editAliases = ref(props.request.aliases.join(' '));
+const editLicense = ref(props.request.license ?? '');
+const editIsSensitive = ref(props.request.isSensitive);
+const editLocalOnly = ref(props.request.localOnly);
+const editReason = ref('');
+
 async function approve() {
+	// JUICE: 編集モード中に理由未入力のままサーバーへ送ってeditReasonRequiredで弾かれるのを防ぐ
+	if (editMode.value && editReason.value.trim() === '') {
+		os.alert({
+			type: 'warning',
+			text: i18n.ts._emojiRequestApprovals.editReasonRequiredError,
+		});
+		return;
+	}
+
 	const confirm = await os.confirm({
 		type: 'question',
 		text: props.request.targetEmojiId != null
 			? i18n.tsx._emojiRequestApprovals.approveReplacementConfirm({ name: props.request.name })
-			: i18n.tsx._emojiRequestApprovals.approveConfirm({ name: props.request.name }),
+			: i18n.tsx._emojiRequestApprovals.approveConfirm({ name: editMode.value ? editName.value : props.request.name }),
 	});
 	if (confirm.canceled) return;
 
 	os.apiWithDialog('admin/emoji-requests/approve', {
 		requestId: props.request.id,
+		...(editMode.value ? {
+			name: editName.value,
+			category: editCategory.value || null,
+			aliases: editAliases.value.split(' ').filter(x => x !== ''),
+			license: editLicense.value || null,
+			isSensitive: editIsSensitive.value,
+			localOnly: editLocalOnly.value,
+			editReason: editReason.value,
+		} : {}),
 	}).then(() => {
 		emit('resolved', props.request.id);
 	});

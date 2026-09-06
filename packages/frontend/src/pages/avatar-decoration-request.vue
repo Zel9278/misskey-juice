@@ -112,7 +112,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, markRaw, ref } from 'vue';
+import { computed, markRaw, onUnmounted, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import type { Captcha } from '@/components/MkCaptcha.vue';
 import MkInfo from '@/components/MkInfo.vue';
@@ -127,7 +127,7 @@ import MkAvatarDecorationRequestItem from '@/components/MkAvatarDecorationReques
 import MkAvatar from '@/components/global/MkAvatar.vue';
 import MkCaptcha from '@/components/MkCaptcha.vue';
 import * as os from '@/os.js';
-import { selectFile } from '@/utility/drive.js';
+import { selectFileDeferred, uploadFile } from '@/utility/drive.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
@@ -149,7 +149,13 @@ const tab = ref('form');
 // 1件だけ選んだ場合も内部的には要素数1のdraftsとして扱う(見た目は従来通り単一フォーム)
 type AvatarDecorationRequestDraft = {
 	key: string;
-	file: Misskey.entities.DriveFile;
+	// JUICE: 「PCからアップロード」の場合はこの時点ではまだDriveにアップロードしておらず、
+	// 生のFileのまま保持する(申請の送信時にuploadFile()する)。「ドライブから選択」
+	// 「URLから」は従来通り、選択した時点で既にアップロード済みのDriveFile
+	file: File | Misskey.entities.DriveFile;
+	// JUICE: プレビュー表示用のURL。fileが生のFileの場合はURL.createObjectURLで作った
+	// ローカルURLなので、ドラフトを破棄する際は必ずrevokeDraftPreview()で解放すること
+	previewUrl: string;
 	name: string;
 	description: string;
 	category: string;
@@ -212,12 +218,19 @@ function onToggleReplacement(draft: AvatarDecorationRequestDraft, enabled: boole
 // JUICE
 function decorationForPreview(draft: AvatarDecorationRequestDraft) {
 	return {
-		url: draft.file.url,
+		url: draft.previewUrl,
 		angle: draft.previewAngle,
 		flipH: draft.previewFlipH,
 		offsetX: draft.previewOffsetX,
 		offsetY: draft.previewOffsetY,
 	};
+}
+
+// JUICE: PCから選択した生のFileのプレビュー用に作ったURL.createObjectURLは、
+// 使い終わったら必ず解放する(ドライブ/URL経由のDriveFileのurlはそのままなので対象外)
+function revokeDraftPreview(draft: AvatarDecorationRequestDraft) {
+	if (!(draft.file instanceof File)) return;
+	URL.revokeObjectURL(draft.previewUrl);
 }
 
 // JUICE
@@ -258,7 +271,7 @@ const resultPaginator = markRaw(new Paginator('avatar-decoration-requests/list',
 }));
 
 function chooseFile(ev: PointerEvent) {
-	selectFile({
+	selectFileDeferred({
 		anchorElement: ev.currentTarget ?? ev.target,
 		multiple: true,
 	}).then(files => {
@@ -266,6 +279,7 @@ function chooseFile(ev: PointerEvent) {
 			drafts.value.push({
 				key: genId(),
 				file: f,
+				previewUrl: f instanceof File ? URL.createObjectURL(f) : f.url,
 				name: f.name.replace(/\.(.+)$/, ''),
 				description: '',
 				category: '',
@@ -281,15 +295,38 @@ function chooseFile(ev: PointerEvent) {
 }
 
 function removeDraft(key: string) {
+	const draft = drafts.value.find(d => d.key === key);
+	if (draft) revokeDraftPreview(draft);
 	drafts.value = drafts.value.filter(d => d.key !== key);
 }
 
-function submit() {
+// JUICE: 「PCからアップロード」を選んだドラフトはこの時点まだDriveに上がっていないため、
+// 申請の送信直前にここでアップロードしてfileIdを確定する
+async function resolveFileId(file: File | Misskey.entities.DriveFile): Promise<string> {
+	if (file instanceof File) {
+		const { filePromise } = uploadFile(file, { name: file.name });
+		const driveFile = await filePromise;
+		return driveFile.id;
+	}
+	return file.id;
+}
+
+async function submit() {
 	if (drafts.value.length === 0 || drafts.value.some(d => !d.name)) return;
 
+	const done = os.waiting();
+	let fileIds: string[];
+	try {
+		fileIds = await Promise.all(drafts.value.map(d => resolveFileId(d.file)));
+	} catch {
+		done();
+		return;
+	}
+	done({ success: true });
+
 	os.apiWithDialog('avatar-decoration-requests/create-many', {
-		requests: drafts.value.map(d => ({
-			fileId: d.file.id,
+		requests: drafts.value.map((d, i) => ({
+			fileId: fileIds[i],
 			name: d.name,
 			description: d.description,
 			category: d.category || null,
@@ -305,6 +342,7 @@ function submit() {
 		for (const request of requests) {
 			pendingPaginator.prepend(request);
 		}
+		drafts.value.forEach(revokeDraftPreview);
 		drafts.value = [];
 		tab.value = 'pending';
 	}).catch(() => {
@@ -332,6 +370,11 @@ const headerTabs = computed(() => [{
 	title: i18n.ts._avatarDecorationRequestPage.requestResults,
 	icon: 'ti ti-list-check',
 }]);
+
+// JUICE: 送信せずにページを離れた場合、PC選択分の未使用プレビューURLを解放しておく
+onUnmounted(() => {
+	drafts.value.forEach(revokeDraftPreview);
+});
 
 definePage(() => ({
 	title: i18n.ts._juice.avatarDecorationRequest,

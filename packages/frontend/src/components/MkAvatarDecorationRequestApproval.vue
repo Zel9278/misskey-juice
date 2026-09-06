@@ -63,6 +63,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-if="request.status === 'rejected'" class="_selectable">{{ i18n.ts._avatarDecorationRequestPage.rejectReason }}: {{ request.rejectReason }}</div>
 		<!-- JUICE: 審査済みの申請には「誰がいつ審査したか」を表示する -->
 		<div v-if="request.reviewer">{{ i18n.ts._avatarDecorationRequestPage.reviewedBy }}: <MkAcct :user="request.reviewer"/><template v-if="request.reviewedAt"> (<MkTime :time="request.reviewedAt"/>)</template></div>
+
+		<!-- JUICE: 承認前にモデレーターが申請内容を編集できるようにする(差し替え申請は対象外) -->
+		<template v-if="request.status === 'pending' && request.targetAvatarDecorationId == null">
+			<MkSwitch v-model="editMode">
+				<template #label>{{ i18n.ts._avatarDecorationRequestApprovals.editOnApprove }}<span class="_juice">JUICE</span></template>
+			</MkSwitch>
+			<template v-if="editMode">
+				<MkInput v-model="editName">
+					<template #label>{{ i18n.ts.name }}</template>
+				</MkInput>
+				<MkInput v-model="editDescription">
+					<template #label>{{ i18n.ts._avatarDecorationRequestPage.description }}</template>
+				</MkInput>
+				<MkInput v-model="editCategory">
+					<template #label>{{ i18n.ts._avatarDecorationRequestPage.category }}</template>
+				</MkInput>
+				<MkTextarea v-model="editReason">
+					<template #label>{{ i18n.ts._avatarDecorationRequestApprovals.editReason }}</template>
+					<template #caption>{{ i18n.ts._avatarDecorationRequestApprovals.editReasonCaption }}</template>
+				</MkTextarea>
+			</template>
+		</template>
 	</div>
 </MkFolder>
 </template>
@@ -72,7 +94,9 @@ import { computed, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
+import MkInput from '@/components/MkInput.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
+import MkTextarea from '@/components/MkTextarea.vue';
 import MkRange from '@/components/MkRange.vue';
 import MkAvatar from '@/components/global/MkAvatar.vue';
 import * as os from '@/os.js';
@@ -110,17 +134,39 @@ if (props.request.targetAvatarDecorationId != null) {
 	});
 }
 
+// JUICE: 承認前の申請内容編集用。申請時点の値で初期化しておく
+const editMode = ref(false);
+const editName = ref(props.request.name);
+const editDescription = ref(props.request.description ?? '');
+const editCategory = ref(props.request.category ?? '');
+const editReason = ref('');
+
 async function approve() {
+	// JUICE: 編集モード中に理由未入力のままサーバーへ送ってeditReasonRequiredで弾かれるのを防ぐ
+	if (editMode.value && editReason.value.trim() === '') {
+		os.alert({
+			type: 'warning',
+			text: i18n.ts._avatarDecorationRequestApprovals.editReasonRequiredError,
+		});
+		return;
+	}
+
 	const confirm = await os.confirm({
 		type: 'question',
 		text: props.request.targetAvatarDecorationId != null
 			? i18n.tsx._avatarDecorationRequestApprovals.approveReplacementConfirm({ name: props.request.name })
-			: i18n.tsx._avatarDecorationRequestApprovals.approveConfirm({ name: props.request.name }),
+			: i18n.tsx._avatarDecorationRequestApprovals.approveConfirm({ name: editMode.value ? editName.value : props.request.name }),
 	});
 	if (confirm.canceled) return;
 
 	os.apiWithDialog('admin/avatar-decoration-requests/approve', {
 		requestId: props.request.id,
+		...(editMode.value ? {
+			name: editName.value,
+			description: editDescription.value,
+			category: editCategory.value || null,
+			editReason: editReason.value,
+		} : {}),
 	}).then(() => {
 		emit('resolved', props.request.id);
 	});
