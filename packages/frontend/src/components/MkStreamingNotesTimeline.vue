@@ -92,11 +92,14 @@ const props = withDefaults(defineProps<{
 	withReplies?: boolean;
 	withSensitive?: boolean;
 	onlyFiles?: boolean;
+	// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
+	localOnly?: boolean;
 }>(), {
 	withRenotes: true,
 	withReplies: false,
 	withSensitive: true,
 	onlyFiles: false,
+	localOnly: false,
 	sound: false,
 	customSound: null,
 });
@@ -119,6 +122,7 @@ if (props.src === 'antenna') {
 		computedParams: computed(() => ({
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
+			localOnly: props.localOnly,
 		})),
 		useShallowRef: true,
 	}));
@@ -341,6 +345,7 @@ function connectChannel() {
 		connections.homeTimeline = stream.useChannel('homeTimeline', {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
+			localOnly: props.localOnly,
 		});
 		connections.main = stream.useChannel('main');
 		connections.homeTimeline.on('note', prepend);
@@ -418,7 +423,7 @@ if (store.s.realtimeMode) {
 	connectChannel();
 }
 
-watch(() => [props.list, props.antenna, props.channel, props.role, props.relays, props.withRenotes], () => {
+watch(() => [props.list, props.antenna, props.channel, props.role, props.relays, props.withRenotes, props.localOnly], () => {
 	if (store.s.realtimeMode) {
 		disconnectChannel();
 		connectChannel();

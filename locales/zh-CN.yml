@@ -3019,6 +3019,7 @@ _deck:
     direct: "指定用户"
     roleTimeline: "角色时间线"
     chat: "私信"
+    favorites: "收藏"
 _dialog:
   charactersExceeded: "已经超过了最大字符数! 当前字符数 {current} / 限制字符数 {max}"
   charactersBelow: "低于最小字符数！当前字符数 {current} / 限制字符数 {min}"
@@ -3863,6 +3864,7 @@ _juice:
   latex: "LaTeX(数学公式)"
   latexEnabled: "启用LaTeX(数学公式)渲染功能"
   latexEnabledCaption: "禁用后,笔记等内容中的数学公式将不会被排版,源代码会直接以代码形式显示。"
+  localOnlyInHomeTimeline: "仅显示本站用户的帖子"
   muteAIGeneratedNotes: "屏蔽AI生成内容"
   muteAIGeneratedNotesDescription: "请选择如何处理被标记为AI生成的笔记。"
   muteAIGeneratedNotesHardMute: "强制屏蔽(完全隐藏)"

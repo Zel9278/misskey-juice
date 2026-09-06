@@ -74,6 +74,7 @@ export type Channels = {
 		params: {
 			withRenotes?: boolean;
 			withFiles?: boolean;
+			localOnly?: boolean;
 		};
 		events: {
 			note: (payload: Note) => void;

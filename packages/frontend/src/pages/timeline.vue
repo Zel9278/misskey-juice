@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkPostForm v-if="prefer.r.showFixedPostForm.value" :class="$style.postForm" class="_panel" fixed style="margin-bottom: var(--MI-margin);"/>
 		<MkStreamingNotesTimeline
 			ref="tlComponent"
-			:key="src + withRenotes + withReplies + onlyFiles + withSensitive + relayTimelineFilter.join(',')"
+			:key="src + withRenotes + withReplies + onlyFiles + withSensitive + localOnly + relayTimelineFilter.join(',')"
 			:class="$style.tl"
 			:src="(src.split(':')[0] as (BasicTimelineType | 'list' | 'relay'))"
 			:list="src.split(':')[1]"
@@ -21,6 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			:withReplies="withReplies"
 			:withSensitive="withSensitive"
 			:onlyFiles="onlyFiles"
+			:localOnly="localOnly"
 			:sound="true"
 		/>
 	</div>
@@ -158,6 +159,12 @@ const withSensitive = computed<boolean>({
 	set: (x) => saveTlFilter('withSensitive', x),
 });
 
+// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
+const localOnly = computed<boolean>({
+	get: () => store.r.tl.value.filter.localOnly,
+	set: (x) => saveTlFilter('localOnly', x),
+});
+
 const showFixedPostForm = prefer.model('showFixedPostForm');
 
 async function chooseList(ev: PointerEvent): Promise<void> {
@@ -281,6 +288,17 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 					text: i18n.ts.showRepliesToOthersInTimeline,
 					ref: withReplies,
 					disabled: onlyFiles,
+				});
+			}
+
+			// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む(すでに全ローカルを見せるlocal/socialでは意味が無いためhomeのみ)
+			if (src.value === 'home') {
+				menuItems.push({
+					type: 'switch',
+					icon: 'ti ti-planet',
+					text: i18n.ts._juice.localOnlyInHomeTimeline,
+					ref: localOnly,
+					badge: true,
 				});
 			}
 

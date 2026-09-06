@@ -51,6 +51,8 @@ export const paramDef = {
 		includeLocalRenotes: { type: 'boolean', default: true },
 		withFiles: { type: 'boolean', default: false },
 		withRenotes: { type: 'boolean', default: true },
+		// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
+		localOnly: { type: 'boolean', default: false },
 	},
 	required: [],
 } as const;
@@ -88,6 +90,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					includeLocalRenotes: ps.includeLocalRenotes,
 					withFiles: ps.withFiles,
 					withRenotes: ps.withRenotes,
+					localOnly: ps.localOnly,
 				}, me);
 
 				process.nextTick(() => {
@@ -125,6 +128,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					// JUICE: 表示言語の絞り込み
 					if (isLanguageFiltered(note, filteredLanguages)) return false;
 
+					// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
+					if (ps.localOnly && note.userHost != null) return false;
+
 					return true;
 				},
 				dbFallback: async (untilId, sinceId, limit) => await this.getFromDb({
@@ -136,6 +142,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					includeLocalRenotes: ps.includeLocalRenotes,
 					withFiles: ps.withFiles,
 					withRenotes: ps.withRenotes,
+					localOnly: ps.localOnly,
 				}, me),
 			});
 
@@ -147,7 +154,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		});
 	}
 
-	private async getFromDb(ps: { untilId: string | null; sinceId: string | null; limit: number; includeMyRenotes: boolean; includeRenotedMyNotes: boolean; includeLocalRenotes: boolean; withFiles: boolean; withRenotes: boolean; }, me: MiLocalUser) {
+	private async getFromDb(ps: { untilId: string | null; sinceId: string | null; limit: number; includeMyRenotes: boolean; includeRenotedMyNotes: boolean; includeLocalRenotes: boolean; withFiles: boolean; withRenotes: boolean; localOnly: boolean; }, me: MiLocalUser) {
 		const followees = await this.userFollowingService.getFollowees(me.id);
 
 		const mutingChannelIds = await this.channelMutingService
@@ -259,6 +266,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		if (ps.withFiles) {
 			query.andWhere('note.fileIds != \'{}\'');
+		}
+
+		// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
+		if (ps.localOnly) {
+			query.andWhere('note.userHost IS NULL');
 		}
 
 		if (ps.withRenotes === false) {

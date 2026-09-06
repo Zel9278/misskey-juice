@@ -47,6 +47,8 @@ export const columnTypes = [
 	'direct',
 	'roleTimeline',
 	'chat',
+	// JUICE: デッキのカラムとしてお気に入り一覧を表示できるように追加
+	'favorites',
 ] as const;
 
 export type ColumnType = typeof columnTypes[number];

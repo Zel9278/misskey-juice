@@ -47,6 +47,8 @@ export type ItemOption<T extends OptionValue = OptionValue> = {
 	value: T;
 	label: string;
 	caption?: string;
+	// JUICE: 本家に無い独自の選択肢であることを示すJUICEバッジを表示する
+	badge?: boolean;
 };
 
 export type ItemGroup<T extends OptionValue = OptionValue> = {
@@ -185,6 +187,7 @@ function show() {
 				menu.push({
 					text: option.label,
 					caption: option.caption,
+					badge: option.badge,
 					active: computed(() => model.value === option.value),
 					action: () => {
 						model.value = option.value as ModelTChecked;
@@ -195,6 +198,7 @@ function show() {
 			menu.push({
 				text: item.label,
 				caption: item.caption,
+				badge: item.badge,
 				active: computed(() => model.value === item.value),
 				action: () => {
 					model.value = item.value as ModelTChecked;

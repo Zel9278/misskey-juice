@@ -35071,6 +35071,8 @@ export interface operations {
                     withFiles?: boolean;
                     /** @default true */
                     withRenotes?: boolean;
+                    /** @default false */
+                    localOnly?: boolean;
                 };
             };
         };

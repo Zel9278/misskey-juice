@@ -58,6 +58,8 @@ export const store = markRaw(new Pizzax('base', {
 				withRenotes: true,
 				withSensitive: true,
 				onlyFiles: false,
+				// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
+				localOnly: false,
 			},
 		},
 	},

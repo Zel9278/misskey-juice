@@ -3019,6 +3019,7 @@ _deck:
     direct: "Direct notes"
     roleTimeline: "Role Timeline"
     chat: "Chat with user"
+    favorites: "Favorites"
 _dialog:
   charactersExceeded: "You've exceeded the maximum character limit! Currently at {current} of {max}."
   charactersBelow: "You're below the minimum character limit! Currently at {current} of {min}."
@@ -3863,6 +3864,7 @@ _juice:
   latex: "LaTeX (math formulas)"
   latexEnabled: "Enable LaTeX (math formula) rendering"
   latexEnabledCaption: "When disabled, math formulas in notes and elsewhere will not be formatted, and the source will be shown as-is as code."
+  localOnlyInHomeTimeline: "Show only local users' notes"
   muteAIGeneratedNotes: "Mute AI-generated content"
   muteAIGeneratedNotesDescription: "Choose how notes marked as AI-generated content should be handled."
   muteAIGeneratedNotesHardMute: "Hard mute (hide completely)"

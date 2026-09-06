@@ -3188,6 +3188,7 @@ _deck:
     direct: "指名"
     roleTimeline: "ロールタイムライン"
     chat: "ダイレクトメッセージ"
+    favorites: "お気に入り"
 
 _dialog:
   charactersExceeded: "最大文字数を超えています！ 現在 {current} / 制限 {max}"
@@ -3890,6 +3891,7 @@ _juice:
   newContactFormToast: "新しいお問い合わせがあります。"
   nickname: "ニックネーム"
   addNickname: "ニックネームを設定"
+  localOnlyInHomeTimeline: "ローカルユーザーの投稿だけ表示"
 
 _juiceApprovals:
   title: "承認待ちユーザー"

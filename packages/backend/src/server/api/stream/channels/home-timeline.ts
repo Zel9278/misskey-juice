@@ -21,6 +21,8 @@ export class HomeTimelineChannel extends Channel {
 	public static kind = 'read:account';
 	private withRenotes: boolean;
 	private withFiles: boolean;
+	// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
+	private localOnly: boolean;
 
 	constructor(
 		@Inject(REQUEST)
@@ -37,6 +39,7 @@ export class HomeTimelineChannel extends Channel {
 	public async init(params: JsonObject) {
 		this.withRenotes = !!(params.withRenotes ?? true);
 		this.withFiles = !!(params.withFiles ?? false);
+		this.localOnly = !!(params.localOnly ?? false);
 
 		this.subscriber.on('notesStream', this.onNote);
 	}
@@ -46,6 +49,9 @@ export class HomeTimelineChannel extends Channel {
 		const isMe = this.user!.id === note.userId;
 
 		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
+
+		// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
+		if (this.localOnly && !isMe && note.user.host != null) return;
 
 		if (note.channelId) {
 			// そのチャンネルをフォローしていない

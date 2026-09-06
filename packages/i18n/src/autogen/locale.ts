@@ -12024,6 +12024,10 @@ export interface Locale extends ILocale {
              * ダイレクトメッセージ
              */
             "chat": string;
+            /**
+             * お気に入り
+             */
+            "favorites": string;
         };
     };
     "_dialog": {
@@ -14530,6 +14534,10 @@ export interface Locale extends ILocale {
          * ニックネームを設定
          */
         "addNickname": string;
+        /**
+         * ローカルユーザーの投稿だけ表示
+         */
+        "localOnlyInHomeTimeline": string;
     };
     "_juiceApprovals": {
         /**
