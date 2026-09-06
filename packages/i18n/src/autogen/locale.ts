@@ -6600,6 +6600,10 @@ export interface Locale extends ILocale {
          * オンにすると、このお知らせは通知されず、既読にする必要もなくなります。
          */
         "silenceDescription": string;
+        /**
+         * このお知らせに付けられるリアクションの種類数が上限に達しています。
+         */
+        "tooManyReactionTypes": string;
     };
     "_initialAccountSetting": {
         /**
@@ -8381,6 +8385,10 @@ export interface Locale extends ILocale {
              * 同時に出せるアバターデコレーション申請数の上限
              */
             "avatarDecorationRequestLimit": string;
+            /**
+             * お知らせ1件に付けられるリアクションの種類数の上限
+             */
+            "announcementReactionTypeLimit": string;
             /**
              * 絵文字申請の承認・却下
              */
@@ -10808,6 +10816,10 @@ export interface Locale extends ILocale {
             "showLabel": string;
         };
         "_jobQueue": {
+            /**
+             * 音を鳴らす
+             */
+            "soundEnabled": string;
             /**
              * 鳴らす音
              */

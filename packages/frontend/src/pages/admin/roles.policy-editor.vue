@@ -416,6 +416,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</template>
 		</XFolder>
 
+		<XFolder v-if="matchQuery([i18n.ts._role._options.announcementReactionTypeLimit, 'announcementReactionTypeLimit'])" v-model:policyMeta="policyMetaModel.announcementReactionTypeLimit" :isBaseRole="isBaseRole" :readonly="readonly">
+			<template #label>{{ i18n.ts._role._options.announcementReactionTypeLimit }}<span class="_juice">JUICE</span></template>
+			<template #valueText>{{ valuesModel.announcementReactionTypeLimit }}</template>
+			<template #default="{ disabled }">
+				<MkInput v-model="valuesModel.announcementReactionTypeLimit" type="number" :disabled="disabled" :min="0">
+				</MkInput>
+			</template>
+		</XFolder>
+
 		<XFolder v-if="matchQuery([i18n.ts._role._options.canApproveEmojiRequests, 'canApproveEmojiRequests'])" v-model:policyMeta="policyMetaModel.canApproveEmojiRequests" :isBaseRole="isBaseRole" :readonly="readonly">
 			<template #label>{{ i18n.ts._role._options.canApproveEmojiRequests }}<span class="_juice">JUICE</span></template>
 			<template #valueText>{{ valuesModel.canApproveEmojiRequests ? i18n.ts.yes : i18n.ts.no }}</template>

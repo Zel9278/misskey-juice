@@ -1672,6 +1672,7 @@ _announcement:
   dialogAnnouncementUxWarn: "ダイアログ形式のお知らせが同時に2つ以上ある場合、UXに悪影響を及ぼす可能性が非常に高いため、使用は慎重に行うことを推奨します。"
   silence: "非通知"
   silenceDescription: "オンにすると、このお知らせは通知されず、既読にする必要もなくなります。"
+  tooManyReactionTypes: "このお知らせに付けられるリアクションの種類数が上限に達しています。"
 
 _initialAccountSetting:
   accountCreated: "アカウントの作成が完了しました！"
@@ -2175,6 +2176,7 @@ _role:
     watermarkAvailable: "ウォーターマーク機能の使用可否"
     emojiRequestLimit: "同時に出せる絵文字申請数の上限"
     avatarDecorationRequestLimit: "同時に出せるアバターデコレーション申請数の上限"
+    announcementReactionTypeLimit: "お知らせ1件に付けられるリアクションの種類数の上限"
     canApproveEmojiRequests: "絵文字申請の承認・却下"
     canApproveAvatarDecorationRequests: "アバターデコレーション申請の承認・却下"
     canApproveSignups: "承認式新規登録の承認・却下"
@@ -2851,6 +2853,7 @@ _widgetOptions:
     showMs: "ミリ秒を表示"
     showLabel: "ラベルを表示"
   _jobQueue:
+    soundEnabled: "音を鳴らす"
     sound: "鳴らす音"
   _rss:
     url: "RSSフィードのURL"

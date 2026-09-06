@@ -11,7 +11,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template #empty><MkResult type="empty" :text="i18n.ts.noNotes"/></template>
 
 		<template #default="{ items }">
-			<MkNote v-for="item in items" :key="item.id" :note="item.note" :class="$style.note"/>
+			<div class="_gaps">
+				<MkNote v-for="item in items" :key="item.id" :note="item.note" :class="$style.note"/>
+			</div>
 		</template>
 	</MkPagination>
 </XColumn>
@@ -25,6 +27,7 @@ import MkPagination from '@/components/MkPagination.vue';
 import MkNote from '@/components/MkNote.vue';
 import { i18n } from '@/i18n.js';
 import { Paginator } from '@/utility/paginator.js';
+import { useGlobalEvent } from '@/events.js';
 
 defineProps<{
 	column: Column;
@@ -43,12 +46,21 @@ function reloadTimeline() {
 		});
 	});
 }
+
+// JUICE: このカラムを表示中に同一クライアント内でノートをお気に入りに追加/解除した場合、
+// サーバーからのプッシュが無い(i/favoritesはストリーミング非対応)ためリアルタイムに反映されない
+// 問題を修正。ローカルのイベントバス経由で変更を検知し、一覧を再取得する
+useGlobalEvent('noteFavorited', () => {
+	paginator.reload();
+});
+useGlobalEvent('noteUnfavorited', () => {
+	paginator.reload();
+});
 </script>
 
 <style lang="scss" module>
 .note {
 	background: var(--MI_THEME-panel);
 	border-radius: var(--MI-radius);
-	margin-bottom: var(--MI-margin);
 }
 </style>

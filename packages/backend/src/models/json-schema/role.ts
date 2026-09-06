@@ -337,6 +337,10 @@ export const packedRolePoliciesSchema = {
 			type: 'integer',
 			optional: false, nullable: false,
 		},
+		announcementReactionTypeLimit: {
+			type: 'integer',
+			optional: false, nullable: false,
+		},
 		canApproveEmojiRequests: {
 			type: 'boolean',
 			optional: false, nullable: false,
