@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -94,6 +94,11 @@ export const meta = {
 					},
 				},
 			},
+			customSplashText: {
+				type: 'array',
+				optional: false, nullable: false,
+				items: { type: 'string', optional: false, nullable: false },
+			},
 		},
 	},
 } as const;
@@ -120,6 +125,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...resolveLatexSettings(settings),
 				...resolveReactionPiggybackSettings(settings),
 				...resolveContactFormSettings(settings),
+				...resolveCustomSplashTextSettings(settings),
 			};
 		});
 	}

@@ -14431,6 +14431,18 @@ export interface Locale extends ILocale {
          */
         "relayTimelineFilterEmpty": string;
         /**
+         * 起動画面
+         */
+        "splashSettingsTitle": string;
+        /**
+         * 起動画面の表示文言
+         */
+        "customSplashText": string;
+        /**
+         * 起動時のロード画面にロゴの下へランダムで1つ表示する文言です。1行に1件入力してください(空行は無視されます)。何も設定しない場合は表示されません。
+         */
+        "customSplashTextDescription": string;
+        /**
          * ウィジェットの表示位置
          */
         "widgetsSide": string;

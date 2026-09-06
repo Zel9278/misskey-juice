@@ -179,6 +179,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkFolder>
 				</SearchMarker>
 
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.splashSettingsTitle }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkTextarea v-model="customSplashTextInput">
+									<template #label><SearchLabel>{{ i18n.ts._juice.customSplashText }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.customSplashTextDescription }}</template>
+								</MkTextarea>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
 				<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
 			</div>
 		</SearchMarker>
@@ -192,6 +207,7 @@ import { langs } from '@@/js/config.js';
 import MkFolder from '@/components/MkFolder.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkInput from '@/components/MkInput.vue';
+import MkTextarea from '@/components/MkTextarea.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
@@ -216,6 +232,8 @@ const contactFormEnabled = ref(settings.contactFormEnabled);
 const contactFormLimit = ref(settings.contactFormLimit);
 const contactFormRequireAuth = ref(settings.contactFormRequireAuth);
 const contactFormContentMaxLength = ref(settings.contactFormContentMaxLength);
+// JUICE: 配列を1行1件のテキストエリアとして編集する(空行は無視する)
+const customSplashTextInput = ref(settings.customSplashText.join('\n'));
 
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
@@ -234,6 +252,7 @@ function save() {
 		contactFormLimit: contactFormLimit.value,
 		contactFormRequireAuth: contactFormRequireAuth.value,
 		contactFormContentMaxLength: contactFormContentMaxLength.value,
+		customSplashText: customSplashTextInput.value.split('\n').map(x => x.trim()).filter(x => x.length > 0),
 	});
 }
 

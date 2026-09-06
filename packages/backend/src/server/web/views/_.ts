@@ -50,6 +50,8 @@ export type CommonData = MinimumCommonData & {
 	frontendEmbedBootloaderCss: string | null;
 	metaJson?: string;
 	clientCtxJson?: string;
+	// JUICE: 起動時のスプラッシュ画面にロゴの下へランダム表示する、管理者設定可能な文言
+	customSplashText: string[];
 };
 
 export type CommonPropsMinimum<T = Record<string, any>> = MinimumCommonData & T;

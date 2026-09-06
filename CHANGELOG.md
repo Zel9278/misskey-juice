@@ -44,6 +44,8 @@
 - Feat: 絵文字申請・アバターデコレーション申請・承認式新規登録と同様に、お問い合わせの処理(ステータス変更・担当者割り当て・削除)もモデレーター以外にロール単位で個別に許可できるように(JUICE独自)。ロールポリシーに`canProcessContactForms`を追加(既定値false)し、「ツール」メニューにも専用リンクを追加。問い合わせ内容にはメールアドレス・IPアドレスといったPIIが含まれるため、モデレーター/管理者以外の担当者にはこれらをマスクして表示する(処理そのものは委譲するが、個人情報の閲覧はモデレーター/管理者に限定)
 - Feat: JUICE設定に、お問い合わせ内容(本文)の最大文字数を変更できる設定を追加(JUICE独自、既定10000文字、20〜10000の範囲で設定可能)。今まで10000文字固定だった
 - Feat: 絵文字申請・アバターデコレーション申請・承認式登録申請と同様に、お問い合わせが送信された際もコントロールパネルへ警告バナーを表示し、開いている間はadminストリーム経由でリアルタイムトースト通知も届くように(JUICE独自)。リアルタイム通知にはメールアドレス・IPアドレス等のPIIを含まない件名・カテゴリのみを載せる
+- Feat: 起動時のロード画面に、misskey-tempuraを参考にしたsystemd風の起動ログ(画面左上、各起動ステップの開始・完了・失敗を表示)を追加(JUICE独自)
+- Feat: JUICE設定に、起動時のロード画面でロゴの下へランダム表示する文言を設定できる項目を追加(JUICE独自、misskey-tempuraのcustomSplashTextを参考)。1行1件のテキストエリアで複数設定可能、未設定の場合は何も表示されない
 
 ### Server
 - Fix: サーバー名・短縮名・説明文にHTMLタグを含む文字列を設定していると、PWAとしてインストールした際のアイコン名(manifest.jsonのname/short_name)、ブラウザ検索バーへの追加時(opensearch.xml)、`/embed/*`ページの`<title>`・`og:site_name`、ノートのURLをMisskeyへ貼り付けた際に生成されるプレビューカードの`og:description`等、プレーンテキストとして表示されるべき場所にタグの記号がそのまま表示されてしまう問題を修正。あわせてopensearch.xmlが無加工の文字列結合でXMLを組み立てていた(不正なXMLになりうる)箇所も適切にエスケープするように修正。サーバー情報ページ等、意図的にHTMLとして表示している説明文欄自体の表示はそのまま
@@ -66,6 +68,8 @@
 - Feat: ロールポリシーに`canProcessContactForms`を追加(JUICE独自、既定値false)。モデレーター/管理者は引き続き常に全て処理できる。/api/admin/contact-form/{list,show,update,delete,categories}をこのロールポリシー(またはモデレーター)経由で許可するように変更し、モデレーター以外の担当者にはメールアドレス・IPアドレスをマスクして返す(`ContactFormEntityService.pack()`に`maskPii`オプションを追加)
 - Feat: JUICE設定に`contactFormContentMaxLength`を追加(JUICE独自、既定10000)。/api/contact-form/submitのcontentパラメータがこの値を超える場合、`invalidContent`エラーで拒否する(paramDef側の10000は変更不可の絶対上限のまま)
 - Feat: お問い合わせが送信された際、モデレーターへadminストリーム経由でリアルタイム通知するように(JUICE独自)。既存の絵文字申請・アバターデコレーション申請・承認式登録申請と同じ`JuiceAdminNotificationService`の枠組みに統合し、Webhook enqueue(`receivedContactForm`)もあわせて行うようにした(従来は`ContactFormService`から直接enqueueしていた)。通知ペイロードはPIIを含まない`{id, subject, category}`のみ
+- Feat: JUICE設定に`customSplashText`を追加(JUICE独自、既定は空配列、misskey-tempuraのcustomSplashTextを参考)。起動時のロード画面(`_splash.tsx`)のロゴ下にランダムで1つ表示する。サーバー側で完結する設定のため、新規マイグレーションは追加せずJuiceSettingsのjsonbに載せている
+- Feat: 起動時の生JSブートローダー(`public/loader/boot.js`)に、misskey-tempuraを参考にしたsystemd風の起動ログ機能を追加(JUICE独自)。言語検出・アプリ本体スクリプトの読み込み・テーマ適用・フォント設定適用・カスタムCSS適用の各ステップを画面左上に逐次表示する。`<head>`内で同期実行される都合上ほとんどのステップは`<body>`(および`#tty`)がまだ存在しないタイミングで完了してしまうため、該当する行のDOM要素はいったん保留キューに積んでおき、`#tty`が実際に使えるようになった時点(通常はDOMContentLoaded後のアプリ本体スクリプト読み込み時)でまとめて反映するようにし、最優先で即時開始すべきアプリ本体スクリプトの読み込み開始タイミングを一切遅延させずにログを取りこぼさないようにしている
 
 ## 2026.7.0-juice+2.5
 

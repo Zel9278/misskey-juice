@@ -96,7 +96,7 @@ export function Layout(props: PropsWithChildren<CommonProps<{
 							Please turn on your JavaScript
 						</p>
 					</noscript>
-					<Splash icon={props.icon} />
+					<Splash icon={props.icon} customSplashText={props.customSplashText} />
 					{props.children}
 				</body>
 			</html>

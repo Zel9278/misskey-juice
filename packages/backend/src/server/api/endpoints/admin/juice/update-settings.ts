@@ -49,6 +49,11 @@ export const paramDef = {
 				required: ['key', 'text', 'enabled', 'order', 'isDefault'],
 			},
 		},
+		customSplashText: {
+			type: 'array',
+			maxItems: 20,
+			items: { type: 'string', maxLength: 256 },
+		},
 	},
 } as const;
 
@@ -81,6 +86,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.contactFormRequireAuth !== undefined) set.contactFormRequireAuth = ps.contactFormRequireAuth;
 			if (ps.contactFormContentMaxLength !== undefined) set.contactFormContentMaxLength = ps.contactFormContentMaxLength;
 			if (ps.contactFormCategories !== undefined) set.contactFormCategories = ps.contactFormCategories;
+			if (ps.customSplashText !== undefined) set.customSplashText = ps.customSplashText;
 
 			const after = await this.juiceSettingsService.update(set);
 

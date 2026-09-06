@@ -11063,6 +11063,7 @@ export interface operations {
                             order: number;
                             isDefault: boolean;
                         }[];
+                        customSplashText: string[];
                     };
                 };
             };
@@ -11227,6 +11228,7 @@ export interface operations {
                         order: number;
                         isDefault: boolean;
                     }[];
+                    customSplashText?: string[];
                 };
             };
         };

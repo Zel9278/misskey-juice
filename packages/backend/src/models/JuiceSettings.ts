@@ -40,6 +40,8 @@ export interface JuiceSettingsValue {
 	contactFormCategories?: ContactFormCategory[];
 	/** コンタクトフォーム本文の最大文字数 */
 	contactFormContentMaxLength?: number;
+	/** 起動時のスプラッシュ画面にロゴの下へランダム表示する文言一覧(misskey-tempuraのcustomSplashTextを参考) */
+	customSplashText?: string[];
 }
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
@@ -138,6 +140,18 @@ export function resolveLatexSettings(settings: JuiceSettingsValue): {
 } {
 	return {
 		latexEnabled: settings.latexEnabled ?? true,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * HtmlTemplateService(起動時スプラッシュ画面)・admin/juice/settingsの2箇所で共通利用する。
+ */
+export function resolveCustomSplashTextSettings(settings: JuiceSettingsValue): {
+	customSplashText: string[];
+} {
+	return {
+		customSplashText: settings.customSplashText ?? [],
 	};
 }
 

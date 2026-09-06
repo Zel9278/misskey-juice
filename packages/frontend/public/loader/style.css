@@ -22,6 +22,56 @@ html {
 	transition: opacity 0.5s ease;
 }
 
+/* JUICE: misskey-tempuraのSystemd(systemd風の起動ログ)を参考に追加 */
+#tty {
+	position: fixed;
+	top: 8px;
+	left: 8px;
+	z-index: 10001;
+	max-width: 60vw;
+	font-size: 12px;
+	line-height: 1.6;
+	color: var(--MI_THEME-fg);
+	opacity: 0.75;
+	pointer-events: none;
+}
+
+#tty > .tty-line {
+	font-family: 'Courier New', Courier, monospace;
+	display: block;
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+#tty > .tty-line .tty-status-running {
+	color: #ff9800;
+}
+
+#tty > .tty-line .tty-status-ok {
+	color: #4caf50;
+}
+
+#tty > .tty-line .tty-status-failed {
+	color: #f44336;
+}
+
+/* JUICE: misskey-tempuraのcustomSplashText(ロゴ下のランダム表示文言)を参考に追加 */
+#splashText {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	/* heightがautoのまま top/bottom を指定すると箱が画面全体に伸びてテキストが上端に来るため、
+	   transformでの中央寄せ+オフセットにしてロゴ・スピナーの下に固定表示させる */
+	transform: translate(-50%, calc(-50% + 110px));
+	width: 80%;
+	max-width: 400px;
+	text-align: center;
+	font-size: 14px;
+	color: var(--MI_THEME-fg);
+	opacity: 0.7;
+	pointer-events: none;
+}
+
 #splashIcon {
 	position: absolute;
 	top: 0;

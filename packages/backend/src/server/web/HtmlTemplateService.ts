@@ -12,6 +12,8 @@ import { bindThis } from '@/decorators.js';
 import { htmlSafeJsonStringify } from '@/misc/json-stringify-html-safe.js';
 import { stripHtmlTags } from '@/misc/strip-html-tags.js';
 import { MetaEntityService } from '@/core/entities/MetaEntityService.js';
+import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { resolveCustomSplashTextSettings } from '@/models/JuiceSettings.js';
 import type { FastifyReply } from 'fastify';
 import type { Manifest } from 'vite';
 import type { Config } from '@/config.js';
@@ -38,6 +40,7 @@ export class HtmlTemplateService {
 		private meta: MiMeta,
 
 		private metaEntityService: MetaEntityService,
+		private juiceSettingsService: JuiceSettingsService,
 	) {
 		this.frontendViteBuilt = resolve(this.config.rootDir, 'built/_frontend_vite_');
 		this.frontendEmbedViteBuilt = resolve(this.config.rootDir, 'built/_frontend_embed_vite_');
@@ -154,7 +157,11 @@ export class HtmlTemplateService {
 	public async getCommonData(): Promise<CommonData> {
 		await this.prepareFrontendAssets();
 
+		// JUICE: 起動時スプラッシュ画面のカスタム文言
+		const { customSplashText } = resolveCustomSplashTextSettings(await this.juiceSettingsService.fetch());
+
 		return {
+			customSplashText,
 			version: this.config.version,
 			config: this.config,
 			langs: [...languages],
