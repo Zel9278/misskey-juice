@@ -38,6 +38,8 @@ export interface JuiceSettingsValue {
 	contactFormRequireAuth?: boolean;
 	/** コンタクトフォームのカテゴリ一覧 */
 	contactFormCategories?: ContactFormCategory[];
+	/** コンタクトフォーム本文の最大文字数 */
+	contactFormContentMaxLength?: number;
 }
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
@@ -163,11 +165,13 @@ export function resolveContactFormSettings(settings: JuiceSettingsValue): {
 	contactFormLimit: number;
 	contactFormRequireAuth: boolean;
 	contactFormCategories: ContactFormCategory[];
+	contactFormContentMaxLength: number;
 } {
 	return {
 		contactFormEnabled: settings.contactFormEnabled ?? true,
 		contactFormLimit: settings.contactFormLimit ?? 3,
 		contactFormRequireAuth: settings.contactFormRequireAuth ?? false,
+		contactFormContentMaxLength: settings.contactFormContentMaxLength ?? 10000,
 		contactFormCategories: settings.contactFormCategories ?? [
 			{ key: 'general', text: '一般', enabled: true, order: 1, isDefault: true },
 			{ key: 'bug_report', text: 'バグ報告', enabled: true, order: 2, isDefault: false },

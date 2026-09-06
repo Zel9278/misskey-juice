@@ -57,6 +57,10 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			contactFormContentMaxLength: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
 			contactFormCategories: {
 				type: 'array',
 				optional: false, nullable: false,
@@ -88,7 +92,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	) {
 		super(meta, paramDef, async () => {
 			const settings = await this.juiceSettingsService.fetch();
-			const { contactFormEnabled, contactFormRequireAuth, contactFormCategories } = resolveContactFormSettings(settings);
+			const { contactFormEnabled, contactFormRequireAuth, contactFormCategories, contactFormContentMaxLength } = resolveContactFormSettings(settings);
 			return {
 				...resolveSignupApprovalSettings(settings),
 				...resolveEmojiRequestSettings(settings),
@@ -98,6 +102,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...resolveReactionPiggybackSettings(settings),
 				contactFormEnabled,
 				contactFormRequireAuth,
+				contactFormContentMaxLength,
 				// JUICE: 公開設定なので無効化されたカテゴリは含めない
 				contactFormCategories: contactFormCategories.filter(cat => cat.enabled).sort((a, b) => a.order - b.order),
 			};

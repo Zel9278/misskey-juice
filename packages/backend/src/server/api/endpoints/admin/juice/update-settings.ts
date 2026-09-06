@@ -34,6 +34,7 @@ export const paramDef = {
 		contactFormEnabled: { type: 'boolean' },
 		contactFormLimit: { type: 'integer', minimum: 1, maximum: 100 },
 		contactFormRequireAuth: { type: 'boolean' },
+		contactFormContentMaxLength: { type: 'integer', minimum: 20, maximum: 10000 },
 		contactFormCategories: {
 			type: 'array',
 			items: {
@@ -78,6 +79,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.contactFormEnabled !== undefined) set.contactFormEnabled = ps.contactFormEnabled;
 			if (ps.contactFormLimit !== undefined) set.contactFormLimit = ps.contactFormLimit;
 			if (ps.contactFormRequireAuth !== undefined) set.contactFormRequireAuth = ps.contactFormRequireAuth;
+			if (ps.contactFormContentMaxLength !== undefined) set.contactFormContentMaxLength = ps.contactFormContentMaxLength;
 			if (ps.contactFormCategories !== undefined) set.contactFormCategories = ps.contactFormCategories;
 
 			const after = await this.juiceSettingsService.update(set);

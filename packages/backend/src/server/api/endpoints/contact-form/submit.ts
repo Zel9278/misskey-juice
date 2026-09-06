@@ -94,13 +94,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private emailService: EmailService,
 	) {
 		super(meta, paramDef, async (ps, me, _accessToken, _file, _cleanup, ip, headers) => {
-			const { contactFormEnabled, contactFormRequireAuth } = resolveContactFormSettings(await this.juiceSettingsService.fetch());
+			const { contactFormEnabled, contactFormRequireAuth, contactFormContentMaxLength } = resolveContactFormSettings(await this.juiceSettingsService.fetch());
 
 			if (!contactFormEnabled) throw new ApiError(meta.errors.contactFormDisabled);
 			if (contactFormRequireAuth && !me) throw new ApiError(meta.errors.authRequired);
 
-			// JUICE: paramDefのminLengthはtrim前の文字数で判定されるため、空白のみの入力を別途弾く
-			if (ps.subject.trim().length === 0 || ps.content.trim().length < 20) {
+			// JUICE: paramDefのminLengthはtrim前の文字数で判定されるため、空白のみの入力を別途弾く。
+			// maxLengthはparamDef側の10000が絶対上限で、これはJUICE設定でさらに引き下げられる下限20〜上限10000の範囲の値
+			if (ps.subject.trim().length === 0 || ps.content.trim().length < 20 || ps.content.trim().length > contactFormContentMaxLength) {
 				throw new ApiError(meta.errors.invalidContent);
 			}
 

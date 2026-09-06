@@ -78,6 +78,7 @@ export type RolePolicies = {
 	canApproveEmojiRequests: boolean;
 	canApproveAvatarDecorationRequests: boolean;
 	canApproveSignups: boolean;
+	canProcessContactForms: boolean;
 };
 
 export const DEFAULT_POLICIES: RolePolicies = {
@@ -131,6 +132,7 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	canApproveEmojiRequests: false,
 	canApproveAvatarDecorationRequests: false,
 	canApproveSignups: false,
+	canProcessContactForms: false,
 };
 
 @Injectable()
@@ -467,6 +469,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			canApproveEmojiRequests: calc('canApproveEmojiRequests', vs => vs.some(v => v === true)),
 			canApproveAvatarDecorationRequests: calc('canApproveAvatarDecorationRequests', vs => vs.some(v => v === true)),
 			canApproveSignups: calc('canApproveSignups', vs => vs.some(v => v === true)),
+			canProcessContactForms: calc('canProcessContactForms', vs => vs.some(v => v === true)),
 		};
 	}
 

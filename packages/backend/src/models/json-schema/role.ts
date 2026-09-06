@@ -349,6 +349,10 @@ export const packedRolePoliciesSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		canProcessContactForms: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 	},
 } as const;
 

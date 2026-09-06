@@ -9,13 +9,16 @@ import type { ContactFormsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { QueryService } from '@/core/QueryService.js';
 import { ContactFormEntityService } from '@/core/entities/ContactFormEntityService.js';
+import { RoleService } from '@/core/RoleService.js';
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
 export const meta = {
 	tags: ['admin'],
 	requireCredential: true,
-	// JUICE: 問い合わせ内容にメールアドレス・IPアドレス等のPIIを含むため、承認ロールポリシーへの委譲はせずモデレーター/管理者に限定する
-	requireModerator: true,
+	// JUICE: モデレーター/管理者、またはcanProcessContactFormsロールポリシーを持つユーザーのみ許可。
+	// 問い合わせ内容にはメールアドレス・IPアドレス等のPIIを含むため、モデレーター以外にはこれらを
+	// マスクして返す(ハンドラ内でContactFormEntityService.packMany({maskPii: ...})を参照)
+	requiredRolePolicyOrModerator: 'canProcessContactForms',
 	kind: 'read:admin:contact-form',
 	secure: true,
 
@@ -51,8 +54,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private queryService: QueryService,
 		private contactFormEntityService: ContactFormEntityService,
+		private roleService: RoleService,
 	) {
-		super(meta, paramDef, async (ps) => {
+		super(meta, paramDef, async (ps, me) => {
 			const query = this.queryService.makePaginationQuery(this.contactFormsRepository.createQueryBuilder('contactForm'), ps.sinceId, ps.untilId)
 				.leftJoinAndSelect('contactForm.user', 'user')
 				.leftJoinAndSelect('contactForm.assignedUser', 'assignedUser');
@@ -71,7 +75,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const contactForms = await query.limit(ps.limit).getMany();
 
-			return await this.contactFormEntityService.packMany(contactForms);
+			const isModerator = await this.roleService.isModerator(me);
+			return await this.contactFormEntityService.packMany(contactForms, { maskPii: !isModerator });
 		});
 	}
 }

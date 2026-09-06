@@ -97,6 +97,7 @@ const juicePublicSettings = ref<Misskey.entities.JuicePublicSettingsResponse>({
 	reactionPiggybackOnRemoteEnabled: false,
 	contactFormEnabled: true,
 	contactFormRequireAuth: false,
+	contactFormContentMaxLength: 10000,
 	contactFormCategories: [],
 });
 misskeyApi('juice/public-settings').then(res => {

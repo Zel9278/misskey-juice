@@ -127,6 +127,7 @@ const props = withDefaults(defineProps<{
 		reactionPiggybackOnRemoteEnabled: false,
 		contactFormEnabled: true,
 		contactFormRequireAuth: false,
+		contactFormContentMaxLength: 10000,
 		contactFormCategories: [],
 	}),
 });

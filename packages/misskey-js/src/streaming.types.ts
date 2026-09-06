@@ -237,6 +237,12 @@ export type Channels = {
 				category: string | null;
 				requester: UserLite;
 			};
+			// JUICE: お問い合わせが送信されたとき(PIIを含まない要約のみ)
+			newContactForm: {
+				id: string;
+				subject: string;
+				category: string;
+			};
 		};
 		receives: null;
 	};

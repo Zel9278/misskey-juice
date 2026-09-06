@@ -8,10 +8,11 @@ import { DI } from '@/di-symbols.js';
 import type { ContactFormsRepository } from '@/models/_.js';
 import type { MiContactForm } from '@/models/ContactForm.js';
 import { bindThis } from '@/decorators.js';
-import { SystemWebhookService, ContactFormPayload } from '@/core/SystemWebhookService.js';
+import { ContactFormPayload } from '@/core/SystemWebhookService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { IdService } from '@/core/IdService.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { JuiceAdminNotificationService } from '@/core/JuiceAdminNotificationService.js';
 import { resolveContactFormSettings, ContactFormCategory } from '@/models/JuiceSettings.js';
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
@@ -41,10 +42,10 @@ export class ContactFormService {
 		@Inject(DI.contactFormsRepository)
 		private contactFormsRepository: ContactFormsRepository,
 
-		private systemWebhookService: SystemWebhookService,
 		private userEntityService: UserEntityService,
 		private idService: IdService,
 		private juiceSettingsService: JuiceSettingsService,
+		private juiceAdminNotificationService: JuiceAdminNotificationService,
 	) {
 	}
 
@@ -124,7 +125,8 @@ export class ContactFormService {
 			user: contactForm.user ? await this.userEntityService.pack(contactForm.user, undefined, { schema: 'UserLite' }) : null,
 		};
 
-		await this.systemWebhookService.enqueueSystemWebhook('receivedContactForm', payload);
+		// JUICE: admin streamへのリアルタイム通知(PIIを含まない要約のみ)とWebhook enqueueの両方をまとめて行う
+		await this.juiceAdminNotificationService.notifyNewContactForm(payload);
 	}
 
 	@bindThis

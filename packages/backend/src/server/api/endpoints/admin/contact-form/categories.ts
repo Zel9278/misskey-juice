@@ -13,8 +13,9 @@ import { resolveContactFormSettings } from '@/models/JuiceSettings.js';
 export const meta = {
 	tags: ['admin'],
 	requireCredential: true,
-	// JUICE: カテゴリのキー・表示名自体はPIIではないため、他のお問い合わせ管理エンドポイントと同じくモデレーターまで許可する
-	requireModerator: true,
+	// JUICE: カテゴリのキー・表示名自体はPIIではないため、他のお問い合わせ管理エンドポイントと
+	// 同じくcanProcessContactFormsロールポリシー(モデレーター/管理者は常に許可)まで許可する
+	requiredRolePolicyOrModerator: 'canProcessContactForms',
 	kind: 'read:admin:contact-form',
 	secure: true,
 

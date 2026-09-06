@@ -2176,6 +2176,7 @@ _role:
     canApproveEmojiRequests: "絵文字申請の承認・却下"
     canApproveAvatarDecorationRequests: "アバターデコレーション申請の承認・却下"
     canApproveSignups: "承認式新規登録の承認・却下"
+    canProcessContactForms: "お問い合わせの処理(ステータス変更・担当者割り当て・削除)"
   _condition:
     roleAssignedTo: "マニュアルロールにアサイン済み"
     isLocal: "ローカルユーザー"
@@ -3879,9 +3880,11 @@ _juice:
   thereArePendingEmojiRequestsWarning: "未対応の絵文字申請があります。"
   thereArePendingSignupApplicationsWarning: "未対応の承認式登録の申請があります。"
   thereArePendingAvatarDecorationRequestsWarning: "未対応のアバターデコレーション申請があります。"
+  thereArePendingContactFormsWarning: "未対応のお問い合わせがあります。"
   newEmojiRequestToast: "新しい絵文字申請があります。"
   newSignupApplicationToast: "新しい承認式登録の申請があります。"
   newAvatarDecorationRequestToast: "新しいアバターデコレーション申請があります。"
+  newContactFormToast: "新しいお問い合わせがあります。"
   nickname: "ニックネーム"
   addNickname: "ニックネームを設定"
 
@@ -4039,6 +4042,7 @@ _contactForm:
     placeholderAssignedUser: "@ユーザー名 またはニックネームを入力"
     submittedAt: "送信日時"
     deleted: "削除しました"
+    piiHiddenForNonModerator: "モデレーターのみ閲覧可能です"
   _category:
     categoryManagement: "カテゴリ管理"
     reset: "元に戻す"
@@ -4058,6 +4062,8 @@ _contactForm:
     limitDescription: "同一IPアドレスから1時間あたりに送信できる件数の上限です。"
     requireAuth: "送信にログインを必須にする"
     requireAuthDescription: "有効にすると、ログインしていないユーザーはお問い合わせを送信できなくなります。"
+    contentMaxLength: "お問い合わせ内容の最大文字数"
+    contentMaxLengthDescription: "お問い合わせ内容(本文)に入力できる文字数の上限です。20〜10000の範囲で設定できます。"
   _validation:
     misskeyUsernameFormatError: "「ユーザー名@ホスト名」の形式で入力してください。"
     misskeyUsernameCharacterError: "ユーザー名に使用できない文字が含まれています。"

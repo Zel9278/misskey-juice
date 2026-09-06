@@ -14,8 +14,9 @@ import { DI } from '@/di-symbols.js';
 export const meta = {
 	tags: ['admin'],
 	requireCredential: true,
-	// JUICE: 問い合わせ内容にメールアドレス・IPアドレス等のPIIを含むため、承認ロールポリシーへの委譲はせずモデレーター/管理者に限定する
-	requireModerator: true,
+	// JUICE: モデレーター/管理者、またはcanProcessContactFormsロールポリシーを持つユーザーのみ許可。
+	// このエンドポイント自体はPIIを返さない(ステータス・担当者等の更新のみ)
+	requiredRolePolicyOrModerator: 'canProcessContactForms',
 	kind: 'write:admin:contact-form',
 	secure: true,
 

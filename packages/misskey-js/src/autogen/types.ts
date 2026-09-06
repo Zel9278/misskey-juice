@@ -5954,6 +5954,7 @@ export type components = {
             canApproveEmojiRequests: boolean;
             canApproveAvatarDecorationRequests: boolean;
             canApproveSignups: boolean;
+            canProcessContactForms: boolean;
         };
         ReversiGameLite: {
             /** Format: id */
@@ -11054,6 +11055,7 @@ export interface operations {
                         contactFormEnabled: boolean;
                         contactFormLimit: number;
                         contactFormRequireAuth: boolean;
+                        contactFormContentMaxLength: number;
                         contactFormCategories: {
                             key: string;
                             text: string;
@@ -11217,6 +11219,7 @@ export interface operations {
                     contactFormEnabled?: boolean;
                     contactFormLimit?: number;
                     contactFormRequireAuth?: boolean;
+                    contactFormContentMaxLength?: number;
                     contactFormCategories?: {
                         key: string;
                         text: string;
@@ -31751,6 +31754,7 @@ export interface operations {
                         reactionPiggybackOnRemoteEnabled: boolean;
                         contactFormEnabled: boolean;
                         contactFormRequireAuth: boolean;
+                        contactFormContentMaxLength: number;
                         contactFormCategories: {
                             key: string;
                             text: string;

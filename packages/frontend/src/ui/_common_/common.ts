@@ -81,6 +81,16 @@ function toolsMenuItems(): MenuItem[] {
 		});
 	}
 
+	if ($i && ($i.isModerator || $i.isAdmin || $i.policies.canProcessContactForms)) {
+		items.push({
+			type: 'link',
+			to: '/contact-form-manager',
+			text: i18n.ts._contactForm._adminList.list,
+			icon: 'ti ti-mail',
+			badge: true,
+		});
+	}
+
 	return items;
 }
 

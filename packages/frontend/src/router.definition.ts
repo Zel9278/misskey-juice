@@ -394,6 +394,9 @@ export const ROUTE_DEF = [{
 	path: '/signup-approvals-manager',
 	component: page(() => import('@/pages/admin/juice-approvals.vue')),
 }, {
+	path: '/contact-form-manager',
+	component: page(() => import('@/pages/admin/contact-form.vue')),
+}, {
 	path: '/registry/keys/:domain/:path(*)?',
 	component: page(() => import('@/pages/registry.keys.vue')),
 }, {

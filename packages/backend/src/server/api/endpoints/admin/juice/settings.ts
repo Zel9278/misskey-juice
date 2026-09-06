@@ -75,6 +75,10 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			contactFormContentMaxLength: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
 			contactFormCategories: {
 				type: 'array',
 				optional: false, nullable: false,

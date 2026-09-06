@@ -25,11 +25,19 @@ export class ContactFormEntityService {
 	@bindThis
 	public async pack(
 		src: MiContactForm['id'] | MiContactForm,
+		options?: {
+			// JUICE: モデレーター権限を持たないロールポリシー経由の処理担当者には、
+			// メールアドレス・IPアドレスといったPIIを見せない(処理そのものは委譲するが、
+			// 個人情報の閲覧はモデレーター/管理者に限定する)
+			maskPii?: boolean;
+		},
 	): Promise<Packed<'ContactForm'>> {
 		const contactForm = typeof src === 'object' ? src : await this.contactFormsRepository.findOneOrFail({
 			where: { id: src },
 			relations: { user: true, assignedUser: true },
 		});
+
+		const maskPii = options?.maskPii ?? false;
 
 		return {
 			id: contactForm.id,
@@ -38,13 +46,13 @@ export class ContactFormEntityService {
 			subject: contactForm.subject,
 			content: contactForm.content,
 			name: contactForm.name,
-			email: contactForm.email,
+			email: maskPii ? null : contactForm.email,
 			misskeyUsername: contactForm.misskeyUsername,
 			replyMethod: contactForm.replyMethod,
 			category: contactForm.category,
 			status: contactForm.status,
 			adminNote: contactForm.adminNote,
-			ipAddress: contactForm.ipAddress,
+			ipAddress: maskPii ? null : contactForm.ipAddress,
 			userAgent: contactForm.userAgent,
 			user: contactForm.user ? await this.userEntityService.pack(contactForm.user, undefined, { schema: 'UserLite' }) : null,
 			assignedUser: contactForm.assignedUser ? await this.userEntityService.pack(contactForm.assignedUser, undefined, { schema: 'UserLite' }) : null,
@@ -55,7 +63,8 @@ export class ContactFormEntityService {
 	@bindThis
 	public async packMany(
 		contactForms: MiContactForm[],
+		options?: { maskPii?: boolean },
 	): Promise<Packed<'ContactForm'>[]> {
-		return Promise.all(contactForms.map(contactForm => this.pack(contactForm)));
+		return Promise.all(contactForms.map(contactForm => this.pack(contactForm, options)));
 	}
 }

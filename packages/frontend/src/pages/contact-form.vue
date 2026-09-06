@@ -48,9 +48,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 						:tall="true"
 						:placeholder="i18n.ts._contactForm._userForm.contentPlaceholder"
 					>
-						<template #caption>{{ i18n.tsx._contactForm._validation.contentLengthCaption({ current: content.length, max: 10000 }) }}</template>
+						<template #caption>{{ i18n.tsx._contactForm._validation.contentLengthCaption({ current: content.length, max: contactFormContentMaxLength }) }}</template>
 					</MkTextarea>
-					<div v-if="content.length > 10000" :class="$style.fieldError">
+					<div v-if="content.length > contactFormContentMaxLength" :class="$style.fieldError">
 						<i class="ti ti-exclamation-triangle" style="margin-right: 4px;"></i>
 						{{ i18n.ts._contactForm._validation.contentTooLong }}
 					</div>
@@ -262,6 +262,8 @@ const { fetchCategories, getCategoryLabel, getDefaultCategory, categoryOptions }
 
 // JUICE: 設定取得に失敗した場合にフォームが開けなくなるのを避けるため、フェイルオープン(common.tsのメニュー表示と同じ方針)にする
 const contactFormEnabled = ref(true);
+// JUICE: JUICE設定で変更可能。取得できるまではサーバー側の絶対上限と同じ既定値を使う
+const contactFormContentMaxLength = ref(10000);
 
 const category = ref('other');
 const subject = ref('');
@@ -329,6 +331,7 @@ onMounted(async () => {
 	try {
 		const settings = await juicePublicSettingsCache.fetch();
 		contactFormEnabled.value = settings.contactFormEnabled;
+		contactFormContentMaxLength.value = settings.contactFormContentMaxLength;
 	} catch (err) {
 		console.error('Failed to fetch juice public settings', err);
 	}
@@ -421,7 +424,7 @@ function onChangeEmail(): void {
 
 const canSubmit = computed(() => {
 	if (!subject.value.trim()) return false;
-	if (!content.value.trim() || content.value.length < 20 || content.value.length > 10000) return false;
+	if (!content.value.trim() || content.value.length < 20 || content.value.length > contactFormContentMaxLength.value) return false;
 	if (replyMethod.value === 'email') {
 		if (!email.value.trim()) return false;
 		if (emailState.value && emailState.value !== 'ok' && emailState.value !== 'wait') return false;
@@ -445,11 +448,11 @@ async function submit() {
 
 	try {
 		// JUICE: デバイス情報を含める場合、本文の末尾に付記する(サーバー側にデバイス情報専用の
-		// 項目は無いため)。文字数上限(10000文字)を超える場合は付記せず、本文の内容を優先する
+		// 項目は無いため)。文字数上限を超える場合は付記せず、本文の内容を優先する
 		let finalContent = content.value.trim();
 		if (includeDeviceInfo.value && userEnv.value != null) {
 			const withDeviceInfo = `${finalContent}\n\n--- ${i18n.ts.deviceInfo} ---\n${deviceInfoText.value}`;
-			if (withDeviceInfo.length <= 10000) finalContent = withDeviceInfo;
+			if (withDeviceInfo.length <= contactFormContentMaxLength.value) finalContent = withDeviceInfo;
 		}
 
 		const payload: Misskey.entities.ContactFormSubmitRequest = {

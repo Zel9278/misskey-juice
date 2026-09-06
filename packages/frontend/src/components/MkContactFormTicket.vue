@@ -44,7 +44,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkKeyValue>
 				<MkKeyValue v-if="contactForm.replyMethod === 'email'">
 					<template #key>{{ i18n.ts._contactForm._userForm.email }}</template>
-					<template #value>{{ contactForm.email }}</template>
+					<template #value>{{ contactForm.email || i18n.ts._contactForm._adminDetail.piiHiddenForNonModerator }}</template>
 				</MkKeyValue>
 				<MkKeyValue v-if="contactForm.replyMethod === 'misskey'">
 					<template #key>{{ i18n.ts._contactForm._userForm.misskeyUsername }}</template>
@@ -54,9 +54,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #key>{{ i18n.ts._contactForm._userForm.registeredUser }}</template>
 					<template #value><Mfm :text="`@${contactForm.user.username}${contactForm.user.host ? '@' + contactForm.user.host : ''}`" :linkNavigationBehavior="'window'"/></template>
 				</MkKeyValue>
-				<MkKeyValue v-if="contactForm.ipAddress">
+				<MkKeyValue>
 					<template #key>{{ i18n.ts._contactForm._adminDetail.ipAddress }}</template>
-					<template #value>{{ contactForm.ipAddress }}</template>
+					<template #value>{{ contactForm.ipAddress || i18n.ts._contactForm._adminDetail.piiHiddenForNonModerator }}</template>
 				</MkKeyValue>
 				<MkKeyValue v-if="contactForm.userAgent">
 					<template #key>{{ i18n.ts._contactForm._adminDetail.userAgent }}</template>

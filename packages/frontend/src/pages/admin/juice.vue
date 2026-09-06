@@ -168,6 +168,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 									<template #caption>{{ i18n.ts._contactForm._settings.requireAuthDescription }}</template>
 								</MkSwitch>
 							</SearchMarker>
+
+							<SearchMarker>
+								<MkInput v-model="contactFormContentMaxLength" type="number" :min="20" :max="10000" :disabled="!contactFormEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._contactForm._settings.contentMaxLength }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._contactForm._settings.contentMaxLengthDescription }}</template>
+								</MkInput>
+							</SearchMarker>
 						</div>
 					</MkFolder>
 				</SearchMarker>
@@ -208,6 +215,7 @@ const reactionPiggybackOnRemoteEnabled = ref(settings.reactionPiggybackOnRemoteE
 const contactFormEnabled = ref(settings.contactFormEnabled);
 const contactFormLimit = ref(settings.contactFormLimit);
 const contactFormRequireAuth = ref(settings.contactFormRequireAuth);
+const contactFormContentMaxLength = ref(settings.contactFormContentMaxLength);
 
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
@@ -225,6 +233,7 @@ function save() {
 		contactFormEnabled: contactFormEnabled.value,
 		contactFormLimit: contactFormLimit.value,
 		contactFormRequireAuth: contactFormRequireAuth.value,
+		contactFormContentMaxLength: contactFormContentMaxLength.value,
 	});
 }
 

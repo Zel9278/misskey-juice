@@ -8385,6 +8385,10 @@ export interface Locale extends ILocale {
              * 承認式新規登録の承認・却下
              */
             "canApproveSignups": string;
+            /**
+             * お問い合わせの処理(ステータス変更・担当者割り当て・削除)
+             */
+            "canProcessContactForms": string;
         };
         "_condition": {
             /**
@@ -14487,6 +14491,10 @@ export interface Locale extends ILocale {
          */
         "thereArePendingAvatarDecorationRequestsWarning": string;
         /**
+         * 未対応のお問い合わせがあります。
+         */
+        "thereArePendingContactFormsWarning": string;
+        /**
          * 新しい絵文字申請があります。
          */
         "newEmojiRequestToast": string;
@@ -14498,6 +14506,10 @@ export interface Locale extends ILocale {
          * 新しいアバターデコレーション申請があります。
          */
         "newAvatarDecorationRequestToast": string;
+        /**
+         * 新しいお問い合わせがあります。
+         */
+        "newContactFormToast": string;
         /**
          * ニックネーム
          */
@@ -15074,6 +15086,10 @@ export interface Locale extends ILocale {
              * 削除しました
              */
             "deleted": string;
+            /**
+             * モデレーターのみ閲覧可能です
+             */
+            "piiHiddenForNonModerator": string;
         };
         "_category": {
             /**
@@ -15146,6 +15162,14 @@ export interface Locale extends ILocale {
              * 有効にすると、ログインしていないユーザーはお問い合わせを送信できなくなります。
              */
             "requireAuthDescription": string;
+            /**
+             * お問い合わせ内容の最大文字数
+             */
+            "contentMaxLength": string;
+            /**
+             * お問い合わせ内容(本文)に入力できる文字数の上限です。20〜10000の範囲で設定できます。
+             */
+            "contentMaxLengthDescription": string;
         };
         "_validation": {
             /**
