@@ -58,8 +58,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkSwitch>
 			</div>
 		</div>
-		<div v-if="request.description">{{ i18n.ts._avatarDecorationRequestPage.description }}: {{ request.description }}</div>
-		<div v-if="request.category">{{ i18n.ts._avatarDecorationRequestPage.category }}: {{ request.category }}</div>
+		<div>{{ i18n.ts._avatarDecorationRequestPage.description }}: {{ request.description || i18n.ts.none }}</div>
+		<div>{{ i18n.ts._avatarDecorationRequestPage.category }}: {{ request.category || i18n.ts.none }}</div>
 		<div v-if="request.status === 'rejected'" class="_selectable">{{ i18n.ts._avatarDecorationRequestPage.rejectReason }}: {{ request.rejectReason }}</div>
 		<!-- JUICE: 審査済みの申請には「誰がいつ審査したか」を表示する -->
 		<div v-if="request.reviewer">{{ i18n.ts._avatarDecorationRequestPage.reviewedBy }}: <MkAcct :user="request.reviewer"/><template v-if="request.reviewedAt"> (<MkTime :time="request.reviewedAt"/>)</template></div>

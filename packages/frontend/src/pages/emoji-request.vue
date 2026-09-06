@@ -92,9 +92,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<MkButton primary rounded :disabled="shouldDisableSubmitting" @click="submit"><i class="ti ti-check"></i> {{ i18n.ts._emojiRequestPage.submit }}</MkButton>
 			</div>
-			<div v-else-if="tab === 'list'" class="_gaps">
-				<MkInfo v-if="paginator.items.value.length === 0 && !paginator.fetching.value">{{ i18n.ts._emojiRequestPage.noRequests }}</MkInfo>
-				<MkPagination v-slot="{items}" :paginator="paginator">
+			<div v-else-if="tab === 'pending'" class="_gaps">
+				<MkInfo v-if="pendingPaginator.items.value.length === 0 && !pendingPaginator.fetching.value">{{ i18n.ts._emojiRequestPage.noPendingRequests }}</MkInfo>
+				<MkPagination v-slot="{items}" :paginator="pendingPaginator">
+					<div class="_gaps">
+						<MkEmojiRequestItem v-for="request in items" :key="request.id" :request="request"/>
+					</div>
+				</MkPagination>
+			</div>
+			<div v-else-if="tab === 'result'" class="_gaps">
+				<MkSelect v-model="resultStatus" style="margin: 0;" :items="resultStatusDef">
+					<template #label>{{ i18n.ts.state }}</template>
+				</MkSelect>
+				<MkInfo v-if="resultPaginator.items.value.length === 0 && !resultPaginator.fetching.value">{{ i18n.ts._emojiRequestPage.noRequests }}</MkInfo>
+				<MkPagination v-slot="{items}" :paginator="resultPaginator">
 					<div class="_gaps">
 						<MkEmojiRequestItem v-for="request in items" :key="request.id" :request="request"/>
 					</div>
@@ -112,6 +123,7 @@ import MkInfo from '@/components/MkInfo.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkButton from '@/components/MkButton.vue';
+import MkSelect from '@/components/MkSelect.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import MkEmojiRequestItem from '@/components/MkEmojiRequestItem.vue';
 import MkNote from '@/components/MkNote.vue';
@@ -248,8 +260,20 @@ const shouldDisableSubmitting = computed((): boolean => {
 		instance.enableTestcaptcha && !testcaptchaResponse.value;
 });
 
-const paginator = markRaw(new Paginator('emoji-requests/list', {
+// JUICE: 「自分の申請」を審査待ち/結果の2タブに分割し、それぞれ別のPaginatorで絞り込んで取得する
+const pendingPaginator = markRaw(new Paginator('emoji-requests/list', {
 	limit: 10,
+	params: { status: 'pending' },
+}));
+
+const resultStatus = ref<'approved' | 'rejected'>('approved');
+const resultStatusDef = [
+	{ value: 'approved', label: i18n.ts._emojiRequestPage.statusApproved },
+	{ value: 'rejected', label: i18n.ts._emojiRequestPage.statusRejected },
+];
+const resultPaginator = markRaw(new Paginator('emoji-requests/list', {
+	limit: 10,
+	computedParams: computed(() => ({ status: resultStatus.value })),
 }));
 
 function chooseFile(ev: PointerEvent) {
@@ -301,10 +325,10 @@ function submit() {
 		'testcaptcha-response': testcaptchaResponse.value,
 	}).then(requests => {
 		for (const request of requests) {
-			paginator.prepend(request);
+			pendingPaginator.prepend(request);
 		}
 		drafts.value = [];
-		tab.value = 'list';
+		tab.value = 'pending';
 	}).catch(() => {
 		// JUICE: captcha検証失敗時などにウィジェットをリセットし、再送信できるようにする
 		hcaptcha.value?.reset?.();
@@ -322,9 +346,13 @@ const headerTabs = computed(() => [{
 	title: i18n.ts._emojiRequestPage.newRequest,
 	icon: 'ti ti-plus',
 }, {
-	key: 'list',
-	title: i18n.ts._emojiRequestPage.myRequests,
-	icon: 'ti ti-list',
+	key: 'pending',
+	title: i18n.ts._emojiRequestPage.pendingRequests,
+	icon: 'ti ti-clock',
+}, {
+	key: 'result',
+	title: i18n.ts._emojiRequestPage.requestResults,
+	icon: 'ti ti-list-check',
 }]);
 
 definePage(() => ({

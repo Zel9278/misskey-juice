@@ -18,8 +18,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div class="_gaps_s">
 		<!-- JUICE: 差し替え申請(既存のデコレーションの画像だけを差し替える) -->
 		<div v-if="request.targetAvatarDecorationId != null"><span class="_juice">JUICE</span> {{ i18n.ts._avatarDecorationRequestPage.replacementRequestBadge }}</div>
-		<div v-if="request.description">{{ i18n.ts._avatarDecorationRequestPage.description }}: {{ request.description }}</div>
-		<div v-if="request.category">{{ i18n.ts._avatarDecorationRequestPage.category }}: {{ request.category }}</div>
+		<div>{{ i18n.ts._avatarDecorationRequestPage.description }}: {{ request.description || i18n.ts.none }}</div>
+		<div>{{ i18n.ts._avatarDecorationRequestPage.category }}: {{ request.category || i18n.ts.none }}</div>
 		<div v-if="request.status === 'rejected'" class="_selectable">
 			{{ i18n.ts._avatarDecorationRequestPage.rejectReason }}: {{ request.rejectReason }}
 		</div>

@@ -3916,7 +3916,8 @@ _juiceApprovals:
 
 _emojiRequestPage:
   newRequest: "申請フォーム"
-  myRequests: "自分の申請一覧"
+  pendingRequests: "審査待ち"
+  requestResults: "結果"
   disabled: "この機能は現在無効になっています。"
   category: "カテゴリ"
   license: "ライセンス"
@@ -3928,6 +3929,7 @@ _emojiRequestPage:
   deleteFileAfterReview: "審査後にこの画像をDriveから削除する"
   submit: "申請する"
   noRequests: "申請はまだありません。"
+  noPendingRequests: "審査待ちの申請はありません。"
   statusPending: "審査待ち"
   statusApproved: "承認済み"
   statusRejected: "却下"
@@ -3956,7 +3958,8 @@ _emojiRequestApprovals:
 
 _avatarDecorationRequestPage:
   newRequest: "申請フォーム"
-  myRequests: "自分の申請一覧"
+  pendingRequests: "審査待ち"
+  requestResults: "結果"
   disabled: "この機能は現在無効になっています。"
   description: "説明"
   category: "カテゴリ"
@@ -3967,6 +3970,7 @@ _avatarDecorationRequestPage:
   deleteFileAfterReview: "審査後にこの画像をDriveから削除する"
   submit: "申請する"
   noRequests: "申請はまだありません。"
+  noPendingRequests: "審査待ちの申請はありません。"
   statusPending: "審査待ち"
   statusApproved: "承認済み"
   statusRejected: "却下"

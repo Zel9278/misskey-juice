@@ -14623,9 +14623,13 @@ export interface Locale extends ILocale {
          */
         "newRequest": string;
         /**
-         * 自分の申請一覧
+         * 審査待ち
          */
-        "myRequests": string;
+        "pendingRequests": string;
+        /**
+         * 結果
+         */
+        "requestResults": string;
         /**
          * この機能は現在無効になっています。
          */
@@ -14670,6 +14674,10 @@ export interface Locale extends ILocale {
          * 申請はまだありません。
          */
         "noRequests": string;
+        /**
+         * 審査待ちの申請はありません。
+         */
+        "noPendingRequests": string;
         /**
          * 審査待ち
          */
@@ -14771,9 +14779,13 @@ export interface Locale extends ILocale {
          */
         "newRequest": string;
         /**
-         * 自分の申請一覧
+         * 審査待ち
          */
-        "myRequests": string;
+        "pendingRequests": string;
+        /**
+         * 結果
+         */
+        "requestResults": string;
         /**
          * この機能は現在無効になっています。
          */
@@ -14814,6 +14826,10 @@ export interface Locale extends ILocale {
          * 申請はまだありません。
          */
         "noRequests": string;
+        /**
+         * 審査待ちの申請はありません。
+         */
+        "noPendingRequests": string;
         /**
          * 審査待ち
          */
