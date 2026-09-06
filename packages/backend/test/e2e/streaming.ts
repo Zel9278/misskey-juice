@@ -328,6 +328,28 @@ describe('Streaming', () => {
 
 				assert.strictEqual(fired, true);
 			});
+
+			test('localOnly: true のときフォローしているローカルユーザーの投稿が流れる(JUICE独自)', async () => {
+				const fired = await waitFire(
+					ayano, 'homeTimeline',	// ayano:home
+					() => api('notes/create', { text: 'foo' }, kyoko),	// kyoko posts
+					msg => msg.type === 'note' && msg.body.userId === kyoko.id,	// wait kyoko
+					{ localOnly: true },
+				);
+
+				assert.strictEqual(fired, true);
+			});
+
+			test('localOnly: true のときフォローしているリモートユーザーの投稿は流れない(JUICE独自)', async () => {
+				const fired = await waitFire(
+					ayano, 'homeTimeline',	// ayano:home
+					() => api('notes/create', { text: 'foo' }, akari),	// akari (remote) posts
+					msg => msg.type === 'note' && msg.body.userId === akari.id,	// wait akari
+					{ localOnly: true },
+				);
+
+				assert.strictEqual(fired, false);
+			});
 		});	// Home
 
 		describe('Local Timeline', () => {

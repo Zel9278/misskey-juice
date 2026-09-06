@@ -14447,6 +14447,18 @@ export interface Locale extends ILocale {
          */
         "customSplashTextDescription": string;
         /**
+         * {current} / {max} 行
+         */
+        "customSplashTextLineCountCaption": ParameterizedString<"current" | "max">;
+        /**
+         * 設定できる行数の上限を超えています。
+         */
+        "customSplashTextTooManyLines": string;
+        /**
+         * 1行あたりの文字数上限(256文字)を超えている行が{n}件あります。
+         */
+        "customSplashTextLineTooLong": ParameterizedString<"n">;
+        /**
          * ウィジェットの表示位置
          */
         "widgetsSide": string;
@@ -14538,6 +14550,10 @@ export interface Locale extends ILocale {
          * ローカルユーザーの投稿だけ表示
          */
         "localOnlyInHomeTimeline": string;
+        /**
+         * {n}件選択中
+         */
+        "nSelected": ParameterizedString<"n">;
     };
     "_juiceApprovals": {
         /**

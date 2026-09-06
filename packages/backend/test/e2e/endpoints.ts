@@ -1486,6 +1486,7 @@ describe('Endpoints', () => {
 				contactFormEnabled: true,
 				contactFormLimit: 3,
 				contactFormRequireAuth: false,
+				contactFormContentMaxLength: 10000,
 				contactFormCategories: [
 					{ key: 'general', text: '一般', enabled: true, order: 1, isDefault: true },
 					{ key: 'bug_report', text: 'バグ報告', enabled: true, order: 2, isDefault: false },
@@ -1495,6 +1496,7 @@ describe('Endpoints', () => {
 					{ key: 'content_issue', text: 'コンテンツ関連', enabled: true, order: 6, isDefault: false },
 					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
 				],
+				customSplashText: [],
 			});
 		});
 
@@ -2481,6 +2483,7 @@ describe('Endpoints', () => {
 				reactionPiggybackOnRemoteEnabled: false,
 				contactFormEnabled: true,
 				contactFormRequireAuth: false,
+				contactFormContentMaxLength: 10000,
 				contactFormCategories: [
 					{ key: 'general', text: '一般', enabled: true, order: 1, isDefault: true },
 					{ key: 'bug_report', text: 'バグ報告', enabled: true, order: 2, isDefault: false },

@@ -521,6 +521,26 @@ describe('Timelines', () => {
 				}, waitForPushToTlOptions);
 			});
 
+			test('[localOnly: true] ローカルユーザーのノートのみ含まれる(JUICE独自)', async () => {
+				const [alice, bob, carol] = await Promise.all([signup(), signup(), signup({ host: genHost() })]);
+
+				await sendEnvUpdateRequest({ key: 'FORCE_FOLLOW_REMOTE_USER_FOR_TESTING', value: 'true' });
+				await Promise.all([
+					api('following/create', { userId: bob.id }, alice),
+					api('following/create', { userId: carol.id }, alice),
+				]);
+
+				const bobNote = await post(bob, { text: 'hi' });
+				const carolNote = await post(carol, { text: 'hi' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/timeline', { limit: 100, localOnly: true }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === bobNote.id), true);
+					assert.strictEqual(res.body.some(note => note.id === carolNote.id), false);
+				}, waitForPushToTlOptions);
+			});
+
 			test('[withFiles: true] フォローしているユーザーのファイル付きノートのみ含まれる', async () => {
 				const [alice, bob, carol] = await Promise.all([signup(), signup(), signup()]);
 

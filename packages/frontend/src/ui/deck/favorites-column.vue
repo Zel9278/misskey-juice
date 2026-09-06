@@ -49,6 +49,6 @@ function reloadTimeline() {
 .note {
 	background: var(--MI_THEME-panel);
 	border-radius: var(--MI-radius);
-	margin-bottom: 8px;
+	margin-bottom: var(--MI-margin);
 }
 </style>

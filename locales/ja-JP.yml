@@ -3869,6 +3869,9 @@ _juice:
   splashSettingsTitle: "起動画面"
   customSplashText: "起動画面の表示文言"
   customSplashTextDescription: "起動時のロード画面にロゴの下へランダムで1つ表示する文言です。1行に1件入力してください(空行は無視されます)。何も設定しない場合は表示されません。"
+  customSplashTextLineCountCaption: "{current} / {max} 行"
+  customSplashTextTooManyLines: "設定できる行数の上限を超えています。"
+  customSplashTextLineTooLong: "1行あたりの文字数上限(256文字)を超えている行が{n}件あります。"
   widgetsSide: "ウィジェットの表示位置"
   widgetsSideCaption: "デスクトップの常設ウィジェットパネル、モバイル表示のウィジェットドロワーを画面の左右どちらから表示するかを設定します。"
   latex: "LaTeX(数式)"
@@ -3892,6 +3895,7 @@ _juice:
   nickname: "ニックネーム"
   addNickname: "ニックネームを設定"
   localOnlyInHomeTimeline: "ローカルユーザーの投稿だけ表示"
+  nSelected: "{n}件選択中"
 
 _juiceApprovals:
   title: "承認待ちユーザー"

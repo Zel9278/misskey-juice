@@ -187,14 +187,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<SearchMarker>
 								<MkTextarea v-model="customSplashTextInput">
 									<template #label><SearchLabel>{{ i18n.ts._juice.customSplashText }}</SearchLabel></template>
-									<template #caption>{{ i18n.ts._juice.customSplashTextDescription }}</template>
+									<template #caption>{{ i18n.ts._juice.customSplashTextDescription }} {{ i18n.tsx._juice.customSplashTextLineCountCaption({ current: customSplashTextLines.length, max: CUSTOM_SPLASH_TEXT_MAX_ITEMS }) }}</template>
 								</MkTextarea>
+								<div v-if="customSplashTextTooManyLines" :class="$style.fieldError">
+									<i class="ti ti-exclamation-triangle" style="margin-right: 4px;"></i>
+									{{ i18n.ts._juice.customSplashTextTooManyLines }}
+								</div>
+								<div v-if="customSplashTextTooLongLineCount > 0" :class="$style.fieldError">
+									<i class="ti ti-exclamation-triangle" style="margin-right: 4px;"></i>
+									{{ i18n.tsx._juice.customSplashTextLineTooLong({ n: customSplashTextTooLongLineCount }) }}
+								</div>
 							</SearchMarker>
 						</div>
 					</MkFolder>
 				</SearchMarker>
 
-				<MkButton primary @click="save">{{ i18n.ts.save }}</MkButton>
+				<MkButton primary :disabled="customSplashTextTooManyLines || customSplashTextTooLongLineCount > 0" @click="save">{{ i18n.ts.save }}</MkButton>
 			</div>
 		</SearchMarker>
 	</div>
@@ -232,8 +240,14 @@ const contactFormEnabled = ref(settings.contactFormEnabled);
 const contactFormLimit = ref(settings.contactFormLimit);
 const contactFormRequireAuth = ref(settings.contactFormRequireAuth);
 const contactFormContentMaxLength = ref(settings.contactFormContentMaxLength);
-// JUICE: 配列を1行1件のテキストエリアとして編集する(空行は無視する)
+// JUICE: 配列を1行1件のテキストエリアとして編集する(空行は無視する)。
+// 上限(行数・1行あたりの文字数)はadmin/juice/update-settingsのparamDefと合わせている
 const customSplashTextInput = ref(settings.customSplashText.join('\n'));
+const CUSTOM_SPLASH_TEXT_MAX_ITEMS = 20;
+const CUSTOM_SPLASH_TEXT_MAX_LENGTH = 256;
+const customSplashTextLines = computed(() => customSplashTextInput.value.split('\n').map(x => x.trim()).filter(x => x.length > 0));
+const customSplashTextTooManyLines = computed(() => customSplashTextLines.value.length > CUSTOM_SPLASH_TEXT_MAX_ITEMS);
+const customSplashTextTooLongLineCount = computed(() => customSplashTextLines.value.filter(x => x.length > CUSTOM_SPLASH_TEXT_MAX_LENGTH).length);
 
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
@@ -252,7 +266,7 @@ function save() {
 		contactFormLimit: contactFormLimit.value,
 		contactFormRequireAuth: contactFormRequireAuth.value,
 		contactFormContentMaxLength: contactFormContentMaxLength.value,
-		customSplashText: customSplashTextInput.value.split('\n').map(x => x.trim()).filter(x => x.length > 0),
+		customSplashText: customSplashTextLines.value,
 	});
 }
 
@@ -265,3 +279,11 @@ definePage(() => ({
 	icon: 'ti ti-droplet',
 }));
 </script>
+
+<style lang="scss" module>
+.fieldError {
+	margin-top: 8px;
+	color: var(--MI_THEME-error);
+	font-size: 0.9em;
+}
+</style>

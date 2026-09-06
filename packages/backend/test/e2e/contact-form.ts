@@ -266,6 +266,9 @@ describe('お問い合わせフォーム', () => {
 		});
 
 		test('一般ユーザーは管理エンドポイントを利用できない', async () => {
+			// JUICE: admin/contact-form/listはcanProcessContactFormsロールポリシーによる
+			// requiredRolePolicyOrModerator経由の許可に変更したため、通常のrequireModerator
+			// (ROLE_PERMISSION_DENIED)とは異なる専用のエラーIDが返る
 			await failedApiCall({
 				endpoint: 'admin/contact-form/list',
 				parameters: {},
@@ -273,7 +276,7 @@ describe('お問い合わせフォーム', () => {
 			}, {
 				status: 403,
 				code: 'ROLE_PERMISSION_DENIED',
-				id: 'd33d5333-db36-423d-a8f9-1a2b9549da41',
+				id: '60ae1eea-4c46-4b88-9c4c-549867219a30',
 			});
 		});
 
