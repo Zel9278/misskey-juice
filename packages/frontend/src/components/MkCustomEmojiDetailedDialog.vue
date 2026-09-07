@@ -10,11 +10,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div class="_spacer">
 			<div style="display: flex; flex-direction: column; gap: 1em;">
 				<div :class="$style.emojiImgWrapper">
-					<MkCustomEmoji :name="emoji.name" :normal="true" :useOriginalSize="true" style="height: 100%;"></MkCustomEmoji>
+					<MkCustomEmoji :name="emoji.name" :host="emoji.host" :normal="true" :useOriginalSize="true" style="height: 100%;"></MkCustomEmoji>
 				</div>
 				<MkKeyValue :copy="`:${emoji.name}:`">
 					<template #key>{{ i18n.ts.name }}</template>
 					<template #value>{{ emoji.name }}</template>
+				</MkKeyValue>
+				<MkKeyValue v-if="emoji.host != null" :copy="emoji.host">
+					<template #key>{{ i18n.ts.host }}</template>
+					<template #value>{{ emoji.host }}</template>
 				</MkKeyValue>
 				<MkKeyValue>
 					<template #key>{{ i18n.ts.tags }}</template>

@@ -9142,6 +9142,14 @@ export interface Locale extends ILocale {
          */
         "selfHostingNoticeGeneralApplicability": string;
         /**
+         * 相乗りリアクションでリモートインスタンスの絵文字を使用すると、その絵文字画像を著作権者の許諾を得ないまま利用することになる可能性があります。ライセンス上の判断は、利用するユーザーご自身の自己責任でお願いします。
+         */
+        "reactionPiggybackOnRemoteWarningLicense": string;
+        /**
+         * Juice Serverでは、この機能の動作検証を目的として、現在テストのために有効化しています。
+         */
+        "reactionPiggybackOnRemoteWarningTestNotice": string;
+        /**
          * JUICEとは
          */
         "description": string;
