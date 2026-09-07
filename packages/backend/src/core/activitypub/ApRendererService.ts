@@ -321,31 +321,42 @@ export class ApRendererService {
 	public async renderLike(noteReaction: MiNoteReaction, note: { uri: string | null }): Promise<ILike> {
 		const reaction = noteReaction.reaction;
 
+		// JUICE: リアクション相乗り(ReactionService.create参照)により、reactionが自インスタンスに
+		// 存在しない絵文字(:name@host:形式、hostは相乗り元の絵文字の実際の提供元)になりうる。
+		// name/hostを正しく分離し、host指定がある場合は(ローカル・相乗り元問わず)絵文字テーブル
+		// 全体から検索してtagを付与する
+		let sendReaction = reaction;
+		let emoji: MiEmoji | null = null;
+
+		const custom = reaction.match(decodeCustomEmojiRegexp);
+		if (custom) {
+			const name = custom[1];
+			const host = custom[2] === '.' ? null : (custom[2] ?? null);
+			emoji = host == null
+				? (await this.customEmojiService.localEmojisCache.fetch()).get(name) ?? null
+				: await this.emojisRepository.findOneBy({ host, name });
+
+			// JUICE: 本家Misskey等の受信側は、絵文字リアクションの判定に`/^:([\w+-]+)(?:@\.)?:$/`
+			// (ローカルの@.のみ許容)という正規表現を使っており、@に実ホスト名が付いた文字列は
+			// そもそも絵文字として認識できず、tagを付けても意味が無いままハートにフォールバック
+			// してしまう。相乗り(host !== null)の場合はcontent/_misskey_reactionを:name:の
+			// ベア形式に落とし、あとはtagの画像で解決してもらう通常のリモート絵文字リアクションと
+			// 同じ扱いにすることで、JUICE/tempura以外の一般的な受信側でも正しく表示されるようにする
+			if (host != null) {
+				sendReaction = `:${name}:`;
+			}
+		}
+
 		const object: ILike = {
 			type: 'Like',
 			id: `${this.config.url}/likes/${noteReaction.id}`,
 			actor: `${this.config.url}/users/${noteReaction.userId}`,
 			object: note.uri ? note.uri : `${this.config.url}/notes/${noteReaction.noteId}`,
-			content: reaction,
-			_misskey_reaction: reaction,
+			content: sendReaction,
+			_misskey_reaction: sendReaction,
 		};
 
-		// JUICE: リアクション相乗り(ReactionService.create参照)により、reactionが自インスタンスに
-		// 存在しない絵文字(:name@host:形式、hostは相乗り元の絵文字の実際の提供元)になりうる。
-		// 旧実装(reaction.replaceAll(':', '')してlocalEmojisCacheのみ参照)だと、host付きの
-		// 名前ではローカル絵文字キャッシュに一致せずtagが一切付かず、配送先で絵文字画像を
-		// 解決できずハートにフォールバックしてしまっていたため、name/hostを正しく分離し、
-		// host指定がある場合は(ローカル・相乗り元問わず)絵文字テーブル全体から検索する
-		const custom = reaction.match(decodeCustomEmojiRegexp);
-		if (custom) {
-			const name = custom[1];
-			const host = custom[2] === '.' ? null : (custom[2] ?? null);
-			const emoji = host == null
-				? (await this.customEmojiService.localEmojisCache.fetch()).get(name) ?? null
-				: await this.emojisRepository.findOneBy({ host, name });
-
-			if (emoji && !emoji.localOnly) object.tag = [this.renderEmoji(emoji)];
-		}
+		if (emoji && !emoji.localOnly) object.tag = [this.renderEmoji(emoji)];
 
 		return object;
 	}
