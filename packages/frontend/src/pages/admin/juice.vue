@@ -143,7 +143,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<MkInfo v-if="reactionPiggybackOnRemoteEnabled" warn>
 								<div class="_gaps_s">
 									<div>{{ i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningLicense }}</div>
-									<div>{{ i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningTestNotice }}</div>
+									<I18n :src="i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningTestNotice" tag="div">
+									<template #juiceServer>
+										<a href="https://mk-juice.dev" target="_blank" rel="noopener" class="_link">{{ i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningTestNoticeLinkText }}</a>
+									</template>
+								</I18n>
 								</div>
 							</MkInfo>
 						</div>

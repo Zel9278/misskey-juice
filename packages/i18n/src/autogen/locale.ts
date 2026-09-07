@@ -9146,9 +9146,13 @@ export interface Locale extends ILocale {
          */
         "reactionPiggybackOnRemoteWarningLicense": string;
         /**
-         * Juice Serverでは、この機能の動作検証を目的として、現在テストのために有効化しています。
+         * {juiceServer}では、この機能の動作検証を目的として、現在テストのために有効化しています。この文言はJUICEのデフォルト文言のため、フォーク先のサーバーでは運営方針が異なる場合があります。
          */
-        "reactionPiggybackOnRemoteWarningTestNotice": string;
+        "reactionPiggybackOnRemoteWarningTestNotice": ParameterizedString<"juiceServer">;
+        /**
+         * Juice Server
+         */
+        "reactionPiggybackOnRemoteWarningTestNoticeLinkText": string;
         /**
          * JUICEとは
          */
