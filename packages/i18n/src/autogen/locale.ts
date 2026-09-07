@@ -10729,6 +10729,10 @@ export interface Locale extends ILocale {
          * ダイレクトメッセージ
          */
         "chat": string;
+        /**
+         * お気に入り
+         */
+        "favorites": string;
     };
     "_widgetOptions": {
         /**
