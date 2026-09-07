@@ -139,6 +139,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 									<template #caption>{{ i18n.ts._juice.reactionPiggybackOnRemoteEnabledCaption }}</template>
 								</MkSwitch>
 							</SearchMarker>
+
+							<MkInfo v-if="reactionPiggybackOnRemoteEnabled" warn>
+								<div class="_gaps_s">
+									<div>{{ i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningLicense }}</div>
+									<I18n :src="i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningTestNotice" tag="div">
+									<template #juiceServer>
+										<a href="https://mk-juice.dev" target="_blank" rel="noopener" class="_link">{{ i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningTestNoticeLinkText }}</a>
+									</template>
+								</I18n>
+								</div>
+							</MkInfo>
 						</div>
 					</MkFolder>
 				</SearchMarker>
@@ -213,6 +224,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { ref, computed } from 'vue';
 import { langs } from '@@/js/config.js';
 import MkFolder from '@/components/MkFolder.vue';
+import MkInfo from '@/components/MkInfo.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkInput from '@/components/MkInput.vue';
 import MkTextarea from '@/components/MkTextarea.vue';

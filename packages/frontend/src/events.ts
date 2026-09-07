@@ -11,6 +11,9 @@ type Events = {
 	clientNotification: (notification: Misskey.entities.Notification) => void;
 	notePosted: (note: Misskey.entities.Note) => void;
 	noteDeleted: (noteId: Misskey.entities.Note['id']) => void;
+	// JUICE: お気に入りデッキカラム等、同一クライアント内でのお気に入り追加/解除をリアルタイムに反映するため
+	noteFavorited: (noteId: Misskey.entities.Note['id']) => void;
+	noteUnfavorited: (noteId: Misskey.entities.Note['id']) => void;
 	noteRemovedFromAntenna: (antennaId: Misskey.entities.Antenna['id'], noteId: Misskey.entities.Note['id']) => void;
 	driveFileCreated: (file: Misskey.entities.DriveFile) => void;
 	driveFilesUpdated: (files: Misskey.entities.DriveFile[]) => void;

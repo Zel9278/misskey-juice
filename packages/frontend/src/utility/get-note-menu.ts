@@ -236,6 +236,9 @@ export function getNoteMenu(props: {
 		claimAchievement('noteFavorited1');
 		os.apiWithDialog(favorite ? 'notes/favorites/create' : 'notes/favorites/delete', {
 			noteId: appearNote.id,
+		}).then(() => {
+			// JUICE: お気に入りデッキカラム等、同一クライアント内での変更をリアルタイムに反映するため
+			globalEvents.emit(favorite ? 'noteFavorited' : 'noteUnfavorited', appearNote.id);
 		});
 	}
 

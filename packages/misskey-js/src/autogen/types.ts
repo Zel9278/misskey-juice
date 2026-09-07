@@ -5950,6 +5950,7 @@ export type components = {
             watermarkAvailable: boolean;
             emojiRequestLimit: number;
             avatarDecorationRequestLimit: number;
+            announcementReactionTypeLimit: number;
             canApproveEmojiRequests: boolean;
             canApproveAvatarDecorationRequests: boolean;
             canApproveSignups: boolean;

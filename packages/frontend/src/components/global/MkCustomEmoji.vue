@@ -133,23 +133,24 @@ function onClick(ev: PointerEvent) {
 			});
 		}
 
-		if (isLocal.value) {
-			menuItems.push({
-				type: 'divider',
-			}, {
-				text: i18n.ts.info,
-				icon: 'ti ti-info-circle',
-				action: async () => {
-					const { dispose } = os.popup(MkCustomEmojiDetailedDialog, {
-						emoji: await misskeyApiGet('emoji', {
-							name: customEmojiName.value,
-						}),
-					}, {
-						closed: () => dispose(),
-					});
-				},
-			});
-		}
+		menuItems.push({
+			type: 'divider',
+		}, {
+			// JUICE: リモートのカスタム絵文字(ノート本文・CW・プロフィール等に埋め込まれたもの)でも
+			// ライセンス等の詳細情報を確認できるように、ローカル限定の制約を撤廃してhostを渡す
+			text: i18n.ts.info,
+			icon: 'ti ti-info-circle',
+			action: async () => {
+				const { dispose } = os.popup(MkCustomEmojiDetailedDialog, {
+					emoji: await misskeyApiGet('emoji', {
+						name: customEmojiName.value,
+						...(isLocal.value ? {} : { host: props.host }),
+					}),
+				}, {
+					closed: () => dispose(),
+				});
+			},
+		});
 
 		if (isMuted.value) {
 			menuItems.push({

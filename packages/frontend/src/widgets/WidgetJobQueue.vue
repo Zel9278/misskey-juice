@@ -69,17 +69,23 @@ const name = 'jobQueue';
 
 // JUICE: 以前は鳴らす/鳴らさないの真偽値のみで、鳴る音自体(queue-jammed固定)は変更できなかった。
 // ドライブの音声(_driveFile_)はfileIdの追加指定が必要でこのシンプルなウィジェット設定には
-// 不向きなため対象外にし、プリインストールされたサウンドから選べるようにする
-const soundEnumOptions = [
-	{ label: i18n.ts.none, value: null },
-	...soundsTypes.filter((t): t is Exclude<typeof soundsTypes[number], null | '_driveFile_'> => t != null && t !== '_driveFile_').map(t => ({ label: t, value: t })),
-];
+// 不向きなため対象外にし、プリインストールされたサウンドから選べるようにする。
+// 鳴らす/鳴らさないをsoundの選択肢(無し)で兼ねると、無効化するたびにどの音を鳴らしていたか
+// 忘れてしまうため、有効/無効(soundEnabled)と鳴らす音(sound)を分離する
+const soundEnumOptions = soundsTypes
+	.filter((t): t is Exclude<typeof soundsTypes[number], null | '_driveFile_'> => t != null && t !== '_driveFile_')
+	.map(t => ({ label: t, value: t }));
 
 const widgetPropsDef = {
 	transparent: {
 		type: 'boolean',
 		label: i18n.ts._widgetOptions.transparent,
 		default: false,
+	},
+	soundEnabled: {
+		type: 'boolean',
+		label: i18n.ts._widgetOptions._jobQueue.soundEnabled,
+		default: true,
 	},
 	sound: {
 		type: 'enum',
@@ -94,11 +100,19 @@ type WidgetProps = GetFormResultType<typeof widgetPropsDef>;
 const props = defineProps<WidgetComponentProps<WidgetProps>>();
 const emit = defineEmits<WidgetComponentEmits<WidgetProps>>();
 
-const { widgetProps, configure } = useWidgetPropsManager(name,
+const { widgetProps, configure, save } = useWidgetPropsManager(name,
 	widgetPropsDef,
 	props,
 	emit,
 );
+
+// JUICE: 以前は無効化をsound: nullで表現していた(soundEnabledは存在しなかった)。
+// 保存データがこの旧形式のままの場合、有効/無効(soundEnabled)に変換し、soundは既定値に戻す
+if ((props.widget?.data as { sound?: unknown } | undefined)?.sound === null) {
+	widgetProps.soundEnabled = false;
+	widgetProps.sound = widgetPropsDef.sound.default as WidgetProps['sound'];
+	save();
+}
 
 const connection = useStream().useChannel('queueStats');
 const current = reactive({
@@ -119,10 +133,11 @@ const prev = reactive({} as typeof current);
 const jammedAudioBuffer = ref<AudioBuffer | null>(null);
 const jammedSoundNodePlaying = ref<boolean>(false);
 
-// JUICE: widgetProps.soundで選ばれたサウンドを読み込む。設定を変更したら都度読み込み直す
+// JUICE: widgetProps.soundで選ばれたサウンドを読み込む。設定を変更したら都度読み込み直す。
+// soundEnabledがオフでも、再度オンにしたときすぐ鳴らせるよう読み込み自体は行う
 watch(() => widgetProps.sound, (soundType) => {
 	jammedAudioBuffer.value = null;
-	if (soundType == null || !prefer.s['sound.masterVolume']) return;
+	if (!prefer.s['sound.masterVolume']) return;
 
 	sound.loadAudio(`/client-assets/sounds/${soundType}.mp3`).then(buf => {
 		if (!buf) throw new Error('[WidgetJobQueue] Failed to initialize AudioBuffer');
@@ -144,7 +159,7 @@ const onStats = (stats: Misskey.entities.QueueStats) => {
 		current[d].waiting = stats[d].waiting;
 		current[d].delayed = stats[d].delayed;
 
-		if (current[d].waiting > 0 && widgetProps.sound != null && jammedAudioBuffer.value && !jammedSoundNodePlaying.value) {
+		if (current[d].waiting > 0 && widgetProps.soundEnabled && jammedAudioBuffer.value && !jammedSoundNodePlaying.value) {
 			const soundNode = sound.createSourceNode(jammedAudioBuffer.value, {}).soundSource;
 			if (soundNode != null) {
 				jammedSoundNodePlaying.value = true;

@@ -266,6 +266,7 @@ export const rolePolicies = [
 	'watermarkAvailable',
 	'emojiRequestLimit',
 	'avatarDecorationRequestLimit',
+	'announcementReactionTypeLimit',
 	'canApproveEmojiRequests',
 	'canApproveAvatarDecorationRequests',
 	'canApproveSignups',

@@ -75,6 +75,7 @@ export type RolePolicies = {
 	watermarkAvailable: boolean;
 	emojiRequestLimit: number;
 	avatarDecorationRequestLimit: number;
+	announcementReactionTypeLimit: number;
 	canApproveEmojiRequests: boolean;
 	canApproveAvatarDecorationRequests: boolean;
 	canApproveSignups: boolean;
@@ -129,6 +130,7 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	watermarkAvailable: true,
 	emojiRequestLimit: 3,
 	avatarDecorationRequestLimit: 3,
+	announcementReactionTypeLimit: 20,
 	canApproveEmojiRequests: false,
 	canApproveAvatarDecorationRequests: false,
 	canApproveSignups: false,
@@ -466,6 +468,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			watermarkAvailable: calc('watermarkAvailable', vs => vs.some(v => v === true)),
 			emojiRequestLimit: calc('emojiRequestLimit', vs => Math.max(...vs)),
 			avatarDecorationRequestLimit: calc('avatarDecorationRequestLimit', vs => Math.max(...vs)),
+			announcementReactionTypeLimit: calc('announcementReactionTypeLimit', vs => Math.max(...vs)),
 			canApproveEmojiRequests: calc('canApproveEmojiRequests', vs => vs.some(v => v === true)),
 			canApproveAvatarDecorationRequests: calc('canApproveAvatarDecorationRequests', vs => vs.some(v => v === true)),
 			canApproveSignups: calc('canApproveSignups', vs => vs.some(v => v === true)),

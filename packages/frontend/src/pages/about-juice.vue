@@ -101,10 +101,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkFolder>
 					<template #icon><i class="ti ti-stars"></i></template>
 					<template #label>{{ i18n.ts._aboutJuice.features }}</template>
-					<div :class="$style.features">
-						<div v-for="feature in features" :key="feature.text" :class="$style.feature">
-							<i :class="[feature.icon, $style.featureIcon]"></i>
-							<span>{{ feature.text }}</span>
+					<div class="_gaps_m">
+						<MkInfo v-if="reactionPiggybackOnRemoteEnabled" warn>
+							<div class="_gaps_s">
+								<div>{{ i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningLicense }}</div>
+								<I18n :src="i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningTestNotice" tag="div">
+								<template #juiceServer>
+									<a href="https://mk-juice.dev" target="_blank" rel="noopener" class="_link">{{ i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningTestNoticeLinkText }}</a>
+								</template>
+							</I18n>
+							</div>
+						</MkInfo>
+						<div :class="$style.features">
+							<div v-for="feature in features" :key="feature.text" :class="$style.feature">
+								<i :class="[feature.icon, $style.featureIcon]"></i>
+								<span>{{ feature.text }}</span>
+							</div>
 						</div>
 					</div>
 				</MkFolder>
@@ -143,6 +155,10 @@ import MkInfo from '@/components/MkInfo.vue';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { claimAchievement } from '@/utility/achievements.js';
+import { juicePublicSettingsCache } from '@/cache.js';
+
+// JUICE: 相乗りリアクションが有効な間、著作権に関する注意書きを表示するために取得
+const reactionPiggybackOnRemoteEnabled = ref((await juicePublicSettingsCache.fetch()).reactionPiggybackOnRemoteEnabled);
 
 // JUICE: PRを送ってくれたコントリビューター一覧(開発者本人は上の developer セクションで別掲)
 const contributors = [

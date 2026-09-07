@@ -6600,6 +6600,10 @@ export interface Locale extends ILocale {
          * オンにすると、このお知らせは通知されず、既読にする必要もなくなります。
          */
         "silenceDescription": string;
+        /**
+         * このお知らせに付けられるリアクションの種類数が上限に達しています。
+         */
+        "tooManyReactionTypes": string;
     };
     "_initialAccountSetting": {
         /**
@@ -8382,6 +8386,10 @@ export interface Locale extends ILocale {
              */
             "avatarDecorationRequestLimit": string;
             /**
+             * お知らせ1件に付けられるリアクションの種類数の上限
+             */
+            "announcementReactionTypeLimit": string;
+            /**
              * 絵文字申請の承認・却下
              */
             "canApproveEmojiRequests": string;
@@ -9133,6 +9141,18 @@ export interface Locale extends ILocale {
          * この注意はJUICEに限らず、Misskeyフォーク・Misskey自体全般に当てはまります。
          */
         "selfHostingNoticeGeneralApplicability": string;
+        /**
+         * 相乗りリアクションでリモートインスタンスの絵文字を使用すると、その絵文字画像を著作権者の許諾を得ないまま利用することになる可能性があります。ライセンス上の判断は、利用するユーザーご自身の自己責任でお願いします。
+         */
+        "reactionPiggybackOnRemoteWarningLicense": string;
+        /**
+         * {juiceServer}では、この機能の動作検証を目的として、現在テストのために有効化しています。この文言はJUICEのデフォルト文言のため、フォーク先のサーバーでは運営方針が異なる場合があります。
+         */
+        "reactionPiggybackOnRemoteWarningTestNotice": ParameterizedString<"juiceServer">;
+        /**
+         * Juice Server
+         */
+        "reactionPiggybackOnRemoteWarningTestNoticeLinkText": string;
         /**
          * JUICEとは
          */
@@ -10808,6 +10828,10 @@ export interface Locale extends ILocale {
             "showLabel": string;
         };
         "_jobQueue": {
+            /**
+             * 音を鳴らす
+             */
+            "soundEnabled": string;
             /**
              * 鳴らす音
              */
