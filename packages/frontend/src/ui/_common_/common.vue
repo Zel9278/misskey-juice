@@ -119,6 +119,7 @@ import { prefer } from '@/preferences.js';
 import { globalEvents } from '@/events.js';
 import { store } from '@/store.js';
 import XNavbar from '@/ui/_common_/navbar.vue';
+import { initJuiceAdminNotifications } from '@/utility/juice-admin-notifications.js';
 
 const XStreamIndicator = defineAsyncComponent(() => import('./stream-indicator.vue'));
 const XWidgets = defineAsyncComponent(() => import('./widgets.vue'));
@@ -172,6 +173,10 @@ if ($i) {
 	if ('serviceWorker' in navigator) {
 		swInject();
 	}
+
+	// JUICE: モデレーターおよび絵文字申請等の承認ロールポリシーを持つユーザーへ、
+	// アプリを開いている間ずっとリアルタイム通知(トースト・バナーstate更新)を届ける
+	initJuiceAdminNotifications();
 }
 </script>
 

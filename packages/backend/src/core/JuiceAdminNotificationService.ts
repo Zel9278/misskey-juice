@@ -34,16 +34,27 @@ export class JuiceAdminNotificationService {
 		this.logger = this.loggerService.getLogger('juice-admin-notification');
 	}
 
+	/**
+	 * JUICE: モデレーター(isModerator/isAdministrator)に加えて、対象ポリシーを個別に
+	 * 付与されているユーザーもあわせて通知先とする。Setで重ねているので重複は出ない
+	 */
+	@bindThis
+	private async getRecipientIds(policyName: 'canApproveEmojiRequests' | 'canApproveAvatarDecorationRequests' | 'canApproveSignups' | 'canProcessContactForms'): Promise<string[]> {
+		const [moderatorIds, policyHolderIds] = await Promise.all([
+			this.roleService.getModeratorIds({ includeAdmins: true, excludeExpire: true }),
+			this.roleService.getUserIdsWithRolePolicy(policyName, { excludeExpire: true }),
+		]);
+
+		return [...new Set([...moderatorIds, ...policyHolderIds])];
+	}
+
 	@bindThis
 	public async notifyNewEmojiRequest(payload: EmojiRequestCreatedPayload): Promise<void> {
 		try {
-			const moderatorIds = await this.roleService.getModeratorIds({
-				includeAdmins: true,
-				excludeExpire: true,
-			});
+			const recipientIds = await this.getRecipientIds('canApproveEmojiRequests');
 
-			for (const moderatorId of moderatorIds) {
-				this.globalEventService.publishAdminStream(moderatorId, 'newEmojiRequest', payload);
+			for (const recipientId of recipientIds) {
+				this.globalEventService.publishAdminStream(recipientId, 'newEmojiRequest', payload);
 			}
 
 			await this.systemWebhookService.enqueueSystemWebhook('emojiRequestCreated', payload);
@@ -55,13 +66,10 @@ export class JuiceAdminNotificationService {
 	@bindThis
 	public async notifyNewSignupApplication(payload: SignupApplicationCreatedPayload): Promise<void> {
 		try {
-			const moderatorIds = await this.roleService.getModeratorIds({
-				includeAdmins: true,
-				excludeExpire: true,
-			});
+			const recipientIds = await this.getRecipientIds('canApproveSignups');
 
-			for (const moderatorId of moderatorIds) {
-				this.globalEventService.publishAdminStream(moderatorId, 'newSignupApplication', payload);
+			for (const recipientId of recipientIds) {
+				this.globalEventService.publishAdminStream(recipientId, 'newSignupApplication', payload);
 			}
 
 			await this.systemWebhookService.enqueueSystemWebhook('signupApplicationCreated', payload);
@@ -73,13 +81,10 @@ export class JuiceAdminNotificationService {
 	@bindThis
 	public async notifyNewAvatarDecorationRequest(payload: AvatarDecorationRequestCreatedPayload): Promise<void> {
 		try {
-			const moderatorIds = await this.roleService.getModeratorIds({
-				includeAdmins: true,
-				excludeExpire: true,
-			});
+			const recipientIds = await this.getRecipientIds('canApproveAvatarDecorationRequests');
 
-			for (const moderatorId of moderatorIds) {
-				this.globalEventService.publishAdminStream(moderatorId, 'newAvatarDecorationRequest', payload);
+			for (const recipientId of recipientIds) {
+				this.globalEventService.publishAdminStream(recipientId, 'newAvatarDecorationRequest', payload);
 			}
 
 			await this.systemWebhookService.enqueueSystemWebhook('avatarDecorationRequestCreated', payload);
@@ -91,10 +96,7 @@ export class JuiceAdminNotificationService {
 	@bindThis
 	public async notifyNewContactForm(payload: ContactFormPayload): Promise<void> {
 		try {
-			const moderatorIds = await this.roleService.getModeratorIds({
-				includeAdmins: true,
-				excludeExpire: true,
-			});
+			const recipientIds = await this.getRecipientIds('canProcessContactForms');
 
 			// JUICE: 問い合わせ本文にはメールアドレス・IPアドレス等のPIIが含まれるため、
 			// リアルタイム通知(admin stream)にはPIIを含まない最小限の情報のみを載せる。
@@ -105,8 +107,8 @@ export class JuiceAdminNotificationService {
 				category: payload.category,
 			};
 
-			for (const moderatorId of moderatorIds) {
-				this.globalEventService.publishAdminStream(moderatorId, 'newContactForm', streamPayload);
+			for (const recipientId of recipientIds) {
+				this.globalEventService.publishAdminStream(recipientId, 'newContactForm', streamPayload);
 			}
 
 			await this.systemWebhookService.enqueueSystemWebhook('receivedContactForm', payload);
