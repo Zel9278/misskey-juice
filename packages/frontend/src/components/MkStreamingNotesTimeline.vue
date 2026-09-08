@@ -107,6 +107,7 @@ const props = withDefaults(defineProps<{
 provide('inTimeline', true);
 provide('tl_withSensitive', computed(() => props.withSensitive));
 provide(DI.inChannel, computed(() => props.src === 'channel' ? props.channel ?? null : null));
+provide(DI.inRelayTimeline, computed(() => props.src === 'relay')); // JUICE: リレーTLでのみノートの配送元リレー表示を有効にする
 
 let paginator: IPaginator<Misskey.entities.Note>;
 

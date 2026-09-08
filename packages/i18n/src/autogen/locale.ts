@@ -14471,6 +14471,10 @@ export interface Locale extends ILocale {
          */
         "relayTimelineFilterEmpty": string;
         /**
+         * {host}経由で配信
+         */
+        "relayTimelineDeliveredVia": ParameterizedString<"host">;
+        /**
          * 起動画面
          */
         "splashSettingsTitle": string;
