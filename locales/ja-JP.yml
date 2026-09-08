@@ -3963,6 +3963,7 @@ _emojiRequestPage:
 
 _emojiRequestApprovals:
   title: "絵文字申請"
+  menuTitle: "絵文字申請を確認"
   noPendingRequests: "審査待ちの絵文字申請はありません。"
   noRequests: "この状態の絵文字申請はありません。"
   approve: "承認"
@@ -4009,6 +4010,7 @@ _avatarDecorationRequestPage:
 
 _avatarDecorationRequestApprovals:
   title: "アバターデコレーション申請"
+  menuTitle: "アバターデコレーション申請を確認"
   noPendingRequests: "審査待ちのアバターデコレーション申請はありません。"
   noRequests: "この状態のアバターデコレーション申請はありません。"
   approve: "承認"

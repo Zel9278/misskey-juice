@@ -14805,6 +14805,10 @@ export interface Locale extends ILocale {
          */
         "title": string;
         /**
+         * 絵文字申請を確認
+         */
+        "menuTitle": string;
+        /**
          * 審査待ちの絵文字申請はありません。
          */
         "noPendingRequests": string;
@@ -14976,6 +14980,10 @@ export interface Locale extends ILocale {
          * アバターデコレーション申請
          */
         "title": string;
+        /**
+         * アバターデコレーション申請を確認
+         */
+        "menuTitle": string;
         /**
          * 審査待ちのアバターデコレーション申請はありません。
          */
