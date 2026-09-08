@@ -98,7 +98,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<button v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.fromDrive + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromDrive"><i class="ti ti-cloud-download"></i></button>
 			<button v-tooltip="i18n.ts.poll" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: poll }]" @click="togglePoll"><i class="ti ti-chart-arrows"></i></button>
 			<button v-tooltip="i18n.ts.useCw" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]" @click="useCw = !useCw"><i class="ti ti-eye-off"></i></button>
-			<button v-tooltip="i18n.ts.aiGenerated" class="_button" :class="[$style.footerButton, $style.footerButtonJuice, { [$style.footerButtonActive]: isAIGenerated }]" @click="isAIGenerated = !isAIGenerated"><i class="ti ti-sparkles"></i></button>
+			<button v-tooltip="i18n.ts.aiGenerated" class="_button" :class="[$style.footerButton, $style.footerButtonJuice, { [$style.footerButtonActive]: isAIGenerated }]" @click="isAIGenerated = !isAIGenerated"><i class="ti ti-sparkles"></i><i class="ti ti-droplet-filled" :class="$style.footerButtonJuiceBadge"></i></button>
 			<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
 			<button v-tooltip="i18n.ts.mention" class="_button" :class="$style.footerButton" @click="insertMention"><i class="ti ti-at"></i></button>
 			<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
@@ -1904,27 +1904,26 @@ html[data-color-scheme=light] .preview {
 		background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.05));
 	}
 
-	// JUICE: 本家に無いJUICE独自ボタンであることを示す小さいドット。アイコンのみでラベル文字が
+	// JUICE: 本家に無いJUICE独自ボタンであることを示す小さい雫アイコン。アイコンのみでラベル文字が
 	// 無いため、_juiceの文字バッジではなくMkPageHeader.tabs.vueのアイコン専用タブと同じ
-	// 小さいドット方式を採用する(色はJUICEブランドカラーで固定)
+	// 小さい雫アイコン方式を採用する(単色の丸ドットだと通知バッジ等と紛らわしいため、
+	// tabler-iconsのdroplet-filledを使う。色はJUICEブランドカラーで固定)
 	&.footerButtonJuice {
 		position: relative;
-
-		&::after {
-			content: '';
-			position: absolute;
-			top: 2px;
-			right: 2px;
-			width: 6px;
-			height: 6px;
-			border-radius: 100%;
-			background: #f2841f;
-		}
 	}
 
 	&.footerButtonActive {
 		color: var(--MI_THEME-accent);
 	}
+}
+
+.footerButtonJuiceBadge {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	font-size: 9px;
+	line-height: 1;
+	color: #f2841f;
 }
 
 .previewButtonActive {
