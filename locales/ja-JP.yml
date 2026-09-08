@@ -2917,6 +2917,7 @@ _postLanguage:
 
 _postForm:
   quitInspiteOfThereAreUnuploadedFilesConfirm: "アップロードされていないファイルがありますが、破棄してフォームを閉じますか？"
+  quitInspiteOfDeleteAndEditConfirm: "このノートは既に削除されています。編集を中断してフォームを閉じますか？入力中の内容は下書きとして保持されます。"
   uploaderTip: "ファイルはまだアップロードされていません。ファイルのメニューから、リネームや画像のクロップ、ウォーターマークの付与、圧縮の有無などを設定できます。ファイルはノート投稿時に自動でアップロードされます。"
   replyPlaceholder: "このノートに返信..."
   quotePlaceholder: "このノートを引用..."

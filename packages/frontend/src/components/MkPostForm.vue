@@ -1568,6 +1568,19 @@ async function canClose() {
 		if (canceled) return false;
 	}
 
+	// JUICE: 「削除して編集」は開いた時点で元のノートが既にサーバーから削除済みのため、
+	// 誤操作でこのフォームを閉じてしまうと編集内容を失ったと誤解しやすい。閉じる前に
+	// ワンクッション確認を挟む。内容自体は既存のsaveDraft機構により閉じても下書きとして残る
+	if (props.initialNote != null) {
+		const { canceled } = await os.confirm({
+			type: 'question',
+			text: i18n.ts._postForm.quitInspiteOfDeleteAndEditConfirm,
+			okText: i18n.ts.yes,
+			cancelText: i18n.ts.no,
+		});
+		if (canceled) return false;
+	}
+
 	return true;
 }
 

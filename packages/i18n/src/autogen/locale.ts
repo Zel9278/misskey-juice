@@ -11038,6 +11038,10 @@ export interface Locale extends ILocale {
          */
         "quitInspiteOfThereAreUnuploadedFilesConfirm": string;
         /**
+         * このノートは既に削除されています。編集を中断してフォームを閉じますか？入力中の内容は下書きとして保持されます。
+         */
+        "quitInspiteOfDeleteAndEditConfirm": string;
+        /**
          * ファイルはまだアップロードされていません。ファイルのメニューから、リネームや画像のクロップ、ウォーターマークの付与、圧縮の有無などを設定できます。ファイルはノート投稿時に自動でアップロードされます。
          */
         "uploaderTip": string;
