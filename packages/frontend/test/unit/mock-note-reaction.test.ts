@@ -4,6 +4,7 @@
  */
 
 import { describe, expect, test } from 'vitest';
+import { getEmojiNameFromReaction } from '@@/js/emoji-name.js';
 import { buildMockLocalCustomEmojiReaction } from '@/utility/mock-note-reaction.js';
 
 describe('buildMockLocalCustomEmojiReaction', () => {
@@ -14,16 +15,21 @@ describe('buildMockLocalCustomEmojiReaction', () => {
 		// reactionsキーは正規化(`:name:`→`:name@.:`)の対象にせずそのまま通す
 		expect(Object.keys(reactions)).toEqual([':preview@.:']);
 
-		// MkReactionsViewer.reaction.vueは`reaction.substring(1, reaction.length - 1)`で
-		// reactionEmojisを引く。つまり先頭・末尾の`:`だけを外した文字列がキーになる
+		// MkReactionsViewer.reaction.vueは実際には@@/js/emoji-name.jsの
+		// getEmojiNameFromReaction(reaction)の戻り値をキーとしてreactionEmojisを引く
+		// (単純に先頭・末尾の`:`を外すだけではなく、ローカルマーク`@.`も除去される)。
+		// テストのアサーション自体がこの実装と食い違っていると、utility側だけを実装に
+		// 合わせて実際のコンポーネントとはズレたままテストが通ってしまうため、
+		// 本物の関数を直接呼んでキーを求める
 		const reactionKey = Object.keys(reactions)[0];
-		const lookupKey = reactionKey.substring(1, reactionKey.length - 1);
+		const lookupKey = getEmojiNameFromReaction(reactionKey);
+		expect(lookupKey).toBe('preview');
 		expect(reactionEmojis[lookupKey]).toBe('https://example.com/image.png');
 	});
 
 	test('keeps the emoji name and URL intact', () => {
 		const { reactions, reactionEmojis } = buildMockLocalCustomEmojiReaction('my_emoji_1', 'https://example.com/a.webp');
 		expect(reactions).toEqual({ ':my_emoji_1@.:': 1 });
-		expect(reactionEmojis).toEqual({ 'my_emoji_1@.': 'https://example.com/a.webp' });
+		expect(reactionEmojis).toEqual({ my_emoji_1: 'https://example.com/a.webp' });
 	});
 });

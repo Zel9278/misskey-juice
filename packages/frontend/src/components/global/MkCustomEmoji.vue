@@ -87,6 +87,16 @@ const rawUrl = computed(() => {
 const url = computed(() => {
 	if (rawUrl.value == null) return undefined;
 
+	// JUICE: URL.createObjectURL由来のblob: URL(絵文字申請フォームで、PCから選択した
+	// 未アップロードのローカルファイルをリアクションプレビューに直接差し込む場合等に使われる)は
+	// このブラウザタブ内でのみ有効で、サーバー側からは絶対に取得できない。
+	// image proxy(getProxiedImageUrl/getStaticImageUrl)を経由させると、サーバーが
+	// blob: URLへのフェッチを必ず失敗させ、画像読み込み失敗のダミー画像にフォールバックして
+	// しまうため、プロキシを一切通さずそのまま表示する
+	if (rawUrl.value.startsWith('blob:') || rawUrl.value.startsWith('data:')) {
+		return rawUrl.value;
+	}
+
 	const proxied =
 		(rawUrl.value.startsWith('/emoji/') || (props.useOriginalSize && isLocal.value))
 			? rawUrl.value
