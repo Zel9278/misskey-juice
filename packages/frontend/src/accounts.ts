@@ -322,8 +322,9 @@ export async function getAccountMenu(opts: {
 		};
 
 		const juicePublicSettings = await misskeyApi('juice/public-settings').catch(() => null);
+		const approvalRequiredForSignup = juicePublicSettings?.approvalRequiredForSignup ?? false;
 		const showSplitCreateAccountItems = instance.disableRegistration
-			&& (juicePublicSettings?.approvalRequiredForSignup ?? false)
+			&& approvalRequiredForSignup
 			&& (juicePublicSettings?.invitationRegistrationEnabled ?? true);
 
 		menuItems.push({
@@ -346,7 +347,11 @@ export async function getAccountMenu(opts: {
 				text: i18n.ts._juice.applyToJoin,
 				action: createAccountAction('application'),
 			}] : [{
-				text: i18n.ts.createAccount,
+				// JUICE: 承認式新規登録が有効(招待コード登録の入り口は非表示)な場合、ウェルカムページの
+				// 単一ボタン(MkVisitorDashboard.vue)と同じく「参加を申請する」に出し分ける。
+				// 従来ここが常に「アカウントを作成」固定だったため、承認制のみ(招待制ではない)サーバーでは
+				// 実際には審査が必要なのにその場で作成できるかのような表示になっていた
+				text: approvalRequiredForSignup ? i18n.ts._juice.applyToJoin : i18n.ts.createAccount,
 				action: createAccountAction(),
 			}])],
 		}, {
