@@ -112,7 +112,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			// JUICE: 表示言語の絞り込み(未ログインなら絞り込み無し)
-			const filteredLanguages = new Set(me ? (await this.cacheService.userProfileCache.fetch(me.id)).filteredLanguages : []);
+			const profile = me ? await this.cacheService.userProfileCache.fetch(me.id) : null;
+			const filteredLanguages = new Set(profile?.filteredLanguages ?? []);
 
 			const timeline = await this.fanoutTimelineEndpointService.timeline({
 				untilId,
@@ -126,7 +127,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					: ps.withReplies ? ['localTimeline', 'localTimelineWithReplies']
 					: me ? ['localTimeline', `localTimelineWithReplyTo:${me.id}`]
 					: ['localTimeline'],
-				alwaysIncludeMyNotes: true,
+				// JUICE: 表示言語の絞り込みが有効でも自分自身の投稿を常に表示するか(ユーザー設定)
+				alwaysIncludeMyNotes: profile?.excludeOwnNotesFromLanguageFilter ?? true,
 				excludePureRenotes: !ps.withRenotes,
 				noteFilter: note => !isLanguageFiltered(note, filteredLanguages),
 				dbFallback: async (untilId, sinceId, limit) => await this.getFromDb({
@@ -168,8 +170,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		this.queryService.generateBaseNoteFilteringQuery(query, me);
 		if (me) {
 			this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
-			// JUICE: 表示言語の絞り込み
-			this.queryService.generateLanguageFilterQuery(query, me, true);
+			// JUICE: 表示言語の絞り込み(自分自身の投稿を常に表示するかはユーザー設定に従う)
+			const profile = await this.cacheService.userProfileCache.fetch(me.id);
+			this.queryService.generateLanguageFilterQuery(query, me, profile.excludeOwnNotesFromLanguageFilter);
 
 			const mutedChannelIds = await this.channelMutingService
 				.list({ requestUserId: me.id }, { idOnly: true })

@@ -278,6 +278,13 @@ export class MiUserProfile {
 	})
 	public filteredLanguages: string[];
 
+	// JUICE: filteredLanguagesによる絞り込みが有効な場合でも、自分自身の投稿は常に表示するかどうか
+	@Column('boolean', {
+		default: true,
+		comment: 'Whether to always show the user\'s own notes regardless of filteredLanguages (JUICE).',
+	})
+	public excludeOwnNotesFromLanguageFilter: boolean;
+
 	@Column('jsonb', {
 		default: {},
 	})

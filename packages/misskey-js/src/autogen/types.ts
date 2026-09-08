@@ -4517,6 +4517,7 @@ export type components = {
             hardMutedWords: string[][];
             mutedInstances: string[];
             filteredLanguages: string[];
+            excludeOwnNotesFromLanguageFilter: boolean;
             notificationRecieveConfig: {
                 note?: {
                     /** @enum {string} */
@@ -30778,6 +30779,7 @@ export interface operations {
                     hardMutedWords?: (string[] | string)[];
                     mutedInstances?: string[];
                     filteredLanguages?: string[];
+                    excludeOwnNotesFromLanguageFilter?: boolean;
                     notificationRecieveConfig?: {
                         note?: {
                             /** @enum {string} */

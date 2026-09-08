@@ -619,6 +619,11 @@ export const packedMeDetailedOnlySchema = {
 				nullable: false, optional: false,
 			},
 		},
+		// JUICE: filteredLanguagesが有効な場合でも自分自身の投稿を常に表示するか
+		excludeOwnNotesFromLanguageFilter: {
+			type: 'boolean',
+			nullable: false, optional: false,
+		},
 		notificationRecieveConfig: {
 			type: 'object',
 			nullable: false, optional: false,

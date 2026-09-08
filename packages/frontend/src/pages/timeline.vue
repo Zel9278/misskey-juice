@@ -91,6 +91,17 @@ function filteredLanguageSelectedRef(code: string) {
 
 const filteredLanguageRefs = new Map(langs.map(([code]) => [code, filteredLanguageSelectedRef(code)]));
 
+// JUICE: 表示言語の絞り込みが有効な場合でも、自分自身の投稿を常に表示するか
+const excludeOwnNotesFromLanguageFilterRef = computed<boolean>({
+	get: () => $i != null && $i.excludeOwnNotesFromLanguageFilter,
+	set: (checked) => {
+		if ($i == null) return;
+		misskeyApi('i/update', {
+			excludeOwnNotesFromLanguageFilter: checked,
+		});
+	},
+});
+
 juicePublicSettingsCache.fetch().then(res => {
 	relayTimelineEnabled.value = res.relayTimelineEnabled;
 	// 取得前に選択されていた場合や、無効化された後に古い選択が残っていた場合に備えて再チェックする
@@ -324,11 +335,15 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 					icon: 'ti ti-language',
 					text: i18n.ts._juice.filteredLanguages,
 					badge: true,
-					children: () => langs.map(([code, label]) => ({
+					children: () => [{
 						type: 'switch',
+						text: i18n.ts._juice.excludeOwnNotesFromLanguageFilter,
+						ref: excludeOwnNotesFromLanguageFilterRef,
+					}, ...langs.map(([code, label]) => ({
+						type: 'switch' as const,
 						text: label,
 						ref: filteredLanguageRefs.get(code)!,
-					})),
+					}))],
 				});
 			}
 

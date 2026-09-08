@@ -81,8 +81,8 @@ export class HybridTimelineChannel extends Channel {
 		if (!this.isNoteVisibleForMe(note)) return;
 		if (this.isNoteMutedOrBlocked(note)) return;
 
-		// JUICE: 表示言語の絞り込み(自分自身の投稿は対象外)
-		if (!isMe && isLanguageFiltered(note, new Set(this.userProfile?.filteredLanguages ?? []))) return;
+		// JUICE: 表示言語の絞り込み(自分自身の投稿を常に表示するかはユーザー設定に従う)
+		if ((!isMe || !(this.userProfile?.excludeOwnNotesFromLanguageFilter ?? true)) && isLanguageFiltered(note, new Set(this.userProfile?.filteredLanguages ?? []))) return;
 
 		if (note.reply) {
 			const reply = note.reply;

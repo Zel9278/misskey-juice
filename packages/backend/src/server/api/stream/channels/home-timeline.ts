@@ -89,8 +89,8 @@ export class HomeTimelineChannel extends Channel {
 
 		if (this.isNoteMutedOrBlocked(note)) return;
 
-		// JUICE: 表示言語の絞り込み(自分自身の投稿は対象外)
-		if (!isMe && isLanguageFiltered(note, new Set(this.userProfile?.filteredLanguages ?? []))) return;
+		// JUICE: 表示言語の絞り込み(自分自身の投稿を常に表示するかはユーザー設定に従う)
+		if ((!isMe || !(this.userProfile?.excludeOwnNotesFromLanguageFilter ?? true)) && isLanguageFiltered(note, new Set(this.userProfile?.filteredLanguages ?? []))) return;
 
 		const filtered = await this.noteStreamingHidingService.filter(note, this.user?.id ?? null);
 		if (!filtered) return;
