@@ -322,7 +322,9 @@ export async function getAccountMenu(opts: {
 		};
 
 		const juicePublicSettings = await misskeyApi('juice/public-settings').catch(() => null);
-		const showSplitCreateAccountItems = instance.disableRegistration && (juicePublicSettings?.approvalRequiredForSignup ?? false);
+		const showSplitCreateAccountItems = instance.disableRegistration
+			&& (juicePublicSettings?.approvalRequiredForSignup ?? false)
+			&& (juicePublicSettings?.invitationRegistrationEnabled ?? true);
 
 		menuItems.push({
 			type: 'parent',

@@ -120,6 +120,8 @@ const props = withDefaults(defineProps<{
 		approvalRequiredForSignup: false,
 		signupReasonRequired: true,
 		signupReasonMaxLength: 4096,
+		invitationRegistrationEnabled: true,
+		exploreOtherServersEnabled: true,
 		emojiRequestEnabled: false,
 		avatarDecorationRequestEnabled: false,
 		relayTimelineEnabled: false,
@@ -191,10 +193,14 @@ const approvalBypassedByInvitation = computed((): boolean => instance.disableReg
 
 // 招待コード欄を表示するか・必須にするか(このフォームでは常に同値: 表示する場合は必ず必須)。
 // mode="application" では常に隠す(申請ボタンから開いた=コードを持たない選択なので)。
-// mode="invitation" は明示的に招待コード登録を選んでいるため常に表示・必須にする
+// mode="invitation" は明示的に招待コード登録を選んでいるため常に表示・必須にする。
+// JUICE: invitationRegistrationEnabledは、mode未指定の単一フォーム(通常の入り口)で
+// 招待コード欄を出すかどうかだけを制御する。mode="invitation"を明示的に指定して開いた
+// 場合(URLを直接共有された等)は、この設定に関わらず常に表示する
 const showInvitationField = computed((): boolean => {
 	if (props.mode === 'application') return false;
 	if (props.mode === 'invitation') return true;
+	if (!props.juicePublicSettings.invitationRegistrationEnabled) return false;
 	return instance.disableRegistration;
 });
 

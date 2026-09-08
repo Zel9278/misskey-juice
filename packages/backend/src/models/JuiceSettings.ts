@@ -14,6 +14,14 @@ export interface JuiceSettingsValue {
 	signupReasonRequired?: boolean;
 	/** 登録理由の最大文字数 */
 	signupReasonMaxLength?: number;
+	/**
+	 * 招待コードでの登録の入り口(ウェルカムページ・アカウント追加メニューのボタン)を
+	 * 一般に表示するか。無効化しても招待コード自体による登録機能(承認式登録のバイパスを
+	 * 含む)は無効にならず、招待コードを知っている人はURLを直接開けば引き続き利用できる
+	 */
+	invitationRegistrationEnabled?: boolean;
+	/** ウェルカムページ(未ログイン時のトップページ)に「他のサーバーを探す」ボタンを表示するか */
+	exploreOtherServersEnabled?: boolean;
 	/** ユーザーがメール言語を選択・保存していない場合に、システムメールで使う既定の言語 */
 	defaultEmailLang?: string;
 	/** 絵文字申請機能を有効にするか */
@@ -61,11 +69,25 @@ export function resolveSignupApprovalSettings(settings: JuiceSettingsValue): {
 	approvalRequiredForSignup: boolean;
 	signupReasonRequired: boolean;
 	signupReasonMaxLength: number;
+	invitationRegistrationEnabled: boolean;
 } {
 	return {
 		approvalRequiredForSignup: settings.approvalRequiredForSignup ?? false,
 		signupReasonRequired: settings.signupReasonRequired ?? true,
 		signupReasonMaxLength: settings.signupReasonMaxLength ?? 4096,
+		invitationRegistrationEnabled: settings.invitationRegistrationEnabled ?? true,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・juice/public-settingsの2箇所で共通利用する。
+ */
+export function resolveExploreOtherServersSettings(settings: JuiceSettingsValue): {
+	exploreOtherServersEnabled: boolean;
+} {
+	return {
+		exploreOtherServersEnabled: settings.exploreOtherServersEnabled ?? true,
 	};
 }
 

@@ -11056,6 +11056,8 @@ export interface operations {
                         approvalRequiredForSignup: boolean;
                         signupReasonRequired: boolean;
                         signupReasonMaxLength: number;
+                        invitationRegistrationEnabled: boolean;
+                        exploreOtherServersEnabled: boolean;
                         defaultEmailLang: string;
                         emojiRequestEnabled: boolean;
                         avatarDecorationRequestEnabled: boolean;
@@ -11221,6 +11223,8 @@ export interface operations {
                     approvalRequiredForSignup?: boolean;
                     signupReasonRequired?: boolean;
                     signupReasonMaxLength?: number;
+                    invitationRegistrationEnabled?: boolean;
+                    exploreOtherServersEnabled?: boolean;
                     defaultEmailLang?: string;
                     emojiRequestEnabled?: boolean;
                     avatarDecorationRequestEnabled?: boolean;
@@ -31762,6 +31766,8 @@ export interface operations {
                         approvalRequiredForSignup: boolean;
                         signupReasonRequired: boolean;
                         signupReasonMaxLength: number;
+                        invitationRegistrationEnabled: boolean;
+                        exploreOtherServersEnabled: boolean;
                         emojiRequestEnabled: boolean;
                         avatarDecorationRequestEnabled: boolean;
                         relayTimelineEnabled: boolean;

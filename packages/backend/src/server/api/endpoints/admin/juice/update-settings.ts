@@ -23,6 +23,8 @@ export const paramDef = {
 		approvalRequiredForSignup: { type: 'boolean' },
 		signupReasonRequired: { type: 'boolean' },
 		signupReasonMaxLength: { type: 'integer', minimum: 1 },
+		invitationRegistrationEnabled: { type: 'boolean' },
+		exploreOtherServersEnabled: { type: 'boolean' },
 		defaultEmailLang: { type: 'string' },
 		emojiRequestEnabled: { type: 'boolean' },
 		avatarDecorationRequestEnabled: { type: 'boolean' },
@@ -73,6 +75,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.approvalRequiredForSignup !== undefined) set.approvalRequiredForSignup = ps.approvalRequiredForSignup;
 			if (ps.signupReasonRequired !== undefined) set.signupReasonRequired = ps.signupReasonRequired;
 			if (ps.signupReasonMaxLength !== undefined) set.signupReasonMaxLength = ps.signupReasonMaxLength;
+			if (ps.invitationRegistrationEnabled !== undefined) set.invitationRegistrationEnabled = ps.invitationRegistrationEnabled;
+			if (ps.exploreOtherServersEnabled !== undefined) set.exploreOtherServersEnabled = ps.exploreOtherServersEnabled;
 			if (ps.defaultEmailLang !== undefined) set.defaultEmailLang = ps.defaultEmailLang;
 			if (ps.emojiRequestEnabled !== undefined) set.emojiRequestEnabled = ps.emojiRequestEnabled;
 			if (ps.avatarDecorationRequestEnabled !== undefined) set.avatarDecorationRequestEnabled = ps.avatarDecorationRequestEnabled;

@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -29,6 +29,14 @@ export const meta = {
 			},
 			signupReasonMaxLength: {
 				type: 'number',
+				optional: false, nullable: false,
+			},
+			invitationRegistrationEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			exploreOtherServersEnabled: {
+				type: 'boolean',
 				optional: false, nullable: false,
 			},
 			defaultEmailLang: {
@@ -117,6 +125,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const settings = await this.juiceSettingsService.fetch();
 			return {
 				...resolveSignupApprovalSettings(settings),
+				...resolveExploreOtherServersSettings(settings),
 				...resolveEmailSettings(settings),
 				...resolveEmojiRequestSettings(settings),
 				...resolveAvatarDecorationRequestSettings(settings),

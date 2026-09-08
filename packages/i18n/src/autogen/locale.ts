@@ -14355,6 +14355,26 @@ export interface Locale extends ILocale {
          */
         "registerWithInvitation": string;
         /**
+         * 招待コードでの登録の入り口を表示する
+         */
+        "invitationRegistrationEnabled": string;
+        /**
+         * 無効にすると、ウェルカムページや「アカウントを追加」メニューから招待コード登録へのボタンが表示されなくなります。招待コード自体による登録機能は無効になりません。招待した相手には「?invite」を付けたURLを個別に共有することで、ボタン無しでも招待コード登録フォームを開けます。
+         */
+        "invitationRegistrationEnabledCaption": string;
+        /**
+         * 他のサーバーを探すボタン
+         */
+        "exploreOtherServers": string;
+        /**
+         * 「他のサーバーを探す」ボタンを表示する
+         */
+        "exploreOtherServersEnabled": string;
+        /**
+         * ウェルカムページ(未ログイン時のトップページ)に、他のMisskeyサーバーを探せる外部サイトへのリンクボタンを表示します。
+         */
+        "exploreOtherServersEnabledCaption": string;
+        /**
          * このサーバーは承認式の新規登録です。登録後、モデレーターまたは管理者が承認するまでサインインできません。
          */
         "approvalSignupNotice": string;
