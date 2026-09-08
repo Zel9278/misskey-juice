@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkPostForm v-if="prefer.r.showFixedPostForm.value" :class="$style.postForm" class="_panel" fixed style="margin-bottom: var(--MI-margin);"/>
 		<MkStreamingNotesTimeline
 			ref="tlComponent"
-			:key="src + withRenotes + withReplies + onlyFiles + withSensitive + localOnly + relayTimelineFilter.join(',')"
+			:key="src + withRenotes + withReplies + onlyFiles + withSensitive + localOnly + relayTimelineFilter.join(',') + ($i ? $i.filteredLanguages.join(',') + $i.excludeOwnNotesFromLanguageFilter : '')"
 			:class="$style.tl"
 			:src="(src.split(':')[0] as (BasicTimelineType | 'list' | 'relay'))"
 			:list="src.split(':')[1]"
