@@ -249,14 +249,9 @@ uploader.events.on('itemUploaded', ctx => {
 });
 
 const draftKey = computed((): string => {
-	// JUICE: 削除して編集は、元ノートが既にサーバーから削除済みという特殊な状態のため、
-	// 通常の新規投稿・返信・引用の下書きキーとは別の専用キーにする。同じキーを共有すると、
-	// 閉じてまだ復元していない削除して編集の内容が、後で行った別の削除して編集や
-	// 通常の投稿の下書き保存によって気付かれないまま上書き・消失してしまう
-	if (props.initialNote) {
-		return `deleteAndEdit:${props.initialNote.id}`;
-	}
-
+	// JUICE: 削除して編集の内容も、通常の新規投稿・返信・引用と同じ下書きキーを使う。
+	// これにより、閉じた後に同じコンテキスト(新規投稿ならノートボタン、返信・引用なら
+	// 同じ相手への返信・引用)で改めて投稿フォームを開くと、自動的に内容が復元される
 	let key = targetChannel.value ? `channel:${targetChannel.value.id}` : '';
 
 	if (renoteTargetNote.value) {
