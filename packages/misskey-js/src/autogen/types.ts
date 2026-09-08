@@ -1289,6 +1289,15 @@ export type paths = {
          */
         post: operations['auth___session___userkey'];
     };
+    '/avatar-decoration-requests/cancel': {
+        /**
+         * avatar-decoration-requests/cancel
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:avatar-decoration-requests*
+         */
+        post: operations['avatar-decoration-requests___cancel'];
+    };
     '/avatar-decoration-requests/create': {
         /**
          * avatar-decoration-requests/create
@@ -2143,6 +2152,15 @@ export type paths = {
          *     **Credential required**: *No*
          */
         post: operations['emoji'];
+    };
+    '/emoji-requests/cancel': {
+        /**
+         * emoji-requests/cancel
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:emoji-requests*
+         */
+        post: operations['emoji-requests___cancel'];
     };
     '/emoji-requests/create': {
         /**
@@ -5750,7 +5768,7 @@ export type components = {
             isSensitive: boolean;
             localOnly: boolean;
             /** @enum {string} */
-            status: 'pending' | 'approved' | 'rejected';
+            status: 'pending' | 'approved' | 'rejected' | 'cancelled';
             rejectReason: string | null;
             /** Format: date-time */
             reviewedAt: string | null;
@@ -5775,7 +5793,7 @@ export type components = {
             description: string;
             category: string | null;
             /** @enum {string} */
-            status: 'pending' | 'approved' | 'rejected';
+            status: 'pending' | 'approved' | 'rejected' | 'cancelled';
             rejectReason: string | null;
             /** Format: date-time */
             reviewedAt: string | null;
@@ -7669,7 +7687,7 @@ export interface operations {
                      * @default pending
                      * @enum {string}
                      */
-                    state?: 'pending' | 'approved' | 'rejected';
+                    state?: 'pending' | 'approved' | 'rejected' | 'cancelled';
                     /** @default 10 */
                     limit?: number;
                     /** Format: misskey:id */
@@ -9183,7 +9201,7 @@ export interface operations {
                      * @default pending
                      * @enum {string}
                      */
-                    state?: 'pending' | 'approved' | 'rejected';
+                    state?: 'pending' | 'approved' | 'rejected' | 'cancelled';
                     /** @default 10 */
                     limit?: number;
                     /** Format: misskey:id */
@@ -16612,6 +16630,69 @@ export interface operations {
             };
         };
     };
+    'avatar-decoration-requests___cancel': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    requestId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'avatar-decoration-requests___create': {
         requestBody: {
             content: {
@@ -16801,7 +16882,7 @@ export interface operations {
                     /** Format: misskey:id */
                     untilId?: string;
                     /** @enum {string|null} */
-                    status?: 'pending' | 'approved' | 'rejected' | null;
+                    status?: 'pending' | 'approved' | 'rejected' | 'cancelled' | null;
                 };
             };
         };
@@ -23429,6 +23510,69 @@ export interface operations {
             };
         };
     };
+    'emoji-requests___cancel': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    requestId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'emoji-requests___create': {
         requestBody: {
             content: {
@@ -23628,7 +23772,7 @@ export interface operations {
                     /** Format: misskey:id */
                     untilId?: string;
                     /** @enum {string|null} */
-                    status?: 'pending' | 'approved' | 'rejected' | null;
+                    status?: 'pending' | 'approved' | 'rejected' | 'cancelled' | null;
                 };
             };
         };

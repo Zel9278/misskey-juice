@@ -200,6 +200,7 @@ import type {
 	AuthSessionShowResponse,
 	AuthSessionUserkeyRequest,
 	AuthSessionUserkeyResponse,
+	AvatarDecorationRequestsCancelRequest,
 	AvatarDecorationRequestsCreateRequest,
 	AvatarDecorationRequestsCreateResponse,
 	AvatarDecorationRequestsCreateManyRequest,
@@ -359,6 +360,7 @@ import type {
 	EmailAddressAvailableResponse,
 	EmojiRequest,
 	EmojiResponse,
+	EmojiRequestsCancelRequest,
 	EmojiRequestsCreateRequest,
 	EmojiRequestsCreateResponse,
 	EmojiRequestsCreateManyRequest,
@@ -865,6 +867,7 @@ export type Endpoints = {
 	'auth/session/generate': { req: AuthSessionGenerateRequest; res: AuthSessionGenerateResponse };
 	'auth/session/show': { req: AuthSessionShowRequest; res: AuthSessionShowResponse };
 	'auth/session/userkey': { req: AuthSessionUserkeyRequest; res: AuthSessionUserkeyResponse };
+	'avatar-decoration-requests/cancel': { req: AvatarDecorationRequestsCancelRequest; res: EmptyResponse };
 	'avatar-decoration-requests/create': { req: AvatarDecorationRequestsCreateRequest; res: AvatarDecorationRequestsCreateResponse };
 	'avatar-decoration-requests/create-many': { req: AvatarDecorationRequestsCreateManyRequest; res: AvatarDecorationRequestsCreateManyResponse };
 	'avatar-decoration-requests/list': { req: AvatarDecorationRequestsListRequest; res: AvatarDecorationRequestsListResponse };
@@ -960,6 +963,7 @@ export type Endpoints = {
 	'drive/stream': { req: DriveStreamRequest; res: DriveStreamResponse };
 	'email-address/available': { req: EmailAddressAvailableRequest; res: EmailAddressAvailableResponse };
 	'emoji': { req: EmojiRequest; res: EmojiResponse };
+	'emoji-requests/cancel': { req: EmojiRequestsCancelRequest; res: EmptyResponse };
 	'emoji-requests/create': { req: EmojiRequestsCreateRequest; res: EmojiRequestsCreateResponse };
 	'emoji-requests/create-many': { req: EmojiRequestsCreateManyRequest; res: EmojiRequestsCreateManyResponse };
 	'emoji-requests/list': { req: EmojiRequestsListRequest; res: EmojiRequestsListResponse };

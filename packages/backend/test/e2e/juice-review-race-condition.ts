@@ -89,6 +89,62 @@ describe('審査系エンドポイントの競合状態', () => {
 		assert.strictEqual(failed.length, 1);
 	});
 
+	test('絵文字申請で、申請者自身によるキャンセルとモデレーターによる却下を同時に送っても片方しか成功しない', async () => {
+		const file = await uploadFile(alice);
+		const request = await successfulApiCall({
+			endpoint: 'emoji-requests/create',
+			parameters: { fileId: file.body!.id, name: `dummy_${Date.now()}` },
+			user: alice,
+		});
+
+		const [cancelResult, rejectResult] = await Promise.allSettled([
+			successfulApiCall({
+				endpoint: 'emoji-requests/cancel',
+				parameters: { requestId: request.id },
+				user: alice,
+			}, { status: 204 }),
+			successfulApiCall({
+				endpoint: 'admin/emoji-requests/reject',
+				parameters: { requestId: request.id, reason: '却下理由' },
+				user: root,
+			}, { status: 204 }),
+		]);
+
+		const results = [cancelResult, rejectResult];
+		const succeeded = results.filter(r => r.status === 'fulfilled');
+		const failed = results.filter(r => r.status === 'rejected');
+		assert.strictEqual(succeeded.length, 1, '同時に送ったキャンセル・却下のうち、成功するのはちょうど1件のはず');
+		assert.strictEqual(failed.length, 1);
+	});
+
+	test('アバターデコレーション申請で、申請者自身によるキャンセルとモデレーターによる却下を同時に送っても片方しか成功しない', async () => {
+		const file = await uploadFile(alice);
+		const request = await successfulApiCall({
+			endpoint: 'avatar-decoration-requests/create',
+			parameters: { fileId: file.body!.id, name: `dummy_${Date.now()}` },
+			user: alice,
+		});
+
+		const [cancelResult, rejectResult] = await Promise.allSettled([
+			successfulApiCall({
+				endpoint: 'avatar-decoration-requests/cancel',
+				parameters: { requestId: request.id },
+				user: alice,
+			}, { status: 204 }),
+			successfulApiCall({
+				endpoint: 'admin/avatar-decoration-requests/reject',
+				parameters: { requestId: request.id, reason: '却下理由' },
+				user: root,
+			}, { status: 204 }),
+		]);
+
+		const results = [cancelResult, rejectResult];
+		const succeeded = results.filter(r => r.status === 'fulfilled');
+		const failed = results.filter(r => r.status === 'rejected');
+		assert.strictEqual(succeeded.length, 1, '同時に送ったキャンセル・却下のうち、成功するのはちょうど1件のはず');
+		assert.strictEqual(failed.length, 1);
+	});
+
 	test('承認式新規登録で、承認と却下を同時に送っても片方しか成功しない(承認済みアカウントが誤って削除されない)', async () => {
 		const applicant = await signup();
 		// JUICE: 承認式新規登録の申請フロー(captcha/招待コード等)一式を経由せず、

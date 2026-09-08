@@ -1577,6 +1577,17 @@ declare module '../api.js' {
      * 
      * **Credential required**: *Yes* / **Permission**: *write:avatar-decoration-requests*
      */
+    request<E extends 'avatar-decoration-requests/cancel', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Credential required**: *Yes* / **Permission**: *write:avatar-decoration-requests*
+     */
     request<E extends 'avatar-decoration-requests/create', P extends Endpoints[E]['req']>(
       endpoint: E,
       params: P,
@@ -2612,6 +2623,17 @@ declare module '../api.js' {
      * **Credential required**: *No*
      */
     request<E extends 'emoji', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Credential required**: *Yes* / **Permission**: *write:emoji-requests*
+     */
+    request<E extends 'emoji-requests/cancel', P extends Endpoints[E]['req']>(
       endpoint: E,
       params: P,
       credential?: string | null,

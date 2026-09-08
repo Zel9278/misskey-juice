@@ -3951,6 +3951,7 @@ _emojiRequestPage:
   statusPending: "審査待ち"
   statusApproved: "承認済み"
   statusRejected: "却下"
+  statusCancelled: "キャンセル済み"
   rejectReason: "却下理由"
   reviewedBy: "審査者"
   replacementRequest: "差し替え申請にする"
@@ -3960,6 +3961,8 @@ _emojiRequestPage:
   replacementTarget: "差し替え対象"
   changeTarget: "変更"
   replacementRequestBadge: "差し替え申請"
+  cancelRequest: "キャンセル"
+  cancelRequestConfirm: "「{name}」の申請をキャンセルしますか？審査待ちの状態が取り下げられ、審査されなくなります"
 
 _emojiRequestApprovals:
   title: "絵文字申請"
@@ -3998,6 +4001,7 @@ _avatarDecorationRequestPage:
   statusPending: "審査待ち"
   statusApproved: "承認済み"
   statusRejected: "却下"
+  statusCancelled: "キャンセル済み"
   rejectReason: "却下理由"
   reviewedBy: "審査者"
   replacementRequest: "差し替え申請にする"
@@ -4007,6 +4011,8 @@ _avatarDecorationRequestPage:
   replacementTarget: "差し替え対象"
   changeTarget: "変更"
   replacementRequestBadge: "差し替え申請"
+  cancelRequest: "キャンセル"
+  cancelRequestConfirm: "「{name}」の申請をキャンセルしますか？審査待ちの状態が取り下げられ、審査されなくなります"
 
 _avatarDecorationRequestApprovals:
   title: "アバターデコレーション申請"

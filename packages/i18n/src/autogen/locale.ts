@@ -14763,6 +14763,10 @@ export interface Locale extends ILocale {
          */
         "statusRejected": string;
         /**
+         * キャンセル済み
+         */
+        "statusCancelled": string;
+        /**
          * 却下理由
          */
         "rejectReason": string;
@@ -14798,6 +14802,14 @@ export interface Locale extends ILocale {
          * 差し替え申請
          */
         "replacementRequestBadge": string;
+        /**
+         * キャンセル
+         */
+        "cancelRequest": string;
+        /**
+         * 「{name}」の申請をキャンセルしますか？審査待ちの状態が取り下げられ、審査されなくなります
+         */
+        "cancelRequestConfirm": ParameterizedString<"name">;
     };
     "_emojiRequestApprovals": {
         /**
@@ -14939,6 +14951,10 @@ export interface Locale extends ILocale {
          */
         "statusRejected": string;
         /**
+         * キャンセル済み
+         */
+        "statusCancelled": string;
+        /**
          * 却下理由
          */
         "rejectReason": string;
@@ -14974,6 +14990,14 @@ export interface Locale extends ILocale {
          * 差し替え申請
          */
         "replacementRequestBadge": string;
+        /**
+         * キャンセル
+         */
+        "cancelRequest": string;
+        /**
+         * 「{name}」の申請をキャンセルしますか？審査待ちの状態が取り下げられ、審査されなくなります
+         */
+        "cancelRequestConfirm": ParameterizedString<"name">;
     };
     "_avatarDecorationRequestApprovals": {
         /**
