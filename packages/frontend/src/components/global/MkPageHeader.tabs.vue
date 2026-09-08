@@ -258,7 +258,9 @@ onUnmounted(() => {
 	display: inline-flex;
 }
 
-// JUICE: iconOnlyタブでタイトルが非表示のときも、JUICE独自タブであることを示す小さいドット
+// JUICE: iconOnlyタブでタイトルが非表示のときも、JUICE独自タブであることを示す小さいドット。
+// 色はテーマ依存の--MI_THEME-*ではなく、投稿フォームのAI生成物ボタン(MkPostForm.vueの
+// footerButtonJuice)やabout-juice.vueの雨エフェクトと同じJUICEブランドカラーで固定する
 .tabIconBadge {
 	position: absolute;
 	top: -2px;
@@ -266,7 +268,7 @@ onUnmounted(() => {
 	width: 6px;
 	height: 6px;
 	border-radius: 100%;
-	background: var(--MI_THEME-success);
+	background: #f2841f;
 }
 
 .tabIconWrapper + .tabTitle {
