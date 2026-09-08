@@ -11,6 +11,7 @@ import { NoteStreamingHidingService } from '../NoteStreamingHidingService.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
 import { isRenotePacked, isQuotePacked } from '@/misc/is-renote.js';
+import { isLanguageFiltered } from '@/misc/is-language-filtered.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
 import { REQUEST } from '@nestjs/core';
@@ -79,6 +80,9 @@ export class HybridTimelineChannel extends Channel {
 
 		if (!this.isNoteVisibleForMe(note)) return;
 		if (this.isNoteMutedOrBlocked(note)) return;
+
+		// JUICE: 表示言語の絞り込み(自分自身の投稿は対象外)
+		if (!isMe && isLanguageFiltered(note, new Set(this.userProfile?.filteredLanguages ?? []))) return;
 
 		if (note.reply) {
 			const reply = note.reply;
