@@ -249,6 +249,14 @@ uploader.events.on('itemUploaded', ctx => {
 });
 
 const draftKey = computed((): string => {
+	// JUICE: 削除して編集は、元ノートが既にサーバーから削除済みという特殊な状態のため、
+	// 通常の新規投稿・返信・引用の下書きキーとは別の専用キーにする。同じキーを共有すると、
+	// 閉じてまだ復元していない削除して編集の内容が、後で行った別の削除して編集や
+	// 通常の投稿の下書き保存によって気付かれないまま上書き・消失してしまう
+	if (props.initialNote) {
+		return `deleteAndEdit:${props.initialNote.id}`;
+	}
+
 	let key = targetChannel.value ? `channel:${targetChannel.value.id}` : '';
 
 	if (renoteTargetNote.value) {
@@ -1538,6 +1546,12 @@ onMounted(() => {
 			}
 			quoteId.value = renoteTargetNote.value ? renoteTargetNote.value.id : null;
 			reactionAcceptance.value = init.reactionAcceptance;
+
+			// JUICE: text等の変更監視によるsaveDraft()はこの直後のwatchForDraft()以降でしか
+			// 発火しないため、ここで一度だけ明示的に保存しておかないと、元ノートは既に
+			// サーバーから削除済みなのに、ユーザーが何も編集しないまま閉じた場合に
+			// 内容を一切復元できなくなってしまう
+			saveDraft();
 		}
 
 		nextTick(() => watchForDraft());
