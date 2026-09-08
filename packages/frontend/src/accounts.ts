@@ -223,6 +223,23 @@ export async function switchAccount(host: string, id: string) {
 	}
 }
 
+// JUICE: 「アカウントを追加」系メニュー(アカウント切り替えメニュー内・設定/アカウント一覧ページの両方)で、
+// 新規登録項目を招待コード登録/参加申請の2択に分けるか、単一項目にするかの判定を共有する。
+// 両者が個別に同じ判定ロジックを持つとどちらか一方だけ直し忘れて表示が食い違う不具合を再発しやすいため、
+// 判定結果だけをここに集約し、実際のメニュー項目組み立ては呼び出し側に任せる
+export async function resolveCreateAccountMenuMode(): Promise<{
+	showSplitCreateAccountItems: boolean;
+	approvalRequiredForSignup: boolean;
+}> {
+	const juicePublicSettings = await misskeyApi('juice/public-settings').catch(() => null);
+	const approvalRequiredForSignup = juicePublicSettings?.approvalRequiredForSignup ?? false;
+	const showSplitCreateAccountItems = instance.disableRegistration
+		&& approvalRequiredForSignup
+		&& (juicePublicSettings?.invitationRegistrationEnabled ?? true);
+
+	return { showSplitCreateAccountItems, approvalRequiredForSignup };
+}
+
 export async function getAccountMenu(opts: {
 	includeCurrentAccount?: boolean;
 	withExtraOperation: boolean;
@@ -321,11 +338,7 @@ export async function getAccountMenu(opts: {
 			});
 		};
 
-		const juicePublicSettings = await misskeyApi('juice/public-settings').catch(() => null);
-		const approvalRequiredForSignup = juicePublicSettings?.approvalRequiredForSignup ?? false;
-		const showSplitCreateAccountItems = instance.disableRegistration
-			&& approvalRequiredForSignup
-			&& (juicePublicSettings?.invitationRegistrationEnabled ?? true);
+		const { showSplitCreateAccountItems, approvalRequiredForSignup } = await resolveCreateAccountMenuMode();
 
 		menuItems.push({
 			type: 'parent',

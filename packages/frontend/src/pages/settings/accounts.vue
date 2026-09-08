@@ -26,7 +26,7 @@ import MkButton from '@/components/MkButton.vue';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { $i } from '@/i.js';
-import { switchAccount, removeAccount, login, getAccountWithSigninDialog, getAccountWithSignupDialog, getAccounts } from '@/accounts.js';
+import { switchAccount, removeAccount, login, getAccountWithSigninDialog, getAccountWithSignupDialog, getAccounts, resolveCreateAccountMenuMode } from '@/accounts.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
@@ -54,14 +54,29 @@ function showMenu(host: string, id: string, ev: PointerEvent) {
 	os.popupMenu(menu, ev.currentTarget ?? ev.target);
 }
 
-function addAccount(ev: PointerEvent) {
+async function addAccount(ev: PointerEvent) {
+	// JUICE: 承認式新規登録が有効なサーバーでは、アカウント切り替えメニュー(accounts.ts)と
+	// 同じ基準で招待コード登録/参加申請の2択に分けるか、単一項目の文言を出し分けるかを揃える。
+	// 以前はここが常に「既存のアカウント」「アカウントを作成」の固定2択で、承認制のみ
+	// (招待制ではない)サーバーでは実際には審査が必要なのにその場で作成できるかのような
+	// 表示になっていた
+	const { showSplitCreateAccountItems, approvalRequiredForSignup } = await resolveCreateAccountMenuMode();
+
+	const createAccountItems: MenuItem[] = showSplitCreateAccountItems ? [{
+		text: i18n.ts._juice.registerWithInvitation,
+		action: () => { createAccount('invitation'); },
+	}, {
+		text: i18n.ts._juice.applyToJoin,
+		action: () => { createAccount('application'); },
+	}] : [{
+		text: approvalRequiredForSignup ? i18n.ts._juice.applyToJoin : i18n.ts.createAccount,
+		action: () => { createAccount(); },
+	}];
+
 	os.popupMenu([{
 		text: i18n.ts.existingAccount,
 		action: () => { addExistingAccount(); },
-	}, {
-		text: i18n.ts.createAccount,
-		action: () => { createAccount(); },
-	}], ev.currentTarget ?? ev.target);
+	}, ...createAccountItems], ev.currentTarget ?? ev.target);
 }
 
 function addExistingAccount() {
@@ -72,8 +87,8 @@ function addExistingAccount() {
 	});
 }
 
-function createAccount() {
-	getAccountWithSignupDialog().then((res) => {
+function createAccount(mode?: 'invitation' | 'application') {
+	getAccountWithSignupDialog(mode).then((res) => {
 		if (res != null) {
 			login(res.token);
 		}
