@@ -58,9 +58,14 @@ describe('misc:is-language-filtered', () => {
 		expect(isLanguageFiltered(note, new Set())).toBe(false);
 	});
 
-	test('note with unspecified language should never be filtered', () => {
+	test('note with unspecified language should be filtered when a filter is active', () => {
 		const note: MiNote = { ...base, lang: null };
-		expect(isLanguageFiltered(note, new Set(['ja-JP']))).toBe(false);
+		expect(isLanguageFiltered(note, new Set(['ja-JP']))).toBe(true);
+	});
+
+	test('note with unspecified language should not be filtered when no filter is active', () => {
+		const note: MiNote = { ...base, lang: null };
+		expect(isLanguageFiltered(note, new Set())).toBe(false);
 	});
 
 	test('note with a language not in filteredLanguages should be filtered', () => {
