@@ -30,7 +30,7 @@ import { i18n } from '@/i18n.js';
 import { chooseDriveFile } from '@/utility/drive.js';
 
 const props = defineProps<{
-	dragStartCallback?: (ev: DragEvent) => void;
+	dragStartCallback?: (ev: PointerEvent) => void;
 	modelValue: Misskey.entities.PageBlock & { type: 'image' };
 }>();
 

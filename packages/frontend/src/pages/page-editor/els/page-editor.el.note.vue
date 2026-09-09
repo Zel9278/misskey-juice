@@ -34,7 +34,7 @@ import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
 
 const props = defineProps<{
-	dragStartCallback?: (ev: DragEvent) => void;
+	dragStartCallback?: (ev: PointerEvent) => void;
 	modelValue: Misskey.entities.PageBlock & { type: 'note' };
 }>();
 

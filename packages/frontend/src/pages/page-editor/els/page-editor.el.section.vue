@@ -35,7 +35,7 @@ import { getPageBlockList } from '@/pages/page-editor/common.js';
 const XBlocks = defineAsyncComponent(() => import('../page-editor.blocks.vue'));
 
 const props = defineProps<{
-	dragStartCallback?: (ev: DragEvent) => void;
+	dragStartCallback?: (ev: PointerEvent) => void;
 	modelValue: Extract<Misskey.entities.PageBlock, { type: 'section'; }>,
 }>();
 
