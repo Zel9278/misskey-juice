@@ -153,6 +153,11 @@ function onItemPointerDown(ev: PointerEvent, item: T) {
 	const pointerId = ev.pointerId;
 	const currentTarget = ev.currentTarget as HTMLElement;
 	const isTouch = ev.pointerType !== 'mouse';
+	// JUICE: 横並びのリストはドラッグの軸(横)とページスクロールの軸(縦)が直交し、
+	// touch-action: pan-yで縦スクロールを常にネイティブへ譲れるため、マウスと同じく
+	// 移動量だけで即座にドラッグを開始してよい。縦並び(ドラッグ軸=スクロール軸)の
+	// 場合のみ、長押しで明確な意図を確認してから開始する
+	const requiresLongPress = isTouch && props.direction === 'vertical';
 	let settled = false;
 
 	const cleanup = () => {
@@ -162,14 +167,27 @@ function onItemPointerDown(ev: PointerEvent, item: T) {
 	};
 	const onPendingMove = (mv: PointerEvent) => {
 		if (mv.pointerId !== pointerId || settled) return;
-		const moved = Math.hypot(mv.clientX - startX, mv.clientY - startY) > MOVE_CANCEL_THRESHOLD;
-		if (!moved) return;
-		if (isTouch) {
-			// タッチは移動量だけでは開始しない(長押し判定に委ねる。ここではスクロール操作として扱う)
+		const dx = mv.clientX - startX;
+		const dy = mv.clientY - startY;
+
+		if (requiresLongPress) {
+			// 縦並びは長押し確定前に動いた場合スクロール操作とみなし、ドラッグは開始しない
+			if (Math.hypot(dx, dy) > MOVE_CANCEL_THRESHOLD) {
+				settled = true;
+				cleanup();
+			}
+			return;
+		}
+
+		// JUICE: 横並び(touch-action: pan-y)は、縦方向優位の移動はネイティブの
+		// 縦スクロールに譲る。横方向優位の移動だけをドラッグ開始とみなす
+		if (isTouch && Math.abs(dy) > MOVE_CANCEL_THRESHOLD && Math.abs(dy) >= Math.abs(dx)) {
 			settled = true;
 			cleanup();
 			return;
 		}
+		if (Math.hypot(dx, dy) <= MOVE_CANCEL_THRESHOLD) return;
+
 		settled = true;
 		cleanup();
 		beginDrag(currentTarget, pointerId, item);
@@ -184,7 +202,7 @@ function onItemPointerDown(ev: PointerEvent, item: T) {
 	window.addEventListener('pointerup', onPendingUp);
 	window.addEventListener('pointercancel', onPendingUp);
 
-	if (isTouch) {
+	if (requiresLongPress) {
 		window.setTimeout(() => {
 			if (settled) return;
 			settled = true;
@@ -307,6 +325,19 @@ defineExpose({});
 
 .item {
 	position: relative;
+	// JUICE: 長押し判定の途中でネイティブのテキスト選択・コールアウトメニューに
+	// ジェスチャーを奪われないようにする(奪われるとpointerイベントが打ち切られ、
+	// ドラッグ開始判定が固まったまま戻らなくなる)
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
+}
+
+.items.horizontal .item {
+	// JUICE: 横並びの場合、ドラッグ操作の軸(横)とページスクロールの軸(縦)が
+	// 直交するため、縦方向のネイティブパンだけは常に許可しておく。これにより
+	// 長押し判定中でもページの縦スクロール自体は妨げない
+	touch-action: pan-y;
 }
 
 .items.vertical .item {
