@@ -55,6 +55,7 @@ import {
 	thereArePendingSignupApplications,
 	thereArePendingAvatarDecorationRequests,
 	thereArePendingContactForms,
+	refreshJuiceAdminPendingBanners,
 } from '@/utility/juice-admin-notifications.js';
 
 const searchIndex = await import('search-index:admin').then(({ searchIndexes }) => genSearchIndexes(searchIndexes));
@@ -293,6 +294,9 @@ onMounted(() => {
 	if (currentPage.value?.route.name == null && !narrow.value) {
 		router.replace('/admin/overview');
 	}
+	// JUICE: 承認/却下操作後にコントロールパネルへ戻ってきた際、未対応バナーが
+	// 処理済みでも表示されたままにならないよう、開くたびに最新状態へ同期する
+	refreshJuiceAdminPendingBanners();
 });
 
 onActivated(() => {
@@ -302,6 +306,7 @@ onActivated(() => {
 	if (currentPage.value?.route.name == null && !narrow.value) {
 		router.replace('/admin/overview');
 	}
+	refreshJuiceAdminPendingBanners();
 });
 
 onUnmounted(() => {
