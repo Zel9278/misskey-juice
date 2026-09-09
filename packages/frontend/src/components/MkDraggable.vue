@@ -23,6 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		v-for="(item, i) in modelValue"
 		:key="`MkDraggableRoot:${item.id}`"
 		:class="[$style.item, {
+			[$style.wholeItemTrigger]: !manualDragStart,
 			[$style.dropReadyForward]: dropReadyArea?.[0] === item.id && dropReadyArea?.[1] === 'forward',
 			[$style.dropReadyBackward]: dropReadyArea?.[0] === item.id && dropReadyArea?.[1] === 'backward',
 		}]"
@@ -65,10 +66,26 @@ type ActiveDrag<T extends { id: string }> = {
 let activeDrag: ActiveDrag<any> | null = null;
 let hoverInstanceId: string | null = null;
 
-// JUICE: タッチでは「長押ししてからドラッグ」を要求し、通常のスクロール・タップ操作と
-// 区別する(ハンドル経由の場合は明確な意図があるため即座に開始してよい)
-const TOUCH_LONG_PRESS_MS = 200;
+// JUICE: 通常のクリック・タップとドラッグを区別するための移動量の閾値
 const MOVE_CANCEL_THRESHOLD = 8;
+
+// JUICE: 縦並び・ハンドル無しはドラッグの軸とスクロールの軸が同じで、
+// touch-actionによる住み分けができない。長押しで明確な意図を確認してから
+// ドラッグを開始し、長押し確定前に動いた場合はスクロールとみなして
+// 自前でスクロールさせる(touch-action: noneでネイティブの横取りを防いでいるため)
+const TOUCH_LONG_PRESS_MS = 200;
+
+function findScrollableAncestor(el: HTMLElement): HTMLElement | null {
+	let node: HTMLElement | null = el.parentElement;
+	while (node != null) {
+		const overflowY = window.getComputedStyle(node).overflowY;
+		if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
+			return node;
+		}
+		node = node.parentElement;
+	}
+	return window.document.scrollingElement as HTMLElement | null;
+}
 </script>
 
 <script lang="ts" setup generic="T extends { id: string }">
@@ -140,7 +157,7 @@ function onHandlePointerDown(ev: PointerEvent, item: T) {
 	if (!isPrimaryTrigger(ev)) return;
 	if (activeDrag != null) return;
 	ev.preventDefault();
-	beginDrag(ev.currentTarget as HTMLElement, ev.pointerId, item);
+	beginDrag(ev.currentTarget as HTMLElement, ev.pointerId, item, ev.clientX, ev.clientY);
 }
 
 /** JUICE: アイテム全体がトリガーの場合、通常のクリック・スクロール操作と区別してから開始する */
@@ -153,12 +170,14 @@ function onItemPointerDown(ev: PointerEvent, item: T) {
 	const pointerId = ev.pointerId;
 	const currentTarget = ev.currentTarget as HTMLElement;
 	const isTouch = ev.pointerType !== 'mouse';
-	// JUICE: 横並びのリストはドラッグの軸(横)とページスクロールの軸(縦)が直交し、
-	// touch-action: pan-yで縦スクロールを常にネイティブへ譲れるため、マウスと同じく
-	// 移動量だけで即座にドラッグを開始してよい。縦並び(ドラッグ軸=スクロール軸)の
-	// 場合のみ、長押しで明確な意図を確認してから開始する
+	// JUICE: 縦並び・ハンドル無しはドラッグ軸とスクロール軸が同じで、touch-actionでの
+	// 住み分けができない。長押しで意図を確認してから開始し、それまでに動いた場合は
+	// 自前でスクロールを代行する(touch-action: noneでネイティブの横取りを防いでいるため)
 	const requiresLongPress = isTouch && props.direction === 'vertical';
 	let settled = false;
+	let manualScrolling = false;
+	let lastY = startY;
+	let scrollContainer: HTMLElement | null = null;
 
 	const cleanup = () => {
 		window.removeEventListener('pointermove', onPendingMove);
@@ -171,17 +190,23 @@ function onItemPointerDown(ev: PointerEvent, item: T) {
 		const dy = mv.clientY - startY;
 
 		if (requiresLongPress) {
-			// 縦並びは長押し確定前に動いた場合スクロール操作とみなし、ドラッグは開始しない
+			if (manualScrolling) {
+				scrollContainer ??= findScrollableAncestor(currentTarget);
+				scrollContainer?.scrollBy(0, lastY - mv.clientY);
+				lastY = mv.clientY;
+				return;
+			}
 			if (Math.hypot(dx, dy) > MOVE_CANCEL_THRESHOLD) {
-				settled = true;
-				cleanup();
+				// 長押し確定前に動いた場合、ドラッグは諦めて手動スクロールに切り替える
+				manualScrolling = true;
+				lastY = mv.clientY;
 			}
 			return;
 		}
 
 		// JUICE: 横並び(touch-action: pan-y)は、縦方向優位の移動はネイティブの
 		// 縦スクロールに譲る。横方向優位の移動だけをドラッグ開始とみなす
-		if (isTouch && Math.abs(dy) > MOVE_CANCEL_THRESHOLD && Math.abs(dy) >= Math.abs(dx)) {
+		if (isTouch && props.direction === 'horizontal' && Math.abs(dy) > MOVE_CANCEL_THRESHOLD && Math.abs(dy) >= Math.abs(dx)) {
 			settled = true;
 			cleanup();
 			return;
@@ -190,7 +215,7 @@ function onItemPointerDown(ev: PointerEvent, item: T) {
 
 		settled = true;
 		cleanup();
-		beginDrag(currentTarget, pointerId, item);
+		beginDrag(currentTarget, pointerId, item, mv.clientX, mv.clientY);
 	};
 	const onPendingUp = () => {
 		if (settled) return;
@@ -204,15 +229,15 @@ function onItemPointerDown(ev: PointerEvent, item: T) {
 
 	if (requiresLongPress) {
 		window.setTimeout(() => {
-			if (settled) return;
+			if (settled || manualScrolling) return;
 			settled = true;
 			cleanup();
-			beginDrag(currentTarget, pointerId, item);
+			beginDrag(currentTarget, pointerId, item, startX, startY);
 		}, TOUCH_LONG_PRESS_MS);
 	}
 }
 
-function beginDrag(target: HTMLElement, pointerId: number, item: T) {
+function beginDrag(target: HTMLElement, pointerId: number, item: T, clientX: number, clientY: number) {
 	try {
 		target.setPointerCapture(pointerId);
 	} catch {
@@ -228,13 +253,22 @@ function beginDrag(target: HTMLElement, pointerId: number, item: T) {
 	window.addEventListener('pointermove', onDragMove);
 	window.addEventListener('pointerup', onDragEnd);
 	window.addEventListener('pointercancel', onDragEnd);
+
+	// JUICE: 合成イベントによっては開始後にpointermoveが1回も来ないまま
+	// pointerupへ進むことがあるため、開始した時点の座標で一度だけ当たり判定しておく
+	updateDropTarget(clientX, clientY);
 }
 
 function onDragMove(ev: PointerEvent) {
 	if (activeDrag == null || ev.pointerId !== activeDrag.pointerId) return;
 	ev.preventDefault();
+	updateDropTarget(ev.clientX, ev.clientY);
+}
 
-	const el = window.document.elementFromPoint(ev.clientX, ev.clientY);
+function updateDropTarget(clientX: number, clientY: number) {
+	if (activeDrag == null) return;
+
+	const el = window.document.elementFromPoint(clientX, clientY);
 	const emptyEl = el?.closest<HTMLElement>('[data-mkdraggable-empty]');
 	if (emptyEl != null) {
 		hoverInstanceId = emptyEl.dataset.mkdraggableEmpty ?? null;
@@ -259,8 +293,8 @@ function onDragMove(ev: PointerEvent) {
 	hoverInstanceId = itemEl.dataset.mkdraggableInstance ?? null;
 	const rect = itemEl.getBoundingClientRect();
 	const backward = props.direction === 'horizontal'
-		? (ev.clientX - rect.left) > rect.width / 2
-		: (ev.clientY - rect.top) > rect.height / 2;
+		? (clientX - rect.left) > rect.width / 2
+		: (clientY - rect.top) > rect.height / 2;
 	dropReadyArea.value = [targetItemId, backward ? 'backward' : 'forward'];
 }
 
@@ -333,11 +367,18 @@ defineExpose({});
 	-webkit-touch-callout: none;
 }
 
-.items.horizontal .item {
+.items.horizontal .wholeItemTrigger {
 	// JUICE: 横並びの場合、ドラッグ操作の軸(横)とページスクロールの軸(縦)が
-	// 直交するため、縦方向のネイティブパンだけは常に許可しておく。これにより
-	// 長押し判定中でもページの縦スクロール自体は妨げない
+	// 直交するため、縦方向のネイティブパンだけは常に許可しておく
 	touch-action: pan-y;
+}
+
+.items.vertical .wholeItemTrigger {
+	// JUICE: 縦並び・ハンドル無しの場合、ドラッグの軸とスクロールの軸が同じで
+	// 安全に共存させる方法が無いため、アイテム上ではドラッグ操作を優先する
+	// (このアイテム上ではネイティブスクロールを行わない。スクロールしたい場合は
+	// アイテム以外の領域から操作する想定)
+	touch-action: none;
 }
 
 .items.vertical .item {
