@@ -88,28 +88,30 @@ export function initJuiceAdminNotifications(): void {
 
 	const connection = useStream().useChannel('admin');
 
+	// JUICE: 通報はまだ通常の通知(🔔)化していないため、ここでの即時トーストを引き続き使う
 	connection.on('newAbuseUserReport', () => {
 		os.toast(i18n.ts.newAbuseReportToast);
 		thereIsUnresolvedAbuseReport.value = true;
 	});
 
+	// JUICE: 絵文字申請・アバターデコレーション申請・承認式登録申請・お問い合わせの新着は
+	// notificationService.createNotification()経由で通常の通知(🔔)としても届くため、
+	// トースト表示はcommon.vueの既存のnotification購読(onNotification)に任せ、ここでは
+	// バナーstateの即時更新のみ行う(admin streamの方がnotificationsの反映より速いことがあるため、
+	// バナー更新自体はここに残す)
 	connection.on('newEmojiRequest', () => {
-		os.toast(i18n.ts._juice.newEmojiRequestToast);
 		thereArePendingEmojiRequests.value = true;
 	});
 
 	connection.on('newSignupApplication', () => {
-		os.toast(i18n.ts._juice.newSignupApplicationToast);
 		thereArePendingSignupApplications.value = true;
 	});
 
 	connection.on('newAvatarDecorationRequest', () => {
-		os.toast(i18n.ts._juice.newAvatarDecorationRequestToast);
 		thereArePendingAvatarDecorationRequests.value = true;
 	});
 
 	connection.on('newContactForm', () => {
-		os.toast(i18n.ts._juice.newContactFormToast);
 		thereArePendingContactForms.value = true;
 	});
 }

@@ -163,6 +163,26 @@ export class NotificationEntityService implements OnModuleInit {
 			return null;
 		}
 
+		// JUICE: 絵文字申請等の申請者はnotifierIdとして扱わない(あえてrequesterId/applicantIdという
+		// 別フィールドにしている)ため、#isValidNotifier(ミュート済みの相手からの通知を握りつぶす仕組み)を
+		// 通らずに済む。管理用の新着通知は、モデレーターがその申請者を別件でミュートしていても届く必要がある。
+		//
+		// 後方互換: このフィールド名変更より前にRedisのnotificationTimelineへ積まれた古い形式の
+		// レコードは、まだrequesterId/applicantIdではなくnotifierIdを持っている。それらを弾いたり
+		// クラッシュさせたりせず引き続き表示できるよう、notifierIdへのフォールバックを残す
+		// (レガシーデータにのみ存在するフィールドのためtype上には無く、anyでの読み取りになる)
+		const legacyNotifierId = (notification as { notifierId?: MiUser['id'] }).notifierId;
+		const requesterId = notification.type === 'newEmojiRequest' || notification.type === 'newAvatarDecorationRequest'
+			? (notification.requesterId ?? legacyNotifierId)
+			: notification.type === 'newSignupApplication'
+				? (notification.applicantId ?? legacyNotifierId)
+				: undefined;
+		const requesterIfNeed = requesterId != null ? (
+			hint?.packedUsers != null
+				? hint.packedUsers.get(requesterId)
+				: this.userEntityService.pack(requesterId, { id: meId })
+		) : undefined;
+
 		return await awaitAll({
 			id: notification.id,
 			createdAt: new Date(notification.createdAt).toISOString(),
@@ -197,6 +217,20 @@ export class NotificationEntityService implements OnModuleInit {
 				requestId: notification.requestId,
 				name: notification.name,
 				reason: notification.reason,
+			} : {}),
+			...(requesterIfNeed != null ? { requester: requesterIfNeed } : {}),
+			...(notification.type === 'newEmojiRequest' || notification.type === 'newAvatarDecorationRequest' ? {
+				requestId: notification.requestId,
+				name: notification.name,
+				category: notification.category,
+			} : {}),
+			...(notification.type === 'newSignupApplication' ? {
+				reason: notification.reason,
+			} : {}),
+			...(notification.type === 'newContactForm' ? {
+				contactFormId: notification.contactFormId,
+				subject: notification.subject,
+				category: notification.category,
 			} : {}),
 			...(notification.type === 'app' ? {
 				body: notification.customBody,
@@ -239,6 +273,17 @@ export class NotificationEntityService implements OnModuleInit {
 		const userIds = [];
 		for (const notification of validNotifications) {
 			if ('notifierId' in notification) userIds.push(notification.notifierId);
+			// JUICE: 後方互換のため、requesterId/applicantIdが無い古い形式のレコードは
+			// レガシーのnotifierIdをフォールバックとして拾う(#packInternalの同名フォールバックと対応)
+			const legacyNotifierId = (notification as { notifierId?: MiUser['id'] }).notifierId;
+			if (notification.type === 'newEmojiRequest' || notification.type === 'newAvatarDecorationRequest') {
+				const id = notification.requesterId ?? legacyNotifierId;
+				if (id != null) userIds.push(id);
+			}
+			if (notification.type === 'newSignupApplication') {
+				const id = notification.applicantId ?? legacyNotifierId;
+				if (id != null) userIds.push(id);
+			}
 			if (notification.type === 'reaction:grouped') userIds.push(...notification.reactions.map(x => x.userId));
 			if (notification.type === 'renote:grouped') userIds.push(...notification.userIds);
 		}

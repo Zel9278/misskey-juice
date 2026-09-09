@@ -474,6 +474,110 @@ export const packedNotificationSchema = {
 			},
 		},
 	}, {
+		// JUICE: 絵文字申請が新しく来たとき
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['newEmojiRequest'],
+			},
+			// JUICE: 申請者。notifierIdではなくrequesterIdからパックしているため、ミュートフィルタの
+			// 影響を受けない(モデレーターがこの申請者を別件でミュートしていても通知は届く)
+			requester: {
+				type: 'object',
+				ref: 'UserLite',
+				optional: false, nullable: false,
+			},
+			requestId: {
+				type: 'string',
+				optional: false, nullable: false,
+				format: 'id',
+			},
+			name: {
+				type: 'string',
+				optional: false, nullable: false,
+			},
+			category: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+		},
+	}, {
+		// JUICE: アバターデコレーション申請が新しく来たとき
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['newAvatarDecorationRequest'],
+			},
+			requester: {
+				type: 'object',
+				ref: 'UserLite',
+				optional: false, nullable: false,
+			},
+			requestId: {
+				type: 'string',
+				optional: false, nullable: false,
+				format: 'id',
+			},
+			name: {
+				type: 'string',
+				optional: false, nullable: false,
+			},
+			category: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+		},
+	}, {
+		// JUICE: 承認式新規登録の申請が新しく来たとき
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['newSignupApplication'],
+			},
+			requester: {
+				type: 'object',
+				ref: 'UserLite',
+				optional: false, nullable: false,
+			},
+			reason: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+		},
+	}, {
+		// JUICE: お問い合わせが新しく来たとき。PII保護のため送信者を特定できる情報は含めない
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['newContactForm'],
+			},
+			contactFormId: {
+				type: 'string',
+				optional: false, nullable: false,
+				format: 'id',
+			},
+			subject: {
+				type: 'string',
+				optional: false, nullable: false,
+			},
+			category: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+		},
+	}, {
 		type: 'object',
 		properties: {
 			...baseSchema.properties,

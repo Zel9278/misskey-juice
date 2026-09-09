@@ -8,13 +8,16 @@ import { bindThis } from '@/decorators.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { SystemWebhookService, type EmojiRequestCreatedPayload, type SignupApplicationCreatedPayload, type AvatarDecorationRequestCreatedPayload, type ContactFormPayload } from '@/core/SystemWebhookService.js';
+import { NotificationService } from '@/core/NotificationService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 
 // JUICE: 絵文字申請・承認式登録申請が来たことをモデレータに通知する。
 // AbuseReportNotificationService(通報の通知)と同じ「モデレータ一覧取得→admin streamへpublish→
 // SystemWebhookへenqueue」というパターンを、通報ほど複雑な通知先カスタマイズ(メール等)を必要としない
-// この2つのイベント向けに軽量にまとめたもの。
+// この2つのイベント向けに軽量にまとめたもの。あわせてnotificationService.createNotification()で
+// 通常の通知(🔔の通知一覧)にも残す。admin streamはアプリを開いている間だけのリアルタイム
+// トースト・バナー用、こちらはオフライン/リロード後でも遡って確認できるようにするためのもの
 //
 // 呼び出し元(emoji-requests/create.ts・SignupApiService.ts)では、このサービスを呼ぶ時点で
 // 既にDBへの書き込み(絵文字申請の作成、あるいはアカウント作成・checkCode発行)が完了しており、
@@ -29,6 +32,7 @@ export class JuiceAdminNotificationService {
 		private roleService: RoleService,
 		private globalEventService: GlobalEventService,
 		private systemWebhookService: SystemWebhookService,
+		private notificationService: NotificationService,
 		private loggerService: LoggerService,
 	) {
 		this.logger = this.loggerService.getLogger('juice-admin-notification');
@@ -36,12 +40,15 @@ export class JuiceAdminNotificationService {
 
 	/**
 	 * JUICE: モデレーター(isModerator/isAdministrator)に加えて、対象ポリシーを個別に
-	 * 付与されているユーザーもあわせて通知先とする。Setで重ねているので重複は出ない
+	 * 付与されているユーザーもあわせて通知先とする。Setで重ねているので重複は出ない。
+	 * includeRoot: trueを明示しないと、ロール割り当てを一切持たないブートストラップ直後の
+	 * root(自分自身にモデレーター/管理者ロールを割り当てていない、インストール直後によくある構成)が
+	 * 通知先から漏れる(RoleService.getModeratorIdsのincludeRootは既定false)ため必須
 	 */
 	@bindThis
 	private async getRecipientIds(policyName: 'canApproveEmojiRequests' | 'canApproveAvatarDecorationRequests' | 'canApproveSignups' | 'canProcessContactForms'): Promise<string[]> {
 		const [moderatorIds, policyHolderIds] = await Promise.all([
-			this.roleService.getModeratorIds({ includeAdmins: true, excludeExpire: true }),
+			this.roleService.getModeratorIds({ includeAdmins: true, includeRoot: true, excludeExpire: true }),
 			this.roleService.getUserIdsWithRolePolicy(policyName, { excludeExpire: true }),
 		]);
 
@@ -55,6 +62,15 @@ export class JuiceAdminNotificationService {
 
 			for (const recipientId of recipientIds) {
 				this.globalEventService.publishAdminStream(recipientId, 'newEmojiRequest', payload);
+				// JUICE: 申請者はnotifierId(第4引数)ではなくdata内のrequesterIdとして渡す。
+				// notifierIdにすると、通知先(モデレーター)がこの申請者を別件でミュートしているだけで
+				// 通知が黙って作られなくなるため(管理用通知はミュートの影響を受けてはならない)
+				this.notificationService.createNotification(recipientId, 'newEmojiRequest', {
+					requesterId: payload.requester.id,
+					requestId: payload.id,
+					name: payload.name,
+					category: payload.category,
+				});
 			}
 
 			await this.systemWebhookService.enqueueSystemWebhook('emojiRequestCreated', payload);
@@ -70,6 +86,11 @@ export class JuiceAdminNotificationService {
 
 			for (const recipientId of recipientIds) {
 				this.globalEventService.publishAdminStream(recipientId, 'newSignupApplication', payload);
+				// JUICE: notifierIdを使わない理由はnotifyNewEmojiRequestと同じ
+				this.notificationService.createNotification(recipientId, 'newSignupApplication', {
+					applicantId: payload.applicant.id,
+					reason: payload.reason,
+				});
 			}
 
 			await this.systemWebhookService.enqueueSystemWebhook('signupApplicationCreated', payload);
@@ -85,6 +106,13 @@ export class JuiceAdminNotificationService {
 
 			for (const recipientId of recipientIds) {
 				this.globalEventService.publishAdminStream(recipientId, 'newAvatarDecorationRequest', payload);
+				// JUICE: notifierIdを使わない理由はnotifyNewEmojiRequestと同じ
+				this.notificationService.createNotification(recipientId, 'newAvatarDecorationRequest', {
+					requesterId: payload.requester.id,
+					requestId: payload.id,
+					name: payload.name,
+					category: payload.category,
+				});
 			}
 
 			await this.systemWebhookService.enqueueSystemWebhook('avatarDecorationRequestCreated', payload);
@@ -109,6 +137,11 @@ export class JuiceAdminNotificationService {
 
 			for (const recipientId of recipientIds) {
 				this.globalEventService.publishAdminStream(recipientId, 'newContactForm', streamPayload);
+				this.notificationService.createNotification(recipientId, 'newContactForm', {
+					contactFormId: streamPayload.id,
+					subject: streamPayload.subject,
+					category: streamPayload.category,
+				});
 			}
 
 			await this.systemWebhookService.enqueueSystemWebhook('receivedContactForm', payload);

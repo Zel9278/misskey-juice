@@ -11,6 +11,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-else-if="notification.type === 'reaction:grouped' && notification.note.reactionAcceptance === 'likeOnly'" :class="[$style.icon, $style.icon_reactionGroupHeart]"><i class="ti ti-heart" style="line-height: 1;"></i></div>
 		<div v-else-if="notification.type === 'reaction:grouped'" :class="[$style.icon, $style.icon_reactionGroup]"><i class="ti ti-plus" style="line-height: 1;"></i></div>
 		<div v-else-if="notification.type === 'renote:grouped'" :class="[$style.icon, $style.icon_renoteGroup]"><i class="ti ti-repeat" style="line-height: 1;"></i></div>
+		<!-- JUICE: お問い合わせは送信者を特定できる情報を一切持たないため、専用のアイコンで表示する -->
+		<div v-else-if="notification.type === 'newContactForm'" :class="[$style.icon, $style.icon_contactForm]"><i class="ti ti-mail" style="line-height: 1;"></i></div>
+		<!-- JUICE: 絵文字申請等の申請者はミュートフィルタを迂回するためnotifierIdではなくrequesterで持つ -->
+		<MkAvatar v-else-if="'requester' in notification" :class="$style.icon" :user="notification.requester" link preview/>
 		<MkAvatar v-else-if="'user' in notification" :class="$style.icon" :user="notification.user" link preview/>
 		<img v-else-if="'icon' in notification && notification.icon != null" :class="[$style.icon, $style.icon_app]" :src="notification.icon" alt=""/>
 		<div
@@ -33,6 +37,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				[$style.t_emojiRequestRejected]: notification.type === 'emojiRequestRejected',
 				[$style.t_avatarDecorationRequestApproved]: notification.type === 'avatarDecorationRequestApproved',
 				[$style.t_avatarDecorationRequestRejected]: notification.type === 'avatarDecorationRequestRejected',
+				[$style.t_newEmojiRequest]: notification.type === 'newEmojiRequest',
+				[$style.t_newAvatarDecorationRequest]: notification.type === 'newAvatarDecorationRequest',
+				[$style.t_newSignupApplication]: notification.type === 'newSignupApplication',
 				[$style.t_createToken]: notification.type === 'createToken',
 				[$style.t_chatRoomInvitationReceived]: notification.type === 'chatRoomInvitationReceived',
 				[$style.t_roleAssigned]: notification.type === 'roleAssigned' && notification.role.iconUrl == null,
@@ -54,6 +61,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<i v-else-if="notification.type === 'loginFailed'" class="ti ti-alert-triangle"></i>
 			<i v-else-if="notification.type === 'emojiRequestApproved' || notification.type === 'avatarDecorationRequestApproved'" class="ti ti-check"></i>
 			<i v-else-if="notification.type === 'emojiRequestRejected' || notification.type === 'avatarDecorationRequestRejected'" class="ti ti-x"></i>
+			<i v-else-if="notification.type === 'newEmojiRequest'" class="ti ti-mood-plus"></i>
+			<i v-else-if="notification.type === 'newAvatarDecorationRequest'" class="ti ti-sparkles"></i>
+			<i v-else-if="notification.type === 'newSignupApplication'" class="ti ti-user-question"></i>
 			<i v-else-if="notification.type === 'createToken'" class="ti ti-key"></i>
 			<i v-else-if="notification.type === 'chatRoomInvitationReceived'" class="ti ti-messages"></i>
 			<template v-else-if="notification.type === 'roleAssigned'">
@@ -87,6 +97,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-else-if="notification.type === 'createToken'">{{ i18n.ts._notification.createToken }}</span>
 			<span v-else-if="notification.type === 'test'">{{ i18n.ts._notification.testNotification }}</span>
 			<span v-else-if="notification.type === 'exportCompleted'">{{ i18n.tsx._notification.exportOfXCompleted({ x: exportEntityName[notification.exportedEntity] }) }}</span>
+			<span v-else-if="notification.type === 'newContactForm'">{{ i18n.ts._notification.newContactForm }}</span>
+			<!-- JUICE: 「何が届いたか」を明示した上で、誰からかも併記する(noteタイプの見出しと同じ構成) -->
+			<!-- JUICE: _notification.newEmojiRequest等は完結文(「〜が届きました」)なので、noteタイプ
+			(85行目)と同じ「名詞句+コロン+ユーザー名」構成にするため、名詞句のみの専用キー(Header接尾辞)を使う -->
+			<!-- JUICE: 後方互換のガード。requester解決前(あるいはユーザー削除等)でnotification.requesterが
+			無い場合にMkUserNameをクラッシュさせないよう、名前部分だけ省略して表示を継続する -->
+			<span v-else-if="notification.type === 'newEmojiRequest'">{{ i18n.tsx._notification.newEmojiRequestHeader({ name: notification.name }) }}<template v-if="notification.requester">: <MkUserName :user="notification.requester"/></template></span>
+			<span v-else-if="notification.type === 'newAvatarDecorationRequest'">{{ i18n.tsx._notification.newAvatarDecorationRequestHeader({ name: notification.name }) }}<template v-if="notification.requester">: <MkUserName :user="notification.requester"/></template></span>
+			<span v-else-if="notification.type === 'newSignupApplication'">{{ i18n.ts._notification.newSignupApplicationHeader }}<template v-if="notification.requester">: <MkUserName :user="notification.requester"/></template></span>
 			<MkA v-else-if="notification.type === 'follow' || notification.type === 'mention' || notification.type === 'reply' || notification.type === 'renote' || notification.type === 'quote' || notification.type === 'reaction' || notification.type === 'receiveFollowRequest' || notification.type === 'followRequestAccepted'" v-user-preview="notification.user.id" :class="$style.headerName" :to="userPage(notification.user)"><MkUserName :user="notification.user"/></MkA>
 			<span v-else-if="notification.type === 'reaction:grouped' && notification.note.reactionAcceptance === 'likeOnly'">{{ i18n.tsx._notification.likedBySomeUsers({ n: getActualReactedUsersCount(notification) }) }}</span>
 			<span v-else-if="notification.type === 'reaction:grouped'">{{ i18n.tsx._notification.reactedBySomeUsers({ n: getActualReactedUsersCount(notification) }) }}</span>
@@ -154,6 +173,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkA v-else-if="notification.type === 'avatarDecorationRequestRejected'" :class="$style.text" to="/avatar-decoration-request">
 				{{ notification.reason }}
 			</MkA>
+			<!-- JUICE: ヘッダーで既に名前(絵文字名等)や申請者名を表示しているため、本文は理由/件名等の
+			補足情報と、「確認」への導線(Misskeyの標準ボタン見た目=MkButton)のみにする。
+			リンク先はモデレーターでなくても到達できる"-manager"側のルート(custom-emojis-managerと同じ方式) -->
+			<template v-else-if="notification.type === 'newEmojiRequest' || notification.type === 'newAvatarDecorationRequest'">
+				<div :class="$style.requestActions">
+					<MkButton small rounded type="routerLink" :to="notification.type === 'newEmojiRequest' ? '/emoji-requests-manager' : '/avatar-decoration-requests-manager'">{{ i18n.ts.check }}</MkButton>
+				</div>
+			</template>
+			<template v-else-if="notification.type === 'newSignupApplication'">
+				<div v-if="notification.reason" :class="$style.text" style="opacity: 0.6;">{{ notification.reason }}</div>
+				<div :class="$style.requestActions">
+					<MkButton small rounded type="routerLink" to="/signup-approvals-manager">{{ i18n.ts.check }}</MkButton>
+				</div>
+			</template>
+			<template v-else-if="notification.type === 'newContactForm'">
+				<div :class="$style.text" style="opacity: 0.6;">{{ notification.subject }}</div>
+				<div :class="$style.requestActions">
+					<MkButton small rounded type="routerLink" to="/contact-form-manager">{{ i18n.ts.check }}</MkButton>
+				</div>
+			</template>
 			<template v-else-if="notification.type === 'follow'">
 				<span :class="$style.text" style="opacity: 0.6;">{{ i18n.ts.youGotNewFollower }}</span>
 			</template>
@@ -301,7 +340,8 @@ function getActualReactedUsersCount(notification: Misskey.entities.Notification)
 
 .icon_reactionGroup,
 .icon_reactionGroupHeart,
-.icon_renoteGroup {
+.icon_renoteGroup,
+.icon_contactForm {
 	display: grid;
 	align-items: center;
 	justify-items: center;
@@ -322,6 +362,10 @@ function getActualReactedUsersCount(notification: Misskey.entities.Notification)
 
 .icon_renoteGroup {
 	background: var(--eventRenote);
+}
+
+.icon_contactForm {
+	background: var(--eventOther);
 }
 
 .icon_app {
@@ -419,6 +463,11 @@ function getActualReactedUsersCount(notification: Misskey.entities.Notification)
 	pointer-events: none;
 }
 
+.t_newEmojiRequest, .t_newAvatarDecorationRequest, .t_newSignupApplication {
+	background: var(--eventOther);
+	pointer-events: none;
+}
+
 .t_createToken {
 	background: var(--eventOther);
 	pointer-events: none;
@@ -482,6 +531,10 @@ function getActualReactedUsersCount(notification: Misskey.entities.Notification)
 	display: flex;
 	gap: 8px;
 	max-width: 300px;
+	margin-top: 8px;
+}
+
+.requestActions {
 	margin-top: 8px;
 }
 .followRequestCommandButton {

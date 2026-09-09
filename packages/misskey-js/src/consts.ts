@@ -41,6 +41,11 @@ export const notificationTypes = [
 	'emojiRequestRejected',
 	'avatarDecorationRequestApproved',
 	'avatarDecorationRequestRejected',
+	// JUICE: モデレーター・canApproveXxxロールポリシー保持者向け、新着申請の通知
+	'newEmojiRequest',
+	'newAvatarDecorationRequest',
+	'newSignupApplication',
+	'newContactForm',
 	'createToken',
 ] as const;
 

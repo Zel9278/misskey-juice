@@ -11764,6 +11764,34 @@ export interface Locale extends ILocale {
          */
         "avatarDecorationRequestRejected": ParameterizedString<"name">;
         /**
+         * 絵文字申請「{name}」が届きました
+         */
+        "newEmojiRequest": ParameterizedString<"name">;
+        /**
+         * アバターデコレーション申請「{name}」が届きました
+         */
+        "newAvatarDecorationRequest": ParameterizedString<"name">;
+        /**
+         * 新しい承認式登録の申請が届きました
+         */
+        "newSignupApplication": string;
+        /**
+         * 新しいお問い合わせが届きました
+         */
+        "newContactForm": string;
+        /**
+         * 絵文字申請「{name}」
+         */
+        "newEmojiRequestHeader": ParameterizedString<"name">;
+        /**
+         * アバターデコレーション申請「{name}」
+         */
+        "newAvatarDecorationRequestHeader": ParameterizedString<"name">;
+        /**
+         * 承認式登録の申請
+         */
+        "newSignupApplicationHeader": string;
+        /**
          * アクセストークンが作成されました
          */
         "createToken": string;
@@ -11864,6 +11892,22 @@ export interface Locale extends ILocale {
              * アバターデコレーション申請が却下された
              */
             "avatarDecorationRequestRejected": string;
+            /**
+             * 絵文字申請が届いた(モデレーター・承認権限保持者向け)
+             */
+            "newEmojiRequest": string;
+            /**
+             * アバターデコレーション申請が届いた(モデレーター・承認権限保持者向け)
+             */
+            "newAvatarDecorationRequest": string;
+            /**
+             * 承認式登録の申請が届いた(モデレーター・承認権限保持者向け)
+             */
+            "newSignupApplication": string;
+            /**
+             * お問い合わせが届いた(モデレーター・承認権限保持者向け)
+             */
+            "newContactForm": string;
             /**
              * アクセストークンの作成
              */
@@ -14594,22 +14638,6 @@ export interface Locale extends ILocale {
          * 未対応のお問い合わせがあります。
          */
         "thereArePendingContactFormsWarning": string;
-        /**
-         * 新しい絵文字申請があります。
-         */
-        "newEmojiRequestToast": string;
-        /**
-         * 新しい承認式登録の申請があります。
-         */
-        "newSignupApplicationToast": string;
-        /**
-         * 新しいアバターデコレーション申請があります。
-         */
-        "newAvatarDecorationRequestToast": string;
-        /**
-         * 新しいお問い合わせがあります。
-         */
-        "newContactFormToast": string;
         /**
          * ニックネーム
          */

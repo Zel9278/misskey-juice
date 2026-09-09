@@ -250,6 +250,39 @@ async function composeNotification(data: PushNotificationDataMap[keyof PushNotif
 						data,
 					}];
 
+				case 'newEmojiRequest':
+					// JUICE: 専用バッジ画像が無いため、bellを流用。申請者はミュートフィルタを迂回するため
+					// notifierIdではなくrequesterで持つ(NotificationEntityService参照)
+					return [i18n.tsx._notification.newEmojiRequest({ name: data.body.name }), {
+						body: getUserName(data.body.requester),
+						icon: data.body.requester.avatarUrl ?? undefined,
+						badge: iconUrl('bell'),
+						data,
+					}];
+
+				case 'newAvatarDecorationRequest':
+					return [i18n.tsx._notification.newAvatarDecorationRequest({ name: data.body.name }), {
+						body: getUserName(data.body.requester),
+						icon: data.body.requester.avatarUrl ?? undefined,
+						badge: iconUrl('bell'),
+						data,
+					}];
+
+				case 'newSignupApplication':
+					return [i18n.ts._notification.newSignupApplication, {
+						body: getUserName(data.body.requester),
+						icon: data.body.requester.avatarUrl ?? undefined,
+						badge: iconUrl('bell'),
+						data,
+					}];
+
+				case 'newContactForm':
+					return [i18n.ts._notification.newContactForm, {
+						body: data.body.subject,
+						badge: iconUrl('bell'),
+						data,
+					}];
+
 				case 'exportCompleted': {
 					const entityName = {
 						antenna: i18n.ts.antennas,
