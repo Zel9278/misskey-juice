@@ -107,6 +107,7 @@ import { Paginator } from '@/utility/paginator.js';
 import MkPagination from '@/components/MkPagination.vue';
 import { userPage } from '@/filters/user.js';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
+import { juiceNotificationTypes } from '@/utility/juice-notification-types.js';
 
 const $i = ensureSignin();
 
@@ -137,9 +138,6 @@ const nonConfigurableNotificationTypes = ['note', 'roleAssigned', 'followRequest
 const configurableNotificationTypes = notificationTypes.filter(type => !nonConfigurableNotificationTypes.includes(type as any)) as Exclude<typeof notificationTypes[number], typeof nonConfigurableNotificationTypes[number]>[];
 
 const onlyOnOrOffNotificationTypes = ['app', 'achievementEarned', 'login', 'loginFailed', 'emojiRequestApproved', 'emojiRequestRejected', 'avatarDecorationRequestApproved', 'avatarDecorationRequestRejected', 'newEmojiRequest', 'newAvatarDecorationRequest', 'newSignupApplication', 'newContactForm', 'createToken', 'scheduledNotePosted', 'scheduledNotePostFailed'] as const satisfies (typeof notificationTypes[number])[];
-
-// JUICE: 本家に無いJUICE独自の通知種別であることを示すバッジ(_juiceクラス)を出す対象
-const juiceNotificationTypes: readonly (typeof notificationTypes[number])[] = ['loginFailed', 'emojiRequestApproved', 'emojiRequestRejected', 'avatarDecorationRequestApproved', 'avatarDecorationRequestRejected', 'newEmojiRequest', 'newAvatarDecorationRequest', 'newSignupApplication', 'newContactForm'];
 
 const allowButton = useTemplateRef('allowButton');
 const pushRegistrationInServer = computed(() => allowButton.value?.pushRegistrationInServer);
