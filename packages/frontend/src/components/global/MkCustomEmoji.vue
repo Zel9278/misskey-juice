@@ -131,7 +131,8 @@ function onClick(ev: PointerEvent) {
 
 		menuItems.push({
 			type: 'label',
-			text: `:${props.name}:`,
+			// JUICE: リモート絵文字はホストを含めて表示し、ローカルの同名絵文字と区別できるようにする
+			text: reactionString.value,
 		});
 
 		if (isLocal.value) {
