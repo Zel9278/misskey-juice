@@ -41,7 +41,7 @@ import { noteEvents } from '@/composables/use-note-capture.js';
 import { mute as muteEmoji, unmute as unmuteEmoji, checkMuted as isEmojiMuted } from '@/utility/emoji-mute.js';
 import { addToEmojiPalette } from '@/utility/emoji-palette.js';
 import { haptic } from '@/utility/haptic.js';
-import { juicePublicSettingsCache } from '@/cache.js';
+import { useReactionPiggybackOnRemoteEnabled } from '@/utility/reaction-piggyback.js';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
@@ -68,7 +68,7 @@ const isLocalCustomEmoji = computed(() => isLocalCustomEmojiReaction(props.react
 // JUICE: リモートのカスタム絵文字を使ったリアクションへの相乗り(既存リアクションに便乗して
 // 同じリアクションを付けること)を管理者設定で有効化できるようにする(著作権者の許諾なく
 // リモートの絵文字画像を表示・使用することになりうるため、既定は無効)。
-const reactionPiggybackOnRemoteEnabled = computed(() => juicePublicSettingsCache.value.value?.reactionPiggybackOnRemoteEnabled ?? false);
+const reactionPiggybackOnRemoteEnabled = useReactionPiggybackOnRemoteEnabled();
 
 const canToggle = computed(() => {
 	if ($i == null) return false;
