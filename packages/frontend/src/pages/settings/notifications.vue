@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<template #label>{{ i18n.ts.notificationRecieveConfig }}</template>
 			<div class="_gaps_s">
 				<MkFolder v-for="type in configurableNotificationTypes" :key="type">
-					<template #label>{{ i18n.ts._notification._types[type] }}</template>
+					<template #label>{{ i18n.ts._notification._types[type] }}<span v-if="juiceNotificationTypes.includes(type)" class="_juice">JUICE</span></template>
 					<template #suffix>
 						{{
 							$i.notificationRecieveConfig[type as (typeof configurableNotificationTypes)[number]]?.type === 'never' ? i18n.ts.none :
@@ -137,6 +137,9 @@ const nonConfigurableNotificationTypes = ['note', 'roleAssigned', 'followRequest
 const configurableNotificationTypes = notificationTypes.filter(type => !nonConfigurableNotificationTypes.includes(type as any)) as Exclude<typeof notificationTypes[number], typeof nonConfigurableNotificationTypes[number]>[];
 
 const onlyOnOrOffNotificationTypes = ['app', 'achievementEarned', 'login', 'loginFailed', 'emojiRequestApproved', 'emojiRequestRejected', 'avatarDecorationRequestApproved', 'avatarDecorationRequestRejected', 'newEmojiRequest', 'newAvatarDecorationRequest', 'newSignupApplication', 'newContactForm', 'createToken', 'scheduledNotePosted', 'scheduledNotePostFailed'] as const satisfies (typeof notificationTypes[number])[];
+
+// JUICE: 本家に無いJUICE独自の通知種別であることを示すバッジ(_juiceクラス)を出す対象
+const juiceNotificationTypes: readonly (typeof notificationTypes[number])[] = ['loginFailed', 'emojiRequestApproved', 'emojiRequestRejected', 'avatarDecorationRequestApproved', 'avatarDecorationRequestRejected', 'newEmojiRequest', 'newAvatarDecorationRequest', 'newSignupApplication', 'newContactForm'];
 
 const allowButton = useTemplateRef('allowButton');
 const pushRegistrationInServer = computed(() => allowButton.value?.pushRegistrationInServer);
