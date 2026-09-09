@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div :class="$style.header">
 		<MkSelect v-model="typeModelForMkSelect" :items="typeDef" :class="$style.typeSelect">
 		</MkSelect>
-		<button v-if="draggable" class="_button" :class="$style.dragHandle" :draggable="true" @dragstart.stop="dragStartCallback">
+		<button v-if="draggable" class="_button" :class="$style.dragHandle" @pointerdown.stop="dragStartCallback">
 			<i class="ti ti-menu-2"></i>
 		</button>
 		<button v-if="draggable" class="_button" :class="$style.remove" @click="removeSelf">
@@ -78,7 +78,7 @@ const emit = defineEmits<{
 const props = defineProps<{
 	modelValue: Misskey.entities.Role['condFormula'];
 	draggable?: boolean;
-	dragStartCallback?: (ev: DragEvent) => void;
+	dragStartCallback?: (ev: PointerEvent) => void;
 }>();
 
 const v = ref(deepClone(props.modelValue));
@@ -180,6 +180,7 @@ function removeSelf() {
 .dragHandle {
 	cursor: move;
 	margin-left: 10px;
+	touch-action: none;
 }
 
 .remove {

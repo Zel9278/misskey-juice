@@ -49,7 +49,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					>
 						<template #default="{ item, dragStart }">
 							<div :class="$style.pinnedNote">
-								<button class="_button" :class="$style.pinnedNoteHandle" tabindex="-1" :draggable="true" @dragstart.stop="dragStart"><i class="ti ti-menu"></i></button>
+								<button class="_button" :class="$style.pinnedNoteHandle" tabindex="-1" @pointerdown.stop="dragStart"><i class="ti ti-menu"></i></button>
 								{{ item.id }}
 								<button class="_button" :class="$style.pinnedNoteRemove" @click="removePinnedNote(item.id)"><i class="ti ti-x"></i></button>
 							</div>
@@ -242,5 +242,6 @@ definePage(() => ({
 	height: 32px;
 	margin: 0 8px;
 	opacity: 0.5;
+	touch-action: none;
 }
 </style>

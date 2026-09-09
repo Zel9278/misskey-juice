@@ -83,7 +83,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						>
 							<template #default="{ item, dragStart }">
 								<div v-panel :class="$style.fieldDragItem">
-									<button v-if="!fieldEditMode" class="_button" :class="$style.dragItemHandle" tabindex="-1" :draggable="true" @dragstart.stop="dragStart"><i class="ti ti-menu"></i></button>
+									<button v-if="!fieldEditMode" class="_button" :class="$style.dragItemHandle" tabindex="-1" @pointerdown.stop="dragStart"><i class="ti ti-menu"></i></button>
 									<button v-if="fieldEditMode" :disabled="fields.length <= 1" class="_button" :class="$style.dragItemRemove" @click="deleteField(item.id)"><i class="ti ti-x"></i></button>
 									<div :class="$style.dragItemForm">
 										<FormSplit :minWidth="200">
@@ -426,6 +426,7 @@ definePage(() => ({
 	margin: 0 8px 0 0;
 	opacity: 0.5;
 	flex-shrink: 0;
+	touch-action: none;
 
 	&:active {
 		cursor: grabbing;

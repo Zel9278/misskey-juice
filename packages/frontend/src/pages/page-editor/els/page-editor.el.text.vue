@@ -22,7 +22,7 @@ import { i18n } from '@/i18n.js';
 import { Autocomplete } from '@/utility/autocomplete.js';
 
 const props = defineProps<{
-	dragStartCallback?: (ev: DragEvent) => void;
+	dragStartCallback?: (ev: PointerEvent) => void;
 	modelValue: Misskey.entities.PageBlock & { type: 'text' }
 }>();
 
