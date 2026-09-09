@@ -376,6 +376,12 @@ watch(q, () => {
 });
 
 function canReact(emoji: Misskey.entities.EmojiSimple | UnicodeEmojiDef | string): boolean {
+	// JUICE: 投稿フォームの絵文字ピッカー(asReactionPicker=false、本文への挿入用途)では、
+	// このサーバーに存在しないカスタム絵文字(リモートの絵文字パレット登録・削除済みローカル
+	// 絵文字など、getDef()がcustomEmojisMapで解決できずgetKeyの文字列のまま残っているもの)は
+	// 本文に挿入しても実際には表示できないため選択不可にする。リアクションピッカー(相乗り対象)は対象外
+	if (!props.asReactionPicker && typeof emoji === 'string' && emoji.includes(':')) return false;
+
 	return !props.targetNote || checkReactionPermissions($i!, props.targetNote, emoji);
 }
 
