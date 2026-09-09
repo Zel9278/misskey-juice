@@ -85,7 +85,7 @@ const widgetPropsDef = {
 	soundEnabled: {
 		type: 'boolean',
 		label: i18n.ts._widgetOptions._jobQueue.soundEnabled,
-		default: true,
+		default: false,
 	},
 	sound: {
 		type: 'enum',

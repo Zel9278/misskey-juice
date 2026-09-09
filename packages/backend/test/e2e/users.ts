@@ -147,6 +147,7 @@ describe('ユーザー', () => {
 			hardMutedWords: user.hardMutedWords,
 			mutedInstances: user.mutedInstances,
 			filteredLanguages: user.filteredLanguages, // JUICE
+			excludeOwnNotesFromLanguageFilter: user.excludeOwnNotesFromLanguageFilter, // JUICE
 			// @ts-expect-error 後方互換性
 			mutingNotificationTypes: user.mutingNotificationTypes,
 			notificationRecieveConfig: user.notificationRecieveConfig,

@@ -619,6 +619,11 @@ export const packedMeDetailedOnlySchema = {
 				nullable: false, optional: false,
 			},
 		},
+		// JUICE: filteredLanguagesが有効な場合でも自分自身の投稿を常に表示するか
+		excludeOwnNotesFromLanguageFilter: {
+			type: 'boolean',
+			nullable: false, optional: false,
+		},
 		notificationRecieveConfig: {
 			type: 'object',
 			nullable: false, optional: false,
@@ -646,6 +651,10 @@ export const packedMeDetailedOnlySchema = {
 				emojiRequestRejected: { optional: true, ...notificationRecieveConfig },
 				avatarDecorationRequestApproved: { optional: true, ...notificationRecieveConfig },
 				avatarDecorationRequestRejected: { optional: true, ...notificationRecieveConfig },
+				newEmojiRequest: { optional: true, ...notificationRecieveConfig },
+				newAvatarDecorationRequest: { optional: true, ...notificationRecieveConfig },
+				newSignupApplication: { optional: true, ...notificationRecieveConfig },
+				newContactForm: { optional: true, ...notificationRecieveConfig },
 				createToken: { optional: true, ...notificationRecieveConfig },
 				exportCompleted: { optional: true, ...notificationRecieveConfig },
 			},

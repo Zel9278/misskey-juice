@@ -35,7 +35,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onDeactivated, onMounted, onUnmounted, provide, watch, ref, computed, markRaw } from 'vue';
+import { onActivated, onMounted, onUnmounted, provide, watch, ref, computed } from 'vue';
 import type { SuperMenuDef } from '@/components/MkSuperMenu.vue';
 import type { PageMetadata } from '@/page.js';
 import { i18n } from '@/i18n.js';
@@ -49,7 +49,13 @@ import { lookupUser, lookupUserByEmail, lookupFile } from '@/utility/admin-looku
 import { definePage, provideMetadataReceiver, provideReactiveMetadata } from '@/page.js';
 import { useRouter } from '@/router.js';
 import { genSearchIndexes } from '@/utility/inapp-search.js';
-import { useStream } from '@/stream.js';
+import {
+	thereIsUnresolvedAbuseReport,
+	thereArePendingEmojiRequests,
+	thereArePendingSignupApplications,
+	thereArePendingAvatarDecorationRequests,
+	thereArePendingContactForms,
+} from '@/utility/juice-admin-notifications.js';
 
 const searchIndex = await import('search-index:admin').then(({ searchIndexes }) => genSearchIndexes(searchIndexes));
 
@@ -75,51 +81,11 @@ const noMaintainerInformation = computed(() => isEmpty(instance.maintainerName) 
 const noBotProtection = computed(() => !instance.disableRegistration && !instance.enableHcaptcha && !instance.enableRecaptcha && !instance.enableTurnstile && !instance.enableMcaptcha);
 const noEmailServer = computed(() => !instance.enableEmail);
 const noInquiryUrl = computed(() => isEmpty(instance.inquiryUrl));
-const thereIsUnresolvedAbuseReport = ref(false);
-// JUICE: 通報と同じく、未対応の絵文字申請・承認式登録申請がある場合に警告バナーを出す
-const thereArePendingEmojiRequests = ref(false);
-const thereArePendingSignupApplications = ref(false);
-const thereArePendingAvatarDecorationRequests = ref(false);
-const thereArePendingContactForms = ref(false);
+// JUICE: 未対応の通報・絵文字申請・承認式登録申請等があるかどうかのバナー用stateと、
+// リアルタイム購読(admin stream)はcommon.vue側でアプリ起動時に一度だけ開始し
+// (モデレーターでなくてもcanApproveEmojiRequests等のロールポリシーを持つユーザーが対象になるため
+// このページに限定できない)、ここではそのstateを読み取って表示するだけにする
 const currentPage = computed(() => router.currentRef.value.child);
-
-misskeyApi('admin/abuse-user-reports', {
-	state: 'unresolved',
-	limit: 1,
-}).then(reports => {
-	if (reports.length > 0) thereIsUnresolvedAbuseReport.value = true;
-});
-
-// JUICE
-misskeyApi('admin/emoji-requests/list', {
-	state: 'pending',
-	limit: 1,
-}).then(requests => {
-	if (requests.length > 0) thereArePendingEmojiRequests.value = true;
-});
-
-// JUICE
-misskeyApi('admin/juice/pending-signups', {
-	limit: 1,
-}).then(users => {
-	if (users.length > 0) thereArePendingSignupApplications.value = true;
-});
-
-// JUICE
-misskeyApi('admin/avatar-decoration-requests/list', {
-	state: 'pending',
-	limit: 1,
-}).then(requests => {
-	if (requests.length > 0) thereArePendingAvatarDecorationRequests.value = true;
-});
-
-// JUICE
-misskeyApi('admin/contact-form/list', {
-	status: 'pending',
-	limit: 1,
-}).then(contactForms => {
-	if (contactForms.length > 0) thereArePendingContactForms.value = true;
-});
 
 const NARROW_THRESHOLD = 600;
 const ro = new ResizeObserver((entries, observer) => {
@@ -319,35 +285,6 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 	}],
 }]);
 
-// JUICE: 通報・絵文字申請・承認式登録申請をコントロールパネルを開いている間だけリアルタイム通知する。
-// 本家にはadminストリームチャンネル自体は既にあったが、フロントエンドで購読する実装が無かったため新設した。
-const adminConnection = markRaw(useStream().useChannel('admin'));
-
-function onNewAbuseUserReport() {
-	os.toast(i18n.ts.newAbuseReportToast);
-	thereIsUnresolvedAbuseReport.value = true;
-}
-
-function onNewEmojiRequest() {
-	os.toast(i18n.ts._juice.newEmojiRequestToast);
-	thereArePendingEmojiRequests.value = true;
-}
-
-function onNewSignupApplication() {
-	os.toast(i18n.ts._juice.newSignupApplicationToast);
-	thereArePendingSignupApplications.value = true;
-}
-
-function onNewAvatarDecorationRequest() {
-	os.toast(i18n.ts._juice.newAvatarDecorationRequestToast);
-	thereArePendingAvatarDecorationRequests.value = true;
-}
-
-function onNewContactForm() {
-	os.toast(i18n.ts._juice.newContactFormToast);
-	thereArePendingContactForms.value = true;
-}
-
 onMounted(() => {
 	if (el.value != null) {
 		ro.observe(el.value);
@@ -358,10 +295,6 @@ onMounted(() => {
 	}
 });
 
-// JUICE: このページはKeepAliveでキャッシュされるため、他ページへ遷移している間は
-// onActivated/onDeactivatedでadminストリームの購読をon/offし、「コントロールパネルを
-// 開いている間だけ」という設計意図をKeepAlive中も保つ(onMounted/onUnmountedだけだと
-// キャッシュから追い出されるまで購読が生き続けてしまう)。
 onActivated(() => {
 	if (el.value != null) {
 		narrow.value = el.value.offsetWidth < NARROW_THRESHOLD;
@@ -369,25 +302,10 @@ onActivated(() => {
 	if (currentPage.value?.route.name == null && !narrow.value) {
 		router.replace('/admin/overview');
 	}
-
-	adminConnection.on('newAbuseUserReport', onNewAbuseUserReport);
-	adminConnection.on('newEmojiRequest', onNewEmojiRequest);
-	adminConnection.on('newSignupApplication', onNewSignupApplication);
-	adminConnection.on('newAvatarDecorationRequest', onNewAvatarDecorationRequest);
-	adminConnection.on('newContactForm', onNewContactForm);
-});
-
-onDeactivated(() => {
-	adminConnection.off('newAbuseUserReport', onNewAbuseUserReport);
-	adminConnection.off('newEmojiRequest', onNewEmojiRequest);
-	adminConnection.off('newSignupApplication', onNewSignupApplication);
-	adminConnection.off('newAvatarDecorationRequest', onNewAvatarDecorationRequest);
-	adminConnection.off('newContactForm', onNewContactForm);
 });
 
 onUnmounted(() => {
 	ro.disconnect();
-	adminConnection.dispose();
 });
 
 watch(router.currentRef, (to) => {

@@ -23,7 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkButton inline @click="disableAll">{{ i18n.ts.disableAll }}</MkButton>
 				<MkButton inline @click="enableAll">{{ i18n.ts.enableAll }}</MkButton>
 			</div>
-			<MkSwitch v-for="ntype in notificationTypes" :key="ntype" v-model="typesMap[ntype].value">{{ i18n.ts._notification._types[ntype] }}</MkSwitch>
+			<MkSwitch v-for="ntype in notificationTypes" :key="ntype" v-model="typesMap[ntype].value">{{ i18n.ts._notification._types[ntype] }}<span v-if="juiceNotificationTypes.includes(ntype)" class="_juice">JUICE</span></MkSwitch>
 		</div>
 	</div>
 </MkModalWindow>
@@ -38,6 +38,7 @@ import MkButton from './MkButton.vue';
 import type { Ref } from 'vue';
 import MkModalWindow from '@/components/MkModalWindow.vue';
 import { i18n } from '@/i18n.js';
+import { juiceNotificationTypes } from '@/utility/juice-notification-types.js';
 
 type TypesMap = Record<typeof notificationTypes[number], Ref<boolean>>;
 

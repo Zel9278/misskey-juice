@@ -167,7 +167,8 @@ export class QueryService {
 	}
 
 	// JUICE: ユーザーが設定した表示言語の絞り込み(filteredLanguages、空なら絞り込み無し)を
-	// タイムラインへ適用する。言語が指定されていないノートは常に表示する(Mastodonと同様の仕様)。
+	// タイムラインへ適用する。言語が指定されていないノートは、絞り込みが有効(1つ以上選択済み)な
+	// ときは絞り込み対象(非表示)にする。絞り込みが無効(空)なときのみ表示する。
 	// generateBaseNoteFilteringQueryとは異なり、ホーム・ローカル・グローバルタイムラインからのみ
 	// 明示的に呼び出す(ミュート・ブロックのような全タイムライン共通のフィルターではない)。
 	// 純粋なリノート(note自身に言語が無い)は、リノート元ノート(renote)自身の言語で判定するため、
@@ -190,8 +191,7 @@ export class QueryService {
 
 		q.andWhere(new Brackets(qb => {
 			qb
-				.where('COALESCE(note.lang, renote.lang) IS NULL')
-				.orWhere(`(${filteredLanguagesQuery.getQuery()})::jsonb = '[]'::jsonb`)
+				.where(`(${filteredLanguagesQuery.getQuery()})::jsonb = '[]'::jsonb`)
 				.orWhere(`(${filteredLanguagesQuery.getQuery()})::jsonb ? COALESCE(note.lang, renote.lang)`);
 			if (alwaysIncludeMyNotes) {
 				qb.orWhere('note.userId = :languageFilterMeId', { languageFilterMeId: me.id });

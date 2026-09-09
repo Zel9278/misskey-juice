@@ -25,12 +25,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkInfo v-else-if="instance.federation === 'none'" warn>{{ i18n.ts.federationDisabled }}</MkInfo>
 			</div>
 			<div class="_gaps_s" :class="$style.mainActions">
-				<template v-if="instance.disableRegistration && juicePublicSettings.approvalRequiredForSignup">
+				<template v-if="instance.disableRegistration && juicePublicSettings.approvalRequiredForSignup && juicePublicSettings.invitationRegistrationEnabled">
 					<MkButton :class="$style.mainAction" full rounded gradate data-testid="signup-invitation" style="margin-right: 12px;" @click="signup('invitation')">{{ i18n.ts._juice.registerWithInvitation }}</MkButton>
 					<MkButton :class="$style.mainAction" full rounded gradate data-testid="signup-application" style="margin-right: 12px;" @click="signup('application')">{{ i18n.ts._juice.applyToJoin }}<span class="_juice">JUICE</span></MkButton>
 				</template>
 				<MkButton v-else :class="$style.mainAction" full rounded gradate data-testid="signup" style="margin-right: 12px;" @click="signup()">{{ juicePublicSettings.approvalRequiredForSignup ? i18n.ts._juice.applyToJoin : i18n.ts.joinThisServer }}<span v-if="juicePublicSettings.approvalRequiredForSignup" class="_juice">JUICE</span></MkButton>
-				<MkButton :class="$style.mainAction" full rounded type="a" target="_blank" rel="noopener" href="https://servers.misskey.ink/">{{ i18n.ts.exploreOtherServers }}</MkButton>
+				<MkButton v-if="juicePublicSettings.exploreOtherServersEnabled" :class="$style.mainAction" full rounded type="a" target="_blank" rel="noopener" href="https://servers.misskey.ink/">{{ i18n.ts.exploreOtherServers }}</MkButton>
 				<MkButton :class="$style.mainAction" full rounded data-testid="signin" @click="signin()">{{ i18n.ts.login }}</MkButton>
 			</div>
 			<div v-if="juicePublicSettings.approvalRequiredForSignup" :class="$style.mainSignupCheck">
@@ -61,7 +61,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, defineAsyncComponent } from 'vue';
+import { ref, defineAsyncComponent, onMounted } from 'vue';
 import * as Misskey from 'misskey-js';
 import { instanceName } from '@@/js/config.js';
 import type { MenuItem } from '@/types/menu.js';
@@ -90,6 +90,8 @@ const juicePublicSettings = ref<Misskey.entities.JuicePublicSettingsResponse>({
 	approvalRequiredForSignup: false,
 	signupReasonRequired: true,
 	signupReasonMaxLength: 4096,
+	invitationRegistrationEnabled: true,
+	exploreOtherServersEnabled: true,
 	emojiRequestEnabled: false,
 	avatarDecorationRequestEnabled: false,
 	relayTimelineEnabled: false,
@@ -120,6 +122,23 @@ function signup(mode?: 'invitation' | 'application') {
 		closed: () => dispose(),
 	});
 }
+
+// JUICE: 招待コードでの登録ボタンをウェルカムページで非表示にしていても、
+// 招待した相手には「?invite」付きのURLを個別に共有することで、ボタンを介さず
+// 直接招待コード登録フォームを開けるようにする(招待コード自体はここでは
+// 受け渡さず、フォーム内で入力してもらう)
+onMounted(() => {
+	const params = new URLSearchParams(window.location.search);
+	if (instance.disableRegistration && params.has('invite')) {
+		signup('invitation');
+
+		// JUICE: リロードや戻る/進むで再度ダイアログが開いてしまわないよう、
+		// 一度開いたらクエリパラメータをURLから消しておく(履歴には残さない)
+		params.delete('invite');
+		const query = params.toString();
+		window.history.replaceState(window.history.state, '', window.location.pathname + (query ? `?${query}` : '') + window.location.hash);
+	}
+});
 
 function openSignupCheck() {
 	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkSignupCheckPanel.vue')), {}, {

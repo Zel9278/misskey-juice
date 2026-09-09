@@ -169,6 +169,11 @@ export class SignupApiService {
 		const invitationCodeOptional = approvalRequiredForSignup;
 		const hasInvitationCode = typeof invitationCode === 'string' && invitationCode !== '';
 
+		// JUICE: invitationRegistrationEnabledは「招待コードでの登録」の入り口(ボタン・入力欄)を
+		// 一般に見せるかどうかだけを制御する。無効化していても、招待コード自体を知っている
+		// (URLを直接叩く等)人が使うぶんには引き続き機能させる。招待コードは元々ランダムな
+		// 秘密情報であり、知っていること自体がモデレーターの信任の証跡になるため
+
 		// テスト時はこの機構は障害となるため無効にする
 		if (process.env.NODE_ENV !== 'test' && this.meta.disableRegistration) {
 			if (!invitationCodeOptional && !hasInvitationCode) {

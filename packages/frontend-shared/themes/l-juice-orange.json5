@@ -1,0 +1,23 @@
+{
+	id: '33c5dbd0-177d-4c13-aec7-cfe535b66b55',
+
+	name: 'Juice Orange Light',
+	author: 'hallcuie',
+
+	base: 'light',
+
+	props: {
+		accent: '#e97f00',
+		bg: '#F3EDE5',
+		fg: '#422F24',
+		fgHighlighted: ':darken<3<@fg',
+		fgOnAccent: '#fff',
+		fgOnWhite: '@accent',
+		divider: '#e7fffb24',
+		panel: ':lighten<3<@bg',
+		popup: ':lighten<3<@panel',
+		renote: '@accent',
+		mentionMe: '#b4e900',
+		link: '#24d7ce',
+	},
+}

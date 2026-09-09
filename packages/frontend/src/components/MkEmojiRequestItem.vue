@@ -14,6 +14,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #suffix>
 		<span :class="[$style.status, $style[statusClass]]">{{ statusLabel }}</span>
 	</template>
+	<!-- JUICE: 審査待ちの間だけ、申請者自身の意思で取り下げられるようにする(モデレーターの却下とは別) -->
+	<template v-if="cancelable && request.status === 'pending'" #footer>
+		<div class="_buttons">
+			<MkButton danger @click="cancel"><i class="ti ti-x" style="color: var(--MI_THEME-error)"></i> {{ i18n.ts._emojiRequestPage.cancelRequest }}</MkButton>
+		</div>
+	</template>
 
 	<div class="_gaps_s">
 		<!-- JUICE: 差し替え申請(既存の絵文字の画像だけを差し替える) -->
@@ -34,10 +40,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { computed } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkFolder from '@/components/MkFolder.vue';
+import MkButton from '@/components/MkButton.vue';
+import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 
 const props = defineProps<{
 	request: Misskey.entities.EmojiRequestsListResponse[number];
+	// JUICE: 自分の申請一覧(/emoji-requestの審査待ちタブ)でのみキャンセルボタンを出す。
+	// 管理画面(admin/emoji-requests.vue)では他人の申請を扱うため渡さない
+	cancelable?: boolean;
+}>();
+
+const emit = defineEmits<{
+	(ev: 'cancelled', requestId: string): void;
 }>();
 
 const statusLabel = computed(() => {
@@ -45,6 +60,7 @@ const statusLabel = computed(() => {
 		case 'pending': return i18n.ts._emojiRequestPage.statusPending;
 		case 'approved': return i18n.ts._emojiRequestPage.statusApproved;
 		case 'rejected': return i18n.ts._emojiRequestPage.statusRejected;
+		case 'cancelled': return i18n.ts._emojiRequestPage.statusCancelled;
 	}
 });
 
@@ -53,8 +69,23 @@ const statusClass = computed(() => {
 		case 'pending': return 'statusPending';
 		case 'approved': return 'statusApproved';
 		case 'rejected': return 'statusRejected';
+		case 'cancelled': return 'statusCancelled';
 	}
 });
+
+async function cancel() {
+	const confirm = await os.confirm({
+		type: 'warning',
+		text: i18n.tsx._emojiRequestPage.cancelRequestConfirm({ name: props.request.name }),
+	});
+	if (confirm.canceled) return;
+
+	os.apiWithDialog('emoji-requests/cancel', {
+		requestId: props.request.id,
+	}).then(() => {
+		emit('cancelled', props.request.id);
+	});
+}
 </script>
 
 <style lang="scss" module>
@@ -86,5 +117,10 @@ const statusClass = computed(() => {
 .statusRejected {
 	background: var(--MI_THEME-error);
 	color: var(--MI_THEME-fgOnAccent);
+}
+
+.statusCancelled {
+	background: var(--MI_THEME-buttonBg);
+	color: color(from var(--MI_THEME-fg) srgb r g b / 0.75);
 }
 </style>

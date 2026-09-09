@@ -57,7 +57,7 @@ export const packedEmojiRequestEntrySchema = {
 		status: {
 			type: 'string',
 			optional: false, nullable: false,
-			enum: ['pending', 'approved', 'rejected'],
+			enum: ['pending', 'approved', 'rejected', 'cancelled'],
 		},
 		rejectReason: {
 			type: 'string',

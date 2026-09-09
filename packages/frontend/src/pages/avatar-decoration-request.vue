@@ -14,8 +14,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkInfo v-if="drafts.length === 0">{{ i18n.ts._avatarDecorationRequestPage.multipleRequestsHint }}</MkInfo>
 
 				<div v-for="(draft, i) in drafts" :key="draft.key" class="_gaps_s" :class="$style.draftCard">
-					<div v-if="drafts.length > 1" :class="$style.draftHeader">
-						<span>{{ i18n.tsx._avatarDecorationRequestPage.requestNumber({ n: i + 1 }) }}</span>
+					<!-- JUICE: 複数件申請時の番号表示は不要でも、選び直したい場合の削除ボタンは
+					1件だけの場合でも必要なため、ヘッダー自体はdrafts.length>1で出し分けない -->
+					<div :class="$style.draftHeader">
+						<span v-if="drafts.length > 1">{{ i18n.tsx._avatarDecorationRequestPage.requestNumber({ n: i + 1 }) }}</span>
 						<button class="_button" :class="$style.draftRemoveButton" @click="removeDraft(draft.key)">
 							<i class="ti ti-x"></i>
 						</button>
@@ -91,7 +93,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkInfo v-if="pendingPaginator.items.value.length === 0 && !pendingPaginator.fetching.value">{{ i18n.ts._avatarDecorationRequestPage.noPendingRequests }}</MkInfo>
 				<MkPagination v-slot="{items}" :paginator="pendingPaginator">
 					<div class="_gaps">
-						<MkAvatarDecorationRequestItem v-for="request in items" :key="request.id" :request="request"/>
+						<MkAvatarDecorationRequestItem v-for="request in items" :key="request.id" :request="request" cancelable @cancelled="onCancelled"/>
 					</div>
 				</MkPagination>
 			</div>
@@ -260,15 +262,21 @@ const pendingPaginator = markRaw(new Paginator('avatar-decoration-requests/list'
 	params: { status: 'pending' },
 }));
 
-const resultStatus = ref<'approved' | 'rejected'>('approved');
+const resultStatus = ref<'approved' | 'rejected' | 'cancelled'>('approved');
 const resultStatusDef = [
 	{ value: 'approved', label: i18n.ts._avatarDecorationRequestPage.statusApproved },
 	{ value: 'rejected', label: i18n.ts._avatarDecorationRequestPage.statusRejected },
+	{ value: 'cancelled', label: i18n.ts._avatarDecorationRequestPage.statusCancelled },
 ];
 const resultPaginator = markRaw(new Paginator('avatar-decoration-requests/list', {
 	limit: 10,
 	computedParams: computed(() => ({ status: resultStatus.value })),
 }));
+
+// JUICE: 審査待ちの申請を申請者自身がキャンセルした場合、審査待ち一覧から即座に取り除く
+function onCancelled(requestId: string) {
+	pendingPaginator.removeItem(requestId);
+}
 
 function chooseFile(ev: PointerEvent) {
 	selectFileDeferred({
@@ -393,13 +401,15 @@ definePage(() => ({
 .draftHeader {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
 	font-weight: bold;
 }
 
 .draftRemoveButton {
 	width: 32px;
 	height: 32px;
+	// JUICE: 番号ラベル(複数件申請時のみ)が無い1件だけの場合でも、削除ボタンを
+	// justify-content: space-betweenに頼らず常に右端へ寄せる
+	margin-left: auto;
 	color: #ff2a2a;
 }
 

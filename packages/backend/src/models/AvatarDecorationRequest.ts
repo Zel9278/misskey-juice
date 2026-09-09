@@ -10,8 +10,9 @@ import { MiDriveFile } from './DriveFile.js';
 import { MiAvatarDecoration } from './AvatarDecoration.js';
 
 // アバターデコレーション申請の状態(JUICE)。emoji_requestのstatusと同じ意味合い。
-// pending: 審査待ち、approved: 承認済み(デコレーションとして登録済み)、rejected: 却下済み。
-export const avatarDecorationRequestStatuses = ['pending', 'approved', 'rejected'] as const;
+// pending: 審査待ち、approved: 承認済み(デコレーションとして登録済み)、rejected: 却下済み、
+// cancelled: 申請者自身による取り下げ(モデレーターの却下とは別)。
+export const avatarDecorationRequestStatuses = ['pending', 'approved', 'rejected', 'cancelled'] as const;
 
 @Entity('avatar_decoration_request')
 export class MiAvatarDecorationRequest {
@@ -66,7 +67,7 @@ export class MiAvatarDecorationRequest {
 	@Index()
 	@Column('varchar', {
 		length: 16, default: 'pending',
-		comment: 'The status of this request (JUICE): pending, approved, or rejected.',
+		comment: 'The status of this request (JUICE): pending, approved, rejected, or cancelled.',
 	})
 	public status: typeof avatarDecorationRequestStatuses[number];
 

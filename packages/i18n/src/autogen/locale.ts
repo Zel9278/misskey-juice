@@ -10729,6 +10729,10 @@ export interface Locale extends ILocale {
          * ダイレクトメッセージ
          */
         "chat": string;
+        /**
+         * お気に入り
+         */
+        "favorites": string;
     };
     "_widgetOptions": {
         /**
@@ -11033,6 +11037,10 @@ export interface Locale extends ILocale {
          * アップロードされていないファイルがありますが、破棄してフォームを閉じますか？
          */
         "quitInspiteOfThereAreUnuploadedFilesConfirm": string;
+        /**
+         * このノートは既に削除されています。編集を中断してフォームを閉じますか？入力中の内容は下書きとして保持されます。
+         */
+        "quitInspiteOfDeleteAndEditConfirm": string;
         /**
          * ファイルはまだアップロードされていません。ファイルのメニューから、リネームや画像のクロップ、ウォーターマークの付与、圧縮の有無などを設定できます。ファイルはノート投稿時に自動でアップロードされます。
          */
@@ -11756,6 +11764,34 @@ export interface Locale extends ILocale {
          */
         "avatarDecorationRequestRejected": ParameterizedString<"name">;
         /**
+         * 絵文字申請「{name}」が届きました
+         */
+        "newEmojiRequest": ParameterizedString<"name">;
+        /**
+         * アバターデコレーション申請「{name}」が届きました
+         */
+        "newAvatarDecorationRequest": ParameterizedString<"name">;
+        /**
+         * 新しい承認式登録の申請が届きました
+         */
+        "newSignupApplication": string;
+        /**
+         * 新しいお問い合わせが届きました
+         */
+        "newContactForm": string;
+        /**
+         * 絵文字申請「{name}」
+         */
+        "newEmojiRequestHeader": ParameterizedString<"name">;
+        /**
+         * アバターデコレーション申請「{name}」
+         */
+        "newAvatarDecorationRequestHeader": ParameterizedString<"name">;
+        /**
+         * 承認式登録の申請
+         */
+        "newSignupApplicationHeader": string;
+        /**
          * アクセストークンが作成されました
          */
         "createToken": string;
@@ -11856,6 +11892,22 @@ export interface Locale extends ILocale {
              * アバターデコレーション申請が却下された
              */
             "avatarDecorationRequestRejected": string;
+            /**
+             * 絵文字申請が届いた(モデレーター・承認権限保持者向け)
+             */
+            "newEmojiRequest": string;
+            /**
+             * アバターデコレーション申請が届いた(モデレーター・承認権限保持者向け)
+             */
+            "newAvatarDecorationRequest": string;
+            /**
+             * 承認式登録の申請が届いた(モデレーター・承認権限保持者向け)
+             */
+            "newSignupApplication": string;
+            /**
+             * お問い合わせが届いた(モデレーター・承認権限保持者向け)
+             */
+            "newContactForm": string;
             /**
              * アクセストークンの作成
              */
@@ -14347,6 +14399,26 @@ export interface Locale extends ILocale {
          */
         "registerWithInvitation": string;
         /**
+         * 招待コードでの登録の入り口を表示する
+         */
+        "invitationRegistrationEnabled": string;
+        /**
+         * 無効にすると、ウェルカムページや「アカウントを追加」メニューから招待コード登録へのボタンが表示されなくなります。招待コード自体による登録機能は無効になりません。招待した相手には「?invite」を付けたURLを個別に共有することで、ボタン無しでも招待コード登録フォームを開けます。
+         */
+        "invitationRegistrationEnabledCaption": string;
+        /**
+         * 他のサーバーを探すボタン
+         */
+        "exploreOtherServers": string;
+        /**
+         * 「他のサーバーを探す」ボタンを表示する
+         */
+        "exploreOtherServersEnabled": string;
+        /**
+         * ウェルカムページ(未ログイン時のトップページ)に、他のMisskeyサーバーを探せる外部サイトへのリンクボタンを表示します。
+         */
+        "exploreOtherServersEnabledCaption": string;
+        /**
          * このサーバーは承認式の新規登録です。登録後、モデレーターまたは管理者が承認するまでサインインできません。
          */
         "approvalSignupNotice": string;
@@ -14467,6 +14539,10 @@ export interface Locale extends ILocale {
          */
         "relayTimelineFilterEmpty": string;
         /**
+         * {host}経由で配信
+         */
+        "relayTimelineDeliveredVia": ParameterizedString<"host">;
+        /**
          * 起動画面
          */
         "splashSettingsTitle": string;
@@ -14527,9 +14603,17 @@ export interface Locale extends ILocale {
          */
         "filteredLanguages": string;
         /**
-         * チェックした言語の投稿だけをホーム・ローカル・グローバルタイムラインに表示します。1つもチェックしない場合は、すべての言語の投稿を表示します。言語が指定されていない投稿は、この設定に関わらず常に表示されます。
+         * チェックした言語の投稿だけをホーム・ローカル・グローバルタイムラインに表示します。1つもチェックしない場合は、すべての言語の投稿を表示します。言語が指定されていない投稿は、1つもチェックしていない場合のみ表示されます。
          */
         "filteredLanguagesCaption": string;
+        /**
+         * 自分の投稿は言語の絞り込み対象外にする
+         */
+        "excludeOwnNotesFromLanguageFilter": string;
+        /**
+         * オンにすると、上記の言語フィルターが有効な場合でも自分自身の投稿は常に表示されます。オフにすると、自分の投稿も他のユーザーの投稿と同様に言語で絞り込まれます。グローバルタイムラインには反映されません(常に他のユーザーと同じ条件で絞り込まれます)。
+         */
+        "excludeOwnNotesFromLanguageFilterCaption": string;
         /**
          * 投票を追加
          */
@@ -14554,22 +14638,6 @@ export interface Locale extends ILocale {
          * 未対応のお問い合わせがあります。
          */
         "thereArePendingContactFormsWarning": string;
-        /**
-         * 新しい絵文字申請があります。
-         */
-        "newEmojiRequestToast": string;
-        /**
-         * 新しい承認式登録の申請があります。
-         */
-        "newSignupApplicationToast": string;
-        /**
-         * 新しいアバターデコレーション申請があります。
-         */
-        "newAvatarDecorationRequestToast": string;
-        /**
-         * 新しいお問い合わせがあります。
-         */
-        "newContactFormToast": string;
         /**
          * ニックネーム
          */
@@ -14723,6 +14791,10 @@ export interface Locale extends ILocale {
          */
         "statusRejected": string;
         /**
+         * キャンセル済み
+         */
+        "statusCancelled": string;
+        /**
          * 却下理由
          */
         "rejectReason": string;
@@ -14758,12 +14830,24 @@ export interface Locale extends ILocale {
          * 差し替え申請
          */
         "replacementRequestBadge": string;
+        /**
+         * キャンセル
+         */
+        "cancelRequest": string;
+        /**
+         * 「{name}」の申請をキャンセルしますか？審査待ちの状態が取り下げられ、審査されなくなります
+         */
+        "cancelRequestConfirm": ParameterizedString<"name">;
     };
     "_emojiRequestApprovals": {
         /**
          * 絵文字申請
          */
         "title": string;
+        /**
+         * 絵文字申請を確認
+         */
+        "menuTitle": string;
         /**
          * 審査待ちの絵文字申請はありません。
          */
@@ -14895,6 +14979,10 @@ export interface Locale extends ILocale {
          */
         "statusRejected": string;
         /**
+         * キャンセル済み
+         */
+        "statusCancelled": string;
+        /**
          * 却下理由
          */
         "rejectReason": string;
@@ -14930,12 +15018,24 @@ export interface Locale extends ILocale {
          * 差し替え申請
          */
         "replacementRequestBadge": string;
+        /**
+         * キャンセル
+         */
+        "cancelRequest": string;
+        /**
+         * 「{name}」の申請をキャンセルしますか？審査待ちの状態が取り下げられ、審査されなくなります
+         */
+        "cancelRequestConfirm": ParameterizedString<"name">;
     };
     "_avatarDecorationRequestApprovals": {
         /**
          * アバターデコレーション申請
          */
         "title": string;
+        /**
+         * アバターデコレーション申請を確認
+         */
+        "menuTitle": string;
         /**
          * 審査待ちのアバターデコレーション申請はありません。
          */

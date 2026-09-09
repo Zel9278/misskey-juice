@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkPostForm v-if="prefer.r.showFixedPostForm.value" :class="$style.postForm" class="_panel" fixed style="margin-bottom: var(--MI-margin);"/>
 		<MkStreamingNotesTimeline
 			ref="tlComponent"
-			:key="src + withRenotes + withReplies + onlyFiles + withSensitive + localOnly + relayTimelineFilter.join(',')"
+			:key="src + withRenotes + withReplies + onlyFiles + withSensitive + localOnly + relayTimelineFilter.join(',') + ($i ? $i.filteredLanguages.join(',') + $i.excludeOwnNotesFromLanguageFilter : '')"
 			:class="$style.tl"
 			:src="(src.split(':')[0] as (BasicTimelineType | 'list' | 'relay'))"
 			:list="src.split(':')[1]"
@@ -90,6 +90,17 @@ function filteredLanguageSelectedRef(code: string) {
 }
 
 const filteredLanguageRefs = new Map(langs.map(([code]) => [code, filteredLanguageSelectedRef(code)]));
+
+// JUICE: 表示言語の絞り込みが有効な場合でも、自分自身の投稿を常に表示するか
+const excludeOwnNotesFromLanguageFilterRef = computed<boolean>({
+	get: () => $i != null && $i.excludeOwnNotesFromLanguageFilter,
+	set: (checked) => {
+		if ($i == null) return;
+		misskeyApi('i/update', {
+			excludeOwnNotesFromLanguageFilter: checked,
+		});
+	},
+});
 
 juicePublicSettingsCache.fetch().then(res => {
 	relayTimelineEnabled.value = res.relayTimelineEnabled;
@@ -324,11 +335,15 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 					icon: 'ti ti-language',
 					text: i18n.ts._juice.filteredLanguages,
 					badge: true,
-					children: () => langs.map(([code, label]) => ({
+					children: () => [{
 						type: 'switch',
+						text: i18n.ts._juice.excludeOwnNotesFromLanguageFilter,
+						ref: excludeOwnNotesFromLanguageFilterRef,
+					}, ...langs.map(([code, label]) => ({
+						type: 'switch' as const,
 						text: label,
 						ref: filteredLanguageRefs.get(code)!,
-					})),
+					}))],
 				});
 			}
 

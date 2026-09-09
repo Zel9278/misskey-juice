@@ -84,6 +84,8 @@ const props = withDefaults(defineProps<{
 		approvalRequiredForSignup: false,
 		signupReasonRequired: true,
 		signupReasonMaxLength: 4096,
+		invitationRegistrationEnabled: true,
+		exploreOtherServersEnabled: true,
 		emojiRequestEnabled: false,
 		avatarDecorationRequestEnabled: false,
 		relayTimelineEnabled: false,

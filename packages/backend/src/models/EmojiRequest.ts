@@ -10,8 +10,9 @@ import { MiDriveFile } from './DriveFile.js';
 import { MiEmoji } from './Emoji.js';
 
 // 絵文字申請の状態(JUICE)。
-// pending: 審査待ち、approved: 承認済み(絵文字として登録済み)、rejected: 却下済み。
-export const emojiRequestStatuses = ['pending', 'approved', 'rejected'] as const;
+// pending: 審査待ち、approved: 承認済み(絵文字として登録済み)、rejected: 却下済み、
+// cancelled: 申請者自身による取り下げ(モデレーターの却下とは別)。
+export const emojiRequestStatuses = ['pending', 'approved', 'rejected', 'cancelled'] as const;
 
 @Entity('emoji_request')
 export class MiEmojiRequest {
@@ -84,7 +85,7 @@ export class MiEmojiRequest {
 	@Index()
 	@Column('varchar', {
 		length: 16, default: 'pending',
-		comment: 'The status of this request (JUICE): pending, approved, or rejected.',
+		comment: 'The status of this request (JUICE): pending, approved, rejected, or cancelled.',
 	})
 	public status: typeof emojiRequestStatuses[number];
 

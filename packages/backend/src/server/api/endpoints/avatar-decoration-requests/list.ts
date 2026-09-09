@@ -45,7 +45,7 @@ export const paramDef = {
 		sinceId: { type: 'string', format: 'misskey:id' },
 		untilId: { type: 'string', format: 'misskey:id' },
 		// JUICE: 差し替え申請の対象選択(自分の承認済み申請のみ一覧したい場合等)で使う
-		status: { type: 'string', enum: ['pending', 'approved', 'rejected'], nullable: true },
+		status: { type: 'string', enum: ['pending', 'approved', 'rejected', 'cancelled'], nullable: true },
 	},
 	required: [],
 } as const;

@@ -1,0 +1,23 @@
+{
+	id: '8ce2ba67-1747-4832-a37a-c17ed5a0b41c',
+
+	name: 'Juice Orange Dark',
+	author: 'hallcuie',
+
+	base: 'dark',
+
+	props: {
+		accent: '#e97f00',
+		bg: '#11100F',
+		fg: '#dee7e4',
+		fgHighlighted: '#fff',
+		fgOnAccent: '#1E1C1B',
+		fgOnWhite: '@accent',
+		divider: '#e7fffb24',
+		panel: '#1E1C1B',
+		popup: '#272322',
+		renote: '@accent',
+		mentionMe: '#b4e900',
+		link: '#24d7ce',
+	},
+}

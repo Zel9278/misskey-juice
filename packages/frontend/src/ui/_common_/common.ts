@@ -50,12 +50,14 @@ function toolsMenuItems(): MenuItem[] {
 
 	// JUICE: モデレーター/管理者、またはロールポリシーで個別に承認権限を持つユーザー向けに、
 	// コントロールパネル(/admin、iAmModeratorのみでガード)を経由しなくても各承認画面へ
-	// 到達できるようにする(custom-emojis-manager/avatar-decorationsと同じ方式)
+	// 到達できるようにする(custom-emojis-manager/avatar-decorationsと同じ方式)。
+	// 表示名は、一般ユーザー向けの申請メニュー項目(「絵文字申請」等)と同じメニュー内に
+	// 並ぶと紛らわしいため、通常の.titleとは別に「〜を確認」の専用文言を使う
 	if ($i && ($i.isModerator || $i.isAdmin || $i.policies.canApproveEmojiRequests)) {
 		items.push({
 			type: 'link',
 			to: '/emoji-requests-manager',
-			text: i18n.ts._emojiRequestApprovals.title,
+			text: i18n.ts._emojiRequestApprovals.menuTitle,
 			icon: 'ti ti-mood-plus',
 			badge: true,
 		});
@@ -65,7 +67,7 @@ function toolsMenuItems(): MenuItem[] {
 		items.push({
 			type: 'link',
 			to: '/avatar-decoration-requests-manager',
-			text: i18n.ts._avatarDecorationRequestApprovals.title,
+			text: i18n.ts._avatarDecorationRequestApprovals.menuTitle,
 			icon: 'ti ti-sparkles',
 			badge: true,
 		});

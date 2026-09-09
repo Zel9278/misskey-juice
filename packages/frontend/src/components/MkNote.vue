@@ -111,6 +111,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</button>
 				</div>
 				<MkA v-if="appearNote.channel && !inChannel" :class="$style.channel" :to="`/channels/${appearNote.channel.id}`"><i class="ti ti-device-tv"></i> {{ appearNote.channel.name }}</MkA>
+				<span v-if="relayHost" :class="$style.relay" :title="i18n.tsx._juice.relayTimelineDeliveredVia({ host: relayHost })"><i class="ti ti-antenna"></i> {{ relayHost }}</span>
 			</div>
 			<MkReactionsViewer
 				v-if="appearNote.reactionAcceptance !== 'likeOnly'"
@@ -204,7 +205,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { inject, ref, useTemplateRef, provide, computed } from 'vue';
+import { inject, ref, useTemplateRef, provide, computed, watch } from 'vue';
 import type { Ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import { useNote } from '@/composables/use-note.js';
@@ -216,6 +217,7 @@ import { isEnabledUrlPreview } from '@/utility/url-preview.js';
 import { focusPrev, focusNext } from '@/utility/focus.js';
 import number from '@/filters/number.js';
 import { DI } from '@/di.js';
+import { juiceRelaysCache } from '@/cache.js';
 import type { Keymap } from '@/utility/hotkey.js';
 
 // コンポーネント外部の依存関係
@@ -249,6 +251,7 @@ provide(DI.mock, props.mock);
 const inTimeline = inject<boolean>('inTimeline', false);
 const tl_withSensitive = inject<Ref<boolean>>('tl_withSensitive', ref(true));
 const inChannel = inject(DI.inChannel, null);
+const inRelayTimeline = inject(DI.inRelayTimeline, null);
 const currentClip = inject<Ref<Misskey.entities.Clip> | null>('currentClip', null);
 const currentAntenna = inject<Ref<Misskey.entities.Antenna | null> | null>('currentAntenna', null);
 
@@ -308,6 +311,17 @@ const {
 
 // provide
 provide(DI.mfmEmojiReactCallback, reactViaMfmEmoji);
+
+// JUICE: リレータイムライン表示中のみ、ノートの配送元リレーのホストを解決して表示する
+const relayHost = ref<string | null>(null);
+watch([() => inRelayTimeline?.value, () => appearNote.relayId], async ([active, relayId]) => {
+	if (!active || relayId == null) {
+		relayHost.value = null;
+		return;
+	}
+	const relays = await juiceRelaysCache.fetch();
+	relayHost.value = relays.find(relay => relay.id === relayId)?.host ?? null;
+}, { immediate: true });
 
 // MkNote固有
 const showSoftWordMutedWord = computed(() => prefer.s.showSoftWordMutedWord);
@@ -683,6 +697,12 @@ const keymap = {
 }
 
 .channel {
+	opacity: 0.7;
+	font-size: 80%;
+}
+
+.relay {
+	display: block;
 	opacity: 0.7;
 	font-size: 80%;
 }

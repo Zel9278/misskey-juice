@@ -720,6 +720,9 @@ type AvatarDecorationRequestEntry = components['schemas']['AvatarDecorationReque
 type AvatarDecorationRequestEntryDetailedAdmin = components['schemas']['AvatarDecorationRequestEntryDetailedAdmin'];
 
 // @public (undocumented)
+type AvatarDecorationRequestsCancelRequest = operations['avatar-decoration-requests___cancel']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type AvatarDecorationRequestsCreateManyRequest = operations['avatar-decoration-requests___create-many']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1597,6 +1600,9 @@ type EmojiRequestEntry = components['schemas']['EmojiRequestEntry'];
 type EmojiRequestEntryDetailedAdmin = components['schemas']['EmojiRequestEntryDetailedAdmin'];
 
 // @public (undocumented)
+type EmojiRequestsCancelRequest = operations['emoji-requests___cancel']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type EmojiRequestsCreateManyRequest = operations['emoji-requests___create-many']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1944,6 +1950,7 @@ declare namespace entities {
         AuthSessionShowResponse,
         AuthSessionUserkeyRequest,
         AuthSessionUserkeyResponse,
+        AvatarDecorationRequestsCancelRequest,
         AvatarDecorationRequestsCreateRequest,
         AvatarDecorationRequestsCreateResponse,
         AvatarDecorationRequestsCreateManyRequest,
@@ -2103,6 +2110,7 @@ declare namespace entities {
         EmailAddressAvailableResponse,
         EmojiRequest,
         EmojiResponse,
+        EmojiRequestsCancelRequest,
         EmojiRequestsCreateRequest,
         EmojiRequestsCreateResponse,
         EmojiRequestsCreateManyRequest,
@@ -3444,7 +3452,7 @@ type Notification_2 = components['schemas']['Notification'];
 type NotificationsCreateRequest = operations['notifications___create']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
-export const notificationTypes: readonly ["note", "follow", "mention", "reply", "renote", "quote", "reaction", "pollEnded", "scheduledNotePosted", "scheduledNotePostFailed", "receiveFollowRequest", "followRequestAccepted", "app", "roleAssigned", "chatRoomInvitationReceived", "achievementEarned", "exportCompleted", "test", "login", "loginFailed", "emojiRequestApproved", "emojiRequestRejected", "avatarDecorationRequestApproved", "avatarDecorationRequestRejected", "createToken"];
+export const notificationTypes: readonly ["note", "follow", "mention", "reply", "renote", "quote", "reaction", "pollEnded", "scheduledNotePosted", "scheduledNotePostFailed", "receiveFollowRequest", "followRequestAccepted", "app", "roleAssigned", "chatRoomInvitationReceived", "achievementEarned", "exportCompleted", "test", "login", "loginFailed", "emojiRequestApproved", "emojiRequestRejected", "avatarDecorationRequestApproved", "avatarDecorationRequestRejected", "newEmojiRequest", "newAvatarDecorationRequest", "newSignupApplication", "newContactForm", "createToken"];
 
 // @public (undocumented)
 export function nyaize(text: string): string;

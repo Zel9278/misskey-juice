@@ -541,6 +541,47 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		return [...resultSet].sort((x, y) => x.localeCompare(y));
 	}
 
+	/**
+	 * JUICE: モデレーターでなくても、特定のロールポリシー(canApproveEmojiRequests等)を
+	 * 個別に付与されているユーザーのID一覧を取得する。getModeratorIdsと同様、ロール単体の設定
+	 * (このロールが付与されればポリシーがtrueになるか)だけを見て判定する簡略化を行っており、
+	 * getUserPoliciesのような複数ロール間の優先度計算や、条件付きロール(target: 'conditional')の
+	 * 評価は行わない(getModeratorIdsが条件付きロールのisModerator/isAdministratorを見ないのと同じ)
+	 */
+	@bindThis
+	public async getUserIdsWithRolePolicy(
+		policyName: 'canApproveEmojiRequests' | 'canApproveAvatarDecorationRequests' | 'canApproveSignups' | 'canProcessContactForms',
+		opts?: {
+			excludeExpire?: boolean,
+		},
+	): Promise<MiUser['id'][]> {
+		const excludeExpire = opts?.excludeExpire ?? false;
+		const basePolicies = { ...DEFAULT_POLICIES, ...this.meta.policies };
+
+		const roles = await this.rolesCache.fetch(() => this.rolesRepository.findBy({}));
+		const matchedRoles = roles.filter(r => {
+			const policy = r.policies[policyName] ?? { priority: 0, useDefault: true };
+			return policy.useDefault ? (basePolicies[policyName] === true) : (policy.value === true);
+		});
+
+		const assigns = matchedRoles.length > 0
+			? await this.roleAssignmentsRepository.findBy({ roleId: In(matchedRoles.map(r => r.id)) })
+			: [];
+
+		const now = Date.now();
+		const resultSet = new Set(
+			assigns
+				.filter(it =>
+					(excludeExpire)
+						? (it.expiresAt == null || it.expiresAt.getTime() > now)
+						: true,
+				)
+				.map(a => a.userId),
+		);
+
+		return [...resultSet].sort((x, y) => x.localeCompare(y));
+	}
+
 	@bindThis
 	public async getModerators(opts?: {
 		includeAdmins?: boolean,

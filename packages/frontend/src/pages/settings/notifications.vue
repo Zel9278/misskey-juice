@@ -14,7 +14,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<template #label>{{ i18n.ts.notificationRecieveConfig }}</template>
 			<div class="_gaps_s">
 				<MkFolder v-for="type in configurableNotificationTypes" :key="type">
-					<template #label>{{ i18n.ts._notification._types[type] }}</template>
+					<template #label>{{ i18n.ts._notification._types[type] }}<span v-if="juiceNotificationTypes.includes(type)" class="_juice">JUICE</span></template>
 					<template #suffix>
 						{{
 							$i.notificationRecieveConfig[type as (typeof configurableNotificationTypes)[number]]?.type === 'never' ? i18n.ts.none :
@@ -107,6 +107,7 @@ import { Paginator } from '@/utility/paginator.js';
 import MkPagination from '@/components/MkPagination.vue';
 import { userPage } from '@/filters/user.js';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
+import { juiceNotificationTypes } from '@/utility/juice-notification-types.js';
 
 const $i = ensureSignin();
 
@@ -136,7 +137,7 @@ const nonConfigurableNotificationTypes = ['note', 'roleAssigned', 'followRequest
 
 const configurableNotificationTypes = notificationTypes.filter(type => !nonConfigurableNotificationTypes.includes(type as any)) as Exclude<typeof notificationTypes[number], typeof nonConfigurableNotificationTypes[number]>[];
 
-const onlyOnOrOffNotificationTypes = ['app', 'achievementEarned', 'login', 'loginFailed', 'emojiRequestApproved', 'emojiRequestRejected', 'avatarDecorationRequestApproved', 'avatarDecorationRequestRejected', 'createToken', 'scheduledNotePosted', 'scheduledNotePostFailed'] as const satisfies (typeof notificationTypes[number])[];
+const onlyOnOrOffNotificationTypes = ['app', 'achievementEarned', 'login', 'loginFailed', 'emojiRequestApproved', 'emojiRequestRejected', 'avatarDecorationRequestApproved', 'avatarDecorationRequestRejected', 'newEmojiRequest', 'newAvatarDecorationRequest', 'newSignupApplication', 'newContactForm', 'createToken', 'scheduledNotePosted', 'scheduledNotePostFailed'] as const satisfies (typeof notificationTypes[number])[];
 
 const allowButton = useTemplateRef('allowButton');
 const pushRegistrationInServer = computed(() => allowButton.value?.pushRegistrationInServer);

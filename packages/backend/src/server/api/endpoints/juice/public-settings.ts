@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRelayTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRelayTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['meta'],
@@ -27,6 +27,14 @@ export const meta = {
 			},
 			signupReasonMaxLength: {
 				type: 'number',
+				optional: false, nullable: false,
+			},
+			invitationRegistrationEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			exploreOtherServersEnabled: {
+				type: 'boolean',
 				optional: false, nullable: false,
 			},
 			emojiRequestEnabled: {
@@ -95,6 +103,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const { contactFormEnabled, contactFormRequireAuth, contactFormCategories, contactFormContentMaxLength } = resolveContactFormSettings(settings);
 			return {
 				...resolveSignupApprovalSettings(settings),
+				...resolveExploreOtherServersSettings(settings),
 				...resolveEmojiRequestSettings(settings),
 				...resolveAvatarDecorationRequestSettings(settings),
 				...resolveRelayTimelineSettings(settings),

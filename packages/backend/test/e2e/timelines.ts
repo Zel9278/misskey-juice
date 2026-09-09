@@ -1640,7 +1640,7 @@ describe('Timelines', () => {
 		// noteFilter経由のisLanguageFiltered (Redis fanoutパス) の2経路が一致していることを、
 		// enableFanoutTimeline: true/false の両方で確認する
 		describe('言語フィルタ', () => {
-			test('フィルタした言語以外の他人の投稿が含まれない(言語未指定の投稿は含まれる)', async () => {
+			test('フィルタした言語以外の他人の投稿が含まれない(言語未指定の投稿も、絞り込みが有効な間は含まれない)', async () => {
 				const [alice, bob] = await Promise.all([signup(), signup()]);
 
 				await api('following/create', { userId: bob.id }, alice);
@@ -1655,13 +1655,31 @@ describe('Timelines', () => {
 
 					assert.strictEqual(res.body.some(note => note.id === bobNoteJa.id), true);
 					assert.strictEqual(res.body.some(note => note.id === bobNoteEn.id), false);
-					assert.strictEqual(res.body.some(note => note.id === bobNoteNoLang.id), true);
+					assert.strictEqual(res.body.some(note => note.id === bobNoteNoLang.id), false);
 				}, waitForPushToTlOptions);
 
 				const localRes = await api('notes/local-timeline', { limit: 100 }, alice);
 
 				assert.strictEqual(localRes.body.some(note => note.id === bobNoteJa.id), true);
 				assert.strictEqual(localRes.body.some(note => note.id === bobNoteEn.id), false);
+				assert.strictEqual(localRes.body.some(note => note.id === bobNoteNoLang.id), false);
+			});
+
+			test('絞り込みが無効(未指定)なら、言語未指定の投稿も含まれる', async () => {
+				const [alice, bob] = await Promise.all([signup(), signup()]);
+
+				await api('following/create', { userId: bob.id }, alice);
+
+				const bobNoteNoLang = await post(bob, { text: 'no lang' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/timeline', { limit: 100 }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === bobNoteNoLang.id), true);
+				}, waitForPushToTlOptions);
+
+				const localRes = await api('notes/local-timeline', { limit: 100 }, alice);
+
 				assert.strictEqual(localRes.body.some(note => note.id === bobNoteNoLang.id), true);
 			});
 
@@ -1681,6 +1699,27 @@ describe('Timelines', () => {
 				const localRes = await api('notes/local-timeline', { limit: 100 }, alice);
 
 				assert.strictEqual(localRes.body.some(note => note.id === aliceNoteEn.id), true);
+			});
+
+			test('excludeOwnNotesFromLanguageFilterをfalseにすると、自分の投稿もフィルタ対象になる', async () => {
+				const [alice] = await Promise.all([signup()]);
+
+				await api('i/update', { filteredLanguages: ['ja-JP'], excludeOwnNotesFromLanguageFilter: false }, alice);
+
+				const aliceNoteEn = await post(alice, { text: 'hi', lang: 'en-US' });
+				const aliceNoteJa = await post(alice, { text: 'こんにちは', lang: 'ja-JP' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/timeline', { limit: 100 }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === aliceNoteEn.id), false);
+					assert.strictEqual(res.body.some(note => note.id === aliceNoteJa.id), true);
+				}, waitForPushToTlOptions);
+
+				const localRes = await api('notes/local-timeline', { limit: 100 }, alice);
+
+				assert.strictEqual(localRes.body.some(note => note.id === aliceNoteEn.id), false);
+				assert.strictEqual(localRes.body.some(note => note.id === aliceNoteJa.id), true);
 			});
 
 			test('リノートはリノート元ノートの言語で判定される', async () => {
@@ -3389,7 +3428,7 @@ describe('Timelines', () => {
 	// 純粋なDBクエリのエンドポイントであり、alwaysIncludeMyNotesの概念も無いため、
 	// ホーム/ローカルタイムラインとは異なり自分自身の投稿もフィルタ対象になる
 	describe('Global TL: 言語フィルタ', () => {
-		test('フィルタした言語以外の投稿(自分自身の投稿を含む)が含まれない', async () => {
+		test('フィルタした言語以外の投稿(自分自身の投稿・言語未指定の投稿を含む)が含まれない', async () => {
 			const [alice] = await Promise.all([signup()]);
 
 			await api('i/update', { filteredLanguages: ['ja-JP'] }, alice);
@@ -3403,7 +3442,7 @@ describe('Timelines', () => {
 
 				assert.strictEqual(res.body.some(note => note.id === aliceNoteEn.id), false);
 				assert.strictEqual(res.body.some(note => note.id === aliceNoteJa.id), true);
-				assert.strictEqual(res.body.some(note => note.id === aliceNoteNoLang.id), true);
+				assert.strictEqual(res.body.some(note => note.id === aliceNoteNoLang.id), false);
 			}, waitForPushToTlOptions);
 		});
 	});

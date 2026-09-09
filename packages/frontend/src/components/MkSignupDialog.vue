@@ -45,6 +45,8 @@ const juicePublicSettings = ref<Misskey.entities.JuicePublicSettingsResponse>({
 	approvalRequiredForSignup: false,
 	signupReasonRequired: true,
 	signupReasonMaxLength: 4096,
+	invitationRegistrationEnabled: true,
+	exploreOtherServersEnabled: true,
 	emojiRequestEnabled: false,
 	avatarDecorationRequestEnabled: false,
 	relayTimelineEnabled: false,

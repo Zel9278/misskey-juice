@@ -98,7 +98,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<button v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.fromDrive + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromDrive"><i class="ti ti-cloud-download"></i></button>
 			<button v-tooltip="i18n.ts.poll" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: poll }]" @click="togglePoll"><i class="ti ti-chart-arrows"></i></button>
 			<button v-tooltip="i18n.ts.useCw" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]" @click="useCw = !useCw"><i class="ti ti-eye-off"></i></button>
-			<button v-tooltip="i18n.ts.aiGenerated" class="_button" :class="[$style.footerButton, $style.footerButtonJuice, { [$style.footerButtonActive]: isAIGenerated }]" @click="isAIGenerated = !isAIGenerated"><i class="ti ti-sparkles"></i></button>
+			<button v-tooltip="i18n.ts.aiGenerated" class="_button" :class="[$style.footerButton, $style.footerButtonJuice, { [$style.footerButtonActive]: isAIGenerated }]" @click="isAIGenerated = !isAIGenerated"><i class="ti ti-sparkles"></i><i class="ti ti-droplet-filled" :class="$style.footerButtonJuiceBadge"></i></button>
 			<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
 			<button v-tooltip="i18n.ts.mention" class="_button" :class="$style.footerButton" @click="insertMention"><i class="ti ti-at"></i></button>
 			<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
@@ -249,6 +249,9 @@ uploader.events.on('itemUploaded', ctx => {
 });
 
 const draftKey = computed((): string => {
+	// JUICE: 削除して編集の内容も、通常の新規投稿・返信・引用と同じ下書きキーを使う。
+	// これにより、閉じた後に同じコンテキスト(新規投稿ならノートボタン、返信・引用なら
+	// 同じ相手への返信・引用)で改めて投稿フォームを開くと、自動的に内容が復元される
 	let key = targetChannel.value ? `channel:${targetChannel.value.id}` : '';
 
 	if (renoteTargetNote.value) {
@@ -1538,6 +1541,12 @@ onMounted(() => {
 			}
 			quoteId.value = renoteTargetNote.value ? renoteTargetNote.value.id : null;
 			reactionAcceptance.value = init.reactionAcceptance;
+
+			// JUICE: text等の変更監視によるsaveDraft()はこの直後のwatchForDraft()以降でしか
+			// 発火しないため、ここで一度だけ明示的に保存しておかないと、元ノートは既に
+			// サーバーから削除済みなのに、ユーザーが何も編集しないまま閉じた場合に
+			// 内容を一切復元できなくなってしまう
+			saveDraft();
 		}
 
 		nextTick(() => watchForDraft());
@@ -1562,6 +1571,19 @@ async function canClose() {
 		const { canceled } = await os.confirm({
 			type: 'question',
 			text: i18n.ts._postForm.quitInspiteOfThereAreUnuploadedFilesConfirm,
+			okText: i18n.ts.yes,
+			cancelText: i18n.ts.no,
+		});
+		if (canceled) return false;
+	}
+
+	// JUICE: 「削除して編集」は開いた時点で元のノートが既にサーバーから削除済みのため、
+	// 誤操作でこのフォームを閉じてしまうと編集内容を失ったと誤解しやすい。閉じる前に
+	// ワンクッション確認を挟む。内容自体は既存のsaveDraft機構により閉じても下書きとして残る
+	if (props.initialNote != null) {
+		const { canceled } = await os.confirm({
+			type: 'question',
+			text: i18n.ts._postForm.quitInspiteOfDeleteAndEditConfirm,
 			okText: i18n.ts.yes,
 			cancelText: i18n.ts.no,
 		});
@@ -1904,27 +1926,26 @@ html[data-color-scheme=light] .preview {
 		background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.05));
 	}
 
-	// JUICE: 本家に無いJUICE独自ボタンであることを示す小さいドット。アイコンのみでラベル文字が
+	// JUICE: 本家に無いJUICE独自ボタンであることを示す小さい雫アイコン。アイコンのみでラベル文字が
 	// 無いため、_juiceの文字バッジではなくMkPageHeader.tabs.vueのアイコン専用タブと同じ
-	// 小さいドット方式を採用する(色はJUICEブランドカラーで固定)
+	// 小さい雫アイコン方式を採用する(単色の丸ドットだと通知バッジ等と紛らわしいため、
+	// tabler-iconsのdroplet-filledを使う。色はJUICEブランドカラーで固定)
 	&.footerButtonJuice {
 		position: relative;
-
-		&::after {
-			content: '';
-			position: absolute;
-			top: 2px;
-			right: 2px;
-			width: 6px;
-			height: 6px;
-			border-radius: 100%;
-			background: #f2841f;
-		}
 	}
 
 	&.footerButtonActive {
 		color: var(--MI_THEME-accent);
 	}
+}
+
+.footerButtonJuiceBadge {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	font-size: 9px;
+	line-height: 1;
+	color: #f2841f;
 }
 
 .previewButtonActive {

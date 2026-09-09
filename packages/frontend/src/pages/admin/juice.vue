@@ -30,6 +30,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 									<template #label><SearchLabel>{{ i18n.ts._juice.signupReasonMaxLength }}</SearchLabel></template>
 								</MkInput>
 							</SearchMarker>
+
+							<SearchMarker>
+								<MkSwitch v-model="invitationRegistrationEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.invitationRegistrationEnabled }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.invitationRegistrationEnabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.exploreOtherServers }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="exploreOtherServersEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.exploreOtherServersEnabled }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.exploreOtherServersEnabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
 						</div>
 					</MkFolder>
 				</SearchMarker>
@@ -240,6 +262,8 @@ const settings = await misskeyApi('admin/juice/settings');
 const approvalRequiredForSignup = ref(settings.approvalRequiredForSignup);
 const signupReasonRequired = ref(settings.signupReasonRequired);
 const signupReasonMaxLength = ref(settings.signupReasonMaxLength);
+const invitationRegistrationEnabled = ref(settings.invitationRegistrationEnabled);
+const exploreOtherServersEnabled = ref(settings.exploreOtherServersEnabled);
 const defaultEmailLang = ref(settings.defaultEmailLang);
 const emojiRequestEnabled = ref(settings.emojiRequestEnabled);
 const avatarDecorationRequestEnabled = ref(settings.avatarDecorationRequestEnabled);
@@ -266,6 +290,8 @@ function save() {
 		approvalRequiredForSignup: approvalRequiredForSignup.value,
 		signupReasonRequired: signupReasonRequired.value,
 		signupReasonMaxLength: signupReasonMaxLength.value,
+		invitationRegistrationEnabled: invitationRegistrationEnabled.value,
+		exploreOtherServersEnabled: exploreOtherServersEnabled.value,
 		defaultEmailLang: defaultEmailLang.value,
 		emojiRequestEnabled: emojiRequestEnabled.value,
 		avatarDecorationRequestEnabled: avatarDecorationRequestEnabled.value,

@@ -144,6 +144,47 @@ export type MiNotification = {
 	name: string;
 	reason: string | null;
 } | {
+	// JUICE: 絵文字申請が新しく来たとき(モデレーター・canApproveEmojiRequestsロールポリシー保持者向け)。
+	// 申請者はnotifierIdではなくrequesterIdで持つ(あえて別フィールドにしている。notifierIdにすると
+	// createNotification/NotificationEntityServiceの既存のミュートフィルタに引っかかり、モデレーターが
+	// 申請者を(この件と無関係な理由で)ミュートしているだけで管理用の通知が黙って作られなくなるため。
+	// 管理用通知はミュートの影響を受けてはならない)
+	type: 'newEmojiRequest';
+	id: string;
+	createdAt: string;
+	requesterId: MiUser['id'];
+	requestId: string;
+	name: string;
+	category: string | null;
+} | {
+	// JUICE: アバターデコレーション申請が新しく来たとき(モデレーター・canApproveAvatarDecorationRequestsロールポリシー保持者向け)。
+	// requesterIdについてはnewEmojiRequestと同じ理由でnotifierIdを使わない
+	type: 'newAvatarDecorationRequest';
+	id: string;
+	createdAt: string;
+	requesterId: MiUser['id'];
+	requestId: string;
+	name: string;
+	category: string | null;
+} | {
+	// JUICE: 承認式新規登録の申請が新しく来たとき(モデレーター・canApproveSignupsロールポリシー保持者向け)。
+	// applicantIdについてはnewEmojiRequestと同じ理由でnotifierIdを使わない
+	type: 'newSignupApplication';
+	id: string;
+	createdAt: string;
+	applicantId: MiUser['id']; // 申請者(登録待ちのユーザー)
+	reason: string | null;
+} | {
+	// JUICE: お問い合わせが新しく来たとき(モデレーター・canProcessContactFormsロールポリシー保持者向け)。
+	// お問い合わせにはメールアドレス・IPアドレス等のPIIが含まれうるため、送信者を特定できる情報
+	// (notifierId等)は一切含めない(通知一覧からPIIが漏れることを防ぐ)
+	type: 'newContactForm';
+	id: string;
+	createdAt: string;
+	contactFormId: string;
+	subject: string;
+	category: string | null;
+} | {
 	type: 'createToken';
 	id: string;
 	createdAt: string;

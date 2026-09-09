@@ -1289,6 +1289,15 @@ export type paths = {
          */
         post: operations['auth___session___userkey'];
     };
+    '/avatar-decoration-requests/cancel': {
+        /**
+         * avatar-decoration-requests/cancel
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:avatar-decoration-requests*
+         */
+        post: operations['avatar-decoration-requests___cancel'];
+    };
     '/avatar-decoration-requests/create': {
         /**
          * avatar-decoration-requests/create
@@ -2143,6 +2152,15 @@ export type paths = {
          *     **Credential required**: *No*
          */
         post: operations['emoji'];
+    };
+    '/emoji-requests/cancel': {
+        /**
+         * emoji-requests/cancel
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:emoji-requests*
+         */
+        post: operations['emoji-requests___cancel'];
     };
     '/emoji-requests/create': {
         /**
@@ -4517,6 +4535,7 @@ export type components = {
             hardMutedWords: string[][];
             mutedInstances: string[];
             filteredLanguages: string[];
+            excludeOwnNotesFromLanguageFilter: boolean;
             notificationRecieveConfig: {
                 note?: {
                     /** @enum {string} */
@@ -4717,6 +4736,42 @@ export type components = {
                     userListId: string;
                 };
                 avatarDecorationRequestRejected?: {
+                    /** @enum {string} */
+                    type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
+                } | {
+                    /** @enum {string} */
+                    type: 'list';
+                    /** Format: misskey:id */
+                    userListId: string;
+                };
+                newEmojiRequest?: {
+                    /** @enum {string} */
+                    type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
+                } | {
+                    /** @enum {string} */
+                    type: 'list';
+                    /** Format: misskey:id */
+                    userListId: string;
+                };
+                newAvatarDecorationRequest?: {
+                    /** @enum {string} */
+                    type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
+                } | {
+                    /** @enum {string} */
+                    type: 'list';
+                    /** Format: misskey:id */
+                    userListId: string;
+                };
+                newSignupApplication?: {
+                    /** @enum {string} */
+                    type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
+                } | {
+                    /** @enum {string} */
+                    type: 'list';
+                    /** Format: misskey:id */
+                    userListId: string;
+                };
+                newContactForm?: {
                     /** @enum {string} */
                     type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
                 } | {
@@ -5274,6 +5329,50 @@ export type components = {
             /** Format: date-time */
             createdAt: string;
             /** @enum {string} */
+            type: 'newEmojiRequest';
+            requester: components['schemas']['UserLite'];
+            /** Format: id */
+            requestId: string;
+            name: string;
+            category: string | null;
+        } | {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
+            type: 'newAvatarDecorationRequest';
+            requester: components['schemas']['UserLite'];
+            /** Format: id */
+            requestId: string;
+            name: string;
+            category: string | null;
+        } | {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
+            type: 'newSignupApplication';
+            requester: components['schemas']['UserLite'];
+            reason: string | null;
+        } | {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
+            type: 'newContactForm';
+            /** Format: id */
+            contactFormId: string;
+            subject: string;
+            category: string | null;
+        } | {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
             type: 'createToken';
         } | {
             /** Format: id */
@@ -5749,7 +5848,7 @@ export type components = {
             isSensitive: boolean;
             localOnly: boolean;
             /** @enum {string} */
-            status: 'pending' | 'approved' | 'rejected';
+            status: 'pending' | 'approved' | 'rejected' | 'cancelled';
             rejectReason: string | null;
             /** Format: date-time */
             reviewedAt: string | null;
@@ -5774,7 +5873,7 @@ export type components = {
             description: string;
             category: string | null;
             /** @enum {string} */
-            status: 'pending' | 'approved' | 'rejected';
+            status: 'pending' | 'approved' | 'rejected' | 'cancelled';
             rejectReason: string | null;
             /** Format: date-time */
             reviewedAt: string | null;
@@ -7668,7 +7767,7 @@ export interface operations {
                      * @default pending
                      * @enum {string}
                      */
-                    state?: 'pending' | 'approved' | 'rejected';
+                    state?: 'pending' | 'approved' | 'rejected' | 'cancelled';
                     /** @default 10 */
                     limit?: number;
                     /** Format: misskey:id */
@@ -9182,7 +9281,7 @@ export interface operations {
                      * @default pending
                      * @enum {string}
                      */
-                    state?: 'pending' | 'approved' | 'rejected';
+                    state?: 'pending' | 'approved' | 'rejected' | 'cancelled';
                     /** @default 10 */
                     limit?: number;
                     /** Format: misskey:id */
@@ -11055,6 +11154,8 @@ export interface operations {
                         approvalRequiredForSignup: boolean;
                         signupReasonRequired: boolean;
                         signupReasonMaxLength: number;
+                        invitationRegistrationEnabled: boolean;
+                        exploreOtherServersEnabled: boolean;
                         defaultEmailLang: string;
                         emojiRequestEnabled: boolean;
                         avatarDecorationRequestEnabled: boolean;
@@ -11220,6 +11321,8 @@ export interface operations {
                     approvalRequiredForSignup?: boolean;
                     signupReasonRequired?: boolean;
                     signupReasonMaxLength?: number;
+                    invitationRegistrationEnabled?: boolean;
+                    exploreOtherServersEnabled?: boolean;
                     defaultEmailLang?: string;
                     emojiRequestEnabled?: boolean;
                     avatarDecorationRequestEnabled?: boolean;
@@ -16607,6 +16710,69 @@ export interface operations {
             };
         };
     };
+    'avatar-decoration-requests___cancel': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    requestId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'avatar-decoration-requests___create': {
         requestBody: {
             content: {
@@ -16796,7 +16962,7 @@ export interface operations {
                     /** Format: misskey:id */
                     untilId?: string;
                     /** @enum {string|null} */
-                    status?: 'pending' | 'approved' | 'rejected' | null;
+                    status?: 'pending' | 'approved' | 'rejected' | 'cancelled' | null;
                 };
             };
         };
@@ -23424,6 +23590,69 @@ export interface operations {
             };
         };
     };
+    'emoji-requests___cancel': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    requestId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'emoji-requests___create': {
         requestBody: {
             content: {
@@ -23623,7 +23852,7 @@ export interface operations {
                     /** Format: misskey:id */
                     untilId?: string;
                     /** @enum {string|null} */
-                    status?: 'pending' | 'approved' | 'rejected' | null;
+                    status?: 'pending' | 'approved' | 'rejected' | 'cancelled' | null;
                 };
             };
         };
@@ -29488,8 +29717,8 @@ export interface operations {
                     untilDate?: number;
                     /** @default true */
                     markAsRead?: boolean;
-                    includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
-                    excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+                    includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'newEmojiRequest' | 'newAvatarDecorationRequest' | 'newSignupApplication' | 'newContactForm' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+                    excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'newEmojiRequest' | 'newAvatarDecorationRequest' | 'newSignupApplication' | 'newContactForm' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
                 };
             };
         };
@@ -29573,8 +29802,8 @@ export interface operations {
                     untilDate?: number;
                     /** @default true */
                     markAsRead?: boolean;
-                    includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
-                    excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+                    includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'newEmojiRequest' | 'newAvatarDecorationRequest' | 'newSignupApplication' | 'newContactForm' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+                    excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'newEmojiRequest' | 'newAvatarDecorationRequest' | 'newSignupApplication' | 'newContactForm' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
                 };
             };
         };
@@ -30778,6 +31007,7 @@ export interface operations {
                     hardMutedWords?: (string[] | string)[];
                     mutedInstances?: string[];
                     filteredLanguages?: string[];
+                    excludeOwnNotesFromLanguageFilter?: boolean;
                     notificationRecieveConfig?: {
                         note?: {
                             /** @enum {string} */
@@ -31760,6 +31990,8 @@ export interface operations {
                         approvalRequiredForSignup: boolean;
                         signupReasonRequired: boolean;
                         signupReasonMaxLength: number;
+                        invitationRegistrationEnabled: boolean;
+                        exploreOtherServersEnabled: boolean;
                         emojiRequestEnabled: boolean;
                         avatarDecorationRequestEnabled: boolean;
                         relayTimelineEnabled: boolean;

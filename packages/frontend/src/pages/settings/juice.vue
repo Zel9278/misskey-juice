@@ -64,21 +64,27 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<SearchMarker :keywords="['language', 'timeline', 'filter']">
 			<FormSection>
 				<template #label><SearchLabel>{{ i18n.ts._juice.filteredLanguages }}</SearchLabel></template>
-				<!-- JUICE: 対応言語が40件超あり、全展開すると設定画面が非常に長くなり操作の邪魔になるため、折りたたみ式にしている -->
-				<MkFolder>
-					<template #label>{{ languageSelectedCountLabel }}</template>
-					<div class="_gaps_s">
-						<MkInfo>{{ i18n.ts._juice.filteredLanguagesCaption }}</MkInfo>
-						<MkSwitch
-							v-for="[code, label] in langs"
-							:key="code"
-							:modelValue="isLanguageFilterSelected(code)"
-							@update:modelValue="(v) => onChangeLanguageFilter(code, v)"
-						>
-							<template #label>{{ label }}</template>
-						</MkSwitch>
-					</div>
-				</MkFolder>
+				<div class="_gaps_s">
+					<MkSwitch :modelValue="$i.excludeOwnNotesFromLanguageFilter" @update:modelValue="onChangeExcludeOwnNotesFromLanguageFilter">
+						<template #label>{{ i18n.ts._juice.excludeOwnNotesFromLanguageFilter }}</template>
+						<template #caption>{{ i18n.ts._juice.excludeOwnNotesFromLanguageFilterCaption }}</template>
+					</MkSwitch>
+					<!-- JUICE: 対応言語が40件超あり、全展開すると設定画面が非常に長くなり操作の邪魔になるため、折りたたみ式にしている -->
+					<MkFolder>
+						<template #label>{{ languageSelectedCountLabel }}</template>
+						<div class="_gaps_s">
+							<MkInfo>{{ i18n.ts._juice.filteredLanguagesCaption }}</MkInfo>
+							<MkSwitch
+								v-for="[code, label] in langs"
+								:key="code"
+								:modelValue="isLanguageFilterSelected(code)"
+								@update:modelValue="(v) => onChangeLanguageFilter(code, v)"
+							>
+								<template #label>{{ label }}</template>
+							</MkSwitch>
+						</div>
+					</MkFolder>
+				</div>
 			</FormSection>
 		</SearchMarker>
 
@@ -196,6 +202,13 @@ function onChangeLanguageFilter(code: string, checked: boolean) {
 const languageSelectedCountLabel = computed(() => filteredLanguages.value.length === 0
 	? i18n.ts.all
 	: i18n.tsx._juice.nSelected({ n: filteredLanguages.value.length }));
+
+// JUICE: 表示言語の絞り込みが有効な場合でも、自分自身の投稿を常に表示するか
+function onChangeExcludeOwnNotesFromLanguageFilter(v: boolean) {
+	misskeyApi('i/update', {
+		excludeOwnNotesFromLanguageFilter: v,
+	});
+}
 
 // JUICE: ウィジェットパネル/ドロワーを画面のどちら側に表示するか
 const widgetsSide = prefer.model('widgetsSide');

@@ -20,6 +20,7 @@ import { MiLocalUser } from '@/models/User.js';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
 import { ChannelMutingService } from '@/core/ChannelMutingService.js';
 import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
+import { isLanguageFiltered } from '@/misc/is-language-filtered.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -149,6 +150,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				this.cacheService.userFollowingsCache.fetch(me.id),
 			]);
 
+			// JUICE: 表示言語の絞り込み
+			const profile = await this.cacheService.userProfileCache.fetch(me.id);
+			const filteredLanguages = new Set(profile.filteredLanguages);
+
 			const redisTimeline = await this.fanoutTimelineEndpointService.timeline({
 				untilId,
 				sinceId,
@@ -157,12 +162,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				me,
 				redisTimelines: timelineConfig,
 				useDbFallback: this.serverSettings.enableFanoutTimelineDbFallback,
-				alwaysIncludeMyNotes: true,
+				// JUICE: 表示言語の絞り込みが有効でも自分自身の投稿を常に表示するか(ユーザー設定)
+				alwaysIncludeMyNotes: profile.excludeOwnNotesFromLanguageFilter,
 				excludePureRenotes: !ps.withRenotes,
 				noteFilter: note => {
 					if (note.reply && note.reply.visibility === 'followers') {
 						if (!Object.hasOwn(followings, note.reply.userId) && note.reply.userId !== me.id) return false;
 					}
+
+					// JUICE: 表示言語の絞り込み
+					if (isLanguageFiltered(note, filteredLanguages)) return false;
 
 					return true;
 				},
@@ -253,6 +262,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		this.queryService.generateVisibilityQuery(query, me);
 		this.queryService.generateBaseNoteFilteringQuery(query, me);
 		this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+		// JUICE: 表示言語の絞り込み(自分自身の投稿を常に表示するかはユーザー設定に従う)
+		const profile = await this.cacheService.userProfileCache.fetch(me.id);
+		this.queryService.generateLanguageFilterQuery(query, me, profile.excludeOwnNotesFromLanguageFilter);
 
 		if (ps.includeMyRenotes === false) {
 			query.andWhere(new Brackets(qb => {

@@ -10,8 +10,9 @@ import { bundledThemesInfo } from 'shiki/themes';
 import { bundledLanguagesInfo } from 'shiki/langs';
 import lightTheme from '@@/themes/_light.json5';
 import darkTheme from '@@/themes/_dark.json5';
-import defaultLightTheme from '@@/themes/l-light.json5';
-import defaultDarkTheme from '@@/themes/d-green-lime.json5';
+// JUICE: 標準の初期テーマをJuice Orangeに変更
+import defaultLightTheme from '@@/themes/l-juice-orange.json5';
+import defaultDarkTheme from '@@/themes/d-juice-orange.json5';
 import { unique } from './array.js';
 import { deepClone } from './clone.js';
 import { deepMerge } from './merge.js';
