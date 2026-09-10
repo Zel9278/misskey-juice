@@ -3652,6 +3652,7 @@ _aboutJuice:
     emojiRequest: "普通用户申请自定义表情的功能"
     latex: "LaTeX(数学公式)渲染功能"
     loginFailedNotification: "登录尝试失败时通知账户本人(应用内通知与邮件)"
+    mediaTimeline: "仅汇集带附件笔记并以网格/轮播形式展示的媒体时间线(PixelFed风格界面、灯箱放大显示、按笔记单独排除的开关)"
     nickname: "为其他用户设置只有自己可见的专属昵称(显示在其个人资料页与用户悬浮预览中)"
     postLanguage: "为笔记添加语言标签,并可在时间线、笔记搜索、反应搜索中按语言筛选"
     ranking: "按笔记数、反应数统计的用户排行榜"

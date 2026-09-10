@@ -3652,6 +3652,7 @@ _aboutJuice:
     emojiRequest: "일반 사용자의 이모지 신청 기능"
     latex: "LaTeX(수식) 표시 기능"
     loginFailedNotification: "로그인 시도 실패를 계정 본인에게 알림(앱 내 알림·이메일)"
+    mediaTimeline: "첨부 파일이 있는 노트만 그리드/캐러셀로 모아 보여주는 미디어 타임라인(PixelFed풍 UI, 라이트박스 확대 표시, 노트별 표시 제외 플래그)"
     nickname: "다른 사용자에 대한 나만의 닉네임 설정(프로필 페이지·사용자 호버 미리보기에 표시)"
     postLanguage: "노트에 언어 태그 부여, 타임라인·노트 검색·리액션 검색에서 언어별 필터링"
     ranking: "노트 수·리액션 수 사용자 랭킹"

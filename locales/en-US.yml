@@ -3652,6 +3652,7 @@ _aboutJuice:
     emojiRequest: "Custom emoji requests from regular users"
     latex: "LaTeX (math formula) rendering"
     loginFailedNotification: "Notify the account owner of failed sign-in attempts (in-app notification and email)"
+    mediaTimeline: "A media timeline that collects notes with attached files in a grid/carousel view (PixelFed-style UI, lightbox expansion, a per-note opt-out flag)"
     nickname: "Set a private nickname for other users (shown on their profile page and hover preview)"
     postLanguage: "Language tagging for notes, with language-based filtering in timelines, note search, and reaction search"
     ranking: "User ranking by number of notes and reactions"

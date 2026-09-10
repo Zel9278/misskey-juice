@@ -9227,6 +9227,10 @@ export interface Locale extends ILocale {
              */
             "relayTimeline": string;
             /**
+             * 添付ファイル付きノートだけをグリッド/カルーセル表示で集めたメディアタイムライン(PixelFed風UI、ライトボックスでの拡大表示、投稿ごとの表示除外フラグ)
+             */
+            "mediaTimeline": string;
+            /**
              * システムメールのユーザーごとの受信言語設定
              */
             "emailI18n": string;

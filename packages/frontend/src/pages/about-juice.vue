@@ -95,6 +95,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 							misskey-tempura
 							<template #suffix>GitHub</template>
 						</FormLink>
+						<FormLink to="https://github.com/pixelfed/pixelfed" external>
+							<template #icon><i class="ti ti-bulb"></i></template>
+							PixelFed
+							<template #suffix>GitHub</template>
+						</FormLink>
 					</div>
 				</FormSection>
 
@@ -177,6 +182,7 @@ const features = [
 	{ icon: 'ti ti-filter-search', text: i18n.ts._aboutJuice._features.advancedNoteSearch },
 	{ icon: 'ti ti-trophy', text: i18n.ts._aboutJuice._features.ranking },
 	{ icon: 'ti ti-broadcast', text: i18n.ts._aboutJuice._features.relayTimeline },
+	{ icon: 'ti ti-photo', text: i18n.ts._aboutJuice._features.mediaTimeline },
 	{ icon: 'ti ti-language', text: i18n.ts._aboutJuice._features.emailI18n },
 	{ icon: 'ti ti-arrow-bar-to-left', text: i18n.ts._aboutJuice._features.widgetsSide },
 	{ icon: 'ti ti-mood-happy', text: i18n.ts._aboutJuice._features.announcementReaction },
