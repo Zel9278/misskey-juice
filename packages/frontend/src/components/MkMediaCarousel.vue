@@ -21,8 +21,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-for="media in medias.previewable" :key="media.id" :class="$style.slide">
 			<XAudio
 				v-if="media.type.startsWith('audio')"
+				:ref="(comp) => { mediaComponents.set(media.id, comp as InstanceType<typeof XAudio> | null); }"
 				:class="$style.media"
 				:audio="media"
+				:user="user"
+				:inlinePlayable="true"
+				@mediaClick="onMediaClick(media)"
 			/>
 			<XVideo
 				v-else-if="media.type.startsWith('video')"

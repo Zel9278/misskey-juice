@@ -23,8 +23,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<XAudio
 					v-if="media.type.startsWith('audio')"
 					:key="`audio:${media.id}`"
+					:ref="(comp) => { mediaComponents.set(media.id, comp as InstanceType<typeof XAudio> | null); }"
 					:class="$style.media"
 					:audio="media"
+					:user="user"
+					:inlinePlayable="inlinePlayableAudio"
 					@mediaClick="onMediaClick(media)"
 				/>
 				<XVideo
@@ -73,8 +76,11 @@ const props = withDefaults(defineProps<{
 	raw?: boolean;
 	// JUICE: メディアタイムラインでは動画を拡大せずその場で再生できるようにする
 	inlinePlayableVideo?: boolean;
+	// JUICE: メディアタイムラインでは音声も動画と同様に拡大せずその場で再生できるようにする
+	inlinePlayableAudio?: boolean;
 }>(), {
 	inlinePlayableVideo: false,
+	inlinePlayableAudio: false,
 });
 
 const gallery = useTemplateRef('gallery');

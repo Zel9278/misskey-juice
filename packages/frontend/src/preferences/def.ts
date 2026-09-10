@@ -111,6 +111,12 @@ export const PREF_DEF = definePreferences({
 		default: 'local' as 'home' | 'local' | 'social' | 'global',
 	},
 
+	// JUICE: ライトボックス・メディアタイムラインのインライン再生で共通して使う音量(0-1)。
+	// 一度調整すれば、以後どの動画/音声を開いても同じ音量になるようにするための端末ローカル設定
+	mediaVolume: {
+		default: 0.25,
+	},
+
 	emojiPalettes: {
 		serverDependent: true,
 		default: () => [{

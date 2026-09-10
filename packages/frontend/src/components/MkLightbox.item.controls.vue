@@ -309,6 +309,13 @@ function init() {
 		syncElapsedTime();
 	});
 
+	// JUICE: volumeはプレイヤー間で共有される設定値のため、要素側の初期音量(ブラウザの既定値である1)を
+	// 一度でも'volumechange'で拾ってしまうと、他の全プレイヤーの音量まで巻き戻ってしまう。
+	// 要素へ現在の音量を反映してから listener を張ることで、その取りこぼしを防ぐ
+	if (!props.externalVolumeControl) {
+		el.volume = volume.value;
+	}
+
 	// ネイティブUIやブラウザのコンテキストメニューから変更されうるもの
 	// (externalVolumeControl時は要素の音量を100%に固定しているので、取り込むと表示が壊れる)
 	if (!props.externalVolumeControl) {
@@ -340,10 +347,6 @@ function init() {
 	if (!el.paused) {
 		oncePlayed.value = true;
 		startElapsedTick();
-	}
-
-	if (!props.externalVolumeControl) {
-		el.volume = volume.value;
 	}
 
 	// 音声トラックを持たない動画はGIFのように扱う

@@ -122,7 +122,11 @@ function onDblClick(ev: MouseEvent) {
 // 同じDIキー(DI.mkLightboxItemMediaEl)へこの<video>要素をprovideする
 const inlineVideoEl = useTemplateRef<HTMLVideoElement>('inlineVideoEl');
 const mediaControl = useTemplateRef<InstanceType<typeof XControl>>('mediaControl');
-const volume = ref(0.25);
+// JUICE: 音量はライトボックス・メディアタイムラインのインライン再生全体で共有する(prefer参照)
+const volume = computed<number>({
+	get: () => prefer.r.mediaVolume.value,
+	set: (v) => prefer.commit('mediaVolume', v),
+});
 
 provide(DI.mkLightboxItemMediaEl, computed(() => inlineVideoEl.value));
 

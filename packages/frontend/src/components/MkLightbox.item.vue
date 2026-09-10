@@ -270,7 +270,11 @@ const hide = ref(true);
 const isMediaControlledByMisskey = computed(() => ['video', 'audio'].includes(props.content.type) && !prefer.s.useNativeUiForVideoAudioPlayer);
 // ビジュアライザー使用時は音量の適用をGainNode側が担当する (メディア要素は100%固定にして、波形が音量レベルに依存しないようにするため)
 const isVolumeHandledByVisualizer = computed(() => props.content.type === 'audio' && !prefer.s.useNativeUiForVideoAudioPlayer);
-const volume = ref(0.25);
+// JUICE: 音量はライトボックス・メディアタイムラインのインライン再生全体で共有する(prefer参照)
+const volume = computed<number>({
+	get: () => prefer.r.mediaVolume.value,
+	set: (v) => prefer.commit('mediaVolume', v),
+});
 const isMediaReady = computed(() => mediaControl.value?.isReady ?? false);
 const isMediaPlaying = computed(() => mediaControl.value?.isPlaying ?? false);
 const isMediaActuallyPlaying = computed(() => mediaControl.value?.isActuallyPlaying ?? false);
