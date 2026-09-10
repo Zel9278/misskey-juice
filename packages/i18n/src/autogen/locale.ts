@@ -14543,6 +14543,34 @@ export interface Locale extends ILocale {
          */
         "relayTimelineDeliveredVia": ParameterizedString<"host">;
         /**
+         * メディアタイムライン
+         */
+        "mediaTimeline": string;
+        /**
+         * メディア
+         */
+        "mediaTimelineTab": string;
+        /**
+         * メディアタイムライン機能を有効にする
+         */
+        "mediaTimelineEnabled": string;
+        /**
+         * 添付ファイル付きのノートだけをグリッド表示で集めたタイムラインです。無効にすると、タイムラインの導線が利用できなくなります。
+         */
+        "mediaTimelineEnabledCaption": string;
+        /**
+         * 対象範囲
+         */
+        "mediaTimelineSrc": string;
+        /**
+         * 拡大表示
+         */
+        "mediaTimelineExpand": string;
+        /**
+         * メディアタイムラインに表示しない
+         */
+        "hideFromMediaTimeline": string;
+        /**
          * 起動画面
          */
         "splashSettingsTitle": string;

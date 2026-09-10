@@ -40,7 +40,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { ref, shallowRef, inject, computed, watch, onBeforeUnmount } from 'vue';
-import type { MenuItem } from '@/types/menu.js';
+import type { MenuItem, MenuAction } from '@/types/menu.js';
 import { DI } from '@/di.js';
 import { hms } from '@/filters/hms.js';
 import { i18n } from '@/i18n.js';
@@ -51,6 +51,8 @@ import MkMediaRange from '@/components/MkMediaRange.vue';
 const props = withDefaults(defineProps<{
 	/** 音量をメディア要素に適用しない（ビジュアライザー用） */
 	externalVolumeControl?: boolean;
+	/** JUICE: メディアタイムラインのインライン再生用。指定時、設定メニューに拡大表示の項目を追加する */
+	expandAction?: MenuAction;
 }>(), {
 	externalVolumeControl: false,
 });
@@ -65,6 +67,14 @@ const menuShowing = ref(false);
 
 function showMenu(ev: PointerEvent) {
 	const menu: MenuItem[] = [
+		// JUICE: メディアタイムラインのインライン再生からのみ渡ってくる。ライトボックス自体からの
+		// 呼び出し(expandActionを渡さない)では表示されない
+		...(props.expandAction != null ? [{
+			text: i18n.ts._juice.mediaTimelineExpand,
+			icon: 'ti ti-arrows-maximize',
+			badge: true,
+			action: props.expandAction,
+		}, { type: 'divider' } as const] : []),
 		// TODO: 再生キューに追加
 		{
 			type: 'switch',

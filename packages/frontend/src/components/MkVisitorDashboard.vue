@@ -95,6 +95,7 @@ const juicePublicSettings = ref<Misskey.entities.JuicePublicSettingsResponse>({
 	emojiRequestEnabled: false,
 	avatarDecorationRequestEnabled: false,
 	relayTimelineEnabled: false,
+	mediaTimelineEnabled: false,
 	latexEnabled: true,
 	reactionPiggybackOnRemoteEnabled: false,
 	contactFormEnabled: true,

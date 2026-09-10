@@ -105,6 +105,12 @@ export const PREF_DEF = definePreferences({
 		default: [] as string[],
 	},
 
+	// JUICE: メディアタイムラインが対象とするタイムライン範囲(ホーム/ローカル/ソーシャル/グローバル)
+	mediaTimelineSrc: {
+		accountDependent: true,
+		default: 'local' as 'home' | 'local' | 'social' | 'global',
+	},
+
 	emojiPalettes: {
 		serverDependent: true,
 		default: () => [{

@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -60,6 +60,10 @@ export const meta = {
 				optional: false, nullable: false,
 			},
 			relayTimelineEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			mediaTimelineEnabled: {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
@@ -131,6 +135,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...resolveAvatarDecorationRequestSettings(settings),
 				...resolveRankingSettings(settings),
 				...resolveRelayTimelineSettings(settings),
+				...resolveMediaTimelineSettings(settings),
 				...resolveLatexSettings(settings),
 				...resolveReactionPiggybackSettings(settings),
 				...resolveContactFormSettings(settings),

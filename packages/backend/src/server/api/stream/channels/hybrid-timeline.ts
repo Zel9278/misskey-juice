@@ -56,7 +56,8 @@ export class HybridTimelineChannel extends Channel {
 	private async onNote(note: Packed<'Note'>) {
 		const isMe = this.user!.id === note.userId;
 
-		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
+		// JUICE: hideFromMediaTimelineな投稿はメディアタイムライン(withFiles指定時)から除外する
+		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0 || note.hideFromMediaTimeline)) return;
 
 		if (!note.channelId) {
 			// 以下の条件に該当するノートのみ後続処理に通す（ので、以下のif文は該当しないノートをすべて弾くようにする）

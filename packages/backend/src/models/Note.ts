@@ -109,6 +109,13 @@ export class MiNote {
 	})
 	public isAIGenerated: boolean;
 
+	@Index()
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether this note should be excluded from the media timeline (withFiles-filtered timelines) (JUICE).',
+	})
+	public hideFromMediaTimeline: boolean;
+
 	@Column('varchar', {
 		length: 64, nullable: true,
 	})

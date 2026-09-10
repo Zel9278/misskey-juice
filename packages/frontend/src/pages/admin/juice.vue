@@ -137,6 +137,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<SearchMarker v-slot="slotProps">
 					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.mediaTimeline }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="mediaTimelineEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.mediaTimelineEnabled }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.mediaTimelineEnabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 						<template #label><SearchLabel>{{ i18n.ts._juice.latex }}</SearchLabel></template>
 
 						<div class="_gaps_m">
@@ -270,6 +285,7 @@ const avatarDecorationRequestEnabled = ref(settings.avatarDecorationRequestEnabl
 const rankingAggregationPeriodHours = ref(settings.rankingAggregationPeriodHours);
 const rankingDisplayCount = ref(settings.rankingDisplayCount);
 const relayTimelineEnabled = ref(settings.relayTimelineEnabled);
+const mediaTimelineEnabled = ref(settings.mediaTimelineEnabled);
 const latexEnabled = ref(settings.latexEnabled);
 const reactionPiggybackOnRemoteEnabled = ref(settings.reactionPiggybackOnRemoteEnabled);
 const contactFormEnabled = ref(settings.contactFormEnabled);
@@ -298,6 +314,7 @@ function save() {
 		rankingAggregationPeriodHours: rankingAggregationPeriodHours.value,
 		rankingDisplayCount: rankingDisplayCount.value,
 		relayTimelineEnabled: relayTimelineEnabled.value,
+		mediaTimelineEnabled: mediaTimelineEnabled.value,
 		latexEnabled: latexEnabled.value,
 		reactionPiggybackOnRemoteEnabled: reactionPiggybackOnRemoteEnabled.value,
 		contactFormEnabled: contactFormEnabled.value,

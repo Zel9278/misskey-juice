@@ -53,7 +53,8 @@ export class LocalTimelineChannel extends Channel {
 
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
-		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
+		// JUICE: hideFromMediaTimelineな投稿はメディアタイムライン(withFiles指定時)から除外する
+		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0 || note.hideFromMediaTimeline)) return;
 
 		if (note.user.host !== null) return;
 		if (note.visibility !== 'public') return;

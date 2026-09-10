@@ -161,6 +161,11 @@ export const packedNoteDraftSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		// JUICE: trueの場合、withFiles指定のタイムライン(メディアタイムライン)から除外される
+		hideFromMediaTimeline: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 		reactionAcceptance: {
 			type: 'string',
 			optional: false, nullable: true,

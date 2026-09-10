@@ -248,6 +248,7 @@ function exampleNoteFor(draft: EmojiRequestDraft): Misskey.entities.Note {
 		visibility: 'public',
 		localOnly: false,
 		isAIGenerated: false,
+		hideFromMediaTimeline: false,
 		reactionAcceptance: null,
 		renoteCount: 0,
 		repliesCount: 0,
