@@ -124,6 +124,13 @@ export const PREF_DEF = definePreferences({
 		default: [] as string[],
 	},
 
+	// JUICE: タイムラインページのタブバーの並び順(タブのkeyの配列)。並べ替えていない/新しく増えたタブは
+	// この配列に含まれず、既定の並び順で末尾に追加される
+	timelineTabOrder: {
+		accountDependent: true,
+		default: [] as string[],
+	},
+
 	emojiPalettes: {
 		serverDependent: true,
 		default: () => [{

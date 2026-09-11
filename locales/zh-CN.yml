@@ -3949,6 +3949,7 @@ _juice:
   filteredLanguages: "时间线中显示的语言"
   filteredLanguagesCaption: "只在主页、本站、全局时间线中显示已勾选语言的笔记。如果一个都不勾选,则显示所有语言的笔记。未指定语言的笔记不受此设置影响,始终显示。"
   hiddenTimelineTabs: "要显示的标签"
+  timelineTabOrderCaption: "可以用开关切换显示/隐藏。拖动手柄(⁝)可以调整顺序。"
   hideFromMediaTimeline: "不在媒体时间线中显示"
   invitationRegistrationEnabled: "显示通过邀请码注册的入口"
   invitationRegistrationEnabledCaption: "禁用后，欢迎页面和「添加账户」菜单中通往邀请码注册的按钮将不再显示。邀请码本身的注册功能不会被禁用。通过单独分享带有「?invite」的URL，仍可让被邀请者在没有按钮的情况下打开邀请码注册表单。"

@@ -450,63 +450,68 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 	return items;
 });
 
-const headerTabs = computed(() => [...(prefer.r.pinnedUserLists.value.map(l => ({
-	key: 'list:' + l.id,
-	title: l.name,
-	icon: 'ti ti-star',
-	iconOnly: true,
-}))), ...availableBasicTimelines().filter(tl => !isTimelineTabHidden(tl)).map(tl => ({
-	key: tl,
-	title: i18n.ts._timelines[tl],
-	icon: basicTimelineIconClass(tl),
-	iconOnly: true,
-})), ...(relayTimelineAvailable.value && !isTimelineTabHidden('relay') ? [{
-	key: 'relay',
-	title: i18n.ts._juice.relayTimelineTab,
-	icon: 'ti ti-broadcast',
-	iconOnly: true,
-	badge: true,
-}] : []), ...(mediaTimelineAvailable.value && !isTimelineTabHidden('media') ? [{
-	key: 'media',
-	title: i18n.ts._juice.mediaTimelineTab,
-	icon: 'ti ti-photo',
-	iconOnly: true,
-	badge: true,
-}] : []), ...(!isTimelineTabHidden('list') ? [{
-	icon: 'ti ti-list',
-	title: i18n.ts.lists,
-	iconOnly: true,
-	onClick: chooseList,
-}] : []), ...(!isTimelineTabHidden('antenna') ? [{
-	icon: 'ti ti-antenna',
-	title: i18n.ts.antennas,
-	iconOnly: true,
-	onClick: chooseAntenna,
-}] : []), ...(!isTimelineTabHidden('channel') ? [{
-	icon: 'ti ti-device-tv',
-	title: i18n.ts.channel,
-	iconOnly: true,
-	onClick: chooseChannel,
-}] : [])] as Tab[]);
+// JUICE: ショートカットタブ(ベーシックタイムライン・リレー・メディアタイムライン・
+// リスト/アンテナ/チャンネル)を、設定の「JUICE」ページで保存した並び順(timelineTabOrder)に
+// 沿って並べ替える。並び順未設定/新しく増えたタブは既定の並びのまま末尾に追加される。
+// ピン留めリストは並び替え対象外で常に先頭に固定する(settings/juice.vue側の並び替えUIの対象外のため)
+function buildOrderedShortcutTabs(includeLoginOnly: boolean): Tab[] {
+	// JUICE: list/antenna/channelはタブ切り替えではなくメニューを開くだけのショートカットのため、
+	// (Tab.key指定するとMkPageHeader.tabs.vue側でtabのv-modelがそのキーに書き換わってしまう)
+	// 意図的にkeyを持たない。並び替え用のsortKeyとは別物
+	const entries: { sortKey: string; tab: Omit<Tab, 'key'> & { key?: string } }[] = [];
 
-const headerTabsWhenNotLogin = computed(() => [...availableBasicTimelines().map(tl => ({
-	key: tl,
-	title: i18n.ts._timelines[tl],
-	icon: basicTimelineIconClass(tl),
-	iconOnly: true,
-})), ...(relayTimelineAvailable.value ? [{
-	key: 'relay',
-	title: i18n.ts._juice.relayTimelineTab,
-	icon: 'ti ti-broadcast',
-	iconOnly: true,
-	badge: true,
-}] : []), ...(mediaTimelineAvailable.value ? [{
-	key: 'media',
-	title: i18n.ts._juice.mediaTimelineTab,
-	icon: 'ti ti-photo',
-	iconOnly: true,
-	badge: true,
-}] : [])] as Tab[]);
+	for (const tl of availableBasicTimelines()) {
+		if (isTimelineTabHidden(tl)) continue;
+		entries.push({
+			sortKey: tl,
+			tab: { key: tl, title: i18n.ts._timelines[tl], icon: basicTimelineIconClass(tl), iconOnly: true },
+		});
+	}
+
+	if (relayTimelineAvailable.value && !isTimelineTabHidden('relay')) {
+		entries.push({
+			sortKey: 'relay',
+			tab: { key: 'relay', title: i18n.ts._juice.relayTimelineTab, icon: 'ti ti-broadcast', iconOnly: true, badge: true },
+		});
+	}
+
+	if (mediaTimelineAvailable.value && !isTimelineTabHidden('media')) {
+		entries.push({
+			sortKey: 'media',
+			tab: { key: 'media', title: i18n.ts._juice.mediaTimelineTab, icon: 'ti ti-photo', iconOnly: true, badge: true },
+		});
+	}
+
+	if (includeLoginOnly) {
+		if (!isTimelineTabHidden('list')) {
+			entries.push({ sortKey: 'list', tab: { icon: 'ti ti-list', title: i18n.ts.lists, iconOnly: true, onClick: chooseList } });
+		}
+		if (!isTimelineTabHidden('antenna')) {
+			entries.push({ sortKey: 'antenna', tab: { icon: 'ti ti-antenna', title: i18n.ts.antennas, iconOnly: true, onClick: chooseAntenna } });
+		}
+		if (!isTimelineTabHidden('channel')) {
+			entries.push({ sortKey: 'channel', tab: { icon: 'ti ti-device-tv', title: i18n.ts.channel, iconOnly: true, onClick: chooseChannel } });
+		}
+	}
+
+	const order = prefer.r.timelineTabOrder.value;
+	const known = entries.filter(e => order.includes(e.sortKey));
+	const unknown = entries.filter(e => !order.includes(e.sortKey));
+	known.sort((a, b) => order.indexOf(a.sortKey) - order.indexOf(b.sortKey));
+	return [...known, ...unknown].map(e => e.tab) as Tab[];
+}
+
+const headerTabs = computed(() => [
+	...prefer.r.pinnedUserLists.value.map(l => ({
+		key: 'list:' + l.id,
+		title: l.name,
+		icon: 'ti ti-star',
+		iconOnly: true,
+	})),
+	...buildOrderedShortcutTabs(true),
+] as Tab[]);
+
+const headerTabsWhenNotLogin = computed(() => buildOrderedShortcutTabs(false) as Tab[]);
 
 definePage(() => ({
 	title: i18n.ts.timeline,

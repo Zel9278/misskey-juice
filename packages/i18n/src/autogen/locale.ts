@@ -14733,6 +14733,10 @@ export interface Locale extends ILocale {
          */
         "hiddenTimelineTabs": string;
         /**
+         * スイッチで表示・非表示を切り替えられます。ハンドル(⁝)をドラッグすると並び順を変更できます。
+         */
+        "timelineTabOrderCaption": string;
+        /**
          * 起動画面
          */
         "splashSettingsTitle": string;
