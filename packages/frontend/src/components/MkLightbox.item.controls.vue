@@ -309,21 +309,14 @@ function init() {
 		syncElapsedTime();
 	});
 
-	// JUICE: volumeはプレイヤー間で共有される設定値のため、要素側の初期音量(ブラウザの既定値である1)を
-	// 一度でも'volumechange'で拾ってしまうと、他の全プレイヤーの音量まで巻き戻ってしまう。
-	// 要素へ現在の音量を反映してから listener を張ることで、その取りこぼしを防ぐ
 	if (!props.externalVolumeControl) {
 		el.volume = volume.value;
 	}
 
-	// ネイティブUIやブラウザのコンテキストメニューから変更されうるもの
-	// (externalVolumeControl時は要素の音量を100%に固定しているので、取り込むと表示が壊れる)
-	if (!props.externalVolumeControl) {
-		on('volumechange', () => {
-			const to = el.muted ? 0 : el.volume;
-			if (volume.value !== to) volume.value = to;
-		});
-	}
+	// JUICE: volumeはプレイヤー間で共有される設定値のため、ここで要素側の変更を拾って逆流させると、
+	// 新しい要素が作られるたびにブラウザの初期音量(100%)が共有設定へ書き戻ってしまう
+	// (特にCORSリトライで要素が作り直される音声で顕著)。独自コントロール(XControl)の音量スライダーは
+	// v-modelで直接volumeへ繋がっておりこのイベントを経由しないため、ネイティブUI操作の取り込みは諦める
 
 	on('ratechange', () => {
 		if (speed.value !== el.playbackRate) speed.value = el.playbackRate;
