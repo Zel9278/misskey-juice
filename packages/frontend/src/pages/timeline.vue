@@ -63,15 +63,21 @@ const relayTimelineAvailable = computed(() => relayTimelineEnabled.value && ($i 
 // JUICE: メディアタイムライン(添付ファイル付きノートのグリッド表示)が有効なインスタンスでのみタブに出す
 const mediaTimelineEnabled = ref(false);
 const mediaTimelineAvailable = computed(() => mediaTimelineEnabled.value);
+
+// JUICE: relayTimelineEnabled/mediaTimelineEnabledはjuicePublicSettingsCacheの取得が終わるまで
+// 既定でfalseになる。取得前にswitchTlIfNeeded()がリレー/メディアタブを「無効」と誤判定して
+// ホームへ強制的に切り替え・永続化してしまう(リロード直後にリレー/メディアタブへ戻れなくなる)のを防ぐため、
+// 取得完了までリレー/メディアタブに関する判定を保留する
+const juicePublicSettingsLoaded = ref(false);
 // JUICE: メディアタイムラインが対象とするタイムライン範囲(ホーム/ローカル/ソーシャル/グローバル)。閲覧者側で選択可能で、選択状態はJUICE設定に永続化する
 const mediaTimelineSrc = computed<BasicTimelineType>({
 	get: () => isAvailableBasicTimeline(prefer.r.mediaTimelineSrc.value) ? prefer.r.mediaTimelineSrc.value : availableBasicTimelines()[0],
 	set: (x) => prefer.commit('mediaTimelineSrc', x),
 });
 
-// JUICE: タブバーに出すベーシックタイムライン(ホーム/ローカル/ソーシャル/グローバル)・リレー・メディアタイムラインの
-// うち、閲覧者側の好みで個別に非表示にしたものの一覧(設定の「JUICE」ページで変更する)。
-// サーバー側で無効化されているタブには影響しない
+// JUICE: タブバーに出すベーシックタイムライン(ホーム/ローカル/ソーシャル/グローバル)・リレー・メディアタイムライン・
+// リスト/アンテナ/チャンネルの切り替えショートカットのうち、閲覧者側の好みで個別に非表示にしたものの一覧
+// (設定の「JUICE」ページで変更する)。サーバー側で無効化されているタブには影響しない
 const hiddenTimelineTabs = computed(() => prefer.r.hiddenTimelineTabs.value);
 
 function isTimelineTabHidden(key: string): boolean {
@@ -125,6 +131,7 @@ const excludeOwnNotesFromLanguageFilterRef = computed<boolean>({
 juicePublicSettingsCache.fetch().then(res => {
 	relayTimelineEnabled.value = res.relayTimelineEnabled;
 	mediaTimelineEnabled.value = res.mediaTimelineEnabled;
+	juicePublicSettingsLoaded.value = true;
 	// 取得前に選択されていた場合や、無効化された後に古い選択が残っていた場合に備えて再チェックする
 	switchTlIfNeeded();
 
@@ -301,9 +308,9 @@ function firstVisibleBasicTimeline(): BasicTimelineType {
 function switchTlIfNeeded() {
 	if (isBasicTimeline(src.value) && (!isAvailableBasicTimeline(src.value) || isTimelineTabHidden(src.value))) {
 		src.value = firstVisibleBasicTimeline();
-	} else if (src.value === 'relay' && (!relayTimelineAvailable.value || isTimelineTabHidden('relay'))) {
+	} else if (src.value === 'relay' && juicePublicSettingsLoaded.value && (!relayTimelineAvailable.value || isTimelineTabHidden('relay'))) {
 		src.value = firstVisibleBasicTimeline();
-	} else if (src.value === 'media' && (!mediaTimelineAvailable.value || isTimelineTabHidden('media'))) {
+	} else if (src.value === 'media' && juicePublicSettingsLoaded.value && (!mediaTimelineAvailable.value || isTimelineTabHidden('media'))) {
 		src.value = firstVisibleBasicTimeline();
 	}
 }
@@ -465,22 +472,22 @@ const headerTabs = computed(() => [...(prefer.r.pinnedUserLists.value.map(l => (
 	icon: 'ti ti-photo',
 	iconOnly: true,
 	badge: true,
-}] : []), {
+}] : []), ...(!isTimelineTabHidden('list') ? [{
 	icon: 'ti ti-list',
 	title: i18n.ts.lists,
 	iconOnly: true,
 	onClick: chooseList,
-}, {
+}] : []), ...(!isTimelineTabHidden('antenna') ? [{
 	icon: 'ti ti-antenna',
 	title: i18n.ts.antennas,
 	iconOnly: true,
 	onClick: chooseAntenna,
-}, {
+}] : []), ...(!isTimelineTabHidden('channel') ? [{
 	icon: 'ti ti-device-tv',
 	title: i18n.ts.channel,
 	iconOnly: true,
 	onClick: chooseChannel,
-}] as Tab[]);
+}] : [])] as Tab[]);
 
 const headerTabsWhenNotLogin = computed(() => [...availableBasicTimelines().map(tl => ({
 	key: tl,
