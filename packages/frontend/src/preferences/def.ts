@@ -117,6 +117,13 @@ export const PREF_DEF = definePreferences({
 		default: 0.25,
 	},
 
+	// JUICE: タイムラインページのタブバーから、閲覧者側の好みで個別に非表示にしたベーシックタイムライン
+	// (ホーム/ローカル/ソーシャル/グローバル)およびリレー/メディアタイムラインのタブ一覧(空 = 全て表示)
+	hiddenTimelineTabs: {
+		accountDependent: true,
+		default: [] as string[],
+	},
+
 	emojiPalettes: {
 		serverDependent: true,
 		default: () => [{

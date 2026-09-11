@@ -68,6 +68,16 @@ const mediaTimelineSrc = computed<BasicTimelineType>({
 	get: () => isAvailableBasicTimeline(prefer.r.mediaTimelineSrc.value) ? prefer.r.mediaTimelineSrc.value : availableBasicTimelines()[0],
 	set: (x) => prefer.commit('mediaTimelineSrc', x),
 });
+
+// JUICE: タブバーに出すベーシックタイムライン(ホーム/ローカル/ソーシャル/グローバル)・リレー・メディアタイムラインの
+// うち、閲覧者側の好みで個別に非表示にしたものの一覧(設定の「JUICE」ページで変更する)。
+// サーバー側で無効化されているタブには影響しない
+const hiddenTimelineTabs = computed(() => prefer.r.hiddenTimelineTabs.value);
+
+function isTimelineTabHidden(key: string): boolean {
+	return hiddenTimelineTabs.value.includes(key);
+}
+
 // JUICE: リレーTLを特定のリレーだけに絞り込むための一覧。選択状態はJUICE設定(prefer.s.relayTimelineFilter)に永続化する
 const relays = ref<Misskey.entities.JuiceRelaysResponse>([]);
 const relayTimelineFilter = computed(() => prefer.r.relayTimelineFilter.value);
@@ -281,13 +291,20 @@ function saveTlFilter(key: keyof typeof store.s.tl.filter, newValue: boolean) {
 	}
 }
 
+// JUICE: 非表示にしたタブが一つも残っていない極端な場合のフォールバックとして、
+// 全滅していればhiddenTimelineTabsを無視してでも先頭のタイムラインを返す
+function firstVisibleBasicTimeline(): BasicTimelineType {
+	const list = availableBasicTimelines();
+	return list.find(tl => !isTimelineTabHidden(tl)) ?? list[0];
+}
+
 function switchTlIfNeeded() {
-	if (isBasicTimeline(src.value) && !isAvailableBasicTimeline(src.value)) {
-		src.value = availableBasicTimelines()[0];
-	} else if (src.value === 'relay' && !relayTimelineAvailable.value) {
-		src.value = availableBasicTimelines()[0];
-	} else if (src.value === 'media' && !mediaTimelineAvailable.value) {
-		src.value = availableBasicTimelines()[0];
+	if (isBasicTimeline(src.value) && (!isAvailableBasicTimeline(src.value) || isTimelineTabHidden(src.value))) {
+		src.value = firstVisibleBasicTimeline();
+	} else if (src.value === 'relay' && (!relayTimelineAvailable.value || isTimelineTabHidden('relay'))) {
+		src.value = firstVisibleBasicTimeline();
+	} else if (src.value === 'media' && (!mediaTimelineAvailable.value || isTimelineTabHidden('media'))) {
+		src.value = firstVisibleBasicTimeline();
 	}
 }
 
@@ -297,6 +314,8 @@ onMounted(() => {
 onActivated(() => {
 	switchTlIfNeeded();
 });
+// JUICE: 表示中のタブをその場で非表示にした場合に備えて、切り替え直後にも再チェックする
+watch(hiddenTimelineTabs, switchTlIfNeeded);
 
 const headerActions = computed<PageHeaderItem[]>(() => {
 	const items: PageHeaderItem[] = [{
@@ -429,18 +448,18 @@ const headerTabs = computed(() => [...(prefer.r.pinnedUserLists.value.map(l => (
 	title: l.name,
 	icon: 'ti ti-star',
 	iconOnly: true,
-}))), ...availableBasicTimelines().map(tl => ({
+}))), ...availableBasicTimelines().filter(tl => !isTimelineTabHidden(tl)).map(tl => ({
 	key: tl,
 	title: i18n.ts._timelines[tl],
 	icon: basicTimelineIconClass(tl),
 	iconOnly: true,
-})), ...(relayTimelineAvailable.value ? [{
+})), ...(relayTimelineAvailable.value && !isTimelineTabHidden('relay') ? [{
 	key: 'relay',
 	title: i18n.ts._juice.relayTimelineTab,
 	icon: 'ti ti-broadcast',
 	iconOnly: true,
 	badge: true,
-}] : []), ...(mediaTimelineAvailable.value ? [{
+}] : []), ...(mediaTimelineAvailable.value && !isTimelineTabHidden('media') ? [{
 	key: 'media',
 	title: i18n.ts._juice.mediaTimelineTab,
 	icon: 'ti ti-photo',

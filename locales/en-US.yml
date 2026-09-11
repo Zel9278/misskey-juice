@@ -3913,6 +3913,7 @@ _juice:
   exploreOtherServersEnabledCaption: "Shows a link button on the welcome page (the top page shown when not signed in) to an external site for finding other Misskey servers."
   filteredLanguages: "Languages to show in the timeline"
   filteredLanguagesCaption: "Only notes in the checked languages will be shown in the home, local, and global timelines. If none are checked, notes in all languages will be shown. Notes with no language specified are always shown regardless of this setting."
+  hiddenTimelineTabs: "Tabs to show"
   hideFromMediaTimeline: "Hide from media timeline"
   invitationRegistrationEnabled: "Show the entry point for registering with an invitation code"
   invitationRegistrationEnabledCaption: "When disabled, the button leading to invitation code registration will no longer appear on the welcome page or in the \"Add account\" menu. The invitation code registration feature itself will not be disabled. You can still let someone you've invited open the invitation code registration form without the button by sharing a URL with \"?invite\" added to it."

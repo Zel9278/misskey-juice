@@ -14575,6 +14575,10 @@ export interface Locale extends ILocale {
          */
         "hideFromMediaTimeline": string;
         /**
+         * 表示するタブ
+         */
+        "hiddenTimelineTabs": string;
+        /**
          * 起動画面
          */
         "splashSettingsTitle": string;
