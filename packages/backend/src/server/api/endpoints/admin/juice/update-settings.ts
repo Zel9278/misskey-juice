@@ -31,6 +31,7 @@ export const paramDef = {
 		rankingAggregationPeriodHours: { type: 'integer', minimum: 1 },
 		rankingDisplayCount: { type: 'integer', minimum: 1, maximum: 100 },
 		relayTimelineEnabled: { type: 'boolean' },
+		mediaTimelineEnabled: { type: 'boolean' },
 		latexEnabled: { type: 'boolean' },
 		reactionPiggybackOnRemoteEnabled: { type: 'boolean' },
 		contactFormEnabled: { type: 'boolean' },
@@ -83,6 +84,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.rankingAggregationPeriodHours !== undefined) set.rankingAggregationPeriodHours = ps.rankingAggregationPeriodHours;
 			if (ps.rankingDisplayCount !== undefined) set.rankingDisplayCount = ps.rankingDisplayCount;
 			if (ps.relayTimelineEnabled !== undefined) set.relayTimelineEnabled = ps.relayTimelineEnabled;
+			if (ps.mediaTimelineEnabled !== undefined) set.mediaTimelineEnabled = ps.mediaTimelineEnabled;
 			if (ps.latexEnabled !== undefined) set.latexEnabled = ps.latexEnabled;
 			if (ps.reactionPiggybackOnRemoteEnabled !== undefined) set.reactionPiggybackOnRemoteEnabled = ps.reactionPiggybackOnRemoteEnabled;
 			if (ps.contactFormEnabled !== undefined) set.contactFormEnabled = ps.contactFormEnabled;

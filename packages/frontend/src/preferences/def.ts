@@ -105,6 +105,25 @@ export const PREF_DEF = definePreferences({
 		default: [] as string[],
 	},
 
+	// JUICE: メディアタイムラインが対象とするタイムライン範囲(ホーム/ローカル/ソーシャル/グローバル)
+	mediaTimelineSrc: {
+		accountDependent: true,
+		default: 'local' as 'home' | 'local' | 'social' | 'global',
+	},
+
+	// JUICE: ライトボックス・メディアタイムラインのインライン再生で共通して使う音量(0-1)。
+	// 一度調整すれば、以後どの動画/音声を開いても同じ音量になるようにするための端末ローカル設定
+	mediaVolume: {
+		default: 0.25,
+	},
+
+	// JUICE: タイムラインページのタブバーから、閲覧者側の好みで個別に非表示にしたベーシックタイムライン
+	// (ホーム/ローカル/ソーシャル/グローバル)およびリレー/メディアタイムラインのタブ一覧(空 = 全て表示)
+	hiddenTimelineTabs: {
+		accountDependent: true,
+		default: [] as string[],
+	},
+
 	emojiPalettes: {
 		serverDependent: true,
 		default: () => [{

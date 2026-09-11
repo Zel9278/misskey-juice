@@ -32,6 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						:content="content"
 						:user="user"
 						:initiallyRevealed="props.initiallyRevealedContentIds?.includes(content.id) ?? false"
+						:initiallyHidden="props.initiallyHiddenContentIds?.includes(content.id) ?? false"
 						:activated="activatedIndexes.has(i)"
 						@close="onItemClose"
 						@horizontalSwipe="onHorizontalSwipe"
@@ -64,6 +65,8 @@ const props = withDefaults(defineProps<{
 	defaultIndex?: number;
 	contents: Content[];
 	initiallyRevealedContentIds?: string[];
+	// JUICE: センシティブフラグが無くても、呼び出し元で手動で隠されていたファイルの一覧
+	initiallyHiddenContentIds?: string[];
 	user?: Misskey.entities.User | null; // DriveFileのuserはnullになることがある。その場合に使用する所有者情報
 }>(), {
 });

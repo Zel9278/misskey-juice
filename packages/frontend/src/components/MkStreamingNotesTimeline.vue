@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 		<component
 			:is="prefer.s.animation ? TransitionGroup : 'div'"
-			:class="$style.notes"
+			:class="[$style.notes, props.pixelfedMode && $style.pixelfedFeed]"
 			:enterActiveClass="$style.transition_x_enterActive"
 			:leaveActiveClass="$style.transition_x_leaveActive"
 			:enterFromClass="$style.transition_x_enterFrom"
@@ -36,15 +36,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<span style="height: 1em; width: 1px; background: var(--MI_THEME-divider);"></span>
 						<span>{{ getSeparatorInfo(paginator.items.value[i -1].createdAt, note.createdAt)?.nextText }} <i class="ti ti-chevron-down"></i></span>
 					</div>
-					<MkNote :class="$style.note" :note="note" :withHardMute="true"/>
+					<MkNote :class="[$style.note, props.pixelfedMode && $style.pixelfedCard]" :note="note" :withHardMute="true"/>
 				</div>
 				<div v-else-if="note._shouldInsertAd_" :data-scroll-anchor="note.id">
-					<MkNote :class="$style.note" :note="note" :withHardMute="true"/>
+					<MkNote :class="[$style.note, props.pixelfedMode && $style.pixelfedCard]" :note="note" :withHardMute="true"/>
 					<div :class="$style.ad">
 						<MkAd :preferForms="['horizontal', 'horizontal-big']"/>
 					</div>
 				</div>
-				<MkNote v-else :class="$style.note" :note="note" :withHardMute="true" :data-scroll-anchor="note.id"/>
+				<MkNote v-else :class="[$style.note, props.pixelfedMode && $style.pixelfedCard]" :note="note" :withHardMute="true" :data-scroll-anchor="note.id"/>
 			</template>
 		</component>
 		<button v-show="paginator.canFetchOlder.value" key="_more_" v-appear="prefer.s.enableInfiniteScroll ? paginator.fetchOlder : null" :disabled="paginator.fetchingOlder.value" class="_button" :class="$style.more" @click="paginator.fetchOlder">
@@ -94,6 +94,10 @@ const props = withDefaults(defineProps<{
 	onlyFiles?: boolean;
 	// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
 	localOnly?: boolean;
+	// JUICE: メディアタイムライン表示中か(PixelFed風の見た目に切り替える)。呼び出し元のtimeline.vueでは
+	// このコンポーネント自身のsrcが実際のタイムライン種別('home'等)になり'media'にはならないため、
+	// 別途boolean propとして渡してもらう
+	pixelfedMode?: boolean;
 }>(), {
 	withRenotes: true,
 	withReplies: false,
@@ -102,12 +106,16 @@ const props = withDefaults(defineProps<{
 	localOnly: false,
 	sound: false,
 	customSound: null,
+	pixelfedMode: false,
 });
 
 provide('inTimeline', true);
 provide('tl_withSensitive', computed(() => props.withSensitive));
 provide(DI.inChannel, computed(() => props.src === 'channel' ? props.channel ?? null : null));
 provide(DI.inRelayTimeline, computed(() => props.src === 'relay')); // JUICE: リレーTLでのみノートの配送元リレー表示を有効にする
+// JUICE: このコンポーネントの子孫(MkNote・MkMediaImage等)だけにスコープを閉じるため、ここでprovideする
+// (呼び出し元のtimeline.vueページ全体でprovideすると、ヘッダーのアバター等の無関係な子孫にまで波及してしまう)
+provide(DI.inMediaTimeline, computed(() => props.pixelfedMode));
 
 let paginator: IPaginator<Misskey.entities.Note>;
 
@@ -493,6 +501,28 @@ defineExpose({
 
 .note:not(:empty) {
 	border-bottom: solid 0.5px var(--MI_THEME-divider);
+}
+
+// JUICE: メディアタイムラインではPixelFed風に、罫線区切りの代わりにカード同士を余白で区切る
+.pixelfedFeed {
+	background: none;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 12px;
+}
+
+.pixelfedCard {
+	border-radius: 15px;
+	overflow: clip;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+	background: var(--MI_THEME-panel);
+}
+
+// JUICE: .note:not(:empty)の罫線指定と詳細度を同点にせず確実に上書きするため、
+// .noteと結合したセレクタにする(将来.note側の定義位置が変わっても壊れないように)
+.note.pixelfedCard:not(:empty) {
+	border-bottom: none;
 }
 
 .new {

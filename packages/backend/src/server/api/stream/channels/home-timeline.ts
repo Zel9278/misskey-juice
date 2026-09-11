@@ -49,7 +49,8 @@ export class HomeTimelineChannel extends Channel {
 	private async onNote(note: Packed<'Note'>) {
 		const isMe = this.user!.id === note.userId;
 
-		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
+		// JUICE: hideFromMediaTimelineな投稿はメディアタイムライン(withFiles指定時)から除外する
+		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0 || note.hideFromMediaTimeline)) return;
 
 		// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
 		if (this.localOnly && !isMe && note.user.host != null) return;

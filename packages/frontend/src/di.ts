@@ -20,5 +20,6 @@ export const DI = {
 	inAppSearchMarkerId: Symbol() as InjectionKey<Ref<string | null>>,
 	inChannel: Symbol() as InjectionKey<ComputedRef<string | null> | null>, // 現在開いているチャンネルのID
 	inRelayTimeline: Symbol() as InjectionKey<ComputedRef<boolean> | null>, // JUICE: 現在リレータイムラインを表示中か
+	inMediaTimeline: Symbol() as InjectionKey<ComputedRef<boolean> | null>, // JUICE: 現在メディアタイムラインを表示中か(PixelFed風のアバター・画像表示に切り替える)
 	mkLightboxItemMediaEl: Symbol() as InjectionKey<Ref<HTMLVideoElement | HTMLAudioElement | null>>,
 };

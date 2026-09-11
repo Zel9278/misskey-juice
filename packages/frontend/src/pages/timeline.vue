@@ -12,16 +12,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkPostForm v-if="prefer.r.showFixedPostForm.value" :class="$style.postForm" class="_panel" fixed style="margin-bottom: var(--MI-margin);"/>
 		<MkStreamingNotesTimeline
 			ref="tlComponent"
-			:key="src + withRenotes + withReplies + onlyFiles + withSensitive + localOnly + relayTimelineFilter.join(',') + ($i ? $i.filteredLanguages.join(',') + $i.excludeOwnNotesFromLanguageFilter : '')"
+			:key="src + withRenotes + effectiveWithReplies + effectiveOnlyFiles + withSensitive + localOnly + relayTimelineFilter.join(',') + mediaTimelineSrc + ($i ? $i.filteredLanguages.join(',') + $i.excludeOwnNotesFromLanguageFilter : '')"
 			:class="$style.tl"
-			:src="(src.split(':')[0] as (BasicTimelineType | 'list' | 'relay'))"
+			:src="(src === 'media' ? mediaTimelineSrc : src.split(':')[0]) as (BasicTimelineType | 'list' | 'relay')"
 			:list="src.split(':')[1]"
 			:relays="src === 'relay' ? relayTimelineFilter : undefined"
 			:withRenotes="withRenotes"
-			:withReplies="withReplies"
+			:withReplies="effectiveWithReplies"
 			:withSensitive="withSensitive"
-			:onlyFiles="onlyFiles"
+			:onlyFiles="effectiveOnlyFiles"
 			:localOnly="localOnly"
+			:pixelfedMode="src === 'media'"
 			:sound="true"
 		/>
 	</div>
@@ -58,6 +59,25 @@ const tlComponent = useTemplateRef('tlComponent');
 const relayTimelineEnabled = ref(false);
 // 表示可否はGTLと共通のgtlAvailableポリシーにも従う
 const relayTimelineAvailable = computed(() => relayTimelineEnabled.value && ($i != null ? $i.policies.gtlAvailable : instance.policies.gtlAvailable));
+
+// JUICE: メディアタイムライン(添付ファイル付きノートのグリッド表示)が有効なインスタンスでのみタブに出す
+const mediaTimelineEnabled = ref(false);
+const mediaTimelineAvailable = computed(() => mediaTimelineEnabled.value);
+// JUICE: メディアタイムラインが対象とするタイムライン範囲(ホーム/ローカル/ソーシャル/グローバル)。閲覧者側で選択可能で、選択状態はJUICE設定に永続化する
+const mediaTimelineSrc = computed<BasicTimelineType>({
+	get: () => isAvailableBasicTimeline(prefer.r.mediaTimelineSrc.value) ? prefer.r.mediaTimelineSrc.value : availableBasicTimelines()[0],
+	set: (x) => prefer.commit('mediaTimelineSrc', x),
+});
+
+// JUICE: タブバーに出すベーシックタイムライン(ホーム/ローカル/ソーシャル/グローバル)・リレー・メディアタイムラインの
+// うち、閲覧者側の好みで個別に非表示にしたものの一覧(設定の「JUICE」ページで変更する)。
+// サーバー側で無効化されているタブには影響しない
+const hiddenTimelineTabs = computed(() => prefer.r.hiddenTimelineTabs.value);
+
+function isTimelineTabHidden(key: string): boolean {
+	return hiddenTimelineTabs.value.includes(key);
+}
+
 // JUICE: リレーTLを特定のリレーだけに絞り込むための一覧。選択状態はJUICE設定(prefer.s.relayTimelineFilter)に永続化する
 const relays = ref<Misskey.entities.JuiceRelaysResponse>([]);
 const relayTimelineFilter = computed(() => prefer.r.relayTimelineFilter.value);
@@ -104,6 +124,7 @@ const excludeOwnNotesFromLanguageFilterRef = computed<boolean>({
 
 juicePublicSettingsCache.fetch().then(res => {
 	relayTimelineEnabled.value = res.relayTimelineEnabled;
+	mediaTimelineEnabled.value = res.mediaTimelineEnabled;
 	// 取得前に選択されていた場合や、無効化された後に古い選択が残っていた場合に備えて再チェックする
 	switchTlIfNeeded();
 
@@ -114,13 +135,14 @@ juicePublicSettingsCache.fetch().then(res => {
 	}
 });
 
-type TimelinePageSrc = BasicTimelineType | 'relay' | `list:${string}`;
+type TimelinePageSrc = BasicTimelineType | 'relay' | 'media' | `list:${string}`;
 
 const srcWhenNotSignin = ref<'local' | 'global'>(isAvailableBasicTimeline('local') ? 'local' : 'global');
 const src = computed<TimelinePageSrc>({
 	get: () => ($i ? store.r.tl.value.src : srcWhenNotSignin.value),
 	set: (x) => saveSrc(x),
 });
+
 const withRenotes = computed<boolean>({
 	get: () => store.r.tl.value.filter.withRenotes,
 	set: (x) => saveTlFilter('withRenotes', x),
@@ -154,6 +176,12 @@ const onlyFiles = computed<boolean>({
 	},
 	set: (x) => saveTlFilter('onlyFiles', x),
 });
+
+// JUICE: メディアタイムライン表示中は、通常の「ファイル付きのみ」トグルの状態に関わらず常にファイル付きのみに絞り込む。
+// withRepliesと同時指定するとlocal-timeline/hybrid-timelineがBOTH_WITH_REPLIES_AND_WITH_FILESエラーを返すため、
+// withReplies側も強制的にfalseにする(通常返信を含めるかの設定自体は、メディアタブ切り替え後も保持されたままにする)
+const effectiveOnlyFiles = computed(() => src.value === 'media' ? true : onlyFiles.value);
+const effectiveWithReplies = computed(() => src.value === 'media' ? false : withReplies.value);
 
 watch([withReplies, onlyFiles], ([withRepliesTo, onlyFilesTo]) => {
 	if (withRepliesTo) {
@@ -263,11 +291,20 @@ function saveTlFilter(key: keyof typeof store.s.tl.filter, newValue: boolean) {
 	}
 }
 
+// JUICE: 非表示にしたタブが一つも残っていない極端な場合のフォールバックとして、
+// 全滅していればhiddenTimelineTabsを無視してでも先頭のタイムラインを返す
+function firstVisibleBasicTimeline(): BasicTimelineType {
+	const list = availableBasicTimelines();
+	return list.find(tl => !isTimelineTabHidden(tl)) ?? list[0];
+}
+
 function switchTlIfNeeded() {
-	if (isBasicTimeline(src.value) && !isAvailableBasicTimeline(src.value)) {
-		src.value = availableBasicTimelines()[0];
-	} else if (src.value === 'relay' && !relayTimelineAvailable.value) {
-		src.value = availableBasicTimelines()[0];
+	if (isBasicTimeline(src.value) && (!isAvailableBasicTimeline(src.value) || isTimelineTabHidden(src.value))) {
+		src.value = firstVisibleBasicTimeline();
+	} else if (src.value === 'relay' && (!relayTimelineAvailable.value || isTimelineTabHidden('relay'))) {
+		src.value = firstVisibleBasicTimeline();
+	} else if (src.value === 'media' && (!mediaTimelineAvailable.value || isTimelineTabHidden('media'))) {
+		src.value = firstVisibleBasicTimeline();
 	}
 }
 
@@ -277,6 +314,8 @@ onMounted(() => {
 onActivated(() => {
 	switchTlIfNeeded();
 });
+// JUICE: 表示中のタブをその場で非表示にした場合に備えて、切り替え直後にも再チェックする
+watch(hiddenTimelineTabs, switchTlIfNeeded);
 
 const headerActions = computed<PageHeaderItem[]>(() => {
 	const items: PageHeaderItem[] = [{
@@ -328,6 +367,20 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 				});
 			}
 
+			// JUICE: メディアタイムライン表示中のみ、対象とするタイムライン範囲(ホーム/ローカル/ソーシャル/グローバル)を選べるようにする
+			if (src.value === 'media') {
+				menuItems.push({
+					type: 'radio',
+					icon: 'ti ti-list-search',
+					text: i18n.ts._juice.mediaTimelineSrc,
+					ref: mediaTimelineSrc,
+					options: availableBasicTimelines().map(tl => ({
+						label: i18n.ts._timelines[tl],
+						value: tl,
+					})),
+				});
+			}
+
 			// JUICE: 表示する投稿を言語で絞り込む(未選択=すべての言語を表示、言語未指定の投稿は常に表示)
 			if ($i) {
 				menuItems.push({
@@ -352,13 +405,20 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 				icon: 'ti ti-eye-exclamation',
 				text: i18n.ts.withSensitive,
 				ref: withSensitive,
-			}, {
-				type: 'switch',
-				icon: 'ti ti-photo',
-				text: i18n.ts.fileAttachedOnly,
-				ref: onlyFiles,
-				disabled: isBasicTimeline(src.value) && hasWithReplies(src.value) ? withReplies : false,
-			}, {
+			});
+
+			// JUICE: メディアタイムライン表示中は常にファイル付きのみへ強制しているため、このトグル自体を隠す
+			if (src.value !== 'media') {
+				menuItems.push({
+					type: 'switch',
+					icon: 'ti ti-photo',
+					text: i18n.ts.fileAttachedOnly,
+					ref: onlyFiles,
+					disabled: isBasicTimeline(src.value) && hasWithReplies(src.value) ? withReplies : false,
+				});
+			}
+
+			menuItems.push({
 				type: 'divider',
 			}, {
 				type: 'switch',
@@ -388,15 +448,21 @@ const headerTabs = computed(() => [...(prefer.r.pinnedUserLists.value.map(l => (
 	title: l.name,
 	icon: 'ti ti-star',
 	iconOnly: true,
-}))), ...availableBasicTimelines().map(tl => ({
+}))), ...availableBasicTimelines().filter(tl => !isTimelineTabHidden(tl)).map(tl => ({
 	key: tl,
 	title: i18n.ts._timelines[tl],
 	icon: basicTimelineIconClass(tl),
 	iconOnly: true,
-})), ...(relayTimelineAvailable.value ? [{
+})), ...(relayTimelineAvailable.value && !isTimelineTabHidden('relay') ? [{
 	key: 'relay',
 	title: i18n.ts._juice.relayTimelineTab,
 	icon: 'ti ti-broadcast',
+	iconOnly: true,
+	badge: true,
+}] : []), ...(mediaTimelineAvailable.value && !isTimelineTabHidden('media') ? [{
+	key: 'media',
+	title: i18n.ts._juice.mediaTimelineTab,
+	icon: 'ti ti-photo',
 	iconOnly: true,
 	badge: true,
 }] : []), {
@@ -425,6 +491,12 @@ const headerTabsWhenNotLogin = computed(() => [...availableBasicTimelines().map(
 	key: 'relay',
 	title: i18n.ts._juice.relayTimelineTab,
 	icon: 'ti ti-broadcast',
+	iconOnly: true,
+	badge: true,
+}] : []), ...(mediaTimelineAvailable.value ? [{
+	key: 'media',
+	title: i18n.ts._juice.mediaTimelineTab,
+	icon: 'ti ti-photo',
 	iconOnly: true,
 	badge: true,
 }] : [])] as Tab[]);

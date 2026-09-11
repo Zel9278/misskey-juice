@@ -159,6 +159,7 @@ import { checkDragDataType, getDragData } from '@/drag-and-drop.js';
 import { useUploader } from '@/composables/use-uploader.js';
 import { startTour } from '@/utility/tour.js';
 import { closeTip } from '@/tips.js';
+import { juicePublicSettingsCache } from '@/cache.js';
 
 const $i = ensureSignin();
 
@@ -201,6 +202,12 @@ const files = ref(props.initialFiles ?? []);
 const poll = ref<PollEditorModelValue | null>(null);
 const useCw = ref<boolean>(!!props.initialCw);
 const isAIGenerated = ref<boolean>(false);
+// JUICE: メディアタイムラインからこの投稿を除外するか
+const hideFromMediaTimeline = ref<boolean>(false);
+const mediaTimelineEnabled = ref(false);
+juicePublicSettingsCache.fetch().then(res => {
+	mediaTimelineEnabled.value = res.mediaTimelineEnabled;
+});
 const showPreview = ref(store.s.showPreview);
 watch(showPreview, () => store.set('showPreview', showPreview.value));
 const showAddMfmFunction = ref(prefer.s.enableQuickAddMfmFunction);
@@ -443,6 +450,7 @@ function watchForDraft() {
 	watch(visibility, () => saveDraft());
 	watch(localOnly, () => saveDraft());
 	watch(isAIGenerated, () => saveDraft());
+	watch(hideFromMediaTimeline, () => saveDraft());
 	watch(quoteId, () => saveDraft());
 	watch(reactionAcceptance, () => saveDraft());
 	watch(scheduledAt, () => saveDraft());
@@ -684,7 +692,14 @@ function showOtherSettings() {
 		action: () => {
 			toggleLang();
 		},
-	}, { type: 'divider' }, {
+	}, ...(mediaTimelineEnabled.value ? [{
+		// JUICE: メディアタイムラインが有効なインスタンスでのみ表示する
+		type: 'switch' as const,
+		icon: 'ti ti-photo-off',
+		text: i18n.ts._juice.hideFromMediaTimeline,
+		badge: true,
+		ref: hideFromMediaTimeline,
+	}] : []), { type: 'divider' }, {
 		type: 'button',
 		text: i18n.ts._drafts.saveToDraft,
 		icon: 'ti ti-cloud-upload',
@@ -906,6 +921,7 @@ type StoredDrafts = {
 			visibility: 'public' | 'home' | 'followers' | 'specified';
 			localOnly: boolean;
 			isAIGenerated: boolean;
+			hideFromMediaTimeline: boolean;
 			files: Misskey.entities.DriveFile[];
 			poll: PollEditorModelValue | null;
 			visibleUserIds?: string[];
@@ -930,6 +946,7 @@ function saveDraft() {
 			visibility: visibility.value,
 			localOnly: localOnly.value,
 			isAIGenerated: isAIGenerated.value,
+			hideFromMediaTimeline: hideFromMediaTimeline.value,
 			files: files.value,
 			poll: poll.value,
 			...( visibleUsers.value.length > 0 ? { visibleUserIds: visibleUsers.value.map(x => x.id) } : {}),
@@ -960,6 +977,7 @@ async function saveServerDraft(options: {
 		visibility: visibility.value,
 		localOnly: localOnly.value,
 		isAIGenerated: isAIGenerated.value,
+		hideFromMediaTimeline: hideFromMediaTimeline.value,
 		hashtag: hashtags.value,
 		fileIds: files.value.map(f => f.id),
 		poll: poll.value,
@@ -1067,6 +1085,7 @@ async function post(ev?: PointerEvent) {
 		cw: useCw.value ? cw.value ?? '' : null,
 		localOnly: visibility.value === 'specified' ? false : localOnly.value,
 		isAIGenerated: isAIGenerated.value,
+		hideFromMediaTimeline: hideFromMediaTimeline.value,
 		visibility: visibility.value,
 		visibleUserIds: visibility.value === 'specified' ? visibleUsers.value.map(u => u.id) : undefined,
 		reactionAcceptance: reactionAcceptance.value,
@@ -1337,6 +1356,7 @@ async function openAccountMenu(ev: PointerEvent) {
 				visibility.value = draft.visibility;
 				localOnly.value = draft.localOnly ?? false;
 				isAIGenerated.value = draft.isAIGenerated ?? false;
+				hideFromMediaTimeline.value = draft.hideFromMediaTimeline ?? false;
 				files.value = draft.files ?? [];
 				hashtags.value = draft.hashtag ?? '';
 				if (draft.hashtag) withHashtags.value = true;
@@ -1501,6 +1521,7 @@ onMounted(() => {
 				visibility.value = draft.data.visibility;
 				localOnly.value = draft.data.localOnly;
 				isAIGenerated.value = draft.data.isAIGenerated ?? false;
+				hideFromMediaTimeline.value = draft.data.hideFromMediaTimeline ?? false;
 				files.value = (draft.data.files || []).filter(draftFile => draftFile);
 				if (draft.data.poll) {
 					poll.value = draft.data.poll;
@@ -1525,6 +1546,7 @@ onMounted(() => {
 			visibility.value = init.visibility;
 			localOnly.value = init.localOnly ?? false;
 			isAIGenerated.value = init.isAIGenerated ?? false;
+			hideFromMediaTimeline.value = init.hideFromMediaTimeline ?? false;
 			files.value = init.files ?? [];
 			if (init.poll) {
 				poll.value = {

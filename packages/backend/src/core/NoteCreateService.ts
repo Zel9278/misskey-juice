@@ -178,6 +178,8 @@ type Option = {
 	poll?: IPoll | null;
 	localOnly?: boolean | null;
 	isAIGenerated?: boolean | null;
+	// JUICE: trueの場合、withFiles指定のタイムライン(メディアタイムライン)からこの投稿を除外する
+	hideFromMediaTimeline?: boolean | null;
 	reactionAcceptance?: MiNote['reactionAcceptance'];
 	cw?: string | null;
 	// JUICE: このノートの言語(BCP 47言語タグ)。デフォルト解決(未指定時にユーザーの表示言語設定を
@@ -299,6 +301,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		channelId: MiChannel['id'] | null;
 		localOnly: boolean;
 		isAIGenerated: boolean;
+		hideFromMediaTimeline: boolean;
 		reactionAcceptance: MiNote['reactionAcceptance'];
 		poll: IPoll | null;
 		apMentions?: MinimumUser[] | null;
@@ -438,6 +441,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			lang: data.lang,
 			localOnly: data.localOnly,
 			isAIGenerated: data.isAIGenerated,
+			hideFromMediaTimeline: data.hideFromMediaTimeline,
 			reactionAcceptance: data.reactionAcceptance,
 			visibility: data.visibility,
 			visibleUsers,
@@ -674,6 +678,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			userId: user.id,
 			localOnly: data.localOnly!,
 			isAIGenerated: data.isAIGenerated ?? false,
+			hideFromMediaTimeline: data.hideFromMediaTimeline ?? false,
 			reactionAcceptance: data.reactionAcceptance ?? null,
 			visibility: data.visibility as any,
 			visibleUserIds: data.visibility === 'specified'
@@ -1101,7 +1106,11 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 			for (const channelFollowing of channelFollowings) {
 				this.fanoutTimelineService.push(`homeTimeline:${channelFollowing.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
-				if (note.fileIds.length > 0) {
+				// JUICE: hideFromMediaTimelineな投稿は、メディアタイムライン機能が実際に読みに行く
+				// withFiles系のfanoutリスト(home/local/hybrid/globalの4種)にだけ追加しない
+				// (通常のタイムラインには出続ける)。プロフィールの「ファイル」タブやリストタイムライン
+				// が読む userTimelineWithFiles / userListTimelineWithFiles はスコープ外なので絞らない
+				if (note.fileIds.length > 0 && !note.hideFromMediaTimeline) {
 					this.fanoutTimelineService.push(`homeTimelineWithFiles:${channelFollowing.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
 				}
 			}
@@ -1148,7 +1157,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 				}
 
 				this.fanoutTimelineService.push(`homeTimeline:${following.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
-				if (note.fileIds.length > 0) {
+				if (note.fileIds.length > 0 && !note.hideFromMediaTimeline) {
 					this.fanoutTimelineService.push(`homeTimelineWithFiles:${following.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
 				}
 			}
@@ -1167,6 +1176,8 @@ export class NoteCreateService implements OnApplicationShutdown {
 				}
 
 				this.fanoutTimelineService.push(`userListTimeline:${userListMembership.userListId}`, note.id, this.meta.perUserListTimelineCacheMax, r);
+				// JUICE: リストタイムラインの「ファイル付きのみ」はメディアタイムライン機能の対象範囲
+				// (ホーム/ローカル/ソーシャル/グローバルのみ)に含まれないため、絞らない
 				if (note.fileIds.length > 0) {
 					this.fanoutTimelineService.push(`userListTimelineWithFiles:${userListMembership.userListId}`, note.id, this.meta.perUserListTimelineCacheMax / 2, r);
 				}
@@ -1176,7 +1187,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			if (note.userHost == null) {
 				if (note.visibility !== 'specified' || !note.visibleUserIds.some(v => v === user.id)) {
 					this.fanoutTimelineService.push(`homeTimeline:${user.id}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
-					if (note.fileIds.length > 0) {
+					if (note.fileIds.length > 0 && !note.hideFromMediaTimeline) {
 						this.fanoutTimelineService.push(`homeTimelineWithFiles:${user.id}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
 					}
 				}
@@ -1194,13 +1205,15 @@ export class NoteCreateService implements OnApplicationShutdown {
 				}
 			} else {
 				this.fanoutTimelineService.push(`userTimeline:${user.id}`, note.id, note.userHost == null ? this.meta.perLocalUserUserTimelineCacheMax : this.meta.perRemoteUserUserTimelineCacheMax, r);
+				// JUICE: userTimelineWithFilesはプロフィールの「ファイル」タブが読むリストであり、
+				// メディアタイムラインとは無関係(スコープ外)のため、hideFromMediaTimelineでは絞らない
 				if (note.fileIds.length > 0) {
 					this.fanoutTimelineService.push(`userTimelineWithFiles:${user.id}`, note.id, note.userHost == null ? this.meta.perLocalUserUserTimelineCacheMax / 2 : this.meta.perRemoteUserUserTimelineCacheMax / 2, r);
 				}
 
 				if (note.visibility === 'public' && note.userHost == null) {
 					this.fanoutTimelineService.push('localTimeline', note.id, 1000, r);
-					if (note.fileIds.length > 0) {
+					if (note.fileIds.length > 0 && !note.hideFromMediaTimeline) {
 						this.fanoutTimelineService.push('localTimelineWithFiles', note.id, 500, r);
 					}
 				}

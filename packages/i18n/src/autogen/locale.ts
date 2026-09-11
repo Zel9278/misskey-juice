@@ -9227,6 +9227,10 @@ export interface Locale extends ILocale {
              */
             "relayTimeline": string;
             /**
+             * 添付ファイル付きノートだけをグリッド/カルーセル表示で集めたメディアタイムライン(PixelFed風UI、ライトボックスでの拡大表示、投稿ごとの表示除外フラグ)
+             */
+            "mediaTimeline": string;
+            /**
              * システムメールのユーザーごとの受信言語設定
              */
             "emailI18n": string;
@@ -14542,6 +14546,38 @@ export interface Locale extends ILocale {
          * {host}経由で配信
          */
         "relayTimelineDeliveredVia": ParameterizedString<"host">;
+        /**
+         * メディアタイムライン
+         */
+        "mediaTimeline": string;
+        /**
+         * メディア
+         */
+        "mediaTimelineTab": string;
+        /**
+         * メディアタイムライン機能を有効にする
+         */
+        "mediaTimelineEnabled": string;
+        /**
+         * 添付ファイル付きのノートだけをグリッド表示で集めたタイムラインです。無効にすると、タイムラインの導線が利用できなくなります。
+         */
+        "mediaTimelineEnabledCaption": string;
+        /**
+         * 対象範囲
+         */
+        "mediaTimelineSrc": string;
+        /**
+         * 拡大表示
+         */
+        "mediaTimelineExpand": string;
+        /**
+         * メディアタイムラインに表示しない
+         */
+        "hideFromMediaTimeline": string;
+        /**
+         * 表示するタブ
+         */
+        "hiddenTimelineTabs": string;
         /**
          * 起動画面
          */

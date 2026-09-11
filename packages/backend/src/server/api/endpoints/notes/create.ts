@@ -139,6 +139,8 @@ export const paramDef = {
 		lang: { type: 'string', nullable: true, minLength: 1, maxLength: 32 },
 		localOnly: { type: 'boolean', default: false },
 		isAIGenerated: { type: 'boolean', default: false },
+		// JUICE: trueの場合、withFiles指定のタイムライン(メディアタイムライン)からこの投稿を除外する
+		hideFromMediaTimeline: { type: 'boolean', default: false },
 		reactionAcceptance: { type: 'string', nullable: true, enum: [null, 'likeOnly', 'likeOnlyForRemote', 'nonSensitiveOnly', 'nonSensitiveOnlyForLocalLikeOnlyForRemote'], default: null },
 		noExtractMentions: { type: 'boolean', default: false },
 		noExtractHashtags: { type: 'boolean', default: false },
@@ -244,6 +246,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					lang,
 					localOnly: ps.localOnly,
 					isAIGenerated: ps.isAIGenerated,
+					hideFromMediaTimeline: ps.hideFromMediaTimeline,
 					reactionAcceptance: ps.reactionAcceptance,
 					visibility: ps.visibility,
 					visibleUserIds: ps.visibleUserIds ?? [],

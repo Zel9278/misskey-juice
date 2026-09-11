@@ -39,6 +39,7 @@ describe('NoteCreateService', () => {
 			user: null,
 			localOnly: false,
 			isAIGenerated: false,
+			hideFromMediaTimeline: false,
 			relayId: null,
 			relay: null,
 			reactionAcceptance: null,

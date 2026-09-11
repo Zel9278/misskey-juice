@@ -61,6 +61,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</FormSection>
 		</SearchMarker>
 
+		<SearchMarker :keywords="['timeline', 'tab', 'hide', 'show']">
+			<FormSection>
+				<template #label><SearchLabel>{{ i18n.ts._juice.hiddenTimelineTabs }}</SearchLabel></template>
+				<div class="_gaps_s">
+					<MkSwitch
+						v-for="tab in timelineTabOptions"
+						:key="tab.key"
+						:modelValue="isTimelineTabVisible(tab.key)"
+						@update:modelValue="(v) => onChangeTimelineTabVisible(tab.key, v)"
+					>
+						<template #label>{{ tab.label }}</template>
+					</MkSwitch>
+				</div>
+			</FormSection>
+		</SearchMarker>
+
 		<SearchMarker :keywords="['language', 'timeline', 'filter']">
 			<FormSection>
 				<template #label><SearchLabel>{{ i18n.ts._juice.filteredLanguages }}</SearchLabel></template>
@@ -148,6 +164,7 @@ import { definePage } from '@/page.js';
 import { instance } from '@/instance.js';
 import { prefer } from '@/preferences.js';
 import { juicePublicSettingsCache, juiceRelaysCache } from '@/cache.js';
+import { availableBasicTimelines } from '@/timelines.js';
 
 const $i = ensureSignin();
 
@@ -157,8 +174,11 @@ const muteAIGeneratedNotes = ref($i.muteAIGeneratedNotes ?? 'none');
 // JUICE: リレータイムラインの絞り込み設定(機能自体が無効なインスタンスでは項目を出さない)
 const relayTimelineEnabled = ref(false);
 const relays = ref<Misskey.entities.JuiceRelaysResponse>([]);
+// JUICE: メディアタイムラインが有効なインスタンスでのみ、タブの表示切り替え一覧に含める
+const mediaTimelineEnabled = ref(false);
 juicePublicSettingsCache.fetch().then(res => {
 	relayTimelineEnabled.value = res.relayTimelineEnabled;
+	mediaTimelineEnabled.value = res.mediaTimelineEnabled;
 	if (relayTimelineEnabled.value) {
 		juiceRelaysCache.fetch().then(r => {
 			relays.value = r;
@@ -174,6 +194,24 @@ function onChangeRelayFilter(id: string, checked: boolean) {
 	prefer.commit('relayTimelineFilter', checked
 		? [...prefer.s.relayTimelineFilter, id]
 		: prefer.s.relayTimelineFilter.filter(x => x !== id));
+}
+
+// JUICE: タイムラインページのタブバーに出すベーシックタイムライン・リレー・メディアタイムラインを、
+// それぞれ個別に非表示にできる(サーバー側で無効化されているタブはそもそも一覧に出さない)
+const timelineTabOptions = computed(() => [
+	...availableBasicTimelines().map(tl => ({ key: tl as string, label: i18n.ts._timelines[tl] })),
+	...(relayTimelineEnabled.value ? [{ key: 'relay', label: i18n.ts._juice.relayTimelineTab }] : []),
+	...(mediaTimelineEnabled.value ? [{ key: 'media', label: i18n.ts._juice.mediaTimelineTab }] : []),
+]);
+
+function isTimelineTabVisible(key: string): boolean {
+	return !prefer.r.hiddenTimelineTabs.value.includes(key);
+}
+
+function onChangeTimelineTabVisible(key: string, visible: boolean) {
+	prefer.commit('hiddenTimelineTabs', visible
+		? prefer.s.hiddenTimelineTabs.filter(x => x !== key)
+		: [...prefer.s.hiddenTimelineTabs, key]);
 }
 
 // JUICE: 折りたたみの見出しに現在の選択状況を表示する(未選択=すべて表示中であることが分かるように)

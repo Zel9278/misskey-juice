@@ -454,7 +454,10 @@ export default function (props: MfmProps, { emit }: { emit: SetupContext<MfmEven
 							host: props.author.host,
 							useOriginalSize: scale >= 2.5,
 							menu: props.enableEmojiMenu,
-							menuReaction: false,
+							// JUICE: 本家はリモート絵文字への相乗りリアクション自体が存在しないため常にfalseだったが、
+							// JUICEには管理者設定で有効化できる相乗り機能があるため、ローカルと同じくpropsに従う。
+							// 実際に相乗り可能かどうかの最終判定はMkCustomEmoji.vue側で行う
+							menuReaction: props.enableEmojiMenuReaction,
 						})];
 					}
 				}

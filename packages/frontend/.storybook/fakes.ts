@@ -237,6 +237,7 @@ export function note(id = 'somenoteid'): entities.Note {
 		user: userLite(),
 		visibility: 'public',
 		isAIGenerated: false,
+		hideFromMediaTimeline: false,
 		reactionAcceptance: 'nonSensitiveOnly',
 		reactionEmojis: {},
 		reactions: {},

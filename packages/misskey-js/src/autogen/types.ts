@@ -4982,6 +4982,7 @@ export type components = {
             } | null;
             localOnly?: boolean;
             isAIGenerated: boolean;
+            hideFromMediaTimeline: boolean;
             /**
              * Format: id
              * @example xxxxxxxxxx
@@ -5049,6 +5050,7 @@ export type components = {
             } | null;
             localOnly: boolean;
             isAIGenerated: boolean;
+            hideFromMediaTimeline: boolean;
             /** @enum {string|null} */
             reactionAcceptance: 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote' | null;
             scheduledAt: number | null;
@@ -11162,6 +11164,7 @@ export interface operations {
                         rankingAggregationPeriodHours: number;
                         rankingDisplayCount: number;
                         relayTimelineEnabled: boolean;
+                        mediaTimelineEnabled: boolean;
                         latexEnabled: boolean;
                         reactionPiggybackOnRemoteEnabled: boolean;
                         contactFormEnabled: boolean;
@@ -11329,6 +11332,7 @@ export interface operations {
                     rankingAggregationPeriodHours?: number;
                     rankingDisplayCount?: number;
                     relayTimelineEnabled?: boolean;
+                    mediaTimelineEnabled?: boolean;
                     latexEnabled?: boolean;
                     reactionPiggybackOnRemoteEnabled?: boolean;
                     contactFormEnabled?: boolean;
@@ -31995,6 +31999,7 @@ export interface operations {
                         emojiRequestEnabled: boolean;
                         avatarDecorationRequestEnabled: boolean;
                         relayTimelineEnabled: boolean;
+                        mediaTimelineEnabled: boolean;
                         latexEnabled: boolean;
                         reactionPiggybackOnRemoteEnabled: boolean;
                         contactFormEnabled: boolean;
@@ -32990,6 +32995,8 @@ export interface operations {
                     localOnly?: boolean;
                     /** @default false */
                     isAIGenerated?: boolean;
+                    /** @default false */
+                    hideFromMediaTimeline?: boolean;
                     /**
                      * @default null
                      * @enum {string|null}
@@ -33233,6 +33240,8 @@ export interface operations {
                     localOnly?: boolean;
                     /** @default false */
                     isAIGenerated?: boolean;
+                    /** @default false */
+                    hideFromMediaTimeline?: boolean;
                     /**
                      * @default null
                      * @enum {string|null}
@@ -33475,6 +33484,7 @@ export interface operations {
                     hashtag?: string | null;
                     localOnly?: boolean;
                     isAIGenerated?: boolean;
+                    hideFromMediaTimeline?: boolean;
                     /** @enum {string|null} */
                     reactionAcceptance?: null | 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote';
                     /** Format: misskey:id */

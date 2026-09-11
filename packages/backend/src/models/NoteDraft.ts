@@ -83,6 +83,12 @@ export class MiNoteDraft {
 	})
 	public isAIGenerated: boolean;
 
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether this note draft should be excluded from the media timeline (withFiles-filtered timelines) (JUICE).',
+	})
+	public hideFromMediaTimeline: boolean;
+
 	@Column('varchar', {
 		length: 64, nullable: true,
 	})

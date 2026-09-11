@@ -23,8 +23,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<XAudio
 					v-if="media.type.startsWith('audio')"
 					:key="`audio:${media.id}`"
+					:ref="(comp) => { mediaComponents.set(media.id, comp as InstanceType<typeof XAudio> | null); }"
 					:class="$style.media"
 					:audio="media"
+					:user="user"
+					:inlinePlayable="inlinePlayableAudio"
 					@mediaClick="onMediaClick(media)"
 				/>
 				<XVideo
@@ -33,6 +36,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					:ref="(comp) => { mediaComponents.set(media.id, comp as InstanceType<typeof XVideo> | null); }"
 					:class="$style.media"
 					:video="media"
+					:inlinePlayable="inlinePlayableVideo"
 					@mediaClick="onMediaClick(media)"
 				/>
 				<XImage
@@ -66,11 +70,18 @@ import { prefer } from '@/preferences.js';
 import { isPreviewable, getType } from '@/utility/lightbox.js';
 import { genId } from '@/utility/id.js';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	mediaList: Misskey.entities.DriveFile[];
 	user?: Misskey.entities.User | null; // DriveFileのuserはnullになることがある。その場合に使用する所有者情報
 	raw?: boolean;
-}>();
+	// JUICE: メディアタイムラインでは動画を拡大せずその場で再生できるようにする
+	inlinePlayableVideo?: boolean;
+	// JUICE: メディアタイムラインでは音声も動画と同様に拡大せずその場で再生できるようにする
+	inlinePlayableAudio?: boolean;
+}>(), {
+	inlinePlayableVideo: false,
+	inlinePlayableAudio: false,
+});
 
 const gallery = useTemplateRef('gallery');
 const medias = computed(() => {
@@ -172,10 +183,16 @@ async function openGallery(id?: string) {
 		.filter(content => mediaComponents.get(content.id)?.isRevealed() === true)
 		.map(content => content.id);
 
+	// JUICE: センシティブフラグが無くても手動で隠されていたファイルは、ライトボックスでも隠した状態を維持する
+	const initiallyHiddenContentIds = contents
+		.filter(content => mediaComponents.get(content.id)?.isRevealed() === false)
+		.map(content => content.id);
+
 	const { dispose } = await os.popupAsyncWithDialog(import('@/components/MkLightbox.vue').then(x => x.default), {
 		defaultIndex: contents.findIndex(conten => conten.id === id),
 		contents: contents,
 		initiallyRevealedContentIds,
+		initiallyHiddenContentIds,
 		user: props.user,
 	}, {
 		closed: () => dispose(),

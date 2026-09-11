@@ -40,7 +40,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { ref, shallowRef, inject, computed, watch, onBeforeUnmount } from 'vue';
-import type { MenuItem } from '@/types/menu.js';
+import type { MenuItem, MenuAction } from '@/types/menu.js';
 import { DI } from '@/di.js';
 import { hms } from '@/filters/hms.js';
 import { i18n } from '@/i18n.js';
@@ -51,6 +51,8 @@ import MkMediaRange from '@/components/MkMediaRange.vue';
 const props = withDefaults(defineProps<{
 	/** 音量をメディア要素に適用しない（ビジュアライザー用） */
 	externalVolumeControl?: boolean;
+	/** JUICE: メディアタイムラインのインライン再生用。指定時、設定メニューに拡大表示の項目を追加する */
+	expandAction?: MenuAction;
 }>(), {
 	externalVolumeControl: false,
 });
@@ -65,6 +67,14 @@ const menuShowing = ref(false);
 
 function showMenu(ev: PointerEvent) {
 	const menu: MenuItem[] = [
+		// JUICE: メディアタイムラインのインライン再生からのみ渡ってくる。ライトボックス自体からの
+		// 呼び出し(expandActionを渡さない)では表示されない
+		...(props.expandAction != null ? [{
+			text: i18n.ts._juice.mediaTimelineExpand,
+			icon: 'ti ti-arrows-maximize',
+			badge: true,
+			action: props.expandAction,
+		}, { type: 'divider' } as const] : []),
 		// TODO: 再生キューに追加
 		{
 			type: 'switch',
@@ -299,14 +309,14 @@ function init() {
 		syncElapsedTime();
 	});
 
-	// ネイティブUIやブラウザのコンテキストメニューから変更されうるもの
-	// (externalVolumeControl時は要素の音量を100%に固定しているので、取り込むと表示が壊れる)
 	if (!props.externalVolumeControl) {
-		on('volumechange', () => {
-			const to = el.muted ? 0 : el.volume;
-			if (volume.value !== to) volume.value = to;
-		});
+		el.volume = volume.value;
 	}
+
+	// JUICE: volumeはプレイヤー間で共有される設定値のため、ここで要素側の変更を拾って逆流させると、
+	// 新しい要素が作られるたびにブラウザの初期音量(100%)が共有設定へ書き戻ってしまう
+	// (特にCORSリトライで要素が作り直される音声で顕著)。独自コントロール(XControl)の音量スライダーは
+	// v-modelで直接volumeへ繋がっておりこのイベントを経由しないため、ネイティブUI操作の取り込みは諦める
 
 	on('ratechange', () => {
 		if (speed.value !== el.playbackRate) speed.value = el.playbackRate;
@@ -330,10 +340,6 @@ function init() {
 	if (!el.paused) {
 		oncePlayed.value = true;
 		startElapsedTick();
-	}
-
-	if (!props.externalVolumeControl) {
-		el.volume = volume.value;
 	}
 
 	// 音声トラックを持たない動画はGIFのように扱う

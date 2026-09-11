@@ -106,6 +106,14 @@ const url = computed(() => (props.raw || prefer.s.loadRawImages)
 		: props.image.thumbnailUrl!,
 );
 
+async function reveal() {
+	if (!(await canRevealFile(props.image))) {
+		return;
+	}
+
+	hide.value = false;
+}
+
 async function onClick(ev: PointerEvent) {
 	if (!props.controls) {
 		emit('mediaClick', ev);
@@ -114,11 +122,7 @@ async function onClick(ev: PointerEvent) {
 
 	if (hide.value) {
 		ev.stopPropagation();
-		if (!(await canRevealFile(props.image))) {
-			return;
-		}
-
-		hide.value = false;
+		await reveal();
 	} else {
 		emit('mediaClick', ev);
 	}
@@ -142,6 +146,7 @@ function onContextmenu(ev: PointerEvent) {
 
 defineExpose<MediaComponentExposes>({
 	isRevealed: () => !hide.value,
+	reveal,
 });
 </script>
 

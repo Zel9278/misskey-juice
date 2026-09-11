@@ -41,7 +41,7 @@ import { prefer } from '@/preferences.js';
 import { customEmojisMap } from '@/custom-emojis.js';
 import { DI } from '@/di.js';
 import { checkReactionPermissions } from '@/utility/check-reaction-permissions.js';
-import { juicePublicSettingsCache } from '@/cache.js';
+import { useReactionPiggybackOnRemoteEnabled } from '@/utility/reaction-piggyback.js';
 
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note;
@@ -81,7 +81,7 @@ function onMockToggleReaction(emoji: string, count: number) {
 // JUICE: リモートのカスタム絵文字を使ったリアクションへの相乗りが管理者設定で有効化されているか。
 // MkReactionsViewer.reaction.vueのcanToggleと同じ設定を参照し、「利用可能」表示と実際にクリック
 // できるかどうかの判定を一致させる
-const reactionPiggybackOnRemoteEnabled = computed(() => juicePublicSettingsCache.value.value?.reactionPiggybackOnRemoteEnabled ?? false);
+const reactionPiggybackOnRemoteEnabled = useReactionPiggybackOnRemoteEnabled();
 
 // JUICE: MkReactionsViewer.reaction.vueのcanToggleと同じロジックで判定する。以前はロール制限・
 // センシティブ・ローカル限定を無視しており、実際にはクリックできない(権限が無い)リアクションが

@@ -47,9 +47,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<article v-else :class="$style.article" @contextmenu.stop="onContextmenu">
 		<div v-if="appearNote.channel" :class="$style.colorBar" :style="{ background: appearNote.channel.color }"></div>
-		<MkAvatar :class="[$style.avatar, prefer.s.useStickyIcons ? $style.useSticky : null]" :user="appearNote.user" :link="!mock" :preview="!mock"/>
+		<MkAvatar v-if="!inMediaTimeline" :class="[$style.avatar, prefer.s.useStickyIcons ? $style.useSticky : null]" :user="appearNote.user" :link="!mock" :preview="!mock"/>
 		<div :class="$style.main">
-			<MkNoteHeader :note="appearNote" :isAIGenerated="$appearNote.isAIGenerated" :mini="true"/>
+			<!-- JUICE: メディアタイムラインではPixelFed風に、アバターをヘッダー行に含めてサイドバー分の余白を無くす -->
+			<div v-if="inMediaTimeline" :class="$style.pixelfedHeaderRow">
+				<MkAvatar :class="$style.pixelfedHeaderAvatar" :user="appearNote.user" :link="!mock" :preview="!mock"/>
+				<MkNoteHeader :class="$style.pixelfedHeaderName" :note="appearNote" :isAIGenerated="$appearNote.isAIGenerated" :mini="true"/>
+			</div>
+			<MkNoteHeader v-else :note="appearNote" :isAIGenerated="$appearNote.isAIGenerated" :mini="true"/>
 			<MkInstanceTicker v-if="showTicker" :host="appearNote.user.host" :instance="appearNote.user.instance"/>
 			<div style="container-type: inline-size;">
 				<p v-if="appearNote.cw != null" :class="$style.cw">
@@ -64,6 +69,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll" style="margin: 4px 0;"/>
 				</p>
 				<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
+					<div v-if="inMediaTimeline && appearNote.files && appearNote.files.length > 0" :class="$style.mediaBlock">
+						<!-- JUICE: 複数枚のときはPixelFed風のスワイプカルーセル、1枚のときは通常のグリッド表示 -->
+						<MkMediaCarousel v-if="appearNote.files.length > 1" ref="galleryEl" :mediaList="appearNote.files" :user="appearNote.user"/>
+						<MkMediaList v-else ref="galleryEl" :mediaList="appearNote.files" :user="appearNote.user" :inlinePlayableVideo="true" :inlinePlayableAudio="true"/>
+					</div>
 					<div :class="$style.text">
 						<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 						<MkA v-if="appearNote.replyId" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`"><i class="ti ti-arrow-back-up"></i></MkA>
@@ -86,7 +96,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 						</div>
 					</div>
-					<div v-if="appearNote.files && appearNote.files.length > 0" style="margin-top: 8px;">
+					<div v-if="!inMediaTimeline && appearNote.files && appearNote.files.length > 0" style="margin-top: 8px;">
 						<MkMediaList ref="galleryEl" :mediaList="appearNote.files" :user="appearNote.user"/>
 					</div>
 					<MkPoll
@@ -128,35 +138,35 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkA :to="`/notes/${appearNote.id}/reactions`" :class="[$style.reactionOmitted]">{{ i18n.ts.more }}</MkA>
 				</template>
 			</MkReactionsViewer>
-			<footer :class="$style.footer">
-				<button :class="$style.footerButton" class="_button" @click="reply()">
+			<footer :class="[$style.footer, inMediaTimeline && $style.pixelfedFooter]">
+				<button :class="[$style.footerButton, inMediaTimeline && $style.pixelfedFooterButton]" class="_button" @click="reply()">
 					<i class="ti ti-arrow-back-up"></i>
 					<p v-if="appearNote.repliesCount > 0" :class="$style.footerButtonCount">{{ number(appearNote.repliesCount) }}</p>
 				</button>
 				<button
 					v-if="canRenote"
 					ref="renoteButton"
-					:class="$style.footerButton"
+					:class="[$style.footerButton, inMediaTimeline && $style.pixelfedFooterButton]"
 					class="_button"
 					@mousedown.prevent="renote()"
 				>
 					<i class="ti ti-repeat"></i>
 					<p v-if="appearNote.renoteCount > 0" :class="$style.footerButtonCount">{{ number(appearNote.renoteCount) }}</p>
 				</button>
-				<button v-else :class="$style.footerButton" class="_button" disabled>
+				<button v-else :class="[$style.footerButton, inMediaTimeline && $style.pixelfedFooterButton]" class="_button" disabled>
 					<i class="ti ti-ban"></i>
 				</button>
-				<button ref="reactButton" :class="$style.footerButton" class="_button" @click="handleToggleReact()">
+				<button ref="reactButton" :class="[$style.footerButton, inMediaTimeline && $style.pixelfedFooterButton]" class="_button" @click="handleToggleReact()">
 					<i v-if="appearNote.reactionAcceptance === 'likeOnly' && $appearNote.myReaction != null" class="ti ti-heart-filled" style="color: var(--MI_THEME-love);"></i>
 					<i v-else-if="$appearNote.myReaction != null" class="ti ti-minus" style="color: var(--MI_THEME-accent);"></i>
 					<i v-else-if="appearNote.reactionAcceptance === 'likeOnly'" class="ti ti-heart"></i>
 					<i v-else class="ti ti-plus"></i>
 					<p v-if="(appearNote.reactionAcceptance === 'likeOnly' || prefer.s.showReactionsCount) && $appearNote.reactionCount > 0" :class="$style.footerButtonCount">{{ number($appearNote.reactionCount) }}</p>
 				</button>
-				<button v-if="prefer.s.showClipButtonInNoteFooter" ref="clipButton" :class="$style.footerButton" class="_button" @mousedown.prevent="clip()">
+				<button v-if="prefer.s.showClipButtonInNoteFooter" ref="clipButton" :class="[$style.footerButton, inMediaTimeline && $style.pixelfedFooterButton]" class="_button" @mousedown.prevent="clip()">
 					<i class="ti ti-paperclip"></i>
 				</button>
-				<button ref="menuButton" :class="$style.footerButton" class="_button" @mousedown.prevent="showMenu()">
+				<button ref="menuButton" :class="[$style.footerButton, inMediaTimeline && $style.pixelfedFooterButton]" class="_button" @mousedown.prevent="showMenu()">
 					<i class="ti ti-dots"></i>
 				</button>
 			</footer>
@@ -226,6 +236,7 @@ import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import MkReactionsViewer from '@/components/MkReactionsViewer.vue';
 import MkMediaList from '@/components/MkMediaList.vue';
+import MkMediaCarousel from '@/components/MkMediaCarousel.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
 import MkPoll from '@/components/MkPoll.vue';
 import MkUrlPreview from '@/components/MkUrlPreview.vue';
@@ -252,6 +263,7 @@ const inTimeline = inject<boolean>('inTimeline', false);
 const tl_withSensitive = inject<Ref<boolean>>('tl_withSensitive', ref(true));
 const inChannel = inject(DI.inChannel, null);
 const inRelayTimeline = inject(DI.inRelayTimeline, null);
+const inMediaTimeline = inject(DI.inMediaTimeline, null); // JUICE: メディアタイムラインではPixelFed風に画像を本文より上に表示する
 const currentClip = inject<Ref<Misskey.entities.Clip> | null>('currentClip', null);
 const currentAntenna = inject<Ref<Misskey.entities.Antenna | null> | null>('currentAntenna', null);
 
@@ -607,6 +619,29 @@ const keymap = {
 	min-width: 0;
 }
 
+// JUICE: メディアタイムラインでは、アバターをサイドバーではなくヘッダー行の中に表示する(PixelFed風)
+.pixelfedHeaderRow {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 8px;
+}
+
+.pixelfedHeaderAvatar {
+	flex-shrink: 0;
+	display: block !important;
+	width: 40px;
+	height: 40px;
+}
+
+// JUICE: MkNoteHeader自体はflexアイテムとしてshrink-to-fitな幅にしかならず、内部の
+// margin-left:autoな日時表示(.info)が右端まで押し出されない。行全体の残り幅を明示的に
+// 取らせることで、通常のノートと同じ「日時は右寄せ」の見た目に揃える
+.pixelfedHeaderName {
+	flex: 1;
+	min-width: 0;
+}
+
 .cw {
 	cursor: default;
 	display: block;
@@ -663,6 +698,11 @@ const keymap = {
 
 .text {
 	overflow-wrap: break-word;
+}
+
+// JUICE: メディアタイムラインでは画像を本文より上に表示する(PixelFed風)ため、本文側との余白を付ける
+.mediaBlock {
+	margin-bottom: 8px;
 }
 
 .replyIcon {
@@ -728,6 +768,29 @@ const keymap = {
 .footerButtonCount {
 	display: inline;
 	margin: 0 0 0 8px;
+}
+
+// JUICE: メディアタイムラインでは、PixelFedの角丸pillボタン(btn btn-light rounded-pill)風にする
+.pixelfedFooter {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 4px;
+}
+
+.pixelfedFooterButton {
+	padding: 6px 12px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--MI_THEME-fg), transparent 92%);
+
+	&:hover {
+		background: color-mix(in srgb, var(--MI_THEME-fg), transparent 85%);
+	}
+}
+
+// JUICE: .footerButton:not(:last-child)のmargin-right指定より詳細度で確実に勝つよう、結合セレクタにする
+.footerButton.pixelfedFooterButton:not(:last-child) {
+	margin-right: 0;
 }
 
 @container (max-width: 580px) {

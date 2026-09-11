@@ -114,6 +114,7 @@ export class NoteDraftEntityService implements OnModuleInit {
 			visibility: noteDraft.visibility,
 			localOnly: noteDraft.localOnly,
 			isAIGenerated: noteDraft.isAIGenerated,
+			hideFromMediaTimeline: noteDraft.hideFromMediaTimeline, // JUICE
 			reactionAcceptance: noteDraft.reactionAcceptance,
 			visibleUserIds: noteDraft.visibleUserIds,
 			hashtag: noteDraft.hashtag,

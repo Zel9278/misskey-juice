@@ -34,6 +34,8 @@ export interface JuiceSettingsValue {
 	rankingDisplayCount?: number;
 	/** リレーTL機能を有効にするか */
 	relayTimelineEnabled?: boolean;
+	/** メディアタイムライン(添付ファイル付きノートのグリッド表示)機能を有効にするか */
+	mediaTimelineEnabled?: boolean;
 	/** LaTeX(数式)表示機能を有効にするか */
 	latexEnabled?: boolean;
 	/** リモートのカスタム絵文字を使ったリアクションへの相乗り(既存リアクションをクリックして同じリアクションを付けること)を許可するか */
@@ -150,6 +152,18 @@ export function resolveRelayTimelineSettings(settings: JuiceSettingsValue): {
 } {
 	return {
 		relayTimelineEnabled: settings.relayTimelineEnabled ?? false,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・juice/public-settingsの2箇所で共通利用する。
+ */
+export function resolveMediaTimelineSettings(settings: JuiceSettingsValue): {
+	mediaTimelineEnabled: boolean;
+} {
+	return {
+		mediaTimelineEnabled: settings.mediaTimelineEnabled ?? false,
 	};
 }
 

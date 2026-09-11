@@ -89,6 +89,7 @@ const props = withDefaults(defineProps<{
 		emojiRequestEnabled: false,
 		avatarDecorationRequestEnabled: false,
 		relayTimelineEnabled: false,
+		mediaTimelineEnabled: false,
 		latexEnabled: true,
 		reactionPiggybackOnRemoteEnabled: false,
 		contactFormEnabled: true,

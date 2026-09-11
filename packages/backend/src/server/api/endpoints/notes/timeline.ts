@@ -268,6 +268,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		if (ps.withFiles) {
 			query.andWhere('note.fileIds != \'{}\'');
+			// JUICE: hideFromMediaTimelineな投稿はメディアタイムライン(withFiles指定時)から除外する
+			query.andWhere('note.hideFromMediaTimeline = FALSE');
 		}
 
 		// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
