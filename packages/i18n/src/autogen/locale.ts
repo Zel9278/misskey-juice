@@ -6436,6 +6436,10 @@ export interface Locale extends ILocale {
     };
     "_abuseUserReport": {
         /**
+         * 通報を管理
+         */
+        "menuTitle": string;
+        /**
          * 転送
          */
         "forward": string;
@@ -6460,6 +6464,76 @@ export interface Locale extends ILocale {
          * 内容が正当でない通報の場合は「否認」を選択し、否定的にケースが解決されたことをマークします。
          */
         "resolveTutorial": string;
+        /**
+         * カテゴリ
+         */
+        "category": string;
+        /**
+         * 未分類
+         */
+        "categoryNone": string;
+        /**
+         * 対象ノート
+         */
+        "targetNote": string;
+        /**
+         * 対象チャットメッセージ
+         */
+        "targetChatMessage": string;
+        /**
+         * メッセージは削除されています
+         */
+        "deletedChatMessage": string;
+        /**
+         * 状況の詳細
+         */
+        "situationDetail": string;
+        /**
+         * どのような状況で発生したかを記述してください(空欄可)
+         */
+        "situationDetailCaption": string;
+        "_category": {
+            /**
+             * 通報カテゴリ管理
+             */
+            "categoryManagement": string;
+            /**
+             * 元に戻す
+             */
+            "reset": string;
+            /**
+             * キー(半角英数字)
+             */
+            "categoryKeyPlaceholder": string;
+            /**
+             * 表示名
+             */
+            "categoryTextPlaceholder": string;
+            /**
+             * 既定のカテゴリにする
+             */
+            "defaultCategory": string;
+            /**
+             * 表示順
+             */
+            "categoryOrderPlaceholder": string;
+            /**
+             * カテゴリを1つ以上設定してください。
+             */
+            "atLeastOneCategoryRequired": string;
+            /**
+             * 既定のカテゴリを1つだけ選択してください。
+             */
+            "selectOneDefaultCategory": string;
+            /**
+             * カテゴリのキーが重複しています。
+             */
+            "duplicateCategoryKey": string;
+            /**
+             * 新しいカテゴリ
+             */
+            "customCategory": string;
+        };
     };
     "_delivery": {
         /**

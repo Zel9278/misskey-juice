@@ -94,6 +94,10 @@ describe('[シナリオ] ユーザ通報', () => {
 		bob = await signup({ username: 'bob' });
 
 		await role(admin, { isAdministrator: true });
+
+		// JUICE: チャットメッセージ関連のテストのため、誰からでもチャットを受け付けられるようにしておく
+		await api('i/update', { chatScope: 'everyone' }, alice);
+		await api('i/update', { chatScope: 'everyone' }, bob);
 	}, 1000 * 60 * 2);
 
 	afterAll(async () => {
@@ -327,7 +331,163 @@ describe('[シナリオ] ユーザ通報', () => {
 
 			expect(webhookBody2).toBe('timeout');
 		});
+	});
 
+	// JUICE: 通報カテゴリ・対象コンテンツ(ノート/チャットメッセージ)の構造化参照
+	describe('カテゴリ・対象コンテンツ', () => {
+		async function findReport(reportId: string): Promise<entities.AdminAbuseUserReportsResponse[number]> {
+			const reports = await api('admin/abuse-user-reports', { limit: 100 }, admin);
+			const report = reports.body.find(r => r.id === reportId);
+			if (report == null) throw new Error('report not found');
+			return report;
+		}
+
+		test('カテゴリを指定して通報できる', async () => {
+			const res = await api('users/report-abuse', {
+				userId: alice.id,
+				comment: randomString(),
+				category: 'spam',
+			}, bob);
+			expect(res.status).toBe(204);
+
+			const report = await findReport((await api('admin/abuse-user-reports', { limit: 1 }, admin)).body[0].id);
+			expect(report.category).toBe('spam');
+		});
+
+		test('状況の詳細を指定して通報できる', async () => {
+			const situationDetail = randomString();
+
+			const res = await api('users/report-abuse', {
+				userId: alice.id,
+				comment: randomString(),
+				situationDetail,
+			}, bob);
+			expect(res.status).toBe(204);
+
+			const reportId = (await api('admin/abuse-user-reports', { limit: 1 }, admin)).body[0].id;
+			const report = await findReport(reportId);
+			expect(report.situationDetail).toBe(situationDetail);
+		});
+
+		test('状況の詳細は省略でき、省略時はnullになる', async () => {
+			const res = await api('users/report-abuse', {
+				userId: alice.id,
+				comment: randomString(),
+			}, bob);
+			expect(res.status).toBe(204);
+
+			const reportId = (await api('admin/abuse-user-reports', { limit: 1 }, admin)).body[0].id;
+			const report = await findReport(reportId);
+			expect(report.situationDetail).toBeNull();
+		});
+
+		test('不正なカテゴリを指定すると失敗する', async () => {
+			const res = await api('users/report-abuse', {
+				userId: alice.id,
+				comment: randomString(),
+				category: 'not_a_real_category',
+			}, bob);
+			expect(res.status).toBe(400);
+		});
+
+		test('通報一覧をカテゴリで絞り込める', async () => {
+			await api('users/report-abuse', {
+				userId: alice.id,
+				comment: randomString(),
+				category: 'spam',
+			}, bob);
+			await api('users/report-abuse', {
+				userId: alice.id,
+				comment: randomString(),
+				category: 'harassment',
+			}, bob);
+
+			const spamOnly = await api('admin/abuse-user-reports', { limit: 100, category: 'spam' }, admin);
+			expect(spamOnly.body.length).toBeGreaterThan(0);
+			expect(spamOnly.body.every(r => r.category === 'spam')).toBe(true);
+		});
+
+		test('対象ユーザーが投稿したノートを構造化参照付きで通報できる', async () => {
+			const note = (await api('notes/create', { text: randomString() }, alice)).body.createdNote;
+
+			const res = await api('users/report-abuse', {
+				userId: alice.id,
+				comment: randomString(),
+				noteId: note.id,
+			}, bob);
+			expect(res.status).toBe(204);
+
+			const reportId = (await api('admin/abuse-user-reports', { limit: 1 }, admin)).body[0].id;
+			const report = await findReport(reportId);
+			expect(report.targetType).toBe('note');
+			expect(report.targetNote?.id).toBe(note.id);
+		});
+
+		test('対象ユーザーが投稿していないノートを指定すると失敗する', async () => {
+			const note = (await api('notes/create', { text: randomString() }, bob)).body.createdNote;
+
+			const res = await api('users/report-abuse', {
+				userId: alice.id,
+				comment: randomString(),
+				noteId: note.id,
+			}, bob);
+			expect(res.status).toBe(400);
+		});
+
+		test('noteIdとmessageIdを同時に指定すると失敗する', async () => {
+			const note = (await api('notes/create', { text: randomString() }, alice)).body.createdNote;
+			const message = (await api('chat/messages/create-to-user', { toUserId: bob.id, text: randomString() }, alice)).body;
+
+			const res = await api('users/report-abuse', {
+				userId: alice.id,
+				comment: randomString(),
+				noteId: note.id,
+				messageId: message.id,
+			}, bob);
+			expect(res.status).toBe(400);
+		});
+
+		test('対象ユーザーが送信した1:1チャットメッセージを、その当事者が構造化参照付きで通報できる', async () => {
+			const message = (await api('chat/messages/create-to-user', { toUserId: bob.id, text: randomString() }, alice)).body;
+
+			const res = await api('users/report-abuse', {
+				userId: alice.id,
+				comment: randomString(),
+				messageId: message.id,
+			}, bob);
+			expect(res.status).toBe(204);
+
+			const reportId = (await api('admin/abuse-user-reports', { limit: 1 }, admin)).body[0].id;
+			const report = await findReport(reportId);
+			expect(report.targetType).toBe('chatMessage');
+			expect(report.targetChatMessage?.id).toBe(message.id);
+		});
+
+		test('チャットメッセージの当事者でないユーザーからの通報は失敗する', async () => {
+			const carol = await signup({ username: randomString() });
+			const message = (await api('chat/messages/create-to-user', { toUserId: bob.id, text: randomString() }, alice)).body;
+
+			const res = await api('users/report-abuse', {
+				userId: alice.id,
+				comment: randomString(),
+				messageId: message.id,
+			}, carol);
+			expect(res.status).toBe(400);
+		});
+
+		test('対象ユーザーが送信していないチャットメッセージを指定すると失敗する', async () => {
+			const message = (await api('chat/messages/create-to-user', { toUserId: alice.id, text: randomString() }, bob)).body;
+
+			const res = await api('users/report-abuse', {
+				userId: alice.id,
+				comment: randomString(),
+				messageId: message.id,
+			}, bob);
+			expect(res.status).toBe(400);
+		});
+	});
+
+	describe('SystemWebhook その他', () => {
 		test('通報を受けた -> 通知設定が無効の場合は送出されない', async () => {
 			const webhook = await createSystemWebhook({
 				on: ['abuseReport', 'abuseReportResolved'],

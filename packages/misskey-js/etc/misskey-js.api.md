@@ -44,6 +44,9 @@ type Ad = components['schemas']['Ad'];
 // Warning: (ae-forgotten-export) The symbol "operations" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
+type AdminAbuseReportCategoriesResponse = operations['admin___abuse-report___categories']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminAbuseReportNotificationRecipientCreateRequest = operations['admin___abuse-report___notification-recipient___create']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1751,6 +1754,7 @@ declare namespace entities {
         PartialRolePolicyOverride,
         EmptyRequest,
         EmptyResponse,
+        AdminAbuseReportCategoriesResponse,
         AdminAbuseReportNotificationRecipientCreateRequest,
         AdminAbuseReportNotificationRecipientCreateResponse,
         AdminAbuseReportNotificationRecipientDeleteRequest,

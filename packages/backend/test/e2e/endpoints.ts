@@ -1550,6 +1550,15 @@ describe('Endpoints', () => {
 				customSplashText: [],
 				newAccountFollowRequestEnabled: false,
 				newAccountFollowRequestThresholdMs: 24 * 60 * 60 * 1000,
+				reportCategories: [
+					{ key: 'spam', text: 'スパム', enabled: true, order: 1, isDefault: false },
+					{ key: 'harassment', text: '嫌がらせ・迷惑行為', enabled: true, order: 2, isDefault: false },
+					{ key: 'inappropriate_content', text: '不適切なコンテンツ', enabled: true, order: 3, isDefault: false },
+					{ key: 'impersonation', text: 'なりすまし', enabled: true, order: 4, isDefault: false },
+					{ key: 'copyright', text: '著作権侵害', enabled: true, order: 5, isDefault: false },
+					{ key: 'personal_info', text: '個人情報の晒し', enabled: true, order: 6, isDefault: false },
+					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: true },
+				],
 			});
 		});
 
@@ -2548,6 +2557,15 @@ describe('Endpoints', () => {
 					{ key: 'technical_issue', text: '技術的な問題', enabled: true, order: 5, isDefault: false },
 					{ key: 'content_issue', text: 'コンテンツ関連', enabled: true, order: 6, isDefault: false },
 					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
+				],
+				reportCategories: [
+					{ key: 'spam', text: 'スパム', enabled: true, order: 1, isDefault: false },
+					{ key: 'harassment', text: '嫌がらせ・迷惑行為', enabled: true, order: 2, isDefault: false },
+					{ key: 'inappropriate_content', text: '不適切なコンテンツ', enabled: true, order: 3, isDefault: false },
+					{ key: 'impersonation', text: 'なりすまし', enabled: true, order: 4, isDefault: false },
+					{ key: 'copyright', text: '著作権侵害', enabled: true, order: 5, isDefault: false },
+					{ key: 'personal_info', text: '個人情報の晒し', enabled: true, order: 6, isDefault: false },
+					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: true },
 				],
 			});
 		});

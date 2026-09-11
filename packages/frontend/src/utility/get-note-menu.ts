@@ -148,6 +148,7 @@ export function getAbuseNoteMenu(note: Misskey.entities.Note, text: string): Men
 			const { dispose } = await os.popupAsyncWithDialog(import('@/components/MkAbuseReportWindow.vue').then(x => x.default), {
 				user: note.user,
 				initialComment: `${noteInfo}-----\n`,
+				noteId: note.id,
 			}, {
 				closed: () => dispose(),
 			});

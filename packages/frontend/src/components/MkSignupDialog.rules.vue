@@ -96,6 +96,7 @@ const props = withDefaults(defineProps<{
 		contactFormRequireAuth: false,
 		contactFormContentMaxLength: 10000,
 		contactFormCategories: [],
+		reportCategories: [],
 	}),
 });
 

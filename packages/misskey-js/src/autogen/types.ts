@@ -2,6 +2,15 @@
 /* eslint @typescript-eslint/no-explicit-any: 0 */
 
 export type paths = {
+    '/admin/abuse-report/categories': {
+        /**
+         * admin/abuse-report/categories
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *read:admin:abuse-user-reports*
+         */
+        post: operations['admin___abuse-report___categories'];
+    };
     '/admin/abuse-report/notification-recipient/create': {
         /**
          * admin/abuse-report/notification-recipient/create
@@ -6396,6 +6405,70 @@ export type components = {
 };
 export type $defs = Record<string, never>;
 export interface operations {
+    'admin___abuse-report___categories': {
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        key: string;
+                        text: string;
+                        enabled: boolean;
+                        order: number;
+                        isDefault: boolean;
+                    }[];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'admin___abuse-report___notification-recipient___create': {
         requestBody: {
             content: {
@@ -6760,6 +6833,8 @@ export interface operations {
                      * @enum {string}
                      */
                     targetUserOrigin?: 'combined' | 'local' | 'remote';
+                    /** @default null */
+                    category?: string | null;
                 };
             };
         };
@@ -6794,6 +6869,12 @@ export interface operations {
                         /** @enum {string|null} */
                         resolvedAs: 'accept' | 'reject' | null;
                         moderationNote: string;
+                        category: string | null;
+                        /** @enum {string|null} */
+                        targetType: 'note' | 'chatMessage' | null;
+                        targetNote: components['schemas']['Note'] | null;
+                        targetChatMessage: components['schemas']['ChatMessage'] | null;
+                        situationDetail: string | null;
                     }[];
                 };
             };
@@ -11181,6 +11262,13 @@ export interface operations {
                         customSplashText: string[];
                         newAccountFollowRequestEnabled: boolean;
                         newAccountFollowRequestThresholdMs: number;
+                        reportCategories: {
+                            key: string;
+                            text: string;
+                            enabled: boolean;
+                            order: number;
+                            isDefault: boolean;
+                        }[];
                     };
                 };
             };
@@ -11351,6 +11439,13 @@ export interface operations {
                     customSplashText?: string[];
                     newAccountFollowRequestEnabled?: boolean;
                     newAccountFollowRequestThresholdMs?: number;
+                    reportCategories?: {
+                        key: string;
+                        text: string;
+                        enabled: boolean;
+                        order: number;
+                        isDefault: boolean;
+                    }[];
                 };
             };
         };
@@ -32016,6 +32111,13 @@ export interface operations {
                             order: number;
                             isDefault: boolean;
                         }[];
+                        reportCategories: {
+                            key: string;
+                            text: string;
+                            enabled: boolean;
+                            order: number;
+                            isDefault: boolean;
+                        }[];
                     };
                 };
             };
@@ -40372,6 +40474,12 @@ export interface operations {
                     /** Format: misskey:id */
                     userId: string;
                     comment: string;
+                    category?: string | null;
+                    /** Format: misskey:id */
+                    noteId?: string | null;
+                    /** Format: misskey:id */
+                    messageId?: string | null;
+                    situationDetail?: string | null;
                 };
             };
         };

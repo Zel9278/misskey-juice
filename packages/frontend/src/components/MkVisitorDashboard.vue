@@ -102,6 +102,7 @@ const juicePublicSettings = ref<Misskey.entities.JuicePublicSettingsResponse>({
 	contactFormRequireAuth: false,
 	contactFormContentMaxLength: 10000,
 	contactFormCategories: [],
+	reportCategories: [],
 });
 misskeyApi('juice/public-settings').then(res => {
 	juicePublicSettings.value = res;

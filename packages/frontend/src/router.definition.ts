@@ -397,6 +397,12 @@ export const ROUTE_DEF = [{
 	path: '/contact-form-manager',
 	component: page(() => import('@/pages/admin/contact-form.vue')),
 }, {
+	// JUICE: 通報管理はロールポリシーでの個別付与が無くモデレーター/管理者専用だが、
+	// /admin配下のサイドバー付きレイアウトを経由せず直接開ける専用画面として、
+	// 他の-managerページと同じ方式でトップレベルにも登録する
+	path: '/abuses-manager',
+	component: page(() => import('@/pages/admin/abuses.vue')),
+}, {
 	path: '/registry/keys/:domain/:path(*)?',
 	component: page(() => import('@/pages/registry.keys.vue')),
 }, {
@@ -563,6 +569,11 @@ export const ROUTE_DEF = [{
 		path: '/abuse-report-notification-recipient',
 		name: 'abuse-report-notification-recipient',
 		component: page(() => import('@/pages/admin/abuse-report/notification-recipient.vue')),
+	}, {
+		// JUICE: 通報カテゴリ管理
+		path: '/abuse-report-categories',
+		name: 'abuse-report-categories',
+		component: page(() => import('@/pages/admin/abuse-report/categories.vue')),
 	}, {
 		path: '/system-webhook',
 		name: 'system-webhook',

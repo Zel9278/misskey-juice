@@ -186,6 +186,7 @@ function showMenu(ev: PointerEvent, contextmenu = false) {
 				const { dispose } = await os.popupAsyncWithDialog(import('@/components/MkAbuseReportWindow.vue').then(x => x.default), {
 					user: props.message.fromUser!,
 					initialComment: `${localUrl}\n-----\n`,
+					messageId: props.message.id,
 				}, {
 					closed: () => dispose(),
 				});

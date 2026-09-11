@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings, resolveNewAccountFollowRequestSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings, resolveNewAccountFollowRequestSettings, resolveReportCategorySettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -119,6 +119,21 @@ export const meta = {
 				type: 'number',
 				optional: false, nullable: false,
 			},
+			reportCategories: {
+				type: 'array',
+				optional: false, nullable: false,
+				items: {
+					type: 'object',
+					optional: false, nullable: false,
+					properties: {
+						key: { type: 'string', optional: false, nullable: false },
+						text: { type: 'string', optional: false, nullable: false },
+						enabled: { type: 'boolean', optional: false, nullable: false },
+						order: { type: 'number', optional: false, nullable: false },
+						isDefault: { type: 'boolean', optional: false, nullable: false },
+					},
+				},
+			},
 		},
 	},
 } as const;
@@ -149,6 +164,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...resolveContactFormSettings(settings),
 				...resolveCustomSplashTextSettings(settings),
 				...resolveNewAccountFollowRequestSettings(settings),
+				...resolveReportCategorySettings(settings),
 			};
 		});
 	}

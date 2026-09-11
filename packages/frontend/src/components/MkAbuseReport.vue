@@ -43,8 +43,44 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkFolder :defaultOpen="true">
 			<template #icon><i class="ti ti-message-2"></i></template>
 			<template #label>{{ i18n.ts.details }}</template>
+			<template #suffix>{{ report.category ? categoryLabel : i18n.ts._abuseUserReport.categoryNone }}</template>
 			<div class="_gaps_s">
+				<div v-if="report.situationDetail">
+					<b>{{ i18n.ts._abuseUserReport.situationDetail }}:</b>
+					<Mfm :text="report.situationDetail" :linkNavigationBehavior="'window'"/>
+				</div>
 				<Mfm :text="report.comment" :linkNavigationBehavior="'window'"/>
+			</div>
+		</MkFolder>
+
+		<MkFolder v-if="report.targetType != null" :defaultOpen="true">
+			<template #icon><i class="ti ti-file-text"></i></template>
+			<template #label>{{ report.targetType === 'note' ? i18n.ts._abuseUserReport.targetNote : i18n.ts._abuseUserReport.targetChatMessage }}</template>
+			<div class="_gaps_s">
+				<template v-if="report.targetType === 'note'">
+					<MkNoteSimple :note="report.targetNote ?? null"/>
+				</template>
+				<template v-else-if="report.targetType === 'chatMessage'">
+					<div v-if="report.targetChatMessage" :class="$style.chatMessagePreview">
+						<div :class="$style.chatMessageHeader">
+							<MkAvatar :user="report.targetChatMessage.fromUser" style="width: 24px; height: 24px;"/>
+							<MkAcct :user="report.targetChatMessage.fromUser"/>
+							<i class="ti ti-arrow-right"></i>
+							<template v-if="report.targetChatMessage.toUser">
+								<MkAvatar :user="report.targetChatMessage.toUser" style="width: 24px; height: 24px;"/>
+								<MkAcct :user="report.targetChatMessage.toUser"/>
+							</template>
+							<template v-else-if="report.targetChatMessage.toRoom">
+								<i class="ti ti-users"></i>
+								<span>{{ report.targetChatMessage.toRoom.name }}</span>
+							</template>
+							<MkTime :time="report.targetChatMessage.createdAt" :class="$style.chatMessageTime"/>
+						</div>
+						<Mfm v-if="report.targetChatMessage.text" :text="report.targetChatMessage.text" :linkNavigationBehavior="'window'"/>
+						<MkMediaList v-if="report.targetChatMessage.file" :mediaList="[report.targetChatMessage.file]"/>
+					</div>
+					<div v-else>{{ i18n.ts._abuseUserReport.deletedChatMessage }}</div>
+				</template>
 			</div>
 		</MkFolder>
 
@@ -78,7 +114,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { provide, ref, watch } from 'vue';
+import { computed, onMounted, provide, ref, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import MkButton from '@/components/MkButton.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
@@ -89,8 +125,11 @@ import { dateString } from '@/filters/date.js';
 import MkFolder from '@/components/MkFolder.vue';
 import RouterView from '@/components/global/RouterView.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
+import MkNoteSimple from '@/components/MkNoteSimple.vue';
+import MkMediaList from '@/components/MkMediaList.vue';
 import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
 import { createRouter } from '@/router.js';
+import { useAbuseReportCategories } from '@/composables/useAbuseReportCategories.js';
 
 const props = defineProps<{
 	report: Misskey.entities.AdminAbuseUserReportsResponse[number];
@@ -106,6 +145,14 @@ const reporterRouter = createRouter(`/admin/user/${props.report.reporterId}`);
 reporterRouter.init();
 
 const moderationNote = ref(props.report.moderationNote ?? '');
+
+// JUICE: 通報カテゴリのラベル解決(設定側で削除済みのカテゴリでも生のkeyをフォールバック表示)
+const { fetchCategories, getCategoryLabel } = useAbuseReportCategories();
+const categoryLabel = computed(() => props.report.category ? getCategoryLabel(props.report.category) : '');
+
+onMounted(() => {
+	fetchCategories({ includeDisabled: true });
+});
 
 watch(moderationNote, async () => {
 	os.apiWithDialog('admin/update-abuse-user-report', {
@@ -150,4 +197,24 @@ function showMenu(ev: PointerEvent) {
 </script>
 
 <style lang="scss" module>
+.chatMessagePreview {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 12px;
+	border-radius: 8px;
+	background: var(--MI_THEME-panel);
+}
+
+.chatMessageHeader {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.chatMessageTime {
+	margin-left: auto;
+	opacity: 0.7;
+	font-size: 0.9em;
+}
 </style>

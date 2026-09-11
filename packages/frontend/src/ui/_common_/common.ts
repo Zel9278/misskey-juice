@@ -93,6 +93,18 @@ function toolsMenuItems(): MenuItem[] {
 		});
 	}
 
+	// JUICE: 通報管理は他の承認系メニューと異なりロールポリシーでの個別付与が無い
+	// (バックエンドがrequireModeratorのみで判定するため)、モデレーター/管理者にのみ表示する
+	if ($i && ($i.isModerator || $i.isAdmin)) {
+		items.push({
+			type: 'link',
+			to: '/abuses-manager',
+			text: i18n.ts._abuseUserReport.menuTitle,
+			icon: 'ti ti-exclamation-circle',
+			badge: true,
+		});
+	}
+
 	return items;
 }
 

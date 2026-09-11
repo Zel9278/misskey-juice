@@ -56,10 +56,22 @@ export interface JuiceSettingsValue {
 	newAccountFollowRequestEnabled?: boolean;
 	/** 上記が有効な場合の、フォローリクエスト化の対象となるアカウント年齢のしきい値(ミリ秒) */
 	newAccountFollowRequestThresholdMs?: number;
+	/** 通報(ユーザー通報)時に選べるカテゴリ一覧 */
+	reportCategories?: ReportCategory[];
 }
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
 export type ContactFormCategory = {
+	key: string;
+	text: string;
+	enabled: boolean;
+	order: number;
+	isDefault: boolean;
+};
+
+// JUICE: 通報(ユーザー通報)のカテゴリ。ContactFormCategoryと同じ形にして
+// 管理画面での編集パターンを揃える(通報とお問い合わせは別々の設定として独立管理する)
+export type ReportCategory = {
 	key: string;
 	text: string;
 	enabled: boolean;
@@ -249,6 +261,26 @@ export function resolveNewAccountFollowRequestSettings(settings: JuiceSettingsVa
 	return {
 		newAccountFollowRequestEnabled: settings.newAccountFollowRequestEnabled ?? false,
 		newAccountFollowRequestThresholdMs: settings.newAccountFollowRequestThresholdMs ?? 24 * 60 * 60 * 1000,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・juice/public-settingsの2箇所で共通利用する。
+ */
+export function resolveReportCategorySettings(settings: JuiceSettingsValue): {
+	reportCategories: ReportCategory[];
+} {
+	return {
+		reportCategories: settings.reportCategories ?? [
+			{ key: 'spam', text: 'スパム', enabled: true, order: 1, isDefault: false },
+			{ key: 'harassment', text: '嫌がらせ・迷惑行為', enabled: true, order: 2, isDefault: false },
+			{ key: 'inappropriate_content', text: '不適切なコンテンツ', enabled: true, order: 3, isDefault: false },
+			{ key: 'impersonation', text: 'なりすまし', enabled: true, order: 4, isDefault: false },
+			{ key: 'copyright', text: '著作権侵害', enabled: true, order: 5, isDefault: false },
+			{ key: 'personal_info', text: '個人情報の晒し', enabled: true, order: 6, isDefault: false },
+			{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: true },
+		],
 	};
 }
 

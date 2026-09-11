@@ -10,6 +10,7 @@
  * This file is used to generate API documentation and EndpointsModule.
  */
 
+export * as 'admin/abuse-report/categories' from './endpoints/admin/abuse-report/categories.js';
 export * as 'admin/abuse-report/notification-recipient/create' from './endpoints/admin/abuse-report/notification-recipient/create.js';
 export * as 'admin/abuse-report/notification-recipient/delete' from './endpoints/admin/abuse-report/notification-recipient/delete.js';
 export * as 'admin/abuse-report/notification-recipient/list' from './endpoints/admin/abuse-report/notification-recipient/list.js';

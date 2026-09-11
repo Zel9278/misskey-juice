@@ -12,6 +12,8 @@ import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { UserEntityService } from './UserEntityService.js';
+import { NoteEntityService } from './NoteEntityService.js';
+import { ChatEntityService } from './ChatEntityService.js';
 
 @Injectable()
 export class AbuseUserReportEntityService {
@@ -20,6 +22,8 @@ export class AbuseUserReportEntityService {
 		private abuseUserReportsRepository: AbuseUserReportsRepository,
 
 		private userEntityService: UserEntityService,
+		private noteEntityService: NoteEntityService,
+		private chatEntityService: ChatEntityService,
 		private idService: IdService,
 	) {
 	}
@@ -55,6 +59,19 @@ export class AbuseUserReportEntityService {
 			forwarded: report.forwarded,
 			resolvedAs: report.resolvedAs,
 			moderationNote: report.moderationNote,
+			// JUICE: 通報カテゴリ・対象コンテンツ種別
+			category: report.category,
+			targetType: report.targetType,
+			// JUICE: 通報された特定のノート/メッセージのみ、可視性制限を無視してモデレーター向けにプレビューする
+			// (対象が削除済み・存在しない場合はnullを返す。一般的な閲覧機能ではなく、通報されたコンテンツ単位でのみ開放する)
+			targetNote: report.targetNoteId
+				? this.noteEntityService.pack(report.targetNote ?? report.targetNoteId, null, { detail: false, skipHide: true }).catch(() => null)
+				: null,
+			targetChatMessage: report.targetChatMessageId
+				? this.chatEntityService.packMessageDetailed(report.targetChatMessage ?? report.targetChatMessageId).catch(() => null)
+				: null,
+			// JUICE: 通報者が記述した状況の詳細
+			situationDetail: report.situationDetail,
 		});
 	}
 
