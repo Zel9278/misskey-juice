@@ -196,12 +196,16 @@ function onChangeRelayFilter(id: string, checked: boolean) {
 		: prefer.s.relayTimelineFilter.filter(x => x !== id));
 }
 
-// JUICE: タイムラインページのタブバーに出すベーシックタイムライン・リレー・メディアタイムラインを、
-// それぞれ個別に非表示にできる(サーバー側で無効化されているタブはそもそも一覧に出さない)
+// JUICE: タイムラインページのタブバーに出すベーシックタイムライン・リレー・メディアタイムライン・
+// リスト/アンテナ/チャンネルの切り替えショートカットを、それぞれ個別に非表示にできる
+// (サーバー側で無効化されているタブはそもそも一覧に出さない)
 const timelineTabOptions = computed(() => [
 	...availableBasicTimelines().map(tl => ({ key: tl as string, label: i18n.ts._timelines[tl] })),
 	...(relayTimelineEnabled.value ? [{ key: 'relay', label: i18n.ts._juice.relayTimelineTab }] : []),
 	...(mediaTimelineEnabled.value ? [{ key: 'media', label: i18n.ts._juice.mediaTimelineTab }] : []),
+	{ key: 'list', label: i18n.ts.lists },
+	{ key: 'antenna', label: i18n.ts.antennas },
+	{ key: 'channel', label: i18n.ts.channel },
 ]);
 
 function isTimelineTabVisible(key: string): boolean {

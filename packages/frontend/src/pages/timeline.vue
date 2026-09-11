@@ -75,9 +75,9 @@ const mediaTimelineSrc = computed<BasicTimelineType>({
 	set: (x) => prefer.commit('mediaTimelineSrc', x),
 });
 
-// JUICE: タブバーに出すベーシックタイムライン(ホーム/ローカル/ソーシャル/グローバル)・リレー・メディアタイムラインの
-// うち、閲覧者側の好みで個別に非表示にしたものの一覧(設定の「JUICE」ページで変更する)。
-// サーバー側で無効化されているタブには影響しない
+// JUICE: タブバーに出すベーシックタイムライン(ホーム/ローカル/ソーシャル/グローバル)・リレー・メディアタイムライン・
+// リスト/アンテナ/チャンネルの切り替えショートカットのうち、閲覧者側の好みで個別に非表示にしたものの一覧
+// (設定の「JUICE」ページで変更する)。サーバー側で無効化されているタブには影響しない
 const hiddenTimelineTabs = computed(() => prefer.r.hiddenTimelineTabs.value);
 
 function isTimelineTabHidden(key: string): boolean {
@@ -472,22 +472,22 @@ const headerTabs = computed(() => [...(prefer.r.pinnedUserLists.value.map(l => (
 	icon: 'ti ti-photo',
 	iconOnly: true,
 	badge: true,
-}] : []), {
+}] : []), ...(!isTimelineTabHidden('list') ? [{
 	icon: 'ti ti-list',
 	title: i18n.ts.lists,
 	iconOnly: true,
 	onClick: chooseList,
-}, {
+}] : []), ...(!isTimelineTabHidden('antenna') ? [{
 	icon: 'ti ti-antenna',
 	title: i18n.ts.antennas,
 	iconOnly: true,
 	onClick: chooseAntenna,
-}, {
+}] : []), ...(!isTimelineTabHidden('channel') ? [{
 	icon: 'ti ti-device-tv',
 	title: i18n.ts.channel,
 	iconOnly: true,
 	onClick: chooseChannel,
-}] as Tab[]);
+}] : [])] as Tab[]);
 
 const headerTabsWhenNotLogin = computed(() => [...availableBasicTimelines().map(tl => ({
 	key: tl,
