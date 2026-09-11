@@ -52,6 +52,10 @@ export interface JuiceSettingsValue {
 	contactFormContentMaxLength?: number;
 	/** 起動時のスプラッシュ画面にロゴの下へランダム表示する文言一覧(misskey-tempuraのcustomSplashTextを参考) */
 	customSplashText?: string[];
+	/** 作成から一定時間経過していないアカウントからのフォローを、フォロー先の鍵設定に関わらずフォローリクエスト化するか */
+	newAccountFollowRequestEnabled?: boolean;
+	/** 上記が有効な場合の、フォローリクエスト化の対象となるアカウント年齢のしきい値(ミリ秒) */
+	newAccountFollowRequestThresholdMs?: number;
 }
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
@@ -231,6 +235,20 @@ export function resolveContactFormSettings(settings: JuiceSettingsValue): {
 			{ key: 'content_issue', text: 'コンテンツ関連', enabled: true, order: 6, isDefault: false },
 			{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
 		],
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・UserFollowingServiceの2箇所で共通利用する。
+ */
+export function resolveNewAccountFollowRequestSettings(settings: JuiceSettingsValue): {
+	newAccountFollowRequestEnabled: boolean;
+	newAccountFollowRequestThresholdMs: number;
+} {
+	return {
+		newAccountFollowRequestEnabled: settings.newAccountFollowRequestEnabled ?? false,
+		newAccountFollowRequestThresholdMs: settings.newAccountFollowRequestThresholdMs ?? 24 * 60 * 60 * 1000,
 	};
 }
 

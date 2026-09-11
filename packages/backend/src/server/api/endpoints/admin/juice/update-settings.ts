@@ -57,6 +57,8 @@ export const paramDef = {
 			maxItems: 20,
 			items: { type: 'string', maxLength: 256 },
 		},
+		newAccountFollowRequestEnabled: { type: 'boolean' },
+		newAccountFollowRequestThresholdMs: { type: 'integer', minimum: 1, maximum: 2592000000 }, // 30日
 	},
 } as const;
 
@@ -93,6 +95,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.contactFormContentMaxLength !== undefined) set.contactFormContentMaxLength = ps.contactFormContentMaxLength;
 			if (ps.contactFormCategories !== undefined) set.contactFormCategories = ps.contactFormCategories;
 			if (ps.customSplashText !== undefined) set.customSplashText = ps.customSplashText;
+			if (ps.newAccountFollowRequestEnabled !== undefined) set.newAccountFollowRequestEnabled = ps.newAccountFollowRequestEnabled;
+			if (ps.newAccountFollowRequestThresholdMs !== undefined) set.newAccountFollowRequestThresholdMs = ps.newAccountFollowRequestThresholdMs;
 
 			const after = await this.juiceSettingsService.update(set);
 

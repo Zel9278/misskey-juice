@@ -12,7 +12,7 @@ import { describe, beforeAll, afterAll, test, expect, vi } from 'vitest';
 import { Blob } from 'node-fetch';
 import { api, castAsError, initTestDb, post, randomString, role, signup, simpleGet, uploadFile } from '../utils.js';
 import type * as misskey from 'misskey-js';
-import { MiUser, MiNote, MiRelay } from '@/models/_.js';
+import { MiUser, MiNote, MiRelay, MiFollowing, MiFollowRequest } from '@/models/_.js';
 
 const waitForPushToTlOptions = { timeout: 3000, interval: 25 };
 
@@ -428,6 +428,54 @@ describe('Endpoints', () => {
 			}, alice);
 
 			assert.strictEqual(res.status, 400);
+		});
+
+		test('新規アカウントからのフォローをリクエスト化する設定が有効な場合、鍵アカウントでなくてもフォローリクエストになる(JUICE独自)', async () => {
+			const troll = await signup({ username: 'newFollowTroll' });
+
+			const enable = await api('admin/juice/update-settings', {
+				newAccountFollowRequestEnabled: true,
+				newAccountFollowRequestThresholdMs: 24 * 60 * 60 * 1000,
+			}, alice);
+			assert.strictEqual(enable.status, 204);
+
+			try {
+				const res = await api('following/create', {
+					userId: carol.id,
+				}, troll);
+				assert.strictEqual(res.status, 200);
+
+				const connection = await initTestDb(true);
+				const Followings = connection.getRepository(MiFollowing);
+				const FollowRequests = connection.getRepository(MiFollowRequest);
+				const isFollowing = await Followings.exists({ where: { followerId: troll.id, followeeId: carol.id } });
+				const hasRequest = await FollowRequests.exists({ where: { followerId: troll.id, followeeId: carol.id } });
+				connection.destroy();
+
+				assert.strictEqual(isFollowing, false);
+				assert.strictEqual(hasRequest, true);
+			} finally {
+				const reset = await api('admin/juice/update-settings', {
+					newAccountFollowRequestEnabled: false,
+				}, alice);
+				assert.strictEqual(reset.status, 204);
+			}
+		});
+
+		test('新規アカウントからのフォローをリクエスト化する設定が無効な場合は、新規アカウントでも即座にフォローできる(JUICE独自)', async () => {
+			const freshUser = await signup({ username: 'freshFollowerDefault' });
+
+			const res = await api('following/create', {
+				userId: dave.id,
+			}, freshUser);
+			assert.strictEqual(res.status, 200);
+
+			const connection = await initTestDb(true);
+			const Followings = connection.getRepository(MiFollowing);
+			const isFollowing = await Followings.exists({ where: { followerId: freshUser.id, followeeId: dave.id } });
+			connection.destroy();
+
+			assert.strictEqual(isFollowing, true);
 		});
 	});
 
@@ -1500,6 +1548,8 @@ describe('Endpoints', () => {
 					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
 				],
 				customSplashText: [],
+				newAccountFollowRequestEnabled: false,
+				newAccountFollowRequestThresholdMs: 24 * 60 * 60 * 1000,
 			});
 		});
 

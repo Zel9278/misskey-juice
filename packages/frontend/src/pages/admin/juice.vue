@@ -43,6 +43,33 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<SearchMarker v-slot="slotProps">
 					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.newAccountFollowRequest }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="newAccountFollowRequestEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.newAccountFollowRequestEnabled }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.newAccountFollowRequestEnabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+
+							<SearchMarker>
+								<MkInput v-model="newAccountFollowRequestThresholdValue" type="number" :min="1" :disabled="!newAccountFollowRequestEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.newAccountFollowRequestThresholdValue }}</SearchLabel></template>
+								</MkInput>
+							</SearchMarker>
+
+							<SearchMarker>
+								<MkSelect v-model="newAccountFollowRequestThresholdUnit" :items="newAccountFollowRequestThresholdUnitDef" :disabled="!newAccountFollowRequestEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.newAccountFollowRequestThresholdUnit }}</SearchLabel></template>
+								</MkSelect>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 						<template #label><SearchLabel>{{ i18n.ts._juice.exploreOtherServers }}</SearchLabel></template>
 
 						<div class="_gaps_m">
@@ -260,6 +287,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
 import { langs } from '@@/js/config.js';
+import { useMkSelect } from '@/composables/use-mkselect.js';
 import MkFolder from '@/components/MkFolder.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
@@ -292,6 +320,29 @@ const contactFormEnabled = ref(settings.contactFormEnabled);
 const contactFormLimit = ref(settings.contactFormLimit);
 const contactFormRequireAuth = ref(settings.contactFormRequireAuth);
 const contactFormContentMaxLength = ref(settings.contactFormContentMaxLength);
+const newAccountFollowRequestEnabled = ref(settings.newAccountFollowRequestEnabled);
+// JUICE: しきい値はミリ秒でやり取りするが、入力しやすいよう数値+単位(投票の期限指定と同じ構成)で編集する。
+// 単位変換は保存時にのみ行い、MkPollEditorのafter/unitと同様、読み込み時は常に時間単位で表示する
+const newAccountFollowRequestThresholdValue = ref(settings.newAccountFollowRequestThresholdMs / (60 * 60 * 1000));
+const {
+	model: newAccountFollowRequestThresholdUnit,
+	def: newAccountFollowRequestThresholdUnitDef,
+} = useMkSelect({
+	items: [
+		{ label: i18n.ts._time.minute, value: 'minute' },
+		{ label: i18n.ts._time.hour, value: 'hour' },
+		{ label: i18n.ts._time.day, value: 'day' },
+	],
+	initialValue: 'hour',
+});
+const newAccountFollowRequestThresholdUnitMs: Record<'minute' | 'hour' | 'day', number> = {
+	minute: 60 * 1000,
+	hour: 60 * 60 * 1000,
+	day: 24 * 60 * 60 * 1000,
+};
+const newAccountFollowRequestThresholdMs = computed(() => Math.round(
+	newAccountFollowRequestThresholdValue.value * newAccountFollowRequestThresholdUnitMs[newAccountFollowRequestThresholdUnit.value],
+));
 // JUICE: 配列を1行1件のテキストエリアとして編集する(空行は無視する)。
 // 上限(行数・1行あたりの文字数)はadmin/juice/update-settingsのparamDefと合わせている
 const customSplashTextInput = ref(settings.customSplashText.join('\n'));
@@ -322,6 +373,8 @@ function save() {
 		contactFormRequireAuth: contactFormRequireAuth.value,
 		contactFormContentMaxLength: contactFormContentMaxLength.value,
 		customSplashText: customSplashTextLines.value,
+		newAccountFollowRequestEnabled: newAccountFollowRequestEnabled.value,
+		newAccountFollowRequestThresholdMs: newAccountFollowRequestThresholdMs.value,
 	});
 }
 

@@ -14411,6 +14411,26 @@ export interface Locale extends ILocale {
          */
         "invitationRegistrationEnabledCaption": string;
         /**
+         * 新規アカウントのフォロー制限
+         */
+        "newAccountFollowRequest": string;
+        /**
+         * 新規アカウントからのフォローをリクエスト化する
+         */
+        "newAccountFollowRequestEnabled": string;
+        /**
+         * 作成から一定時間が経過していないアカウント(ローカル・リモート問わず)からのフォローを、フォロー先が承認制フォローを有効にしていなくても、承認が必要なフォローリクエストとして扱います。登録直後の荒らし・スパムアカウントによる一括フォロー対策です。
+         */
+        "newAccountFollowRequestEnabledCaption": string;
+        /**
+         * 対象にするアカウントの経過期間未満
+         */
+        "newAccountFollowRequestThresholdValue": string;
+        /**
+         * 単位
+         */
+        "newAccountFollowRequestThresholdUnit": string;
+        /**
          * 他のサーバーを探すボタン
          */
         "exploreOtherServers": string;

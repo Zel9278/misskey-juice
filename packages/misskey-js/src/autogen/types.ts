@@ -11179,6 +11179,8 @@ export interface operations {
                             isDefault: boolean;
                         }[];
                         customSplashText: string[];
+                        newAccountFollowRequestEnabled: boolean;
+                        newAccountFollowRequestThresholdMs: number;
                     };
                 };
             };
@@ -11347,6 +11349,8 @@ export interface operations {
                         isDefault: boolean;
                     }[];
                     customSplashText?: string[];
+                    newAccountFollowRequestEnabled?: boolean;
+                    newAccountFollowRequestThresholdMs?: number;
                 };
             };
         };
