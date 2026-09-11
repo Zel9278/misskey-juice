@@ -1559,6 +1559,8 @@ describe('Endpoints', () => {
 					{ key: 'personal_info', text: '個人情報の晒し', enabled: true, order: 6, isDefault: false },
 					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: true },
 				],
+				blockEmailDotAliasRegistration: false,
+				blockEmailPlusAliasRegistration: false,
 			});
 		});
 
