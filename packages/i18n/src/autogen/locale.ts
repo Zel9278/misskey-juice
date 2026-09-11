@@ -14725,6 +14725,14 @@ export interface Locale extends ILocale {
          */
         "mediaTimelineExpand": string;
         /**
+         * 前の画像
+         */
+        "mediaTimelinePrev": string;
+        /**
+         * 次の画像
+         */
+        "mediaTimelineNext": string;
+        /**
          * メディアタイムラインに表示しない
          */
         "hideFromMediaTimeline": string;

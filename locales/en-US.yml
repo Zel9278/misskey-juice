@@ -3961,6 +3961,8 @@ _juice:
   mediaTimelineEnabled: "Enable the media timeline"
   mediaTimelineEnabledCaption: "A timeline that collects only notes with attached files, displayed as a grid. When disabled, the timeline entry point will be unavailable."
   mediaTimelineExpand: "Expand"
+  mediaTimelinePrev: "Previous image"
+  mediaTimelineNext: "Next image"
   mediaTimelineSrc: "Scope"
   mediaTimelineTab: "Media"
   muteAIGeneratedNotes: "Mute AI-generated content"

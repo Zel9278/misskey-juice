@@ -3940,6 +3940,8 @@ _juice:
   mediaTimelineEnabledCaption: "添付ファイル付きのノートだけをグリッド表示で集めたタイムラインです。無効にすると、タイムラインの導線が利用できなくなります。"
   mediaTimelineSrc: "対象範囲"
   mediaTimelineExpand: "拡大表示"
+  mediaTimelinePrev: "前の画像"
+  mediaTimelineNext: "次の画像"
   hideFromMediaTimeline: "メディアタイムラインに表示しない"
   hiddenTimelineTabs: "表示するタブ"
   timelineTabOrderCaption: "スイッチで表示・非表示を切り替えられます。ハンドル(⁝)をドラッグすると並び順を変更できます。"

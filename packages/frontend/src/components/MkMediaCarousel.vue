@@ -7,10 +7,14 @@ SPDX-License-Identifier: AGPL-3.0-only
      スライド表示にする。1枚のときはMkMediaList側のグリッド表示をそのまま使うため、
      このコンポーネントは呼び出し元(MkNote.vue)でfiles.length > 1の場合のみ使われる -->
 <template>
-<div>
+<div :class="$style.root">
+	<!-- JUICE: 左右送りボタンのheight:100%を.track(画像本体)基準で揃えるための
+	     ラッパー。下の.dotsはこの外側に置き、ボタンの縦中央が.dotsの分だけ
+	     ズレないようにする -->
+	<div :class="$style.trackWrapper">
 	<div
 		ref="track"
-		:class="[$style.track, dragging && $style.dragging]"
+		:class="[$style.track, (dragging || animating) && $style.dragging]"
 		@scroll="onScroll"
 		@pointerdown="onPointerDown"
 		@pointermove="onPointerMove"
@@ -62,6 +66,25 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</button>
 		</div>
 	</div>
+	<!-- JUICE: スワイプ操作ができないマウス操作時のみ、左右送りボタンを表示する
+	     (タッチ操作時はスワイプ自体が主操作のため、画像に重なるボタンは邪魔になるだけで表示しない) -->
+	<button
+		v-if="!isTouchUsing && currentIndex > 0"
+		v-tooltip="i18n.ts._juice.mediaTimelinePrev"
+		:aria-label="i18n.ts._juice.mediaTimelinePrev"
+		class="_button"
+		:class="[$style.navButton, $style.prevButton]"
+		@click.stop="goToIndex(currentIndex - 1)"
+	><div :class="$style.navButtonIcon"><i class="ti ti-chevron-left"></i></div></button>
+	<button
+		v-if="!isTouchUsing && currentIndex < medias.previewable.length - 1"
+		v-tooltip="i18n.ts._juice.mediaTimelineNext"
+		:aria-label="i18n.ts._juice.mediaTimelineNext"
+		class="_button"
+		:class="[$style.navButton, $style.nextButton]"
+		@click.stop="goToIndex(currentIndex + 1)"
+	><div :class="$style.navButtonIcon"><i class="ti ti-chevron-right"></i></div></button>
+	</div>
 	<div v-if="medias.previewable.length > 1" :class="$style.dots">
 		<button
 			v-for="(media, i) in medias.previewable"
@@ -69,7 +92,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			:class="[$style.dot, { [$style.dotActive]: i === currentIndex }]"
 			:aria-label="`${i + 1} / ${medias.previewable.length}`"
 			class="_button"
-			@click="scrollToIndex(i)"
+			@click="goToIndex(i)"
 		></button>
 	</div>
 </div>
@@ -88,6 +111,7 @@ import { prefer } from '@/preferences.js';
 import { isPreviewable, getType } from '@/utility/lightbox.js';
 import { genId } from '@/utility/id.js';
 import { i18n } from '@/i18n.js';
+import { isTouchUsing } from '@/utility/touch.js';
 
 const props = defineProps<{
 	mediaList: Misskey.entities.DriveFile[];
@@ -98,11 +122,25 @@ const props = defineProps<{
 const track = useTemplateRef('track');
 const currentIndex = ref(0);
 const dragging = ref(false);
+// JUICE: goToIndex()由来のJSアニメーション(animateScrollTo)実行中かどうか。この間もdraggingと
+// 同様にネイティブのscroll-snapを止めておかないと、低速端末でアニメーションの途中フレームに
+// ネイティブsnapが介入してチラつく可能性があるため、CSS上はdraggingと合わせて扱う
+const animating = ref(false);
 
 // JUICE: overflow-x:autoへのホイール/タッチパン操作はブラウザ標準で効くが、
 // マウスのクリック&ドラッグは標準では一切スクロールしない(すべてのブラウザ共通の仕様)ため、
 // pointer eventsで手動のドラッグ操作(タッチ・マウス両対応)を実装する。
 // 縦方向優先のドラッグは何もせず、ページの縦スクロールへ委譲する(方向ロック方式)
+const AXIS_SWIPE_HYSTERESIS = 8;
+// JUICE: スワイプが成立する速度(px/ms)。距離が足りなくても、この速度を超える素早いフリックなら次/前に送る
+const MIN_VELOCITY_TO_SWIPE = 0.4;
+// JUICE: 速度を平均する時間窓(ms)。指を止めたまま離した場合に直前のフリックの速度が残るのを防ぐ
+const VELOCITY_WINDOW = 100;
+// JUICE: ブラウザ標準のscroll-snap(ドラッグ量が概ね50%を超えないと次に送られない)は判定が
+// 厳しすぎるため、トラック幅に対するこの比率(距離)か、MIN_VELOCITY_TO_SWIPE(速度)の
+// どちらか一方を満たせば次/前に送られる、より緩い自前の判定に置き換える
+const SWIPE_DISTANCE_RATIO = 0.15;
+
 const dragState = {
 	active: false,
 	pointerId: null as number | null,
@@ -113,10 +151,35 @@ const dragState = {
 	locked: null as 'x' | 'y' | null,
 };
 let suppressNextClick = false;
+let velocitySamples: { time: number; x: number }[] = [];
+
+function pushVelocitySample(time: number, x: number) {
+	velocitySamples.push({ time, x });
+	while (velocitySamples.length > 2 && time - velocitySamples[0].time > VELOCITY_WINDOW) {
+		velocitySamples.shift();
+	}
+}
+
+function getVelocityX(now: number): number {
+	if (velocitySamples.length < 2) return 0;
+	const latest = velocitySamples[velocitySamples.length - 1];
+	if (now - latest.time > VELOCITY_WINDOW) return 0;
+	const oldest = velocitySamples[0];
+	const duration = latest.time - oldest.time;
+	if (duration <= 0) return 0;
+	return (latest.x - oldest.x) / duration;
+}
 
 function onPointerDown(ev: PointerEvent) {
 	if (ev.pointerType === 'mouse' && ev.button !== 0) return;
 	if (!track.value) return;
+	// JUICE: ボタン/ドット操作によるanimateScrollTo実行中に、その画像を直接ドラッグし始めた場合、
+	// rAFループとドラッグの両方がscrollLeftを奪い合ってチラつくのを防ぐため、進行中のアニメーションを中断する
+	if (scrollAnimFrame != null) {
+		window.cancelAnimationFrame(scrollAnimFrame);
+		scrollAnimFrame = null;
+	}
+	animating.value = false;
 	dragState.active = true;
 	dragState.pointerId = ev.pointerId;
 	dragState.startX = ev.clientX;
@@ -124,6 +187,8 @@ function onPointerDown(ev: PointerEvent) {
 	dragState.scrollStart = track.value.scrollLeft;
 	dragState.moved = false;
 	dragState.locked = null;
+	velocitySamples = [];
+	pushVelocitySample(ev.timeStamp, ev.clientX);
 }
 
 function onPointerMove(ev: PointerEvent) {
@@ -132,7 +197,7 @@ function onPointerMove(ev: PointerEvent) {
 	const dy = ev.clientY - dragState.startY;
 
 	if (dragState.locked === null) {
-		if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+		if (Math.abs(dx) > AXIS_SWIPE_HYSTERESIS || Math.abs(dy) > AXIS_SWIPE_HYSTERESIS) {
 			dragState.locked = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
 			if (dragState.locked === 'x') {
 				track.value.setPointerCapture(ev.pointerId);
@@ -145,6 +210,7 @@ function onPointerMove(ev: PointerEvent) {
 		dragState.moved = true;
 		ev.preventDefault();
 		track.value.scrollLeft = dragState.scrollStart - dx;
+		pushVelocitySample(ev.timeStamp, ev.clientX);
 	}
 }
 
@@ -152,17 +218,36 @@ function endDrag(ev: PointerEvent) {
 	if (!dragState.active || ev.pointerId !== dragState.pointerId) return;
 	dragState.active = false;
 	dragging.value = false;
-	if (dragState.locked === 'x') {
-		if (track.value?.hasPointerCapture(ev.pointerId)) {
+
+	if (dragState.locked === 'x' && track.value) {
+		if (track.value.hasPointerCapture(ev.pointerId)) {
 			track.value.releasePointerCapture(ev.pointerId);
 		}
-		// JUICE: ドラッグとして動いた分のclickは、画像のセンシティブ解除やライトボックス起動を
-		// 誤爆させないよう握りつぶす(次のclickイベント1回だけキャプチャ段階で止める)
 		if (dragState.moved) {
+			// JUICE: ドラッグとして動いた分のclickは、画像のセンシティブ解除やライトボックス起動を
+			// 誤爆させないよう握りつぶす(次のclickイベント1回だけキャプチャ段階で止める)
 			suppressNextClick = true;
+
+			const totalSwipeX = ev.clientX - dragState.startX;
+			const velocityX = getVelocityX(ev.timeStamp);
+			const distanceThreshold = track.value.clientWidth * SWIPE_DISTANCE_RATIO;
+
+			const shouldNext = totalSwipeX < -distanceThreshold || (totalSwipeX < 0 && velocityX < -MIN_VELOCITY_TO_SWIPE);
+			const shouldPrev = totalSwipeX > distanceThreshold || (totalSwipeX > 0 && velocityX > MIN_VELOCITY_TO_SWIPE);
+
+			if (shouldNext) {
+				goToIndex(currentIndex.value + 1);
+			} else if (shouldPrev) {
+				goToIndex(currentIndex.value - 1);
+			} else {
+				// JUICE: 閾値未満のドラッグは元の位置へ戻す(ネイティブのscroll-snapには委ねない。
+				// dragging.value=falseでsnapが復活すると、ここでの自前アニメーションと競合しうるため)
+				goToIndex(currentIndex.value);
+			}
 		}
 	}
 	dragState.locked = null;
+	velocitySamples = [];
 }
 
 function onTrackClickCapture(ev: MouseEvent) {
@@ -195,14 +280,69 @@ function onScroll() {
 	}, 100);
 }
 
+// JUICE: スライド切り替えのアニメーション時間(ms)。ブラウザ標準のscrollTo({behavior:'smooth'})は
+// 数百msかかり、1ノートに枚数が多いと連続して送るたびに待たされて遅く感じるため、
+// 自前でrequestAnimationFrame駆動の短い(かつ一貫した)アニメーションに置き換える
+const SLIDE_ANIM_DURATION = 180;
+let scrollAnimFrame: number | null = null;
+
+function animateScrollTo(target: number) {
+	if (!track.value) return;
+	const el = track.value;
+	if (scrollAnimFrame != null) {
+		window.cancelAnimationFrame(scrollAnimFrame);
+		scrollAnimFrame = null;
+	}
+	const start = el.scrollLeft;
+	const delta = target - start;
+	if (Math.abs(delta) < 1) {
+		el.scrollLeft = target;
+		animating.value = false;
+		return;
+	}
+	if (!prefer.s.animation) {
+		el.scrollLeft = target;
+		animating.value = false;
+		return;
+	}
+	// JUICE: この間もネイティブのscroll-snapを止めておく(.trackのCSS参照)。
+	// アニメーション完了前に次の操作でanimateScrollToが呼ばれた場合は、その呼び出し冒頭の
+	// cancelAnimationFrameで打ち切られるだけで、animating自体はtrueのまま引き継がれる
+	animating.value = true;
+	const startTime = performance.now();
+
+	function step(now: number) {
+		const elapsed = now - startTime;
+		const t = Math.min(1, elapsed / SLIDE_ANIM_DURATION);
+		// ease-out cubic
+		const eased = 1 - ((1 - t) ** 3);
+		el.scrollLeft = start + (delta * eased);
+		if (t < 1) {
+			scrollAnimFrame = window.requestAnimationFrame(step);
+		} else {
+			scrollAnimFrame = null;
+			animating.value = false;
+		}
+	}
+
+	scrollAnimFrame = window.requestAnimationFrame(step);
+}
+
 function scrollToIndex(i: number) {
 	if (!track.value) return;
-	track.value.scrollTo({ left: track.value.clientWidth * i, behavior: 'smooth' });
+	animateScrollTo(track.value.clientWidth * i);
+}
+
+function goToIndex(i: number) {
+	const clamped = Math.max(0, Math.min(medias.value.previewable.length - 1, i));
+	currentIndex.value = clamped;
+	scrollToIndex(clamped);
 }
 
 onUnmounted(() => {
 	mediaComponents.clear();
 	if (scrollDebounce) window.clearTimeout(scrollDebounce);
+	if (scrollAnimFrame != null) window.cancelAnimationFrame(scrollAnimFrame);
 });
 
 async function onMediaClick(file: Misskey.entities.DriveFile) {
@@ -283,6 +423,55 @@ defineExpose({
 </script>
 
 <style lang="scss" module>
+.root {
+	position: relative;
+}
+
+// JUICE: .trackWrapperを.track(画像本体)のみを包むポジショニングコンテキストにする。
+// これにより.navButtonのheight:100%が.dots分の高さを含む.rootではなく.trackだけを
+// 基準に取れるため、送りボタンが画像の縦中央からズレない
+.trackWrapper {
+	position: relative;
+}
+
+// JUICE: マウス操作時のみ表示する左右送りボタン。常時表示だとタイムライン上に並ぶ
+// 複数のカードすべてに丸ボタンが乗って煩雑になるため、ホバー時のみ浮かび上がらせる
+.navButton {
+	position: absolute;
+	z-index: 1;
+	top: 50%;
+	transform: translateY(-50%);
+	display: grid;
+	place-items: center;
+	color: #fff;
+	opacity: 0;
+	transition: opacity 0.15s;
+}
+
+.trackWrapper:hover .navButton {
+	opacity: 1;
+}
+
+.navButtonIcon {
+	width: 32px;
+	height: 32px;
+	display: grid;
+	place-items: center;
+	font-size: 1.1em;
+	background-color: rgba(0, 0, 0, 0.35);
+	border-radius: 100%;
+	-webkit-backdrop-filter: var(--MI-blur, blur(15px));
+	backdrop-filter: var(--MI-blur, blur(15px));
+}
+
+.prevButton {
+	left: 8px;
+}
+
+.nextButton {
+	right: 8px;
+}
+
 .track {
 	display: flex;
 	overflow-x: auto;
