@@ -2681,6 +2681,7 @@ _widgets:
   birthdayFollowings: "Today's Birthdays"
   chat: "Chat with user"
   favorites: "Favorites"
+  earthquake: "Earthquake info"
 _widgetOptions:
   showHeader: "Show header"
   transparent: "Make background transparent"
@@ -2720,6 +2721,21 @@ _widgetOptions:
     reverse: "Scroll in the opposite direction"
   _birthdayFollowings:
     period: "Duration"
+  _earthquake:
+    maxEntries: "Max entries to show"
+    refreshIntervalSec: "Refresh interval (seconds)"
+    magnitude: "M{m}"
+    _scales:
+      unknown: "Unknown"
+      s1: "Intensity 1"
+      s2: "Intensity 2"
+      s3: "Intensity 3"
+      s4: "Intensity 4"
+      s5weak: "Intensity 5-"
+      s5strong: "Intensity 5+"
+      s6weak: "Intensity 6-"
+      s6strong: "Intensity 6+"
+      s7: "Intensity 7"
 _cw:
   hide: "Hide"
   show: "Show content"

@@ -2681,6 +2681,7 @@ _widgets:
   birthdayFollowings: "今天是他们的生日"
   chat: "私信"
   favorites: "收藏"
+  earthquake: "地震信息"
 _widgetOptions:
   showHeader: "显示标题"
   transparent: "使背景透明"
@@ -2720,6 +2721,21 @@ _widgetOptions:
     reverse: "反方向滚动"
   _birthdayFollowings:
     period: "期限"
+  _earthquake:
+    maxEntries: "最大显示条数"
+    refreshIntervalSec: "刷新间隔(秒)"
+    magnitude: "M{m}"
+    _scales:
+      unknown: "未知"
+      s1: "震度1"
+      s2: "震度2"
+      s3: "震度3"
+      s4: "震度4"
+      s5weak: "震度5弱"
+      s5strong: "震度5强"
+      s6weak: "震度6弱"
+      s6strong: "震度6强"
+      s7: "震度7"
 _cw:
   hide: "隐藏"
   show: "查看更多"

@@ -2681,6 +2681,7 @@ _widgets:
   birthdayFollowings: "곧 생일인 사용자"
   chat: "채팅하기"
   favorites: "즐겨찾기"
+  earthquake: "지진 정보"
 _widgetOptions:
   showHeader: "해더를 표시"
   transparent: "배경을 투명하게 설정"
@@ -2720,6 +2721,21 @@ _widgetOptions:
     reverse: "역방향으로 스크롤"
   _birthdayFollowings:
     period: "기간"
+  _earthquake:
+    maxEntries: "최대 표시 건수"
+    refreshIntervalSec: "갱신 간격(초)"
+    magnitude: "M{m}"
+    _scales:
+      unknown: "불명"
+      s1: "진도 1"
+      s2: "진도 2"
+      s3: "진도 3"
+      s4: "진도 4"
+      s5weak: "진도 5약"
+      s5strong: "진도 5강"
+      s6weak: "진도 6약"
+      s6strong: "진도 6강"
+      s7: "진도 7"
 _cw:
   hide: "숨기기"
   show: "더 보기"

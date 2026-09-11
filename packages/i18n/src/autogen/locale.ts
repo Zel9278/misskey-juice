@@ -10737,6 +10737,10 @@ export interface Locale extends ILocale {
          * お気に入り
          */
         "favorites": string;
+        /**
+         * 地震情報
+         */
+        "earthquake": string;
     };
     "_widgetOptions": {
         /**
@@ -10878,6 +10882,62 @@ export interface Locale extends ILocale {
              * 期間
              */
             "period": string;
+        };
+        "_earthquake": {
+            /**
+             * 最大表示件数
+             */
+            "maxEntries": string;
+            /**
+             * 更新間隔(秒)
+             */
+            "refreshIntervalSec": string;
+            /**
+             * M{m}
+             */
+            "magnitude": ParameterizedString<"m">;
+            "_scales": {
+                /**
+                 * 不明
+                 */
+                "unknown": string;
+                /**
+                 * 震度1
+                 */
+                "s1": string;
+                /**
+                 * 震度2
+                 */
+                "s2": string;
+                /**
+                 * 震度3
+                 */
+                "s3": string;
+                /**
+                 * 震度4
+                 */
+                "s4": string;
+                /**
+                 * 震度5弱
+                 */
+                "s5weak": string;
+                /**
+                 * 震度5強
+                 */
+                "s5strong": string;
+                /**
+                 * 震度6弱
+                 */
+                "s6weak": string;
+                /**
+                 * 震度6強
+                 */
+                "s6strong": string;
+                /**
+                 * 震度7
+                 */
+                "s7": string;
+            };
         };
     };
     "_cw": {

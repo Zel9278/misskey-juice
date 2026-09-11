@@ -2830,6 +2830,7 @@ _widgets:
   birthdayFollowings: "もうすぐ誕生日のユーザー"
   chat: "ダイレクトメッセージ"
   favorites: "お気に入り"
+  earthquake: "地震情報"
 
 _widgetOptions:
   showHeader: "ヘッダーを表示"
@@ -2870,6 +2871,21 @@ _widgetOptions:
     reverse: "逆方向にスクロール"
   _birthdayFollowings:
     period: "期間"
+  _earthquake:
+    maxEntries: "最大表示件数"
+    refreshIntervalSec: "更新間隔(秒)"
+    magnitude: "M{m}"
+    _scales:
+      unknown: "不明"
+      s1: "震度1"
+      s2: "震度2"
+      s3: "震度3"
+      s4: "震度4"
+      s5weak: "震度5弱"
+      s5strong: "震度5強"
+      s6weak: "震度6弱"
+      s6strong: "震度6強"
+      s7: "震度7"
 
 _cw:
   hide: "隠す"
