@@ -14725,13 +14725,21 @@ export interface Locale extends ILocale {
          */
         "mediaTimelineExpand": string;
         /**
-         * 前の画像
+         * 前のメディア
          */
         "mediaTimelinePrev": string;
         /**
-         * 次の画像
+         * 次のメディア
          */
         "mediaTimelineNext": string;
+        /**
+         * ブロックしてから凍結
+         */
+        "blockThenSuspend": string;
+        /**
+         * 自分のアカウントで対象ユーザーをブロックしたうえで凍結します。よろしいですか？
+         */
+        "blockThenSuspendConfirm": string;
         /**
          * メディアタイムラインに表示しない
          */
