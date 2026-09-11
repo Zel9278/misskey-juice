@@ -14581,6 +14581,10 @@ export interface Locale extends ILocale {
          */
         "approvalSignupNotice": string;
         /**
+         * メール関連
+         */
+        "emailSettings": string;
+        /**
          * メールの言語
          */
         "emailLanguage": string;
@@ -14596,6 +14600,22 @@ export interface Locale extends ILocale {
          * ユーザーがメールの言語を選択していない場合に使う既定の言語です。
          */
         "defaultEmailLangCaption": string;
+        /**
+         * Gmailのドット無視による多重登録を防ぐ
+         */
+        "blockEmailDotAliasRegistration": string;
+        /**
+         * Gmail等のドット無視(example@gmail.com / ex.ample@gmail.com は同一)を使った複数アカウント登録を、新規登録・メールアドレス変更時の重複チェックで検出してブロックします。対象はGmail/Googlemailドメインに限定されるため、他のプロバイダのアドレスが誤ってブロックされることはありません。
+         */
+        "blockEmailDotAliasRegistrationCaption": string;
+        /**
+         * +タグによる多重登録を防ぐ
+         */
+        "blockEmailPlusAliasRegistration": string;
+        /**
+         * +タグ(example+1@gmail.com)を使った複数アカウント登録を、新規登録・メールアドレス変更時の重複チェックで検出してブロックします。ドメインを問わず適用されるため、+をサブアドレッシングとして扱わないメールプロバイダでは、+を含む文字列がそのまま別の正当なアドレスとして機能している場合に、無関係な既存アカウントと誤って重複判定される可能性があります。
+         */
+        "blockEmailPlusAliasRegistrationCaption": string;
         /**
          * AI生成物をミュート
          */

@@ -73,6 +73,8 @@ export const paramDef = {
 				required: ['key', 'text', 'enabled', 'order', 'isDefault'],
 			},
 		},
+		blockEmailDotAliasRegistration: { type: 'boolean' },
+		blockEmailPlusAliasRegistration: { type: 'boolean' },
 	},
 } as const;
 
@@ -112,6 +114,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.newAccountFollowRequestEnabled !== undefined) set.newAccountFollowRequestEnabled = ps.newAccountFollowRequestEnabled;
 			if (ps.newAccountFollowRequestThresholdMs !== undefined) set.newAccountFollowRequestThresholdMs = ps.newAccountFollowRequestThresholdMs;
 			if (ps.reportCategories !== undefined) set.reportCategories = ps.reportCategories;
+			if (ps.blockEmailDotAliasRegistration !== undefined) set.blockEmailDotAliasRegistration = ps.blockEmailDotAliasRegistration;
+			if (ps.blockEmailPlusAliasRegistration !== undefined) set.blockEmailPlusAliasRegistration = ps.blockEmailPlusAliasRegistration;
 
 			const after = await this.juiceSettingsService.update(set);
 

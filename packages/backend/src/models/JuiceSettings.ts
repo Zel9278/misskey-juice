@@ -58,6 +58,18 @@ export interface JuiceSettingsValue {
 	newAccountFollowRequestThresholdMs?: number;
 	/** 通報(ユーザー通報)時に選べるカテゴリ一覧 */
 	reportCategories?: ReportCategory[];
+	/**
+	 * Gmail/Googlemailのドット無視(example@gmail.com / ex.ample@gmail.com は同一)を使った
+	 * 複数アカウント登録を防ぐため、新規登録・メールアドレス変更時の重複チェックで正規化するか。
+	 * 対象ドメインが限定されているため、+タグ側と異なり誤検知のリスクはほぼ無い
+	 */
+	blockEmailDotAliasRegistration?: boolean;
+	/**
+	 * +タグ(サブアドレッシング、example+1@gmail.com)を使った複数アカウント登録を防ぐため、
+	 * 新規登録・メールアドレス変更時の重複チェックで正規化するか。ドメインを問わず適用するため、
+	 * +をサブアドレッシングとして扱わないメールプロバイダでは誤検知(false positive)のリスクがある
+	 */
+	blockEmailPlusAliasRegistration?: boolean;
 }
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
@@ -281,6 +293,20 @@ export function resolveReportCategorySettings(settings: JuiceSettingsValue): {
 			{ key: 'personal_info', text: '個人情報の晒し', enabled: true, order: 6, isDefault: false },
 			{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: true },
 		],
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・EmailServiceの2箇所で共通利用する。
+ */
+export function resolveEmailAliasSettings(settings: JuiceSettingsValue): {
+	blockEmailDotAliasRegistration: boolean;
+	blockEmailPlusAliasRegistration: boolean;
+} {
+	return {
+		blockEmailDotAliasRegistration: settings.blockEmailDotAliasRegistration ?? false,
+		blockEmailPlusAliasRegistration: settings.blockEmailPlusAliasRegistration ?? false,
 	};
 }
 

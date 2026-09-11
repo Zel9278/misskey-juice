@@ -11269,6 +11269,8 @@ export interface operations {
                             order: number;
                             isDefault: boolean;
                         }[];
+                        blockEmailDotAliasRegistration: boolean;
+                        blockEmailPlusAliasRegistration: boolean;
                     };
                 };
             };
@@ -11446,6 +11448,8 @@ export interface operations {
                         order: number;
                         isDefault: boolean;
                     }[];
+                    blockEmailDotAliasRegistration?: boolean;
+                    blockEmailPlusAliasRegistration?: boolean;
                 };
             };
         };

@@ -48,6 +48,36 @@ export class UtilityService {
 		return regexp.test(email);
 	}
 
+	// JUICE: Gmail/Googlemailはローカルパートのドットを無視する仕様のため、このドメインに限り
+	// ドットも正規化対象にする(他プロバイダはドットをそのまま別アドレスとして扱うため対象外)。
+	// EmailService側がSQLでの重複チェックにも同じ一覧を使うため公開する
+	public readonly dotFoldingEmailDomains: readonly string[] = ['gmail.com', 'googlemail.com'];
+
+	// JUICE: メールアドレスの別名(Gmail等のドット無視・+タグ)を使った多重アカウント登録対策のため、
+	// 重複チェック用に正規化する。実際に保存・送信するメールアドレスはそのまま使うので、
+	// あくまで「同一人物とみなすための比較用キー」を作るだけの用途に限定する。ドット無視と+タグ除去は
+	// 誤検知のリスクが異なる(前者はgmail等に限定して安全、後者はドメイン非依存で誤検知しうる)ため、
+	// admin設定で個別にON/OFFできるようoptionsで指定させる
+	@bindThis
+	public normalizeEmailForDedup(email: string, options: { foldDots: boolean; stripPlusTag: boolean }): string {
+		const atIndex = email.lastIndexOf('@');
+		if (atIndex === -1) return email.toLowerCase();
+
+		let local = email.slice(0, atIndex);
+		const domain = email.slice(atIndex + 1).toLowerCase();
+
+		if (options.stripPlusTag) {
+			const plusIndex = local.indexOf('+');
+			if (plusIndex !== -1) local = local.slice(0, plusIndex);
+		}
+
+		if (options.foldDots && this.dotFoldingEmailDomains.includes(domain)) {
+			local = local.replace(/\./g, '');
+		}
+
+		return `${local.toLowerCase()}@${domain}`;
+	}
+
 	@bindThis
 	public isBlockedHost(blockedHosts: string[], host: string | null): boolean {
 		if (host == null) return false;

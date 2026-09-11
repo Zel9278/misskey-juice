@@ -85,7 +85,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<SearchMarker v-slot="slotProps">
 					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
-						<template #label><SearchLabel>{{ i18n.ts._juice.emailLanguage }}</SearchLabel></template>
+						<template #label><SearchLabel>{{ i18n.ts._juice.emailSettings }}</SearchLabel></template>
 
 						<div class="_gaps_m">
 							<SearchMarker>
@@ -93,6 +93,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 									<template #label><SearchLabel>{{ i18n.ts._juice.defaultEmailLang }}</SearchLabel></template>
 									<template #caption>{{ i18n.ts._juice.defaultEmailLangCaption }}</template>
 								</MkSelect>
+							</SearchMarker>
+
+							<SearchMarker>
+								<MkSwitch v-model="blockEmailDotAliasRegistration">
+									<template #label><SearchLabel>{{ i18n.ts._juice.blockEmailDotAliasRegistration }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.blockEmailDotAliasRegistrationCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+
+							<SearchMarker>
+								<MkSwitch v-model="blockEmailPlusAliasRegistration">
+									<template #label><SearchLabel>{{ i18n.ts._juice.blockEmailPlusAliasRegistration }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.blockEmailPlusAliasRegistrationCaption }}</template>
+								</MkSwitch>
 							</SearchMarker>
 						</div>
 					</MkFolder>
@@ -351,6 +365,8 @@ const CUSTOM_SPLASH_TEXT_MAX_LENGTH = 256;
 const customSplashTextLines = computed(() => customSplashTextInput.value.split('\n').map(x => x.trim()).filter(x => x.length > 0));
 const customSplashTextTooManyLines = computed(() => customSplashTextLines.value.length > CUSTOM_SPLASH_TEXT_MAX_ITEMS);
 const customSplashTextTooLongLineCount = computed(() => customSplashTextLines.value.filter(x => x.length > CUSTOM_SPLASH_TEXT_MAX_LENGTH).length);
+const blockEmailDotAliasRegistration = ref(settings.blockEmailDotAliasRegistration);
+const blockEmailPlusAliasRegistration = ref(settings.blockEmailPlusAliasRegistration);
 
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
@@ -375,6 +391,8 @@ function save() {
 		customSplashText: customSplashTextLines.value,
 		newAccountFollowRequestEnabled: newAccountFollowRequestEnabled.value,
 		newAccountFollowRequestThresholdMs: newAccountFollowRequestThresholdMs.value,
+		blockEmailDotAliasRegistration: blockEmailDotAliasRegistration.value,
+		blockEmailPlusAliasRegistration: blockEmailPlusAliasRegistration.value,
 	});
 }
 
