@@ -15041,15 +15041,19 @@ export interface Locale extends ILocale {
          */
         "dailyRemainingCount": ParameterizedString<"remaining">;
         /**
-         * 本日の申請回数の上限に達しています。日付が変わってから再度お試しください
+         * 本日の申請回数の上限に達しています
          */
         "dailyLimitReached": string;
+        /**
+         * 次のリセット
+         */
+        "dailyResetLabel": string;
         /**
          * 本日の申請回数の上限に達しました
          */
         "dailyLimitExceededTitle": string;
         /**
-         * 絵文字申請の1日あたりの送信回数の上限に達しました。審査待ち件数の上限とは別の制限です。日付が変わってから再度お試しください。
+         * 絵文字申請の1日あたりの送信回数の上限に達しました。審査待ち件数の上限とは別の制限です。しばらく時間を置いてから再度お試しください。
          */
         "dailyLimitExceededDescription": string;
         /**
@@ -15265,15 +15269,19 @@ export interface Locale extends ILocale {
          */
         "dailyRemainingCount": ParameterizedString<"remaining">;
         /**
-         * 本日の申請回数の上限に達しています。日付が変わってから再度お試しください
+         * 本日の申請回数の上限に達しています
          */
         "dailyLimitReached": string;
+        /**
+         * 次のリセット
+         */
+        "dailyResetLabel": string;
         /**
          * 本日の申請回数の上限に達しました
          */
         "dailyLimitExceededTitle": string;
         /**
-         * アバターデコレーション申請の1日あたりの送信回数の上限に達しました。審査待ち件数の上限とは別の制限です。日付が変わってから再度お試しください。
+         * アバターデコレーション申請の1日あたりの送信回数の上限に達しました。審査待ち件数の上限とは別の制限です。しばらく時間を置いてから再度お試しください。
          */
         "dailyLimitExceededDescription": string;
         /**

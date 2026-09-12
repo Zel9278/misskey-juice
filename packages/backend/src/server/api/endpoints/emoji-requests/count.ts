@@ -40,10 +40,18 @@ export const meta = {
 				type: 'number',
 				optional: false, nullable: false,
 			},
-			// JUICE: emoji-requests/create-manyの1日あたりの送信回数上限の残り回数(nullは無制限扱いの環境、
-			// 例えば開発環境ではレートリミットが無効化されているため常にnullになる)
+			// JUICE: emoji-requests/create-manyの1日あたりの送信回数上限の残り回数
+			// (nullはロールのrateLimitFactorが0以下に設定されている等、この制限自体が
+			// 適用されない場合を表す)
 			dailyRemaining: {
 				type: 'number',
+				optional: false, nullable: true,
+			},
+			// JUICE: 1日あたりの送信回数上限が次に回復する(枠が1つ空く)日時。今回の集計期間に
+			// 送信実績が無い場合(dailyRemainingが上限のまま)はnull
+			dailyResetAt: {
+				type: 'string',
+				format: 'date-time',
 				optional: false, nullable: true,
 			},
 		},
@@ -79,8 +87,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				max: policies.emojiRequestDailyLimit,
 			}, me.id, policies.rateLimitFactor);
 			const dailyRemaining = usage != null ? Math.max(0, Math.floor(usage.max - usage.used)) : null;
+			const dailyResetAt = usage?.resetAt != null ? new Date(usage.resetAt).toISOString() : null;
 
-			return { pending, dailyRemaining };
+			return { pending, dailyRemaining, dailyResetAt };
 		});
 	}
 }

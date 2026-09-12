@@ -16933,6 +16933,8 @@ export interface operations {
                     'application/json': {
                         pending: number;
                         dailyRemaining: number | null;
+                        /** Format: date-time */
+                        dailyResetAt: string | null;
                     };
                 };
             };
@@ -23874,6 +23876,8 @@ export interface operations {
                     'application/json': {
                         pending: number;
                         dailyRemaining: number | null;
+                        /** Format: date-time */
+                        dailyResetAt: string | null;
                     };
                 };
             };
