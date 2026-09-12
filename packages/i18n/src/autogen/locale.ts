@@ -14989,6 +14989,26 @@ export interface Locale extends ILocale {
          */
         "multipleRequestsHint": string;
         /**
+         * 1回の申請でまとめて選択できるのは最大{max}件です
+         */
+        "maxItemsPerSubmission": ParameterizedString<"max">;
+        /**
+         * 選択中: {selected}/{cap}件
+         */
+        "selectedCount": ParameterizedString<"selected" | "cap">;
+        /**
+         * 上限のため{skipped}件を追加できませんでした
+         */
+        "tooManyFilesSelected": ParameterizedString<"skipped">;
+        /**
+         * 現在{pending}/{limit}件審査中です。あと{remaining}件申請できます
+         */
+        "remainingCount": ParameterizedString<"pending" | "limit" | "remaining">;
+        /**
+         * 審査待ちの申請が上限({limit}件)に達しています。既存の申請が承認・却下・キャンセルされるまで新しい申請はできません
+         */
+        "limitReached": ParameterizedString<"limit">;
+        /**
          * {n}件目
          */
         "requestNumber": ParameterizedString<"n">;
@@ -15176,6 +15196,26 @@ export interface Locale extends ILocale {
          * 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できます
          */
         "multipleRequestsHint": string;
+        /**
+         * 1回の申請でまとめて選択できるのは最大{max}件です
+         */
+        "maxItemsPerSubmission": ParameterizedString<"max">;
+        /**
+         * 選択中: {selected}/{cap}件
+         */
+        "selectedCount": ParameterizedString<"selected" | "cap">;
+        /**
+         * 上限のため{skipped}件を追加できませんでした
+         */
+        "tooManyFilesSelected": ParameterizedString<"skipped">;
+        /**
+         * 現在{pending}/{limit}件審査中です。あと{remaining}件申請できます
+         */
+        "remainingCount": ParameterizedString<"pending" | "limit" | "remaining">;
+        /**
+         * 審査待ちの申請が上限({limit}件)に達しています。既存の申請が承認・却下・キャンセルされるまで新しい申請はできません
+         */
+        "limitReached": ParameterizedString<"limit">;
         /**
          * {n}件目
          */

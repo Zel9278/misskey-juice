@@ -9,9 +9,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkInfo v-if="!enabled">{{ i18n.ts._avatarDecorationRequestPage.disabled }}</MkInfo>
 		<template v-else>
 			<div v-if="tab === 'form'" class="_gaps_m">
-				<MkButton rounded style="margin: 0 auto;" @click="chooseFile">{{ i18n.ts.selectFile }}</MkButton>
+				<MkButton rounded style="margin: 0 auto;" :disabled="maxAddable <= 0" @click="chooseFile">{{ i18n.ts.selectFile }}</MkButton>
+				<!-- JUICE: 審査待ちの残り件数・1回にまとめて申請できる上限を、送信前に把握できるように表示する -->
+				<MkInfo v-if="remaining <= 0" warn>{{ i18n.tsx._avatarDecorationRequestPage.limitReached({ limit: requestLimit }) }}</MkInfo>
+				<MkInfo v-else>{{ i18n.tsx._avatarDecorationRequestPage.remainingCount({ pending: pendingCount, limit: requestLimit, remaining }) }}</MkInfo>
+				<!-- JUICE: 今まさに組み立てている今回分のドラフト数(今回申請しようとしている数/今回の上限) -->
+				<MkInfo>{{ i18n.tsx._avatarDecorationRequestPage.selectedCount({ selected: drafts.length, cap: batchCap }) }}</MkInfo>
 				<!-- JUICE: 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できる -->
-				<MkInfo v-if="drafts.length === 0">{{ i18n.ts._avatarDecorationRequestPage.multipleRequestsHint }}</MkInfo>
+				<MkInfo v-if="drafts.length === 0">
+					{{ i18n.ts._avatarDecorationRequestPage.multipleRequestsHint }}<br/>
+					{{ i18n.tsx._avatarDecorationRequestPage.maxItemsPerSubmission({ max: MAX_BATCH_ITEMS }) }}
+				</MkInfo>
 
 				<div v-for="(draft, i) in drafts" :key="draft.key" class="_gaps_s" :class="$style.draftCard">
 					<!-- JUICE: 複数件申請時の番号表示は不要でも、選び直したい場合の削除ボタンは
@@ -145,6 +153,18 @@ misskeyApi('juice/public-settings').then(res => {
 	enabled.value = res.avatarDecorationRequestEnabled;
 });
 
+// JUICE: 「あと何件申請できるか」「1回でまとめて申請できる上限」を送信前に表示するための状態。
+// 上限自体はロールポリシー(i.policies.avatarDecorationRequestLimit)から、現在の審査待ち件数は
+// 専用のavatar-decoration-requests/countから取得する。MAX_BATCH_ITEMSは
+// avatar-decoration-requests/create-manyのparamDefのmaxItemsと合わせている
+const pendingCount = ref(0);
+misskeyApi('avatar-decoration-requests/count').then(res => {
+	pendingCount.value = res.pending;
+});
+const requestLimit = computed(() => $i.policies.avatarDecorationRequestLimit);
+const remaining = computed(() => Math.max(0, requestLimit.value - pendingCount.value));
+const MAX_BATCH_ITEMS = 10;
+
 const tab = ref('form');
 
 // JUICE: 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できる。
@@ -174,6 +194,11 @@ type AvatarDecorationRequestDraft = {
 };
 
 const drafts = ref<AvatarDecorationRequestDraft[]>([]);
+
+// JUICE: 今回のバッチで選択できる上限(審査待ちの残り枠と1回の申請上限のうち小さい方)
+const batchCap = computed(() => Math.min(remaining.value, MAX_BATCH_ITEMS));
+// JUICE: 現在のドラフト数を踏まえて、これ以上あと何件ドラフトを追加できるか
+const maxAddable = computed(() => Math.max(0, batchCap.value - drafts.value.length));
 
 // JUICE: 差し替え申請の対象選択用。自分の承認済み申請(デコレーションが実際に作られたもの)のみを
 // 候補にする。初回に選択を試みたタイミングで一度だけ取得する
@@ -249,6 +274,7 @@ const testcaptchaResponse = ref<string | null>(null);
 
 const shouldDisableSubmitting = computed((): boolean => {
 	return drafts.value.length === 0 || drafts.value.some(d => !d.name) ||
+		drafts.value.length > remaining.value ||
 		instance.enableHcaptcha && !hCaptchaResponse.value ||
 		instance.enableMcaptcha && !mCaptchaResponse.value ||
 		instance.enableRecaptcha && !reCaptchaResponse.value ||
@@ -273,9 +299,11 @@ const resultPaginator = markRaw(new Paginator('avatar-decoration-requests/list',
 	computedParams: computed(() => ({ status: resultStatus.value })),
 }));
 
-// JUICE: 審査待ちの申請を申請者自身がキャンセルした場合、審査待ち一覧から即座に取り除く
+// JUICE: 審査待ちの申請を申請者自身がキャンセルした場合、審査待ち一覧から即座に取り除き、
+// 残り申請可能数の表示にも反映する
 function onCancelled(requestId: string) {
 	pendingPaginator.removeItem(requestId);
+	pendingCount.value = Math.max(0, pendingCount.value - 1);
 }
 
 function chooseFile(ev: PointerEvent) {
@@ -283,7 +311,13 @@ function chooseFile(ev: PointerEvent) {
 		anchorElement: ev.currentTarget ?? ev.target,
 		multiple: true,
 	}).then(files => {
-		for (const f of files) {
+		// JUICE: 審査待ち上限・1回の申請上限を超える分は追加しない。黙って切り捨てると
+		// 気づけないため、切り捨てが発生した場合はトーストで知らせる
+		const accepted = files.slice(0, maxAddable.value);
+		if (files.length > accepted.length) {
+			os.toast(i18n.tsx._avatarDecorationRequestPage.tooManyFilesSelected({ skipped: files.length - accepted.length }));
+		}
+		for (const f of accepted) {
 			drafts.value.push({
 				key: genId(),
 				file: f,
@@ -350,6 +384,7 @@ async function submit() {
 		for (const request of requests) {
 			pendingPaginator.prepend(request);
 		}
+		pendingCount.value += requests.length;
 		drafts.value.forEach(revokeDraftPreview);
 		drafts.value = [];
 		tab.value = 'pending';
@@ -360,6 +395,12 @@ async function submit() {
 		recaptcha.value?.reset?.();
 		turnstile.value?.reset?.();
 		testcaptcha.value?.reset?.();
+
+		// JUICE: 送信失敗時(他タブでの同時送信・承認/却下等により審査待ち件数が実際とズレて
+		// いる可能性がある)は、表示中の残り申請可能数を実際の値に合わせ直す
+		misskeyApi('avatar-decoration-requests/count').then(res => {
+			pendingCount.value = res.pending;
+		});
 	});
 }
 

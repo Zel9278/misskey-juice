@@ -1307,6 +1307,15 @@ export type paths = {
          */
         post: operations['avatar-decoration-requests___cancel'];
     };
+    '/avatar-decoration-requests/count': {
+        /**
+         * avatar-decoration-requests/count
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *read:avatar-decoration-requests*
+         */
+        post: operations['avatar-decoration-requests___count'];
+    };
     '/avatar-decoration-requests/create': {
         /**
          * avatar-decoration-requests/create
@@ -2170,6 +2179,15 @@ export type paths = {
          *     **Credential required**: *Yes* / **Permission**: *write:emoji-requests*
          */
         post: operations['emoji-requests___cancel'];
+    };
+    '/emoji-requests/count': {
+        /**
+         * emoji-requests/count
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *read:emoji-requests*
+         */
+        post: operations['emoji-requests___count'];
     };
     '/emoji-requests/create': {
         /**
@@ -16880,6 +16898,66 @@ export interface operations {
             };
         };
     };
+    'avatar-decoration-requests___count': {
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        pending: number;
+                    };
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'avatar-decoration-requests___create': {
         requestBody: {
             content: {
@@ -23711,6 +23789,66 @@ export interface operations {
             204: {
                 headers: {
                     [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'emoji-requests___count': {
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        pending: number;
+                    };
                 };
             };
             /** @description Client error */
