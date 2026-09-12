@@ -7,8 +7,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 <PageWithHeader :actions="headerActions" :tabs="headerTabs">
 	<div class="_spacer" style="--MI_SPACER-w: 900px;">
 		<div :class="$style.root" class="_gaps">
-			<div :class="$style.subMenus" class="_gaps">
+			<div v-if="isNestedInAdmin" :class="$style.subMenus" class="_gaps">
 				<MkButton type="routerLink" to="/admin/abuse-report-notification-recipient" primary>{{ i18n.ts.notificationSetting }}</MkButton>
+				<MkButton type="routerLink" to="/admin/abuse-report-categories" primary>{{ i18n.ts._abuseUserReport._category.categoryManagement }}</MkButton>
 			</div>
 
 			<MkTip k="abuses">
@@ -24,6 +25,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkSelect>
 				<MkSelect v-model="reporterOrigin" :items="reporterOriginDef" style="margin: 0; flex: 1;">
 					<template #label>{{ i18n.ts.reporterOrigin }}</template>
+				</MkSelect>
+				<MkSelect v-model="category" :items="categoryDef" style="margin: 0; flex: 1;">
+					<template #label>{{ i18n.ts._abuseUserReport.category }}</template>
 				</MkSelect>
 			</div>
 
@@ -59,6 +63,15 @@ import { useMkSelect } from '@/composables/use-mkselect.js';
 import MkButton from '@/components/MkButton.vue';
 import { store } from '@/store.js';
 import { Paginator } from '@/utility/paginator.js';
+import { useRouter } from '@/router.js';
+import { useAbuseReportCategories } from '@/composables/useAbuseReportCategories.js';
+
+// JUICE: /admin/abuses(サイドバー付き管理パネル)配下と、トップレベルの/abuses-manager(専用画面)の
+// 両方からこのコンポーネントが使われる。通知設定・カテゴリ管理ボタンは/admin配下のページへ飛ぶため、
+// 専用画面から踏むと管理パネルへ連れ出されてしまう(=専用画面である意味がなくなる)ので、
+// /admin配下でネストされている場合のみ表示する
+const router = useRouter();
+const isNestedInAdmin = computed(() => router.currentRef.value.child?.route.name === 'abuses');
 
 const {
 	model: state,
@@ -93,6 +106,17 @@ const {
 	],
 	initialValue: 'combined',
 });
+// JUICE: 通報カテゴリでの絞り込み。無効化されたカテゴリを持つ過去の通報も絞り込めるよう、
+// includeDisabledで(モデレーター向けの)無効カテゴリも含めた一覧を取得する
+const { fetchCategories, categoryOptions } = useAbuseReportCategories();
+fetchCategories({ includeDisabled: true });
+
+const category = ref('all');
+const categoryDef = computed(() => [
+	{ label: i18n.ts.all, value: 'all' },
+	...categoryOptions.value,
+]);
+
 const searchUsername = ref('');
 const searchHost = ref('');
 
@@ -102,6 +126,7 @@ const paginator = markRaw(new Paginator('admin/abuse-user-reports', {
 		state: state.value,
 		reporterOrigin: reporterOrigin.value,
 		targetUserOrigin: targetUserOrigin.value,
+		category: category.value === 'all' ? undefined : category.value,
 	})),
 }));
 

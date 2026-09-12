@@ -52,10 +52,38 @@ export interface JuiceSettingsValue {
 	contactFormContentMaxLength?: number;
 	/** 起動時のスプラッシュ画面にロゴの下へランダム表示する文言一覧(misskey-tempuraのcustomSplashTextを参考) */
 	customSplashText?: string[];
+	/** 作成から一定時間経過していないアカウントからのフォローを、フォロー先の鍵設定に関わらずフォローリクエスト化するか */
+	newAccountFollowRequestEnabled?: boolean;
+	/** 上記が有効な場合の、フォローリクエスト化の対象となるアカウント年齢のしきい値(ミリ秒) */
+	newAccountFollowRequestThresholdMs?: number;
+	/** 通報(ユーザー通報)時に選べるカテゴリ一覧 */
+	reportCategories?: ReportCategory[];
+	/**
+	 * Gmail/Googlemailのドット無視(example@gmail.com / ex.ample@gmail.com は同一)を使った
+	 * 複数アカウント登録を防ぐため、新規登録・メールアドレス変更時の重複チェックで正規化するか。
+	 * 対象ドメインが限定されているため、+タグ側と異なり誤検知のリスクはほぼ無い
+	 */
+	blockEmailDotAliasRegistration?: boolean;
+	/**
+	 * +タグ(サブアドレッシング、example+1@gmail.com)を使った複数アカウント登録を防ぐため、
+	 * 新規登録・メールアドレス変更時の重複チェックで正規化するか。ドメインを問わず適用するため、
+	 * +をサブアドレッシングとして扱わないメールプロバイダでは誤検知(false positive)のリスクがある
+	 */
+	blockEmailPlusAliasRegistration?: boolean;
 }
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
 export type ContactFormCategory = {
+	key: string;
+	text: string;
+	enabled: boolean;
+	order: number;
+	isDefault: boolean;
+};
+
+// JUICE: 通報(ユーザー通報)のカテゴリ。ContactFormCategoryと同じ形にして
+// 管理画面での編集パターンを揃える(通報とお問い合わせは別々の設定として独立管理する)
+export type ReportCategory = {
 	key: string;
 	text: string;
 	enabled: boolean;
@@ -231,6 +259,54 @@ export function resolveContactFormSettings(settings: JuiceSettingsValue): {
 			{ key: 'content_issue', text: 'コンテンツ関連', enabled: true, order: 6, isDefault: false },
 			{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
 		],
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・UserFollowingServiceの2箇所で共通利用する。
+ */
+export function resolveNewAccountFollowRequestSettings(settings: JuiceSettingsValue): {
+	newAccountFollowRequestEnabled: boolean;
+	newAccountFollowRequestThresholdMs: number;
+} {
+	return {
+		newAccountFollowRequestEnabled: settings.newAccountFollowRequestEnabled ?? false,
+		newAccountFollowRequestThresholdMs: settings.newAccountFollowRequestThresholdMs ?? 24 * 60 * 60 * 1000,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・juice/public-settingsの2箇所で共通利用する。
+ */
+export function resolveReportCategorySettings(settings: JuiceSettingsValue): {
+	reportCategories: ReportCategory[];
+} {
+	return {
+		reportCategories: settings.reportCategories ?? [
+			{ key: 'spam', text: 'スパム', enabled: true, order: 1, isDefault: false },
+			{ key: 'harassment', text: '嫌がらせ・迷惑行為', enabled: true, order: 2, isDefault: false },
+			{ key: 'inappropriate_content', text: '不適切なコンテンツ', enabled: true, order: 3, isDefault: false },
+			{ key: 'impersonation', text: 'なりすまし', enabled: true, order: 4, isDefault: false },
+			{ key: 'copyright', text: '著作権侵害', enabled: true, order: 5, isDefault: false },
+			{ key: 'personal_info', text: '個人情報の晒し', enabled: true, order: 6, isDefault: false },
+			{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: true },
+		],
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・EmailServiceの2箇所で共通利用する。
+ */
+export function resolveEmailAliasSettings(settings: JuiceSettingsValue): {
+	blockEmailDotAliasRegistration: boolean;
+	blockEmailPlusAliasRegistration: boolean;
+} {
+	return {
+		blockEmailDotAliasRegistration: settings.blockEmailDotAliasRegistration ?? false,
+		blockEmailPlusAliasRegistration: settings.blockEmailPlusAliasRegistration ?? false,
 	};
 }
 

@@ -1,6 +1,7 @@
 import type {
 	EmptyRequest,
 	EmptyResponse,
+	AdminAbuseReportCategoriesResponse,
 	AdminAbuseReportNotificationRecipientCreateRequest,
 	AdminAbuseReportNotificationRecipientCreateResponse,
 	AdminAbuseReportNotificationRecipientDeleteRequest,
@@ -201,6 +202,7 @@ import type {
 	AuthSessionUserkeyRequest,
 	AuthSessionUserkeyResponse,
 	AvatarDecorationRequestsCancelRequest,
+	AvatarDecorationRequestsCountResponse,
 	AvatarDecorationRequestsCreateRequest,
 	AvatarDecorationRequestsCreateResponse,
 	AvatarDecorationRequestsCreateManyRequest,
@@ -361,6 +363,7 @@ import type {
 	EmojiRequest,
 	EmojiResponse,
 	EmojiRequestsCancelRequest,
+	EmojiRequestsCountResponse,
 	EmojiRequestsCreateRequest,
 	EmojiRequestsCreateResponse,
 	EmojiRequestsCreateManyRequest,
@@ -726,6 +729,7 @@ import type {
 } from './entities.js';
 
 export type Endpoints = {
+	'admin/abuse-report/categories': { req: EmptyRequest; res: AdminAbuseReportCategoriesResponse };
 	'admin/abuse-report/notification-recipient/create': { req: AdminAbuseReportNotificationRecipientCreateRequest; res: AdminAbuseReportNotificationRecipientCreateResponse };
 	'admin/abuse-report/notification-recipient/delete': { req: AdminAbuseReportNotificationRecipientDeleteRequest; res: EmptyResponse };
 	'admin/abuse-report/notification-recipient/list': { req: AdminAbuseReportNotificationRecipientListRequest; res: AdminAbuseReportNotificationRecipientListResponse };
@@ -868,6 +872,7 @@ export type Endpoints = {
 	'auth/session/show': { req: AuthSessionShowRequest; res: AuthSessionShowResponse };
 	'auth/session/userkey': { req: AuthSessionUserkeyRequest; res: AuthSessionUserkeyResponse };
 	'avatar-decoration-requests/cancel': { req: AvatarDecorationRequestsCancelRequest; res: EmptyResponse };
+	'avatar-decoration-requests/count': { req: EmptyRequest; res: AvatarDecorationRequestsCountResponse };
 	'avatar-decoration-requests/create': { req: AvatarDecorationRequestsCreateRequest; res: AvatarDecorationRequestsCreateResponse };
 	'avatar-decoration-requests/create-many': { req: AvatarDecorationRequestsCreateManyRequest; res: AvatarDecorationRequestsCreateManyResponse };
 	'avatar-decoration-requests/list': { req: AvatarDecorationRequestsListRequest; res: AvatarDecorationRequestsListResponse };
@@ -964,6 +969,7 @@ export type Endpoints = {
 	'email-address/available': { req: EmailAddressAvailableRequest; res: EmailAddressAvailableResponse };
 	'emoji': { req: EmojiRequest; res: EmojiResponse };
 	'emoji-requests/cancel': { req: EmojiRequestsCancelRequest; res: EmptyResponse };
+	'emoji-requests/count': { req: EmptyRequest; res: EmojiRequestsCountResponse };
 	'emoji-requests/create': { req: EmojiRequestsCreateRequest; res: EmojiRequestsCreateResponse };
 	'emoji-requests/create-many': { req: EmojiRequestsCreateManyRequest; res: EmojiRequestsCreateManyResponse };
 	'emoji-requests/list': { req: EmojiRequestsListRequest; res: EmojiRequestsListResponse };

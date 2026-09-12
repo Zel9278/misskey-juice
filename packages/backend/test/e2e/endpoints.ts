@@ -12,7 +12,7 @@ import { describe, beforeAll, afterAll, test, expect, vi } from 'vitest';
 import { Blob } from 'node-fetch';
 import { api, castAsError, initTestDb, post, randomString, role, signup, simpleGet, uploadFile } from '../utils.js';
 import type * as misskey from 'misskey-js';
-import { MiUser, MiNote, MiRelay } from '@/models/_.js';
+import { MiUser, MiNote, MiRelay, MiFollowing, MiFollowRequest } from '@/models/_.js';
 
 const waitForPushToTlOptions = { timeout: 3000, interval: 25 };
 
@@ -428,6 +428,54 @@ describe('Endpoints', () => {
 			}, alice);
 
 			assert.strictEqual(res.status, 400);
+		});
+
+		test('新規アカウントからのフォローをリクエスト化する設定が有効な場合、鍵アカウントでなくてもフォローリクエストになる(JUICE独自)', async () => {
+			const troll = await signup({ username: 'newFollowTroll' });
+
+			const enable = await api('admin/juice/update-settings', {
+				newAccountFollowRequestEnabled: true,
+				newAccountFollowRequestThresholdMs: 24 * 60 * 60 * 1000,
+			}, alice);
+			assert.strictEqual(enable.status, 204);
+
+			try {
+				const res = await api('following/create', {
+					userId: carol.id,
+				}, troll);
+				assert.strictEqual(res.status, 200);
+
+				const connection = await initTestDb(true);
+				const Followings = connection.getRepository(MiFollowing);
+				const FollowRequests = connection.getRepository(MiFollowRequest);
+				const isFollowing = await Followings.exists({ where: { followerId: troll.id, followeeId: carol.id } });
+				const hasRequest = await FollowRequests.exists({ where: { followerId: troll.id, followeeId: carol.id } });
+				connection.destroy();
+
+				assert.strictEqual(isFollowing, false);
+				assert.strictEqual(hasRequest, true);
+			} finally {
+				const reset = await api('admin/juice/update-settings', {
+					newAccountFollowRequestEnabled: false,
+				}, alice);
+				assert.strictEqual(reset.status, 204);
+			}
+		});
+
+		test('新規アカウントからのフォローをリクエスト化する設定が無効な場合は、新規アカウントでも即座にフォローできる(JUICE独自)', async () => {
+			const freshUser = await signup({ username: 'freshFollowerDefault' });
+
+			const res = await api('following/create', {
+				userId: dave.id,
+			}, freshUser);
+			assert.strictEqual(res.status, 200);
+
+			const connection = await initTestDb(true);
+			const Followings = connection.getRepository(MiFollowing);
+			const isFollowing = await Followings.exists({ where: { followerId: freshUser.id, followeeId: dave.id } });
+			connection.destroy();
+
+			assert.strictEqual(isFollowing, true);
 		});
 	});
 
@@ -1500,6 +1548,19 @@ describe('Endpoints', () => {
 					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
 				],
 				customSplashText: [],
+				newAccountFollowRequestEnabled: false,
+				newAccountFollowRequestThresholdMs: 24 * 60 * 60 * 1000,
+				reportCategories: [
+					{ key: 'spam', text: 'スパム', enabled: true, order: 1, isDefault: false },
+					{ key: 'harassment', text: '嫌がらせ・迷惑行為', enabled: true, order: 2, isDefault: false },
+					{ key: 'inappropriate_content', text: '不適切なコンテンツ', enabled: true, order: 3, isDefault: false },
+					{ key: 'impersonation', text: 'なりすまし', enabled: true, order: 4, isDefault: false },
+					{ key: 'copyright', text: '著作権侵害', enabled: true, order: 5, isDefault: false },
+					{ key: 'personal_info', text: '個人情報の晒し', enabled: true, order: 6, isDefault: false },
+					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: true },
+				],
+				blockEmailDotAliasRegistration: false,
+				blockEmailPlusAliasRegistration: false,
 			});
 		});
 
@@ -2498,6 +2559,15 @@ describe('Endpoints', () => {
 					{ key: 'technical_issue', text: '技術的な問題', enabled: true, order: 5, isDefault: false },
 					{ key: 'content_issue', text: 'コンテンツ関連', enabled: true, order: 6, isDefault: false },
 					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: false },
+				],
+				reportCategories: [
+					{ key: 'spam', text: 'スパム', enabled: true, order: 1, isDefault: false },
+					{ key: 'harassment', text: '嫌がらせ・迷惑行為', enabled: true, order: 2, isDefault: false },
+					{ key: 'inappropriate_content', text: '不適切なコンテンツ', enabled: true, order: 3, isDefault: false },
+					{ key: 'impersonation', text: 'なりすまし', enabled: true, order: 4, isDefault: false },
+					{ key: 'copyright', text: '著作権侵害', enabled: true, order: 5, isDefault: false },
+					{ key: 'personal_info', text: '個人情報の晒し', enabled: true, order: 6, isDefault: false },
+					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: true },
 				],
 			});
 		});

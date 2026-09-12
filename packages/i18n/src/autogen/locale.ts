@@ -6436,6 +6436,10 @@ export interface Locale extends ILocale {
     };
     "_abuseUserReport": {
         /**
+         * 通報を管理
+         */
+        "menuTitle": string;
+        /**
          * 転送
          */
         "forward": string;
@@ -6460,6 +6464,76 @@ export interface Locale extends ILocale {
          * 内容が正当でない通報の場合は「否認」を選択し、否定的にケースが解決されたことをマークします。
          */
         "resolveTutorial": string;
+        /**
+         * カテゴリ
+         */
+        "category": string;
+        /**
+         * 未分類
+         */
+        "categoryNone": string;
+        /**
+         * 対象ノート
+         */
+        "targetNote": string;
+        /**
+         * 対象チャットメッセージ
+         */
+        "targetChatMessage": string;
+        /**
+         * メッセージは削除されています
+         */
+        "deletedChatMessage": string;
+        /**
+         * 状況の詳細
+         */
+        "situationDetail": string;
+        /**
+         * どのような状況で発生したかを記述してください(空欄可)
+         */
+        "situationDetailCaption": string;
+        "_category": {
+            /**
+             * 通報カテゴリ管理
+             */
+            "categoryManagement": string;
+            /**
+             * 元に戻す
+             */
+            "reset": string;
+            /**
+             * キー(半角英数字)
+             */
+            "categoryKeyPlaceholder": string;
+            /**
+             * 表示名
+             */
+            "categoryTextPlaceholder": string;
+            /**
+             * 既定のカテゴリにする
+             */
+            "defaultCategory": string;
+            /**
+             * 表示順
+             */
+            "categoryOrderPlaceholder": string;
+            /**
+             * カテゴリを1つ以上設定してください。
+             */
+            "atLeastOneCategoryRequired": string;
+            /**
+             * 既定のカテゴリを1つだけ選択してください。
+             */
+            "selectOneDefaultCategory": string;
+            /**
+             * カテゴリのキーが重複しています。
+             */
+            "duplicateCategoryKey": string;
+            /**
+             * 新しいカテゴリ
+             */
+            "customCategory": string;
+        };
     };
     "_delivery": {
         /**
@@ -10737,6 +10811,10 @@ export interface Locale extends ILocale {
          * お気に入り
          */
         "favorites": string;
+        /**
+         * 地震情報
+         */
+        "earthquake": string;
     };
     "_widgetOptions": {
         /**
@@ -10878,6 +10956,62 @@ export interface Locale extends ILocale {
              * 期間
              */
             "period": string;
+        };
+        "_earthquake": {
+            /**
+             * 最大表示件数
+             */
+            "maxEntries": string;
+            /**
+             * 更新間隔(秒)
+             */
+            "refreshIntervalSec": string;
+            /**
+             * M{m}
+             */
+            "magnitude": ParameterizedString<"m">;
+            "_scales": {
+                /**
+                 * 不明
+                 */
+                "unknown": string;
+                /**
+                 * 震度1
+                 */
+                "s1": string;
+                /**
+                 * 震度2
+                 */
+                "s2": string;
+                /**
+                 * 震度3
+                 */
+                "s3": string;
+                /**
+                 * 震度4
+                 */
+                "s4": string;
+                /**
+                 * 震度5弱
+                 */
+                "s5weak": string;
+                /**
+                 * 震度5強
+                 */
+                "s5strong": string;
+                /**
+                 * 震度6弱
+                 */
+                "s6weak": string;
+                /**
+                 * 震度6強
+                 */
+                "s6strong": string;
+                /**
+                 * 震度7
+                 */
+                "s7": string;
+            };
         };
     };
     "_cw": {
@@ -14411,6 +14545,26 @@ export interface Locale extends ILocale {
          */
         "invitationRegistrationEnabledCaption": string;
         /**
+         * 新規アカウントのフォロー制限
+         */
+        "newAccountFollowRequest": string;
+        /**
+         * 新規アカウントからのフォローをリクエスト化する
+         */
+        "newAccountFollowRequestEnabled": string;
+        /**
+         * 作成から一定時間が経過していないアカウント(ローカル・リモート問わず)からのフォローを、フォロー先が承認制フォローを有効にしていなくても、承認が必要なフォローリクエストとして扱います。登録直後の荒らし・スパムアカウントによる一括フォロー対策です。
+         */
+        "newAccountFollowRequestEnabledCaption": string;
+        /**
+         * 対象にするアカウントの経過期間未満
+         */
+        "newAccountFollowRequestThresholdValue": string;
+        /**
+         * 単位
+         */
+        "newAccountFollowRequestThresholdUnit": string;
+        /**
          * 他のサーバーを探すボタン
          */
         "exploreOtherServers": string;
@@ -14427,6 +14581,10 @@ export interface Locale extends ILocale {
          */
         "approvalSignupNotice": string;
         /**
+         * メール関連
+         */
+        "emailSettings": string;
+        /**
          * メールの言語
          */
         "emailLanguage": string;
@@ -14442,6 +14600,22 @@ export interface Locale extends ILocale {
          * ユーザーがメールの言語を選択していない場合に使う既定の言語です。
          */
         "defaultEmailLangCaption": string;
+        /**
+         * Gmailのドット無視による多重登録を防ぐ
+         */
+        "blockEmailDotAliasRegistration": string;
+        /**
+         * Gmail等のドット無視(example@gmail.com / ex.ample@gmail.com は同一)を使った複数アカウント登録を、新規登録・メールアドレス変更時の重複チェックで検出してブロックします。対象はGmail/Googlemailドメインに限定されるため、他のプロバイダのアドレスが誤ってブロックされることはありません。
+         */
+        "blockEmailDotAliasRegistrationCaption": string;
+        /**
+         * +タグによる多重登録を防ぐ
+         */
+        "blockEmailPlusAliasRegistration": string;
+        /**
+         * +タグ(example+1@gmail.com)を使った複数アカウント登録を、新規登録・メールアドレス変更時の重複チェックで検出してブロックします。ドメインを問わず適用されるため、+をサブアドレッシングとして扱わないメールプロバイダでは、+を含む文字列がそのまま別の正当なアドレスとして機能している場合に、無関係な既存アカウントと誤って重複判定される可能性があります。
+         */
+        "blockEmailPlusAliasRegistrationCaption": string;
         /**
          * AI生成物をミュート
          */
@@ -14571,6 +14745,22 @@ export interface Locale extends ILocale {
          */
         "mediaTimelineExpand": string;
         /**
+         * 前のメディア
+         */
+        "mediaTimelinePrev": string;
+        /**
+         * 次のメディア
+         */
+        "mediaTimelineNext": string;
+        /**
+         * ブロックしてから凍結
+         */
+        "blockThenSuspend": string;
+        /**
+         * 自分のアカウントで対象ユーザーをブロックしたうえで凍結します。よろしいですか？
+         */
+        "blockThenSuspendConfirm": string;
+        /**
          * メディアタイムラインに表示しない
          */
         "hideFromMediaTimeline": string;
@@ -14578,6 +14768,10 @@ export interface Locale extends ILocale {
          * 表示するタブ
          */
         "hiddenTimelineTabs": string;
+        /**
+         * スイッチで表示・非表示を切り替えられます。ハンドル(⁝)をドラッグすると並び順を変更できます。
+         */
+        "timelineTabOrderCaption": string;
         /**
          * 起動画面
          */
@@ -14795,6 +14989,26 @@ export interface Locale extends ILocale {
          */
         "multipleRequestsHint": string;
         /**
+         * 1回の申請でまとめて選択できるのは最大{max}件です
+         */
+        "maxItemsPerSubmission": ParameterizedString<"max">;
+        /**
+         * 選択中: {selected}/{cap}件
+         */
+        "selectedCount": ParameterizedString<"selected" | "cap">;
+        /**
+         * 上限のため{skipped}件を追加できませんでした
+         */
+        "tooManyFilesSelected": ParameterizedString<"skipped">;
+        /**
+         * 現在{pending}/{limit}件審査中です。あと{remaining}件申請できます
+         */
+        "remainingCount": ParameterizedString<"pending" | "limit" | "remaining">;
+        /**
+         * 審査待ちの申請が上限({limit}件)に達しています。既存の申請が承認・却下・キャンセルされるまで新しい申請はできません
+         */
+        "limitReached": ParameterizedString<"limit">;
+        /**
          * {n}件目
          */
         "requestNumber": ParameterizedString<"n">;
@@ -14982,6 +15196,26 @@ export interface Locale extends ILocale {
          * 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できます
          */
         "multipleRequestsHint": string;
+        /**
+         * 1回の申請でまとめて選択できるのは最大{max}件です
+         */
+        "maxItemsPerSubmission": ParameterizedString<"max">;
+        /**
+         * 選択中: {selected}/{cap}件
+         */
+        "selectedCount": ParameterizedString<"selected" | "cap">;
+        /**
+         * 上限のため{skipped}件を追加できませんでした
+         */
+        "tooManyFilesSelected": ParameterizedString<"skipped">;
+        /**
+         * 現在{pending}/{limit}件審査中です。あと{remaining}件申請できます
+         */
+        "remainingCount": ParameterizedString<"pending" | "limit" | "remaining">;
+        /**
+         * 審査待ちの申請が上限({limit}件)に達しています。既存の申請が承認・却下・キャンセルされるまで新しい申請はできません
+         */
+        "limitReached": ParameterizedString<"limit">;
         /**
          * {n}件目
          */

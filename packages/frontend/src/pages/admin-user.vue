@@ -96,6 +96,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div class="_gaps">
 					<MkSwitch v-model="suspended" @update:modelValue="toggleSuspend">{{ i18n.ts.suspend }}</MkSwitch>
 
+					<!-- JUICE: 通報対応等で凍結する際、対応した本人への報復的な絡み(メンション・フォロー等)を
+					     先に断てるよう、自分自身のアカウントでのブロックとセットにしたショートカット。
+					     既に凍結済みなら不要なので非表示にする -->
+					<MkButton v-if="iAmModerator && !suspended" inline danger @click="blockThenSuspend"><i class="ti ti-ban"></i> {{ i18n.ts._juice.blockThenSuspend }}<span class="_juice">JUICE</span></MkButton>
+
 					<div>
 						<MkButton v-if="user.host == null" inline style="margin-right: 8px;" @click="resetPassword"><i class="ti ti-key"></i> {{ i18n.ts.resetPassword }}</MkButton>
 						<MkButton v-if="user.host == null" inline @click="unsetMfa"><i class="ti ti-shield"></i> {{ i18n.ts.unsetMfa }}</MkButton>
@@ -370,6 +375,33 @@ async function toggleSuspend(v: boolean) {
 		await misskeyApi(v ? 'admin/suspend-user' : 'admin/unsuspend-user', { userId: user.value.id });
 		await refreshUser();
 	}
+}
+
+// JUICE: 「ブロックしてから凍結」。ブロックは操作した本人(モデレーター/管理者)自身の
+// アカウントで実行する(システムからの一方的な隔離ではなく、対応した本人を守る目的のため)
+async function blockThenSuspend() {
+	const confirm = await os.confirm({
+		type: 'warning',
+		text: i18n.ts._juice.blockThenSuspendConfirm,
+	});
+	if (confirm.canceled) return;
+
+	try {
+		await misskeyApi('blocking/create', { userId: user.value.id });
+	} catch (err) {
+		// JUICE: 既にブロック済みなら黙って続行し、凍結だけ実行する。それ以外のエラーは
+		// 通知したうえで中断し、ブロックに失敗した状態のまま凍結だけ進んでしまわないようにする
+		if ((err as { id?: string } | null)?.id !== '787fed64-acb9-464a-82eb-afbd745b9614') {
+			os.alert({
+				type: 'error',
+				text: (err as Error).toString(),
+			});
+			return;
+		}
+	}
+
+	await os.apiWithDialog('admin/suspend-user', { userId: user.value.id });
+	await refreshUser();
 }
 
 async function unsetUserAvatar() {

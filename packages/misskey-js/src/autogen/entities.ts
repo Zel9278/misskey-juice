@@ -4,6 +4,7 @@ import { operations } from './types.js';
 export type EmptyRequest = Record<string, unknown> | undefined;
 export type EmptyResponse = Record<string, unknown> | undefined;
 
+export type AdminAbuseReportCategoriesResponse = operations['admin___abuse-report___categories']['responses']['200']['content']['application/json'];
 export type AdminAbuseReportNotificationRecipientCreateRequest = operations['admin___abuse-report___notification-recipient___create']['requestBody']['content']['application/json'];
 export type AdminAbuseReportNotificationRecipientCreateResponse = operations['admin___abuse-report___notification-recipient___create']['responses']['200']['content']['application/json'];
 export type AdminAbuseReportNotificationRecipientDeleteRequest = operations['admin___abuse-report___notification-recipient___delete']['requestBody']['content']['application/json'];
@@ -204,6 +205,7 @@ export type AuthSessionShowResponse = operations['auth___session___show']['respo
 export type AuthSessionUserkeyRequest = operations['auth___session___userkey']['requestBody']['content']['application/json'];
 export type AuthSessionUserkeyResponse = operations['auth___session___userkey']['responses']['200']['content']['application/json'];
 export type AvatarDecorationRequestsCancelRequest = operations['avatar-decoration-requests___cancel']['requestBody']['content']['application/json'];
+export type AvatarDecorationRequestsCountResponse = operations['avatar-decoration-requests___count']['responses']['200']['content']['application/json'];
 export type AvatarDecorationRequestsCreateRequest = operations['avatar-decoration-requests___create']['requestBody']['content']['application/json'];
 export type AvatarDecorationRequestsCreateResponse = operations['avatar-decoration-requests___create']['responses']['200']['content']['application/json'];
 export type AvatarDecorationRequestsCreateManyRequest = operations['avatar-decoration-requests___create-many']['requestBody']['content']['application/json'];
@@ -364,6 +366,7 @@ export type EmailAddressAvailableResponse = operations['email-address___availabl
 export type EmojiRequest = operations['emoji']['requestBody']['content']['application/json'];
 export type EmojiResponse = operations['emoji']['responses']['200']['content']['application/json'];
 export type EmojiRequestsCancelRequest = operations['emoji-requests___cancel']['requestBody']['content']['application/json'];
+export type EmojiRequestsCountResponse = operations['emoji-requests___count']['responses']['200']['content']['application/json'];
 export type EmojiRequestsCreateRequest = operations['emoji-requests___create']['requestBody']['content']['application/json'];
 export type EmojiRequestsCreateResponse = operations['emoji-requests___create']['responses']['200']['content']['application/json'];
 export type EmojiRequestsCreateManyRequest = operations['emoji-requests___create-many']['requestBody']['content']['application/json'];

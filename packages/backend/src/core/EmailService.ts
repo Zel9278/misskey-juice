@@ -16,6 +16,8 @@ import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { escapeHtml } from '@/misc/escape-html.js';
+import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { resolveEmailAliasSettings } from '@/models/JuiceSettings.js';
 
 @Injectable()
 export class EmailService {
@@ -34,6 +36,7 @@ export class EmailService {
 		private loggerService: LoggerService,
 		private utilityService: UtilityService,
 		private httpRequestService: HttpRequestService,
+		private juiceSettingsService: JuiceSettingsService,
 	) {
 		this.logger = this.loggerService.getLogger('email');
 	}
@@ -175,12 +178,27 @@ export class EmailService {
 			};
 		}
 
-		const exist = await this.userProfilesRepository.countBy({
-			emailVerified: true,
-			email: emailAddress,
-		});
+		const juiceSettings = await this.juiceSettingsService.fetch();
+		const { blockEmailDotAliasRegistration, blockEmailPlusAliasRegistration } = resolveEmailAliasSettings(juiceSettings);
+		const aliasCheckEnabled = blockEmailDotAliasRegistration || blockEmailPlusAliasRegistration;
 
-		if (exist !== 0) {
+		let existsAsAlias = false;
+		const exist = aliasCheckEnabled
+			? (existsAsAlias = await this.existsAsEmailAlias(emailAddress, {
+				foldDots: blockEmailDotAliasRegistration,
+				stripPlusTag: blockEmailPlusAliasRegistration,
+			}))
+			: (await this.userProfilesRepository.countBy({
+				emailVerified: true,
+				email: emailAddress,
+			})) !== 0;
+
+		if (exist) {
+			// JUICE: 完全一致ではなく別名正規化による判定だった場合、問い合わせ対応時に
+			// 経緯を追えるようログにだけ残す(APIレスポンス上は通常の'used'と区別しない)
+			if (existsAsAlias) {
+				this.logger.debug(`email registration blocked as alias duplicate: ${emailAddress}`);
+			}
 			return {
 				available: false,
 				reason: 'used',
@@ -240,6 +258,36 @@ export class EmailService {
 			available: true,
 			reason: null,
 		};
+	}
+
+	// JUICE: メールアドレスの別名(Gmail等のドット無視・+タグ)を使った多重アカウント登録対策。
+	// email-address/available は未認証・レート制限無しで叩けるエンドポイントのため、検証済み
+	// メールアドレスを全件アプリ側へ転送して比較するとコストが大きい。正規化(ドット除去・+タグ除去)を
+	// SQL側で再現し、DBだけで重複判定を完結させる(normalizeEmailForDedupとロジックを二重管理する
+	// トレードオフはあるが、UtilityService.dotFoldingEmailDomainsは共有しているため対象ドメインの
+	// 一覧だけは分岐しない)
+	@bindThis
+	private async existsAsEmailAlias(emailAddress: string, options: { foldDots: boolean; stripPlusTag: boolean }): Promise<boolean> {
+		const normalizedCandidate = this.utilityService.normalizeEmailForDedup(emailAddress, options);
+
+		const localPart = options.stripPlusTag
+			? `regexp_replace(split_part(profile.email, '@', 1), '\\+.*$', '')`
+			: `split_part(profile.email, '@', 1)`;
+		const domainPart = `lower(split_part(profile.email, '@', 2))`;
+		const normalizedLocalPart = options.foldDots
+			? `(CASE WHEN ${domainPart} = ANY(:dotFoldingDomains) THEN replace(${localPart}, '.', '') ELSE ${localPart} END)`
+			: localPart;
+
+		const count = await this.userProfilesRepository.createQueryBuilder('profile')
+			.where('profile.emailVerified = true')
+			.andWhere('profile.email IS NOT NULL')
+			.andWhere(`lower(${normalizedLocalPart} || '@' || ${domainPart}) = :normalizedCandidate`, {
+				...(options.foldDots ? { dotFoldingDomains: this.utilityService.dotFoldingEmailDomains } : {}),
+				normalizedCandidate,
+			})
+			.getCount();
+
+		return count !== 0;
 	}
 
 	private async verifyMail(emailAddress: string, verifymailAuthKey: string): Promise<{

@@ -85,6 +85,27 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 		});
 	}
 
+	// JUICE: 通報対応等で凍結する際、対応した本人への報復的な絡み(メンション・フォロー等)を
+	// 先に断てるよう、自分自身のアカウントでのブロックとセットにしたショートカット
+	async function blockThenSuspend() {
+		if (!await getConfirmed(i18n.ts._juice.blockThenSuspendConfirm)) return;
+
+		if (!user.isBlocking) {
+			try {
+				await misskeyApi('blocking/create', { userId: user.id });
+				user.isBlocking = true;
+			} catch (err) {
+				os.alert({
+					type: 'error',
+					text: (err as Error).toString(),
+				});
+				return;
+			}
+		}
+
+		await os.apiWithDialog('admin/suspend-user', { userId: user.id });
+	}
+
 	async function toggleNotify() {
 		os.apiWithDialog('following/update', {
 			userId: user.id,
@@ -352,6 +373,11 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 						},
 					}));
 				},
+			}, {
+				icon: 'ti ti-ban',
+				text: i18n.ts._juice.blockThenSuspend,
+				badge: true,
+				action: blockThenSuspend,
 			});
 		}
 

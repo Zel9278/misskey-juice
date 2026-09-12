@@ -57,6 +57,24 @@ export const paramDef = {
 			maxItems: 20,
 			items: { type: 'string', maxLength: 256 },
 		},
+		newAccountFollowRequestEnabled: { type: 'boolean' },
+		newAccountFollowRequestThresholdMs: { type: 'integer', minimum: 1, maximum: 2592000000 }, // 30日
+		reportCategories: {
+			type: 'array',
+			items: {
+				type: 'object',
+				properties: {
+					key: { type: 'string', minLength: 1, maxLength: 64 },
+					text: { type: 'string', minLength: 1, maxLength: 128 },
+					enabled: { type: 'boolean' },
+					order: { type: 'integer' },
+					isDefault: { type: 'boolean' },
+				},
+				required: ['key', 'text', 'enabled', 'order', 'isDefault'],
+			},
+		},
+		blockEmailDotAliasRegistration: { type: 'boolean' },
+		blockEmailPlusAliasRegistration: { type: 'boolean' },
 	},
 } as const;
 
@@ -93,6 +111,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.contactFormContentMaxLength !== undefined) set.contactFormContentMaxLength = ps.contactFormContentMaxLength;
 			if (ps.contactFormCategories !== undefined) set.contactFormCategories = ps.contactFormCategories;
 			if (ps.customSplashText !== undefined) set.customSplashText = ps.customSplashText;
+			if (ps.newAccountFollowRequestEnabled !== undefined) set.newAccountFollowRequestEnabled = ps.newAccountFollowRequestEnabled;
+			if (ps.newAccountFollowRequestThresholdMs !== undefined) set.newAccountFollowRequestThresholdMs = ps.newAccountFollowRequestThresholdMs;
+			if (ps.reportCategories !== undefined) set.reportCategories = ps.reportCategories;
+			if (ps.blockEmailDotAliasRegistration !== undefined) set.blockEmailDotAliasRegistration = ps.blockEmailDotAliasRegistration;
+			if (ps.blockEmailPlusAliasRegistration !== undefined) set.blockEmailPlusAliasRegistration = ps.blockEmailPlusAliasRegistration;
 
 			const after = await this.juiceSettingsService.update(set);
 

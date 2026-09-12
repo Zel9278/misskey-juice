@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings, resolveNewAccountFollowRequestSettings, resolveReportCategorySettings, resolveEmailAliasSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -111,6 +111,37 @@ export const meta = {
 				optional: false, nullable: false,
 				items: { type: 'string', optional: false, nullable: false },
 			},
+			newAccountFollowRequestEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			newAccountFollowRequestThresholdMs: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
+			reportCategories: {
+				type: 'array',
+				optional: false, nullable: false,
+				items: {
+					type: 'object',
+					optional: false, nullable: false,
+					properties: {
+						key: { type: 'string', optional: false, nullable: false },
+						text: { type: 'string', optional: false, nullable: false },
+						enabled: { type: 'boolean', optional: false, nullable: false },
+						order: { type: 'number', optional: false, nullable: false },
+						isDefault: { type: 'boolean', optional: false, nullable: false },
+					},
+				},
+			},
+			blockEmailDotAliasRegistration: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			blockEmailPlusAliasRegistration: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 		},
 	},
 } as const;
@@ -140,6 +171,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...resolveReactionPiggybackSettings(settings),
 				...resolveContactFormSettings(settings),
 				...resolveCustomSplashTextSettings(settings),
+				...resolveNewAccountFollowRequestSettings(settings),
+				...resolveReportCategorySettings(settings),
+				...resolveEmailAliasSettings(settings),
 			};
 		});
 	}

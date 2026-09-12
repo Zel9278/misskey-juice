@@ -87,6 +87,29 @@ export const meta = {
 					type: 'string',
 					nullable: false, optional: false,
 				},
+				category: {
+					type: 'string',
+					nullable: true, optional: false,
+				},
+				targetType: {
+					type: 'string',
+					nullable: true, optional: false,
+					enum: ['note', 'chatMessage', null],
+				},
+				targetNote: {
+					type: 'object',
+					nullable: true, optional: false,
+					ref: 'Note',
+				},
+				targetChatMessage: {
+					type: 'object',
+					nullable: true, optional: false,
+					ref: 'ChatMessage',
+				},
+				situationDetail: {
+					type: 'string',
+					nullable: true, optional: false,
+				},
 			},
 		},
 	},
@@ -103,6 +126,8 @@ export const paramDef = {
 		state: { type: 'string', nullable: true, default: null },
 		reporterOrigin: { type: 'string', enum: ['combined', 'local', 'remote'], default: 'combined' },
 		targetUserOrigin: { type: 'string', enum: ['combined', 'local', 'remote'], default: 'combined' },
+		// JUICE: 通報カテゴリでの絞り込み(未指定なら絞り込まない)
+		category: { type: 'string', nullable: true, default: null },
 	},
 	required: [],
 } as const;
@@ -132,6 +157,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			switch (ps.targetUserOrigin) {
 				case 'local': query.andWhere('report.targetUserHost IS NULL'); break;
 				case 'remote': query.andWhere('report.targetUserHost IS NOT NULL'); break;
+			}
+
+			if (ps.category != null) {
+				query.andWhere('report.category = :category', { category: ps.category });
 			}
 
 			const reports = await query.limit(ps.limit).getMany();

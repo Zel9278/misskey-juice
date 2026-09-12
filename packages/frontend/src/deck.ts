@@ -66,7 +66,12 @@ export type Column = {
 	channelId?: string;
 	roleId?: string;
 	excludeTypes?: typeof notificationTypes[number][];
-	tl?: BasicTimelineType;
+	// JUICE: 'relay'/'media'は本家に無いJUICE独自のタイムライン種別(リレータイムライン/メディアタイムライン)
+	tl?: BasicTimelineType | 'relay' | 'media';
+	// JUICE: tl==='relay'時の絞り込み先リレー(未指定/空配列=すべてのリレー)
+	relayIds?: string[];
+	// JUICE: tl==='media'時に対象とするベーシックタイムライン範囲(ホーム/ローカル/ソーシャル/グローバル)
+	mediaTimelineSrc?: BasicTimelineType;
 	withRenotes?: boolean;
 	withReplies?: boolean;
 	withSensitive?: boolean;

@@ -6,6 +6,17 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
+     * **Credential required**: *Yes* / **Permission**: *read:admin:abuse-user-reports*
+     */
+    request<E extends 'admin/abuse-report/categories', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
      * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
      * **Credential required**: *Yes* / **Permission**: *write:admin:abuse-report:notification-recipient*
      */
@@ -1586,6 +1597,17 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
+     * **Credential required**: *Yes* / **Permission**: *read:avatar-decoration-requests*
+     */
+    request<E extends 'avatar-decoration-requests/count', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
      * **Credential required**: *Yes* / **Permission**: *write:avatar-decoration-requests*
      */
     request<E extends 'avatar-decoration-requests/create', P extends Endpoints[E]['req']>(
@@ -2634,6 +2656,17 @@ declare module '../api.js' {
      * **Credential required**: *Yes* / **Permission**: *write:emoji-requests*
      */
     request<E extends 'emoji-requests/cancel', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Credential required**: *Yes* / **Permission**: *read:emoji-requests*
+     */
+    request<E extends 'emoji-requests/count', P extends Endpoints[E]['req']>(
       endpoint: E,
       params: P,
       credential?: string | null,

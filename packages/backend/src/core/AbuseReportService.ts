@@ -13,6 +13,8 @@ import { QueueService } from '@/core/QueueService.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
+import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { resolveReportCategorySettings, type ReportCategory } from '@/models/JuiceSettings.js';
 import { IdService } from './IdService.js';
 
 @Injectable()
@@ -30,7 +32,23 @@ export class AbuseReportService {
 		private systemAccountService: SystemAccountService,
 		private apRendererService: ApRendererService,
 		private moderationLogService: ModerationLogService,
+		private juiceSettingsService: JuiceSettingsService,
 	) {
+	}
+
+	// JUICE: 通報カテゴリ(admin設定のreportCategories)関連ヘルパー。ContactFormServiceの同型メソッドを参考にした
+	@bindThis
+	public async getEnabledReportCategories(): Promise<ReportCategory[]> {
+		const { reportCategories } = resolveReportCategorySettings(await this.juiceSettingsService.fetch());
+		return reportCategories
+			.filter(cat => cat.enabled)
+			.sort((a, b) => a.order - b.order);
+	}
+
+	@bindThis
+	public async validateReportCategory(category: string): Promise<boolean> {
+		const enabledCategories = await this.getEnabledReportCategories();
+		return enabledCategories.some(cat => cat.key === category);
 	}
 
 	/**
@@ -49,6 +67,11 @@ export class AbuseReportService {
 		reporterId: MiAbuseUserReport['reporterId'],
 		reporterHost: MiAbuseUserReport['reporterHost'],
 		comment: string,
+		category?: MiAbuseUserReport['category'],
+		targetType?: MiAbuseUserReport['targetType'],
+		targetNoteId?: MiAbuseUserReport['targetNoteId'],
+		targetChatMessageId?: MiAbuseUserReport['targetChatMessageId'],
+		situationDetail?: MiAbuseUserReport['situationDetail'],
 	}[]) {
 		const entities = params.map(param => {
 			return {
@@ -58,6 +81,13 @@ export class AbuseReportService {
 				reporterId: param.reporterId,
 				reporterHost: param.reporterHost,
 				comment: param.comment,
+				// JUICE: 通報カテゴリ・対象コンテンツ種別
+				category: param.category ?? null,
+				targetType: param.targetType ?? null,
+				targetNoteId: param.targetNoteId ?? null,
+				targetChatMessageId: param.targetChatMessageId ?? null,
+				// JUICE: 通報者が記述した状況の詳細
+				situationDetail: param.situationDetail ?? null,
 			};
 		});
 

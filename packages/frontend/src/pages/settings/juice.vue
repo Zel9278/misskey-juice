@@ -61,19 +61,29 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</FormSection>
 		</SearchMarker>
 
-		<SearchMarker :keywords="['timeline', 'tab', 'hide', 'show']">
+		<SearchMarker :keywords="['timeline', 'tab', 'hide', 'show', 'order', 'reorder']">
 			<FormSection>
 				<template #label><SearchLabel>{{ i18n.ts._juice.hiddenTimelineTabs }}</SearchLabel></template>
-				<div class="_gaps_s">
-					<MkSwitch
-						v-for="tab in timelineTabOptions"
-						:key="tab.key"
-						:modelValue="isTimelineTabVisible(tab.key)"
-						@update:modelValue="(v) => onChangeTimelineTabVisible(tab.key, v)"
-					>
-						<template #label>{{ tab.label }}</template>
-					</MkSwitch>
-				</div>
+				<template #description>{{ i18n.ts._juice.timelineTabOrderCaption }}</template>
+				<MkDraggable
+					:modelValue="orderedTimelineTabItems"
+					direction="vertical"
+					withGaps
+					manualDragStart
+					@update:modelValue="onReorderTimelineTabs"
+				>
+					<template #default="{ item, dragStart }">
+						<div v-panel :class="$style.tabItem">
+							<button class="_button" :class="$style.tabItemHandle" tabindex="-1" @pointerdown.stop="dragStart"><i class="ti ti-menu"></i></button>
+							<MkSwitch
+								:modelValue="isTimelineTabVisible(item.key)"
+								@update:modelValue="(v) => onChangeTimelineTabVisible(item.key, v)"
+							>
+								<template #label>{{ item.label }}</template>
+							</MkSwitch>
+						</div>
+					</template>
+				</MkDraggable>
 			</FormSection>
 		</SearchMarker>
 
@@ -153,6 +163,7 @@ import FormLink from '@/components/form/link.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
+import MkDraggable from '@/components/MkDraggable.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkRadios from '@/components/MkRadios.vue';
 import MkDisableSection from '@/components/MkDisableSection.vue';
@@ -207,6 +218,21 @@ const timelineTabOptions = computed(() => [
 	{ key: 'antenna', label: i18n.ts.antennas },
 	{ key: 'channel', label: i18n.ts.channel },
 ]);
+
+// JUICE: 上記タブ一覧を、保存済みの並び順(timelineTabOrder)に沿って並べ替える。
+// 並び順未設定/新しく増えたタブはtimelineTabOptions本来の並びのまま末尾に追加される
+const orderedTimelineTabItems = computed(() => {
+	const order = prefer.r.timelineTabOrder.value;
+	const options = timelineTabOptions.value;
+	const known = options.filter(o => order.includes(o.key));
+	const unknown = options.filter(o => !order.includes(o.key));
+	known.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+	return [...known, ...unknown].map(o => ({ id: o.key, key: o.key, label: o.label }));
+});
+
+function onReorderTimelineTabs(items: { id: string; key: string; label: string }[]) {
+	prefer.commit('timelineTabOrder', items.map(i => i.key));
+}
 
 function isTimelineTabVisible(key: string): boolean {
 	return !prefer.r.hiddenTimelineTabs.value.includes(key);
@@ -297,3 +323,21 @@ definePage(() => ({
 	icon: 'ti ti-droplet',
 }));
 </script>
+
+<style lang="scss" module>
+.tabItem {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	border-radius: var(--MI-radius);
+}
+
+.tabItemHandle {
+	cursor: move;
+	width: 32px;
+	height: 32px;
+	flex-shrink: 0;
+	opacity: 0.5;
+	touch-action: none;
+}
+</style>
