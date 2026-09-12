@@ -69,6 +69,13 @@ export const apiWithDialog = (<E extends keyof Misskey.Endpoints>(
 				copyToClipboard(`Endpoint: ${endpoint}\nInfo: ${JSON.stringify(err.info)}\nDate: ${date}`);
 			}
 			return;
+			// JUICE: customErrorsは呼び出し元がこのエンドポイント固有のid向けに文言を明示的に
+			// 指定したものなので、RATE_LIMIT_EXCEEDED等の汎用コード判定より優先する
+			// (以前は他のelse ifより後にあったため、RATE_LIMIT_EXCEEDED等コードが一致する限り
+			// customErrorsを指定してもid一致判定まで到達せず、常に汎用文言で上書きされていた)
+		} else if (customErrors && customErrors[err.id] != null) {
+			title = customErrors[err.id].title;
+			text = customErrors[err.id].text;
 		} else if (err.code === 'RATE_LIMIT_EXCEEDED') {
 			title = i18n.ts.cannotPerformTemporary;
 			text = i18n.ts.cannotPerformTemporaryDescription;
@@ -84,9 +91,6 @@ export const apiWithDialog = (<E extends keyof Misskey.Endpoints>(
 		} else if (err.message.startsWith('Unexpected token')) {
 			title = i18n.ts.gotInvalidResponseError;
 			text = i18n.ts.gotInvalidResponseErrorDescription;
-		} else if (customErrors && customErrors[err.id] != null) {
-			title = customErrors[err.id].title;
-			text = customErrors[err.id].text;
 		}
 		alert({
 			type: 'error',

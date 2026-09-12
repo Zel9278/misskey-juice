@@ -13,6 +13,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<!-- JUICE: 審査待ちの残り件数・1回にまとめて申請できる上限を、送信前に把握できるように表示する -->
 				<MkInfo v-if="remaining <= 0" warn>{{ i18n.tsx._emojiRequestPage.limitReached({ limit: requestLimit }) }}</MkInfo>
 				<MkInfo v-else>{{ i18n.tsx._emojiRequestPage.remainingCount({ pending: pendingCount, limit: requestLimit, remaining }) }}</MkInfo>
+				<!-- JUICE: 審査待ち件数の上限とは別の、1日あたりの送信回数上限の残り回数 -->
+				<MkInfo v-if="dailyRemaining === 0" warn>{{ i18n.ts._emojiRequestPage.dailyLimitReached }}</MkInfo>
+				<MkInfo v-else-if="dailyRemaining != null">{{ i18n.tsx._emojiRequestPage.dailyRemainingCount({ remaining: dailyRemaining }) }}</MkInfo>
 				<!-- JUICE: 今まさに組み立てている今回分のドラフト数(今回申請しようとしている数/今回の上限) -->
 				<MkInfo>{{ i18n.tsx._emojiRequestPage.selectedCount({ selected: drafts.length, cap: batchCap }) }}</MkInfo>
 				<!-- JUICE: 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できる -->
@@ -163,8 +166,13 @@ misskeyApi('juice/public-settings').then(res => {
 // emoji-requests/countから取得する。MAX_BATCH_ITEMSはemoji-requests/create-manyのparamDefの
 // maxItemsと合わせている
 const pendingCount = ref(0);
+// JUICE: 審査待ち件数の上限(emojiRequestLimit)とは別に、emoji-requests/create-manyの
+// 1日あたりの送信回数上限(emojiRequestDailyLimit、API呼び出し頻度)の残り回数。
+// nullは開発環境等レートリミットが無効な場合を表し、この場合は表示しない
+const dailyRemaining = ref<number | null>(null);
 misskeyApi('emoji-requests/count').then(res => {
 	pendingCount.value = res.pending;
+	dailyRemaining.value = res.dailyRemaining;
 });
 const requestLimit = computed(() => $i.policies.emojiRequestLimit);
 const remaining = computed(() => Math.max(0, requestLimit.value - pendingCount.value));
@@ -404,11 +412,20 @@ async function submit() {
 		'g-recaptcha-response': reCaptchaResponse.value,
 		'turnstile-response': turnstileResponse.value,
 		'testcaptcha-response': testcaptchaResponse.value,
+	}, undefined, {
+		// JUICE: RATE_LIMIT_EXCEEDEDはApiCallServiceが全エンドポイント共通で使う固定id(何に対する
+		// 制限かがメッセージに出ない)のため、このエンドポイント固有の文言に差し替える
+		'd5826d14-3982-4d2e-8011-b9e9f02499ef': {
+			title: i18n.ts._emojiRequestPage.dailyLimitExceededTitle,
+			text: i18n.ts._emojiRequestPage.dailyLimitExceededDescription,
+		},
 	}).then(requests => {
 		for (const request of requests) {
 			pendingPaginator.prepend(request);
 		}
 		pendingCount.value += requests.length;
+		// JUICE: 1回のcreate-many呼び出しで1日あたりの送信回数上限を1消費する(バッチ件数に依らない)
+		if (dailyRemaining.value != null) dailyRemaining.value = Math.max(0, dailyRemaining.value - 1);
 		drafts.value.forEach(revokeDraftPreview);
 		drafts.value = [];
 		tab.value = 'pending';
@@ -421,9 +438,11 @@ async function submit() {
 		testcaptcha.value?.reset?.();
 
 		// JUICE: 送信失敗時(他タブでの同時送信・承認/却下等により審査待ち件数が実際とズレて
-		// いる可能性がある)は、表示中の残り申請可能数を実際の値に合わせ直す
+		// いる可能性がある)は、表示中の残り申請可能数を実際の値に合わせ直す。レート制限に
+		// 引っかかった試行自体も1日あたりの送信回数を消費するため、dailyRemainingも合わせて取り直す
 		misskeyApi('emoji-requests/count').then(res => {
 			pendingCount.value = res.pending;
+			dailyRemaining.value = res.dailyRemaining;
 		});
 	});
 }

@@ -7,8 +7,6 @@ import { ref } from 'vue';
 import { $i, iAmModerator } from '@/i.js';
 import { useStream } from '@/stream.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
-import * as os from '@/os.js';
-import { i18n } from '@/i18n.js';
 
 // JUICE: 通報・絵文字申請・承認式登録申請・アバターデコレーション申請・お問い合わせについて、
 // 「未対応がある」ことを示すバナー用state。モデレーターだけでなく、対応する
@@ -106,17 +104,15 @@ export function initJuiceAdminNotifications(): void {
 
 	const connection = useStream().useChannel('admin');
 
-	// JUICE: 通報はまだ通常の通知(🔔)化していないため、ここでの即時トーストを引き続き使う
-	connection.on('newAbuseUserReport', () => {
-		os.toast(i18n.ts.newAbuseReportToast);
-		thereIsUnresolvedAbuseReport.value = true;
-	});
-
-	// JUICE: 絵文字申請・アバターデコレーション申請・承認式登録申請・お問い合わせの新着は
+	// JUICE: 通報・絵文字申請・アバターデコレーション申請・承認式登録申請・お問い合わせの新着は
 	// notificationService.createNotification()経由で通常の通知(🔔)としても届くため、
 	// トースト表示はcommon.vueの既存のnotification購読(onNotification)に任せ、ここでは
 	// バナーstateの即時更新のみ行う(admin streamの方がnotificationsの反映より速いことがあるため、
 	// バナー更新自体はここに残す)
+	connection.on('newAbuseUserReport', () => {
+		thereIsUnresolvedAbuseReport.value = true;
+	});
+
 	connection.on('newEmojiRequest', () => {
 		thereArePendingEmojiRequests.value = true;
 	});

@@ -655,6 +655,7 @@ export const packedMeDetailedOnlySchema = {
 				newAvatarDecorationRequest: { optional: true, ...notificationRecieveConfig },
 				newSignupApplication: { optional: true, ...notificationRecieveConfig },
 				newContactForm: { optional: true, ...notificationRecieveConfig },
+				newAbuseUserReport: { optional: true, ...notificationRecieveConfig },
 				createToken: { optional: true, ...notificationRecieveConfig },
 				exportCompleted: { optional: true, ...notificationRecieveConfig },
 			},

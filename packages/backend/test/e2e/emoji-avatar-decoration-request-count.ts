@@ -37,6 +37,10 @@ describe('絵文字・アバターデコレーション申請の審査待ち件�
 			parameters: {},
 			user: alice,
 		});
+		// JUICE: レートリミット自体がテスト環境では無効(RateLimiterService.disabled)なため、
+		// dailyRemainingは常にnullになる(実際の集計ロジックはRateLimiterService.peekUsageの
+		// 単体テストで検証済み)
+		assert.strictEqual(before.dailyRemaining, null);
 
 		const file = await uploadFile(alice);
 		const request = await successfulApiCall({
@@ -72,6 +76,10 @@ describe('絵文字・アバターデコレーション申請の審査待ち件�
 			parameters: {},
 			user: alice,
 		});
+		// JUICE: レートリミット自体がテスト環境では無効(RateLimiterService.disabled)なため、
+		// dailyRemainingは常にnullになる(実際の集計ロジックはRateLimiterService.peekUsageの
+		// 単体テストで検証済み)
+		assert.strictEqual(before.dailyRemaining, null);
 
 		const file = await uploadFile(alice);
 		const request = await successfulApiCall({

@@ -578,6 +578,31 @@ export const packedNotificationSchema = {
 			},
 		},
 	}, {
+		// JUICE: 通報が新しく来たとき。通報コメント・通報者はPII保護のため含めない
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['newAbuseUserReport'],
+			},
+			targetUser: {
+				type: 'object',
+				ref: 'UserLite',
+				optional: false, nullable: false,
+			},
+			reportId: {
+				type: 'string',
+				optional: false, nullable: false,
+				format: 'id',
+			},
+			category: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+		},
+	}, {
 		type: 'object',
 		properties: {
 			...baseSchema.properties,

@@ -159,6 +159,27 @@ describe('新着申請の通知(admin向け)', () => {
 		assert.strictEqual('email' in notification!, false);
 	});
 
+	test('通報を送信すると、モデレーターに新着通知が届く(通報コメント・通報者は含まれない)', async () => {
+		const target = await signup();
+		await successfulApiCall({
+			endpoint: 'users/report-abuse',
+			parameters: { userId: target.id, comment: 'テスト通報コメント', category: 'spam' },
+			user: alice,
+		}, { status: 204 });
+
+		await allSettled();
+		await setTimeout(500);
+
+		const res = await api('i/notifications', {}, root);
+		assert.strictEqual(res.status, 200);
+		const notification = res.body.find((n: { type: string, targetUser?: { id: string } }) => n.type === 'newAbuseUserReport' && n.targetUser?.id === target.id) as { category: string | null } | undefined;
+		assert.notStrictEqual(notification, undefined);
+		assert.strictEqual(notification!.category, 'spam');
+		// JUICE: PII保護のため、通報コメント・通報者を特定できるフィールドは含まない
+		assert.strictEqual('comment' in notification!, false);
+		assert.strictEqual('reporter' in notification!, false);
+	});
+
 	test('モデレーターでなくても、canApproveEmojiRequestsロールポリシーを持つユーザーに新着通知が届く', async () => {
 		const approver = await signup({ username: 'notificationApprover' });
 		const approverRole = await role(root, { isModerator: false, name: 'Notification Approver Role' }, {

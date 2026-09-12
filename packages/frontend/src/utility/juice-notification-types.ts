@@ -16,4 +16,5 @@ export const juiceNotificationTypes: readonly (typeof notificationTypes[number])
 	'newAvatarDecorationRequest',
 	'newSignupApplication',
 	'newContactForm',
+	'newAbuseUserReport',
 ];

@@ -267,9 +267,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		}
 
 		if (ps.withFiles) {
-			query.andWhere('note.fileIds != \'{}\'');
-			// JUICE: hideFromMediaTimelineな投稿はメディアタイムライン(withFiles指定時)から除外する
-			query.andWhere('note.hideFromMediaTimeline = FALSE');
+			// JUICE: 純粋なリノート(本文・自身のファイルを持たない)は、リノート元の投稿にファイルが
+			// あればメディアタイムラインの対象に含める。hideFromMediaTimelineは実際にファイルを
+			// 提供している側(自身、またはリノート元)の投稿の設定を見る
+			query.andWhere(new Brackets(qb => {
+				qb.orWhere(new Brackets(qb2 => {
+					qb2.andWhere('note.fileIds != \'{}\'');
+					qb2.andWhere('note.hideFromMediaTimeline = FALSE');
+				}));
+				qb.orWhere(new Brackets(qb2 => {
+					qb2.andWhere('note.renoteId IS NOT NULL');
+					qb2.andWhere('renote.fileIds != \'{}\'');
+					qb2.andWhere('renote.hideFromMediaTimeline = FALSE');
+				}));
+			}));
 		}
 
 		// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む

@@ -60,6 +60,8 @@ export const notificationTypes = [
 	'newAvatarDecorationRequest',
 	'newSignupApplication',
 	'newContactForm',
+	// JUICE: モデレーター向け、新着通報の通知
+	'newAbuseUserReport',
 	'createToken',
 	'app',
 	'test',

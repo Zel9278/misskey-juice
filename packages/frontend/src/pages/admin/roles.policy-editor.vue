@@ -416,6 +416,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</template>
 		</XFolder>
 
+		<XFolder v-if="matchQuery([i18n.ts._role._options.emojiRequestDailyLimit, 'emojiRequestDailyLimit'])" v-model:policyMeta="policyMetaModel.emojiRequestDailyLimit" :isBaseRole="isBaseRole" :readonly="readonly">
+			<template #label>{{ i18n.ts._role._options.emojiRequestDailyLimit }}<span class="_juice">JUICE</span></template>
+			<template #valueText>{{ valuesModel.emojiRequestDailyLimit }}</template>
+			<template #default="{ disabled }">
+				<MkInput v-model="valuesModel.emojiRequestDailyLimit" type="number" :disabled="disabled" :min="0">
+				</MkInput>
+			</template>
+		</XFolder>
+
+		<XFolder v-if="matchQuery([i18n.ts._role._options.avatarDecorationRequestDailyLimit, 'avatarDecorationRequestDailyLimit'])" v-model:policyMeta="policyMetaModel.avatarDecorationRequestDailyLimit" :isBaseRole="isBaseRole" :readonly="readonly">
+			<template #label>{{ i18n.ts._role._options.avatarDecorationRequestDailyLimit }}<span class="_juice">JUICE</span></template>
+			<template #valueText>{{ valuesModel.avatarDecorationRequestDailyLimit }}</template>
+			<template #default="{ disabled }">
+				<MkInput v-model="valuesModel.avatarDecorationRequestDailyLimit" type="number" :disabled="disabled" :min="0">
+				</MkInput>
+			</template>
+		</XFolder>
+
 		<XFolder v-if="matchQuery([i18n.ts._role._options.announcementReactionTypeLimit, 'announcementReactionTypeLimit'])" v-model:policyMeta="policyMetaModel.announcementReactionTypeLimit" :isBaseRole="isBaseRole" :readonly="readonly">
 			<template #label>{{ i18n.ts._role._options.announcementReactionTypeLimit }}<span class="_juice">JUICE</span></template>
 			<template #valueText>{{ valuesModel.announcementReactionTypeLimit }}</template>

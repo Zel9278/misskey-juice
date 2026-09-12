@@ -337,6 +337,14 @@ export const packedRolePoliciesSchema = {
 			type: 'integer',
 			optional: false, nullable: false,
 		},
+		emojiRequestDailyLimit: {
+			type: 'integer',
+			optional: false, nullable: false,
+		},
+		avatarDecorationRequestDailyLimit: {
+			type: 'integer',
+			optional: false, nullable: false,
+		},
 		announcementReactionTypeLimit: {
 			type: 'integer',
 			optional: false, nullable: false,

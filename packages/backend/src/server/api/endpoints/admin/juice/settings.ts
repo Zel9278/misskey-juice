@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings, resolveNewAccountFollowRequestSettings, resolveReportCategorySettings, resolveEmailAliasSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings, resolveNewAccountFollowRequestSettings, resolveReportCategorySettings, resolveEmailAliasSettings, resolveAiGeneratedFallbackCwSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -142,6 +142,10 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			aiGeneratedFallbackCwEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 		},
 	},
 } as const;
@@ -174,6 +178,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...resolveNewAccountFollowRequestSettings(settings),
 				...resolveReportCategorySettings(settings),
 				...resolveEmailAliasSettings(settings),
+				...resolveAiGeneratedFallbackCwSettings(settings),
 			};
 		});
 	}

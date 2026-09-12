@@ -564,6 +564,25 @@ describe('Timelines', () => {
 				}, waitForPushToTlOptions);
 			}, 1000 * 30);
 
+			// JUICE: 純粋なリノート(本文・自身のファイルを持たない)は投稿自体にファイルを持たないため、
+			// withFiles:trueの判定から漏れがちだった。リノート元にファイルがあれば含まれることを確認する
+			test('[withFiles: true] リノート元にファイルがあれば、本文の無い純粋なリノートも含まれる', async () => {
+				const [alice, bob] = await Promise.all([signup(), signup()]);
+
+				await api('following/create', { userId: bob.id }, alice);
+				const file = await uploadUrl(bob, 'https://raw.githubusercontent.com/misskey-dev/assets/main/public/icon.png');
+				const bobNote = await post(bob, { fileIds: [file.id] });
+				const bobRenote = await post(bob, { renoteId: bobNote.id });
+				const bobTextOnlyNote = await post(bob, { text: 'hi' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/timeline', { limit: 100, withFiles: true }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === bobRenote.id), true);
+					assert.strictEqual(res.body.some(note => note.id === bobTextOnlyNote.id), false);
+				}, waitForPushToTlOptions);
+			}, 1000 * 10);
+
 			test('フォローしているユーザーのチャンネル投稿が含まれない', async () => {
 				const [alice, bob] = await Promise.all([signup(), signup()]);
 
@@ -1360,6 +1379,24 @@ describe('Timelines', () => {
 				}, waitForPushToTlOptions);
 			}, 1000 * 10);
 
+			// JUICE: 純粋なリノート(本文・自身のファイルを持たない)は投稿自体にファイルを持たないため、
+			// withFiles:trueの判定から漏れがちだった。リノート元にファイルがあれば含まれることを確認する
+			test('[withFiles: true] リノート元にファイルがあれば、本文の無い純粋なリノートも含まれる', async () => {
+				const [alice, bob, carol] = await Promise.all([signup(), signup(), signup()]);
+
+				const file = await uploadUrl(bob, 'https://raw.githubusercontent.com/misskey-dev/assets/main/public/icon.png');
+				const bobNote = await post(bob, { fileIds: [file.id] });
+				const carolRenote = await post(carol, { renoteId: bobNote.id });
+				const carolTextOnlyNote = await post(carol, { text: 'hi' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/local-timeline', { limit: 100, withFiles: true }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === carolRenote.id), true);
+					assert.strictEqual(res.body.some(note => note.id === carolTextOnlyNote.id), false);
+				}, waitForPushToTlOptions);
+			}, 1000 * 10);
+
 			describe('Channel', () => {
 				test('チャンネル未フォロー　＋　ユーザ未フォロー　＝　TLに流れない', async () => {
 					const [alice, bob] = await Promise.all([signup(), signup()]);
@@ -1952,6 +1989,24 @@ describe('Timelines', () => {
 
 					assert.strictEqual(res.body.some(note => note.id === bobNote1.id), false);
 					assert.strictEqual(res.body.some(note => note.id === bobNote2.id), true);
+				}, waitForPushToTlOptions);
+			}, 1000 * 10);
+
+			// JUICE: 純粋なリノート(本文・自身のファイルを持たない)は投稿自体にファイルを持たないため、
+			// withFiles:trueの判定から漏れがちだった。リノート元にファイルがあれば含まれることを確認する
+			test('[withFiles: true] リノート元にファイルがあれば、本文の無い純粋なリノートも含まれる', async () => {
+				const [alice, bob, carol] = await Promise.all([signup(), signup(), signup()]);
+
+				const file = await uploadUrl(bob, 'https://raw.githubusercontent.com/misskey-dev/assets/main/public/icon.png');
+				const bobNote = await post(bob, { fileIds: [file.id] });
+				const carolRenote = await post(carol, { renoteId: bobNote.id });
+				const carolTextOnlyNote = await post(carol, { text: 'hi' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/hybrid-timeline', { limit: 100, withFiles: true }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === carolRenote.id), true);
+					assert.strictEqual(res.body.some(note => note.id === carolTextOnlyNote.id), false);
 				}, waitForPushToTlOptions);
 			}, 1000 * 10);
 
@@ -3422,6 +3477,26 @@ describe('Timelines', () => {
 		});
 		// TODO: リノートミュート済みユーザーのテスト
 		// TODO: ページネーションのテスト
+	});
+
+	describe('Global TL: withFiles', () => {
+		// JUICE: 純粋なリノート(本文・自身のファイルを持たない)は投稿自体にファイルを持たないため、
+		// withFiles:trueの判定から漏れがちだった。リノート元にファイルがあれば含まれることを確認する
+		test('[withFiles: true] リノート元にファイルがあれば、本文の無い純粋なリノートも含まれる', async () => {
+			const [alice, bob] = await Promise.all([signup(), signup()]);
+
+			const file = await uploadUrl(bob, 'https://raw.githubusercontent.com/misskey-dev/assets/main/public/icon.png');
+			const bobNote = await post(bob, { fileIds: [file.id] });
+			const bobRenote = await post(bob, { renoteId: bobNote.id });
+			const bobTextOnlyNote = await post(bob, { text: 'hi' });
+
+			await vi.waitFor(async () => {
+				const res = await api('notes/global-timeline', { limit: 100, withFiles: true }, alice);
+
+				assert.strictEqual(res.body.some(note => note.id === bobRenote.id), true);
+				assert.strictEqual(res.body.some(note => note.id === bobTextOnlyNote.id), false);
+			}, waitForPushToTlOptions);
+		}, 1000 * 10);
 	});
 
 	// JUICE: グローバルタイムラインの言語フィルタ(filteredLanguages)。fanoutパスを持たない

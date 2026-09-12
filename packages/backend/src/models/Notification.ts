@@ -185,6 +185,15 @@ export type MiNotification = {
 	subject: string;
 	category: string | null;
 } | {
+	// JUICE: 通報が新しく来たとき(モデレーター向け)。通報コメント・通報者は含めない
+	// (newContactFormと同様、通知一覧に残る情報は最小限にし、詳細は通報管理画面で確認させる)
+	type: 'newAbuseUserReport';
+	id: string;
+	createdAt: string;
+	reportId: string;
+	targetUserId: MiUser['id'];
+	category: string | null;
+} | {
 	type: 'createToken';
 	id: string;
 	createdAt: string;

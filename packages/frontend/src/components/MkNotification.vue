@@ -15,6 +15,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-else-if="notification.type === 'newContactForm'" :class="[$style.icon, $style.icon_contactForm]"><i class="ti ti-mail" style="line-height: 1;"></i></div>
 		<!-- JUICE: 絵文字申請等の申請者はミュートフィルタを迂回するためnotifierIdではなくrequesterで持つ -->
 		<MkAvatar v-else-if="'requester' in notification" :class="$style.icon" :user="notification.requester" link preview/>
+		<!-- JUICE: 通報対象ユーザーをアイコンとして表示する -->
+		<MkAvatar v-else-if="notification.type === 'newAbuseUserReport'" :class="$style.icon" :user="notification.targetUser" link preview/>
 		<MkAvatar v-else-if="'user' in notification" :class="$style.icon" :user="notification.user" link preview/>
 		<img v-else-if="'icon' in notification && notification.icon != null" :class="[$style.icon, $style.icon_app]" :src="notification.icon" alt=""/>
 		<div
@@ -40,6 +42,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				[$style.t_newEmojiRequest]: notification.type === 'newEmojiRequest',
 				[$style.t_newAvatarDecorationRequest]: notification.type === 'newAvatarDecorationRequest',
 				[$style.t_newSignupApplication]: notification.type === 'newSignupApplication',
+				[$style.t_newAbuseUserReport]: notification.type === 'newAbuseUserReport',
 				[$style.t_createToken]: notification.type === 'createToken',
 				[$style.t_chatRoomInvitationReceived]: notification.type === 'chatRoomInvitationReceived',
 				[$style.t_roleAssigned]: notification.type === 'roleAssigned' && notification.role.iconUrl == null,
@@ -64,6 +67,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<i v-else-if="notification.type === 'newEmojiRequest'" class="ti ti-mood-plus"></i>
 			<i v-else-if="notification.type === 'newAvatarDecorationRequest'" class="ti ti-sparkles"></i>
 			<i v-else-if="notification.type === 'newSignupApplication'" class="ti ti-user-question"></i>
+			<i v-else-if="notification.type === 'newAbuseUserReport'" class="ti ti-flag"></i>
 			<i v-else-if="notification.type === 'createToken'" class="ti ti-key"></i>
 			<i v-else-if="notification.type === 'chatRoomInvitationReceived'" class="ti ti-messages"></i>
 			<template v-else-if="notification.type === 'roleAssigned'">
@@ -106,6 +110,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<span v-else-if="notification.type === 'newEmojiRequest'">{{ i18n.tsx._notification.newEmojiRequestHeader({ name: notification.name }) }}<template v-if="notification.requester">: <MkUserName :user="notification.requester"/></template></span>
 			<span v-else-if="notification.type === 'newAvatarDecorationRequest'">{{ i18n.tsx._notification.newAvatarDecorationRequestHeader({ name: notification.name }) }}<template v-if="notification.requester">: <MkUserName :user="notification.requester"/></template></span>
 			<span v-else-if="notification.type === 'newSignupApplication'">{{ i18n.ts._notification.newSignupApplicationHeader }}<template v-if="notification.requester">: <MkUserName :user="notification.requester"/></template></span>
+			<span v-else-if="notification.type === 'newAbuseUserReport'">{{ i18n.ts._notification.newAbuseUserReportHeader }}<template v-if="notification.targetUser">: <MkUserName :user="notification.targetUser"/></template></span>
 			<MkA v-else-if="notification.type === 'follow' || notification.type === 'mention' || notification.type === 'reply' || notification.type === 'renote' || notification.type === 'quote' || notification.type === 'reaction' || notification.type === 'receiveFollowRequest' || notification.type === 'followRequestAccepted'" v-user-preview="notification.user.id" :class="$style.headerName" :to="userPage(notification.user)"><MkUserName :user="notification.user"/></MkA>
 			<span v-else-if="notification.type === 'reaction:grouped' && notification.note.reactionAcceptance === 'likeOnly'">{{ i18n.tsx._notification.likedBySomeUsers({ n: getActualReactedUsersCount(notification) }) }}</span>
 			<span v-else-if="notification.type === 'reaction:grouped'">{{ i18n.tsx._notification.reactedBySomeUsers({ n: getActualReactedUsersCount(notification) }) }}</span>
@@ -191,6 +196,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div :class="$style.text" style="opacity: 0.6;">{{ notification.subject }}</div>
 				<div :class="$style.requestActions">
 					<MkButton small rounded type="routerLink" to="/contact-form-manager">{{ i18n.ts.check }}</MkButton>
+				</div>
+			</template>
+			<!-- JUICE: カテゴリは管理者が自由に設定できるキー文字列のため、固定の翻訳ラベルを持たずそのまま表示する -->
+			<template v-else-if="notification.type === 'newAbuseUserReport'">
+				<div v-if="notification.category" :class="$style.text" style="opacity: 0.6;">{{ notification.category }}</div>
+				<div :class="$style.requestActions">
+					<MkButton small rounded type="routerLink" to="/abuses-manager">{{ i18n.ts.check }}</MkButton>
 				</div>
 			</template>
 			<template v-else-if="notification.type === 'follow'">
@@ -463,7 +475,7 @@ function getActualReactedUsersCount(notification: Misskey.entities.Notification)
 	pointer-events: none;
 }
 
-.t_newEmojiRequest, .t_newAvatarDecorationRequest, .t_newSignupApplication {
+.t_newEmojiRequest, .t_newAvatarDecorationRequest, .t_newSignupApplication, .t_newAbuseUserReport {
 	background: var(--eventOther);
 	pointer-events: none;
 }

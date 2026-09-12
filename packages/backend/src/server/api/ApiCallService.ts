@@ -335,12 +335,22 @@ export class ApiCallService implements OnApplicationShutdown {
 				Object.assign(limit, { max: contactFormLimit });
 			}
 
+			// TODO: 毎リクエスト計算するのもあれだしキャッシュしたい
+			const policies = user ? await this.roleService.getUserPolicies(user.id) : null;
+			const factor = policies ? policies.rateLimitFactor : 1;
+
+			// JUICE: 絵文字・アバターデコレーション申請の1日あたりの送信回数上限(API呼び出し頻度、
+			// 審査待ち件数の上限=emojiRequestLimit等とは別物)はロールポリシーで変更できるため、
+			// 動的に上書きする。単体作成(create)・まとめて作成(create-many)のどちらも同じ値を使う
+			if (policies && (ep.name === 'emoji-requests/create' || ep.name === 'emoji-requests/create-many')) {
+				Object.assign(limit, { max: policies.emojiRequestDailyLimit });
+			} else if (policies && (ep.name === 'avatar-decoration-requests/create' || ep.name === 'avatar-decoration-requests/create-many')) {
+				Object.assign(limit, { max: policies.avatarDecorationRequestDailyLimit });
+			}
+
 			if (limit.key == null) {
 				(limit as any).key = ep.name;
 			}
-
-			// TODO: 毎リクエスト計算するのもあれだしキャッシュしたい
-			const factor = user ? (await this.roleService.getUserPolicies(user.id)).rateLimitFactor : 1;
 
 			if (limitActor != null && factor > 0) {
 				// Rate limit
