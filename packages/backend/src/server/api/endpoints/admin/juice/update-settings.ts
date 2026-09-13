@@ -75,6 +75,7 @@ export const paramDef = {
 		},
 		blockEmailDotAliasRegistration: { type: 'boolean' },
 		blockEmailPlusAliasRegistration: { type: 'boolean' },
+		aiGeneratedFallbackCwEnabled: { type: 'boolean' },
 	},
 } as const;
 
@@ -116,6 +117,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.reportCategories !== undefined) set.reportCategories = ps.reportCategories;
 			if (ps.blockEmailDotAliasRegistration !== undefined) set.blockEmailDotAliasRegistration = ps.blockEmailDotAliasRegistration;
 			if (ps.blockEmailPlusAliasRegistration !== undefined) set.blockEmailPlusAliasRegistration = ps.blockEmailPlusAliasRegistration;
+			if (ps.aiGeneratedFallbackCwEnabled !== undefined) set.aiGeneratedFallbackCwEnabled = ps.aiGeneratedFallbackCwEnabled;
 
 			const after = await this.juiceSettingsService.update(set);
 

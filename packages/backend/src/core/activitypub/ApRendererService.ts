@@ -28,6 +28,9 @@ import { bindThis } from '@/decorators.js';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { IdService } from '@/core/IdService.js';
 import { UtilityService } from '@/core/UtilityService.js';
+import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
+import { resolveAiGeneratedFallbackCwSettings } from '@/models/JuiceSettings.js';
+import { EmailI18nService } from '@/core/EmailI18nService.js';
 import { escapeHtml } from '@/misc/escape-html.js';
 import { JsonLdService } from './JsonLdService.js';
 import { ApMfmService } from './ApMfmService.js';
@@ -73,6 +76,8 @@ export class ApRendererService {
 		private mfmService: MfmService,
 		private idService: IdService,
 		private utilityService: UtilityService,
+		private juiceSettingsService: JuiceSettingsService,
+		private emailI18nService: EmailI18nService,
 	) {
 	}
 
@@ -474,7 +479,21 @@ export class ApRendererService {
 			extraHtml = `<br><br><span class="quote-inline">RE: <a href="${escapeHtml(quote)}">${escapeHtml(quote)}</a></span>`;
 		}
 
-		const summary = note.cw === '' ? String.fromCharCode(0x200B) : note.cw;
+		let summary = note.cw === '' ? String.fromCharCode(0x200B) : note.cw;
+
+		// JUICE: _juice_isAIGeneratedを解釈できない非JUICE実装でも、AI生成物であることが
+		// 一目でわかるよう、CWが未設定のAI生成ノートに限りsummary(AS2標準のCW相当)へ
+		// フォールバック文言を合成する。DB上のnote.cwは変更しないため、ローカル・JUICE間の
+		// 表示は今まで通りバッジのみ(_juice_summaryIsAIGeneratedFallbackを見て採用を抑制する)
+		let summaryIsAIGeneratedFallback = false;
+		if (note.cw == null && note.isAIGenerated) {
+			const { aiGeneratedFallbackCwEnabled } = resolveAiGeneratedFallbackCwSettings(await this.juiceSettingsService.fetch());
+			if (aiGeneratedFallbackCwEnabled) {
+				const lang = await this.emailI18nService.resolveLang(note.lang);
+				summary = this.emailI18nService.getI18n(lang).t('aiGenerated');
+				summaryIsAIGeneratedFallback = true;
+			}
+		}
 
 		const { content, noMisskeyContent } = this.apMfmService.getNoteHtml(note, extraHtml);
 
@@ -518,6 +537,7 @@ export class ApRendererService {
 			_misskey_quote: quote,
 			quoteUrl: quote,
 			_juice_isAIGenerated: note.isAIGenerated, // JUICE
+			...(summaryIsAIGeneratedFallback ? { _juice_summaryIsAIGeneratedFallback: true } : {}), // JUICE
 			published: this.idService.parse(note.id).date.toISOString(),
 			to,
 			cc,

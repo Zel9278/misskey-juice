@@ -1561,6 +1561,7 @@ describe('Endpoints', () => {
 				],
 				blockEmailDotAliasRegistration: false,
 				blockEmailPlusAliasRegistration: false,
+				aiGeneratedFallbackCwEnabled: false,
 			});
 		});
 

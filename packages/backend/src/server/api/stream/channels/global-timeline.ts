@@ -51,8 +51,14 @@ export class GlobalTimelineChannel extends Channel {
 
 	@bindThis
 	private async onNote(note: Packed<'Note'>) {
-		// JUICE: hideFromMediaTimelineな投稿はメディアタイムライン(withFiles指定時)から除外する
-		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0 || note.hideFromMediaTimeline)) return;
+		// JUICE: 純粋なリノート(本文・自身のファイルを持たない)は、リノート元の投稿にファイルが
+		// あればメディアタイムラインの対象に含める。hideFromMediaTimelineは実際にファイルを
+		// 提供している側(自身、またはリノート元)の投稿の設定を見る
+		if (this.withFiles) {
+			const hasOwnMedia = note.fileIds != null && note.fileIds.length > 0 && !note.hideFromMediaTimeline;
+			const hasRenotedMedia = note.renote != null && note.renote.fileIds != null && note.renote.fileIds.length > 0 && !note.renote.hideFromMediaTimeline;
+			if (!hasOwnMedia && !hasRenotedMedia) return;
+		}
 
 		if (note.visibility !== 'public') return;
 		if (note.channelId != null) return;

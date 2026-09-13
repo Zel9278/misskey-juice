@@ -234,6 +234,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<SearchMarker v-slot="slotProps">
 					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.aiGeneratedFallbackCw }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="aiGeneratedFallbackCwEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.aiGeneratedFallbackCwEnabled }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.aiGeneratedFallbackCwEnabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 						<template #label><SearchLabel>{{ i18n.ts._contactForm._settings.title }}</SearchLabel></template>
 
 						<div class="_gaps_m">
@@ -367,6 +382,7 @@ const customSplashTextTooManyLines = computed(() => customSplashTextLines.value.
 const customSplashTextTooLongLineCount = computed(() => customSplashTextLines.value.filter(x => x.length > CUSTOM_SPLASH_TEXT_MAX_LENGTH).length);
 const blockEmailDotAliasRegistration = ref(settings.blockEmailDotAliasRegistration);
 const blockEmailPlusAliasRegistration = ref(settings.blockEmailPlusAliasRegistration);
+const aiGeneratedFallbackCwEnabled = ref(settings.aiGeneratedFallbackCwEnabled);
 
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
@@ -393,6 +409,7 @@ function save() {
 		newAccountFollowRequestThresholdMs: newAccountFollowRequestThresholdMs.value,
 		blockEmailDotAliasRegistration: blockEmailDotAliasRegistration.value,
 		blockEmailPlusAliasRegistration: blockEmailPlusAliasRegistration.value,
+		aiGeneratedFallbackCwEnabled: aiGeneratedFallbackCwEnabled.value,
 	});
 }
 

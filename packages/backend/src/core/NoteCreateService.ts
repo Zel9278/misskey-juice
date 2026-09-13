@@ -798,7 +798,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			this.juiceUserRankingService.incrementPostCount(user.id);
 		}
 
-		this.pushToTl(note, user);
+		this.pushToTl(note, user, data.renote ?? null);
 
 		this.antennaService.addNoteToAntennas({
 			...note,
@@ -1087,10 +1087,18 @@ export class NoteCreateService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async pushToTl(note: MiNote, user: { id: MiUser['id']; host: MiUser['host']; }) {
+	private async pushToTl(note: MiNote, user: { id: MiUser['id']; host: MiUser['host']; }, renote: MiNote | null) {
 		if (!this.meta.enableFanoutTimeline) return;
 
 		const r = this.redisForTimelines.pipeline();
+
+		// JUICE: メディアタイムライン機能(home/local/hybrid/globalが読むwithFiles系のfanoutリスト)の
+		// 対象判定。純粋なリノート(本文・自身のファイルを持たない)は投稿自体にファイルが無いため、
+		// リノート元の投稿にファイルがあればここで対象に含める。hideFromMediaTimelineは実際に
+		// ファイルを提供している側(自身、またはリノート元)の投稿の設定を見る
+		const qualifiesForMediaTimeline =
+			(note.fileIds.length > 0 && !note.hideFromMediaTimeline) ||
+			(renote != null && renote.fileIds.length > 0 && !renote.hideFromMediaTimeline);
 
 		if (note.channelId) {
 			this.fanoutTimelineService.push(`channelTimeline:${note.channelId}`, note.id, this.config.perChannelMaxNoteCacheCount, r);
@@ -1106,11 +1114,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 			for (const channelFollowing of channelFollowings) {
 				this.fanoutTimelineService.push(`homeTimeline:${channelFollowing.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
-				// JUICE: hideFromMediaTimelineな投稿は、メディアタイムライン機能が実際に読みに行く
-				// withFiles系のfanoutリスト(home/local/hybrid/globalの4種)にだけ追加しない
-				// (通常のタイムラインには出続ける)。プロフィールの「ファイル」タブやリストタイムライン
-				// が読む userTimelineWithFiles / userListTimelineWithFiles はスコープ外なので絞らない
-				if (note.fileIds.length > 0 && !note.hideFromMediaTimeline) {
+				// JUICE: プロフィールの「ファイル」タブやリストタイムラインが読む
+				// userTimelineWithFiles / userListTimelineWithFiles はスコープ外なので絞らない
+				if (qualifiesForMediaTimeline) {
 					this.fanoutTimelineService.push(`homeTimelineWithFiles:${channelFollowing.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
 				}
 			}
@@ -1157,7 +1163,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 				}
 
 				this.fanoutTimelineService.push(`homeTimeline:${following.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
-				if (note.fileIds.length > 0 && !note.hideFromMediaTimeline) {
+				if (qualifiesForMediaTimeline) {
 					this.fanoutTimelineService.push(`homeTimelineWithFiles:${following.followerId}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
 				}
 			}
@@ -1187,7 +1193,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			if (note.userHost == null) {
 				if (note.visibility !== 'specified' || !note.visibleUserIds.some(v => v === user.id)) {
 					this.fanoutTimelineService.push(`homeTimeline:${user.id}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
-					if (note.fileIds.length > 0 && !note.hideFromMediaTimeline) {
+					if (qualifiesForMediaTimeline) {
 						this.fanoutTimelineService.push(`homeTimelineWithFiles:${user.id}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
 					}
 				}
@@ -1213,7 +1219,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 				if (note.visibility === 'public' && note.userHost == null) {
 					this.fanoutTimelineService.push('localTimeline', note.id, 1000, r);
-					if (note.fileIds.length > 0 && !note.hideFromMediaTimeline) {
+					if (qualifiesForMediaTimeline) {
 						this.fanoutTimelineService.push('localTimelineWithFiles', note.id, 500, r);
 					}
 				}

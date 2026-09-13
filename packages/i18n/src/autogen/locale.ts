@@ -3969,10 +3969,6 @@ export interface Locale extends ILocale {
      */
     "thereIsUnresolvedAbuseReportWarning": string;
     /**
-     * 新しい通報があります。
-     */
-    "newAbuseReportToast": string;
-    /**
      * 推奨
      */
     "recommended": string;
@@ -8460,6 +8456,14 @@ export interface Locale extends ILocale {
              */
             "avatarDecorationRequestLimit": string;
             /**
+             * 1日に送信できる絵文字申請の回数の上限
+             */
+            "emojiRequestDailyLimit": string;
+            /**
+             * 1日に送信できるアバターデコレーション申請の回数の上限
+             */
+            "avatarDecorationRequestDailyLimit": string;
+            /**
              * お知らせ1件に付けられるリアクションの種類数の上限
              */
             "announcementReactionTypeLimit": string;
@@ -11918,6 +11922,10 @@ export interface Locale extends ILocale {
          */
         "newContactForm": string;
         /**
+         * 新しい通報が届きました
+         */
+        "newAbuseUserReport": string;
+        /**
          * 絵文字申請「{name}」
          */
         "newEmojiRequestHeader": ParameterizedString<"name">;
@@ -11929,6 +11937,10 @@ export interface Locale extends ILocale {
          * 承認式登録の申請
          */
         "newSignupApplicationHeader": string;
+        /**
+         * 新しい通報
+         */
+        "newAbuseUserReportHeader": string;
         /**
          * アクセストークンが作成されました
          */
@@ -12046,6 +12058,10 @@ export interface Locale extends ILocale {
              * お問い合わせが届いた(モデレーター・承認権限保持者向け)
              */
             "newContactForm": string;
+            /**
+             * 通報が届いた(モデレーター向け)
+             */
+            "newAbuseUserReport": string;
             /**
              * アクセストークンの作成
              */
@@ -14829,6 +14845,18 @@ export interface Locale extends ILocale {
          */
         "reactionPiggybackOnRemoteEnabledCaption": string;
         /**
+         * AI生成物のCWフォールバック
+         */
+        "aiGeneratedFallbackCw": string;
+        /**
+         * 非対応インスタンスへの連合時にCWとして扱う
+         */
+        "aiGeneratedFallbackCwEnabled": string;
+        /**
+         * AI生成物フラグ(isAIGenerated)はJUICE独自の連合プロパティのため、対応していない実装では無視されます。この設定を有効にすると、CWが未設定のAI生成物に限り、ActivityPub連合時だけCW(内容の折りたたみ)としてフォールバック文言を送信します。ローカル・misskey-juice間の表示は今まで通りバッジのみで、投稿自体のCW設定は変更されません。
+         */
+        "aiGeneratedFallbackCwEnabledCaption": string;
+        /**
          * タイムラインに表示する言語
          */
         "filteredLanguages": string;
@@ -15008,6 +15036,26 @@ export interface Locale extends ILocale {
          * 審査待ちの申請が上限({limit}件)に達しています。既存の申請が承認・却下・キャンセルされるまで新しい申請はできません
          */
         "limitReached": ParameterizedString<"limit">;
+        /**
+         * 本日はあと{remaining}回申請できます
+         */
+        "dailyRemainingCount": ParameterizedString<"remaining">;
+        /**
+         * 本日の申請回数の上限に達しています
+         */
+        "dailyLimitReached": string;
+        /**
+         * 次のリセット
+         */
+        "dailyResetLabel": string;
+        /**
+         * 本日の申請回数の上限に達しました
+         */
+        "dailyLimitExceededTitle": string;
+        /**
+         * 絵文字申請の1日あたりの送信回数の上限に達しました。審査待ち件数の上限とは別の制限です。しばらく時間を置いてから再度お試しください。
+         */
+        "dailyLimitExceededDescription": string;
         /**
          * {n}件目
          */
@@ -15216,6 +15264,26 @@ export interface Locale extends ILocale {
          * 審査待ちの申請が上限({limit}件)に達しています。既存の申請が承認・却下・キャンセルされるまで新しい申請はできません
          */
         "limitReached": ParameterizedString<"limit">;
+        /**
+         * 本日はあと{remaining}回申請できます
+         */
+        "dailyRemainingCount": ParameterizedString<"remaining">;
+        /**
+         * 本日の申請回数の上限に達しています
+         */
+        "dailyLimitReached": string;
+        /**
+         * 次のリセット
+         */
+        "dailyResetLabel": string;
+        /**
+         * 本日の申請回数の上限に達しました
+         */
+        "dailyLimitExceededTitle": string;
+        /**
+         * アバターデコレーション申請の1日あたりの送信回数の上限に達しました。審査待ち件数の上限とは別の制限です。しばらく時間を置いてから再度お試しください。
+         */
+        "dailyLimitExceededDescription": string;
         /**
          * {n}件目
          */

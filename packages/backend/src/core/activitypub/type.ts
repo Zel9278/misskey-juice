@@ -19,6 +19,10 @@ export interface IObject {
 	_misskey_makeNotesHiddenBefore?: number | null;
 	// JUICE: AI生成物フラグ
 	_juice_isAIGenerated?: boolean;
+	// JUICE: summaryが著者の設定した本来のCWではなく、_juice_isAIGeneratedを解釈できない
+	// 実装向けの合成CW(フォールバック文言)であることを示す目印。JUICE側の受信処理は
+	// これが立っている場合、summaryをローカルのCWとして採用しない(バッジ表示のみに留める)
+	_juice_summaryIsAIGeneratedFallback?: boolean;
 	published?: string;
 	cc?: ApObject;
 	to?: ApObject;

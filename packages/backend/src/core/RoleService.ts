@@ -75,6 +75,10 @@ export type RolePolicies = {
 	watermarkAvailable: boolean;
 	emojiRequestLimit: number;
 	avatarDecorationRequestLimit: number;
+	// JUICE: 審査待ち件数の上限(emojiRequestLimit)とは別の、1日あたりの送信回数(API呼び出し)上限。
+	// create/create-many両方のmeta.limitを動的に上書きする(ApiCallService参照)
+	emojiRequestDailyLimit: number;
+	avatarDecorationRequestDailyLimit: number;
 	announcementReactionTypeLimit: number;
 	canApproveEmojiRequests: boolean;
 	canApproveAvatarDecorationRequests: boolean;
@@ -130,6 +134,8 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	watermarkAvailable: true,
 	emojiRequestLimit: 3,
 	avatarDecorationRequestLimit: 3,
+	emojiRequestDailyLimit: 5,
+	avatarDecorationRequestDailyLimit: 5,
 	announcementReactionTypeLimit: 20,
 	canApproveEmojiRequests: false,
 	canApproveAvatarDecorationRequests: false,
@@ -468,6 +474,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			watermarkAvailable: calc('watermarkAvailable', vs => vs.some(v => v === true)),
 			emojiRequestLimit: calc('emojiRequestLimit', vs => Math.max(...vs)),
 			avatarDecorationRequestLimit: calc('avatarDecorationRequestLimit', vs => Math.max(...vs)),
+			emojiRequestDailyLimit: calc('emojiRequestDailyLimit', vs => Math.max(...vs)),
+			avatarDecorationRequestDailyLimit: calc('avatarDecorationRequestDailyLimit', vs => Math.max(...vs)),
 			announcementReactionTypeLimit: calc('announcementReactionTypeLimit', vs => Math.max(...vs)),
 			canApproveEmojiRequests: calc('canApproveEmojiRequests', vs => vs.some(v => v === true)),
 			canApproveAvatarDecorationRequests: calc('canApproveAvatarDecorationRequests', vs => vs.some(v => v === true)),

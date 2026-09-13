@@ -3,17 +3,21 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import ms from 'ms';
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { EmojiRequestsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
 import { resolveEmojiRequestSettings } from '@/models/JuiceSettings.js';
+import { RoleService } from '@/core/RoleService.js';
+import { RateLimiterService } from '@/server/api/RateLimiterService.js';
 import { ApiError } from '@/server/api/error.js';
 
 // JUICE: 申請フォームで「あと何件申請できるか」を表示するための専用エンドポイント。
-// 上限自体はi.policies.emojiRequestLimitで既に取得できるため、ここでは現在の
-// 審査待ち件数だけを返す
+// 審査待ち件数の上限(i.policies.emojiRequestLimit)自体はi.policiesから取得できるため、
+// ここでは現在の審査待ち件数と、emoji-requests/create-manyの1日あたりの送信回数上限
+// (i.policies.emojiRequestDailyLimit、審査待ち件数の上限とは別物)の残り回数を返す
 export const meta = {
 	tags: ['emoji-requests'],
 
@@ -36,6 +40,20 @@ export const meta = {
 				type: 'number',
 				optional: false, nullable: false,
 			},
+			// JUICE: emoji-requests/create-manyの1日あたりの送信回数上限の残り回数
+			// (nullはロールのrateLimitFactorが0以下に設定されている等、この制限自体が
+			// 適用されない場合を表す)
+			dailyRemaining: {
+				type: 'number',
+				optional: false, nullable: true,
+			},
+			// JUICE: 1日あたりの送信回数上限が次に回復する(枠が1つ空く)日時。今回の集計期間に
+			// 送信実績が無い場合(dailyRemainingが上限のまま)はnull
+			dailyResetAt: {
+				type: 'string',
+				format: 'date-time',
+				optional: false, nullable: true,
+			},
 		},
 	},
 } as const;
@@ -53,13 +71,25 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private emojiRequestsRepository: EmojiRequestsRepository,
 
 		private juiceSettingsService: JuiceSettingsService,
+		private roleService: RoleService,
+		private rateLimiterService: RateLimiterService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const { emojiRequestEnabled } = resolveEmojiRequestSettings(await this.juiceSettingsService.fetch());
 			if (!emojiRequestEnabled) throw new ApiError(meta.errors.functionDisabled);
 
 			const pending = await this.emojiRequestsRepository.countBy({ userId: me.id, status: 'pending' });
-			return { pending };
+
+			const policies = await this.roleService.getUserPolicies(me.id);
+			const usage = await this.rateLimiterService.peekUsage({
+				key: 'emoji-requests/create-many',
+				duration: ms('1day'),
+				max: policies.emojiRequestDailyLimit,
+			}, me.id, policies.rateLimitFactor);
+			const dailyRemaining = usage != null ? Math.max(0, Math.floor(usage.max - usage.used)) : null;
+			const dailyResetAt = usage?.resetAt != null ? new Date(usage.resetAt).toISOString() : null;
+
+			return { pending, dailyRemaining, dailyResetAt };
 		});
 	}
 }

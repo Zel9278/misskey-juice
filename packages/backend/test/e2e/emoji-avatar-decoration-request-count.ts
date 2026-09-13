@@ -37,6 +37,14 @@ describe('絵文字・アバターデコレーション申請の審査待ち件�
 			parameters: {},
 			user: alice,
 		});
+		// JUICE: peekUsage()はlimit()と異なりNODE_ENV!=='production'でも早期returnしない
+		// (dev環境でもUI表示を確認できるようにするため)ため、テスト環境でも数値が返る。
+		// 一方、実際のレート制限適用(limit())自体はテスト環境では無効(RateLimiterService.disabled)
+		// なため、emoji-requests/create等の呼び出しではZSETへの書き込み(消費)が発生せず、
+		// 既定値(emojiRequestDailyLimit=5)のまま変化しない。ZSETに実績が一切無いため、
+		// 次に枠が空く日時(dailyResetAt)もnullのまま
+		assert.strictEqual(before.dailyRemaining, 5);
+		assert.strictEqual(before.dailyResetAt, null);
 
 		const file = await uploadFile(alice);
 		const request = await successfulApiCall({
@@ -72,6 +80,14 @@ describe('絵文字・アバターデコレーション申請の審査待ち件�
 			parameters: {},
 			user: alice,
 		});
+		// JUICE: peekUsage()はlimit()と異なりNODE_ENV!=='production'でも早期returnしない
+		// (dev環境でもUI表示を確認できるようにするため)ため、テスト環境でも数値が返る。
+		// 一方、実際のレート制限適用(limit())自体はテスト環境では無効(RateLimiterService.disabled)
+		// なため、avatar-decoration-requests/create等の呼び出しではZSETへの書き込み(消費)が
+		// 発生せず、既定値(avatarDecorationRequestDailyLimit=5)のまま変化しない。ZSETに実績が
+		// 一切無いため、次に枠が空く日時(dailyResetAt)もnullのまま
+		assert.strictEqual(before.dailyRemaining, 5);
+		assert.strictEqual(before.dailyResetAt, null);
 
 		const file = await uploadFile(alice);
 		const request = await successfulApiCall({

@@ -10,12 +10,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template v-else>
 			<div v-if="tab === 'form'" class="_gaps_m">
 				<MkButton rounded style="margin: 0 auto;" :disabled="maxAddable <= 0" @click="chooseFile">{{ i18n.ts.selectFile }}</MkButton>
-				<!-- JUICE: 審査待ちの残り件数・1回にまとめて申請できる上限を、送信前に把握できるように表示する -->
-				<MkInfo v-if="remaining <= 0" warn>{{ i18n.tsx._emojiRequestPage.limitReached({ limit: requestLimit }) }}</MkInfo>
-				<MkInfo v-else>{{ i18n.tsx._emojiRequestPage.remainingCount({ pending: pendingCount, limit: requestLimit, remaining }) }}</MkInfo>
-				<!-- JUICE: 今まさに組み立てている今回分のドラフト数(今回申請しようとしている数/今回の上限) -->
-				<MkInfo>{{ i18n.tsx._emojiRequestPage.selectedCount({ selected: drafts.length, cap: batchCap }) }}</MkInfo>
-				<!-- JUICE: 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できる -->
+				<!-- JUICE: 審査待ちの残り件数・1日あたりの残り送信回数・今回選択中の件数を、1枚のカードに
+				まとめて表示する(件数が増えるとインフォカードが積み重なって画面を圧迫するため、
+				送信前に把握しておきたい状態はここに集約する) -->
+				<MkInfo :warn="limitsWarning">
+					{{ remaining <= 0 ? i18n.tsx._emojiRequestPage.limitReached({ limit: requestLimit }) : i18n.tsx._emojiRequestPage.remainingCount({ pending: pendingCount, limit: requestLimit, remaining }) }}<br/>
+					<template v-if="dailyRemaining != null">
+						{{ dailyRemaining === 0 ? i18n.ts._emojiRequestPage.dailyLimitReached : i18n.tsx._emojiRequestPage.dailyRemainingCount({ remaining: dailyRemaining }) }}
+						<!-- JUICE: 1日あたりの送信回数は日付ではなく直近24時間のスライディングウィンドウで
+						カウントしているため、ユーザーが実際に次に送信できるようになる時刻(ETA)を
+						MkTimeの相対表示で案内する(実績が無ければdailyResetAtはnullなので表示しない) -->
+						<template v-if="dailyResetAt != null">({{ i18n.ts._emojiRequestPage.dailyResetLabel }}: <MkTime :time="dailyResetAt" mode="relative"/>)</template><br/>
+					</template>
+					{{ i18n.tsx._emojiRequestPage.selectedCount({ selected: drafts.length, cap: batchCap }) }}
+				</MkInfo>
+				<!-- JUICE: 複数の画像をまとめて選択すると、同じ画面から複数件をまとめて申請できる(まだ
+				何も選んでいない最初のうちだけ案内し、選択が始まったら消えて画面をすっきりさせる) -->
 				<MkInfo v-if="drafts.length === 0">
 					{{ i18n.ts._emojiRequestPage.multipleRequestsHint }}<br/>
 					{{ i18n.tsx._emojiRequestPage.maxItemsPerSubmission({ max: MAX_BATCH_ITEMS }) }}
@@ -163,11 +173,23 @@ misskeyApi('juice/public-settings').then(res => {
 // emoji-requests/countから取得する。MAX_BATCH_ITEMSはemoji-requests/create-manyのparamDefの
 // maxItemsと合わせている
 const pendingCount = ref(0);
+// JUICE: 審査待ち件数の上限(emojiRequestLimit)とは別に、emoji-requests/create-manyの
+// 1日あたりの送信回数上限(emojiRequestDailyLimit、API呼び出し頻度)の残り回数。
+// nullは開発環境等レートリミットが無効な場合を表し、この場合は表示しない
+const dailyRemaining = ref<number | null>(null);
+// JUICE: 1日あたりの送信回数上限が次に回復する日時(ETA)。今回の集計期間に送信実績が
+// 無い場合はnull(表示しない)
+const dailyResetAt = ref<string | null>(null);
 misskeyApi('emoji-requests/count').then(res => {
 	pendingCount.value = res.pending;
+	dailyRemaining.value = res.dailyRemaining;
+	dailyResetAt.value = res.dailyResetAt;
 });
 const requestLimit = computed(() => $i.policies.emojiRequestLimit);
 const remaining = computed(() => Math.max(0, requestLimit.value - pendingCount.value));
+// JUICE: 審査待ち件数・1日あたりの送信回数のどちらかが上限に達している場合、まとめた
+// インフォカード全体をwarn表示にする
+const limitsWarning = computed(() => remaining.value <= 0 || dailyRemaining.value === 0);
 const MAX_BATCH_ITEMS = 10;
 
 const tab = ref('form');
@@ -404,6 +426,13 @@ async function submit() {
 		'g-recaptcha-response': reCaptchaResponse.value,
 		'turnstile-response': turnstileResponse.value,
 		'testcaptcha-response': testcaptchaResponse.value,
+	}, undefined, {
+		// JUICE: RATE_LIMIT_EXCEEDEDはApiCallServiceが全エンドポイント共通で使う固定id(何に対する
+		// 制限かがメッセージに出ない)のため、このエンドポイント固有の文言に差し替える
+		'd5826d14-3982-4d2e-8011-b9e9f02499ef': {
+			title: i18n.ts._emojiRequestPage.dailyLimitExceededTitle,
+			text: i18n.ts._emojiRequestPage.dailyLimitExceededDescription,
+		},
 	}).then(requests => {
 		for (const request of requests) {
 			pendingPaginator.prepend(request);
@@ -412,6 +441,13 @@ async function submit() {
 		drafts.value.forEach(revokeDraftPreview);
 		drafts.value = [];
 		tab.value = 'pending';
+		// JUICE: 1回のcreate-many呼び出しで1日あたりの送信回数上限を1消費するため、次にいつ
+		// 回復するか(dailyResetAt)も含めて実際の値を取り直す(楽観的な差分計算だとETAの
+		// 正確な算出ができない)
+		misskeyApi('emoji-requests/count').then(res => {
+			dailyRemaining.value = res.dailyRemaining;
+			dailyResetAt.value = res.dailyResetAt;
+		});
 	}).catch(() => {
 		// JUICE: captcha検証失敗時などにウィジェットをリセットし、再送信できるようにする
 		hcaptcha.value?.reset?.();
@@ -421,9 +457,13 @@ async function submit() {
 		testcaptcha.value?.reset?.();
 
 		// JUICE: 送信失敗時(他タブでの同時送信・承認/却下等により審査待ち件数が実際とズレて
-		// いる可能性がある)は、表示中の残り申請可能数を実際の値に合わせ直す
+		// いる可能性がある)は、表示中の残り申請可能数を実際の値に合わせ直す。レート制限に
+		// 引っかかった試行自体も1日あたりの送信回数を消費するため、dailyRemaining/dailyResetAtも
+		// 合わせて取り直す
 		misskeyApi('emoji-requests/count').then(res => {
 			pendingCount.value = res.pending;
+			dailyRemaining.value = res.dailyRemaining;
+			dailyResetAt.value = res.dailyResetAt;
 		});
 	});
 }

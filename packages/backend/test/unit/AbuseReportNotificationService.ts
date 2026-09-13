@@ -30,6 +30,7 @@ import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { RecipientMethod } from '@/models/AbuseReportNotificationRecipient.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { NotificationService } from '@/core/NotificationService.js';
 
 process.env.NODE_ENV = 'test';
 
@@ -47,6 +48,7 @@ describe('AbuseReportNotificationService', () => {
 	let roleService: Mocked<RoleService>;
 	let emailService: Mocked<EmailService>;
 	let webhookService: Mocked<SystemWebhookService>;
+	let notificationService: Mocked<NotificationService>;
 
 	// --------------------------------------------------------------------------------------
 
@@ -138,6 +140,9 @@ describe('AbuseReportNotificationService', () => {
 					{
 						provide: GlobalEventService, useFactory: () => ({ publishAdminStream: vi.fn() }),
 					},
+					{
+						provide: NotificationService, useFactory: () => ({ createNotification: vi.fn() }),
+					},
 				],
 			})
 			.compile();
@@ -152,6 +157,7 @@ describe('AbuseReportNotificationService', () => {
 		roleService = app.get(RoleService) as Mocked<RoleService>;
 		emailService = app.get<EmailService>(EmailService) as Mocked<EmailService>;
 		webhookService = app.get<SystemWebhookService>(SystemWebhookService) as Mocked<SystemWebhookService>;
+		notificationService = app.get<NotificationService>(NotificationService) as Mocked<NotificationService>;
 
 		app.enableShutdownHooks();
 	});
@@ -169,6 +175,7 @@ describe('AbuseReportNotificationService', () => {
 	afterEach(async () => {
 		emailService.sendEmail.mockClear();
 		webhookService.enqueueSystemWebhook.mockClear();
+		notificationService.createNotification.mockClear();
 
 		await usersRepository.createQueryBuilder().delete().execute();
 		await userProfilesRepository.createQueryBuilder().delete().execute();
@@ -403,6 +410,82 @@ describe('AbuseReportNotificationService', () => {
 			expect(webhookService.enqueueSystemWebhook).toHaveBeenCalledTimes(1);
 			expect(webhookService.enqueueSystemWebhook.mock.calls[0][0]).toBe('abuseReport');
 			expect(webhookService.enqueueSystemWebhook.mock.calls[0][2]).toEqual({ excludes: [systemWebhook2.id] });
+		});
+	});
+
+	// JUICE: 通報を通常の通知(🔔)としてもモデレーター各位に届ける機能のテスト
+	describe('notifyAdminStream', () => {
+		test('モデレーター各位に、通報コメント・通報者を含まない新着通知(🔔)が作成される', async () => {
+			const reports: MiAbuseUserReport[] = [
+				{
+					id: idService.gen(),
+					targetUserId: alice.id,
+					targetUser: alice,
+					reporterId: bob.id,
+					reporter: bob,
+					assigneeId: null,
+					assignee: null,
+					resolved: false,
+					forwarded: false,
+					comment: 'test comment',
+					moderationNote: '',
+					resolvedAs: null,
+					category: 'spam',
+					targetType: null,
+					targetNoteId: null,
+					targetNote: null,
+					targetChatMessageId: null,
+					targetChatMessage: null,
+					situationDetail: null,
+					targetUserHost: null,
+					reporterHost: null,
+				},
+			];
+
+			await service.notifyAdminStream(reports);
+
+			// モデレーター各位(root/alice/bob)分の通知が作成される
+			expect(notificationService.createNotification).toHaveBeenCalledTimes(3);
+			for (const call of notificationService.createNotification.mock.calls) {
+				const [, type, data] = call;
+				expect(type).toBe('newAbuseUserReport');
+				expect(data).toEqual({ reportId: reports[0].id, targetUserId: alice.id, category: 'spam' });
+				// JUICE: PII保護のため、通報コメント・通報者を特定できるフィールドは含まない
+				expect('comment' in (data as object)).toBe(false);
+				expect('reporterId' in (data as object)).toBe(false);
+			}
+		});
+
+		test('ブートストラップ直後でロール割り当てを持たないrootにも通知が届くよう、includeRoot: trueが指定される', async () => {
+			const reports: MiAbuseUserReport[] = [
+				{
+					id: idService.gen(),
+					targetUserId: alice.id,
+					targetUser: alice,
+					reporterId: bob.id,
+					reporter: bob,
+					assigneeId: null,
+					assignee: null,
+					resolved: false,
+					forwarded: false,
+					comment: 'test comment',
+					moderationNote: '',
+					resolvedAs: null,
+					category: null,
+					targetType: null,
+					targetNoteId: null,
+					targetNote: null,
+					targetChatMessageId: null,
+					targetChatMessage: null,
+					situationDetail: null,
+					targetUserHost: null,
+					reporterHost: null,
+				},
+			];
+
+			await service.notifyAdminStream(reports);
+
+			expect(roleService.getModeratorIds).toHaveBeenCalledWith(expect.objectContaining({ includeRoot: true }));
 		});
 	});
 });

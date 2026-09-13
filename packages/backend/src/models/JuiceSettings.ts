@@ -70,6 +70,14 @@ export interface JuiceSettingsValue {
 	 * +をサブアドレッシングとして扱わないメールプロバイダでは誤検知(false positive)のリスクがある
 	 */
 	blockEmailPlusAliasRegistration?: boolean;
+	/**
+	 * AI生成物フラグ(isAIGenerated)が立っていて著者がCWを設定していないノートを連合する際、
+	 * ActivityPubのsummary(CW相当)にフォールバック文言を合成して送出するか。_juice_isAIGenerated
+	 * を解釈できない非JUICE実装でも、通報を促せるように内容の手前にワンクッション入るようにする
+	 * ための機能。ローカル・JUICE間の表示は_juice_summaryIsAIGeneratedFallback目印により
+	 * 引き続きバッジ表示のみ(DB上のnote.cwは変更しない)
+	 */
+	aiGeneratedFallbackCwEnabled?: boolean;
 }
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
@@ -307,6 +315,18 @@ export function resolveEmailAliasSettings(settings: JuiceSettingsValue): {
 	return {
 		blockEmailDotAliasRegistration: settings.blockEmailDotAliasRegistration ?? false,
 		blockEmailPlusAliasRegistration: settings.blockEmailPlusAliasRegistration ?? false,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・ApRendererServiceの2箇所で共通利用する。
+ */
+export function resolveAiGeneratedFallbackCwSettings(settings: JuiceSettingsValue): {
+	aiGeneratedFallbackCwEnabled: boolean;
+} {
+	return {
+		aiGeneratedFallbackCwEnabled: settings.aiGeneratedFallbackCwEnabled ?? false,
 	};
 }
 

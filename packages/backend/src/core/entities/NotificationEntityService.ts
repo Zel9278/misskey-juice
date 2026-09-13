@@ -183,6 +183,14 @@ export class NotificationEntityService implements OnModuleInit {
 				: this.userEntityService.pack(requesterId, { id: meId })
 		) : undefined;
 
+		// JUICE: 通報が新しく来たとき、通報対象ユーザーをパックする(通報者はPII保護のため含めない)
+		const targetUserId = notification.type === 'newAbuseUserReport' ? notification.targetUserId : undefined;
+		const targetUserIfNeed = targetUserId != null ? (
+			hint?.packedUsers != null
+				? hint.packedUsers.get(targetUserId)
+				: this.userEntityService.pack(targetUserId, { id: meId })
+		) : undefined;
+
 		return await awaitAll({
 			id: notification.id,
 			createdAt: new Date(notification.createdAt).toISOString(),
@@ -230,6 +238,11 @@ export class NotificationEntityService implements OnModuleInit {
 			...(notification.type === 'newContactForm' ? {
 				contactFormId: notification.contactFormId,
 				subject: notification.subject,
+				category: notification.category,
+			} : {}),
+			...(targetUserIfNeed != null ? { targetUser: targetUserIfNeed } : {}),
+			...(notification.type === 'newAbuseUserReport' ? {
+				reportId: notification.reportId,
 				category: notification.category,
 			} : {}),
 			...(notification.type === 'app' ? {
@@ -284,6 +297,8 @@ export class NotificationEntityService implements OnModuleInit {
 				const id = notification.applicantId ?? legacyNotifierId;
 				if (id != null) userIds.push(id);
 			}
+			// JUICE: 通報の通報対象ユーザーもまとめてパックする
+			if (notification.type === 'newAbuseUserReport') userIds.push(notification.targetUserId);
 			if (notification.type === 'reaction:grouped') userIds.push(...notification.reactions.map(x => x.userId));
 			if (notification.type === 'renote:grouped') userIds.push(...notification.userIds);
 		}

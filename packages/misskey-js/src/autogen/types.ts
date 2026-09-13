@@ -4807,6 +4807,15 @@ export type components = {
                     /** Format: misskey:id */
                     userListId: string;
                 };
+                newAbuseUserReport?: {
+                    /** @enum {string} */
+                    type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
+                } | {
+                    /** @enum {string} */
+                    type: 'list';
+                    /** Format: misskey:id */
+                    userListId: string;
+                };
                 createToken?: {
                     /** @enum {string} */
                     type: 'all' | 'following' | 'follower' | 'mutualFollow' | 'followingOrFollower' | 'never';
@@ -5395,6 +5404,17 @@ export type components = {
             /** Format: id */
             contactFormId: string;
             subject: string;
+            category: string | null;
+        } | {
+            /** Format: id */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @enum {string} */
+            type: 'newAbuseUserReport';
+            targetUser: components['schemas']['UserLite'];
+            /** Format: id */
+            reportId: string;
             category: string | null;
         } | {
             /** Format: id */
@@ -6078,6 +6098,8 @@ export type components = {
             watermarkAvailable: boolean;
             emojiRequestLimit: number;
             avatarDecorationRequestLimit: number;
+            emojiRequestDailyLimit: number;
+            avatarDecorationRequestDailyLimit: number;
             announcementReactionTypeLimit: number;
             canApproveEmojiRequests: boolean;
             canApproveAvatarDecorationRequests: boolean;
@@ -11289,6 +11311,7 @@ export interface operations {
                         }[];
                         blockEmailDotAliasRegistration: boolean;
                         blockEmailPlusAliasRegistration: boolean;
+                        aiGeneratedFallbackCwEnabled: boolean;
                     };
                 };
             };
@@ -11468,6 +11491,7 @@ export interface operations {
                     }[];
                     blockEmailDotAliasRegistration?: boolean;
                     blockEmailPlusAliasRegistration?: boolean;
+                    aiGeneratedFallbackCwEnabled?: boolean;
                 };
             };
         };
@@ -16908,6 +16932,9 @@ export interface operations {
                 content: {
                     'application/json': {
                         pending: number;
+                        dailyRemaining: number | null;
+                        /** Format: date-time */
+                        dailyResetAt: string | null;
                     };
                 };
             };
@@ -23848,6 +23875,9 @@ export interface operations {
                 content: {
                     'application/json': {
                         pending: number;
+                        dailyRemaining: number | null;
+                        /** Format: date-time */
+                        dailyResetAt: string | null;
                     };
                 };
             };
@@ -29962,8 +29992,8 @@ export interface operations {
                     untilDate?: number;
                     /** @default true */
                     markAsRead?: boolean;
-                    includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'newEmojiRequest' | 'newAvatarDecorationRequest' | 'newSignupApplication' | 'newContactForm' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
-                    excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'newEmojiRequest' | 'newAvatarDecorationRequest' | 'newSignupApplication' | 'newContactForm' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+                    includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'newEmojiRequest' | 'newAvatarDecorationRequest' | 'newSignupApplication' | 'newContactForm' | 'newAbuseUserReport' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+                    excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'newEmojiRequest' | 'newAvatarDecorationRequest' | 'newSignupApplication' | 'newContactForm' | 'newAbuseUserReport' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
                 };
             };
         };
@@ -30047,8 +30077,8 @@ export interface operations {
                     untilDate?: number;
                     /** @default true */
                     markAsRead?: boolean;
-                    includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'newEmojiRequest' | 'newAvatarDecorationRequest' | 'newSignupApplication' | 'newContactForm' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
-                    excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'newEmojiRequest' | 'newAvatarDecorationRequest' | 'newSignupApplication' | 'newContactForm' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+                    includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'newEmojiRequest' | 'newAvatarDecorationRequest' | 'newSignupApplication' | 'newContactForm' | 'newAbuseUserReport' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+                    excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'scheduledNotePosted' | 'scheduledNotePostFailed' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'login' | 'loginFailed' | 'emojiRequestApproved' | 'emojiRequestRejected' | 'avatarDecorationRequestApproved' | 'avatarDecorationRequestRejected' | 'newEmojiRequest' | 'newAvatarDecorationRequest' | 'newSignupApplication' | 'newContactForm' | 'newAbuseUserReport' | 'createToken' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
                 };
             };
         };
