@@ -48,12 +48,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkStreamingNotesTimeline
 		v-else-if="column.tl"
 		ref="timeline"
-		:key="column.tl + withRenotes + withReplies + onlyFiles"
+		:key="column.tl + withRenotes + withReplies + onlyFiles + localOnly"
 		:src="column.tl"
 		:withRenotes="withRenotes"
 		:withReplies="withReplies"
 		:withSensitive="withSensitive"
 		:onlyFiles="onlyFiles"
+		:localOnly="localOnly"
 		:sound="true"
 		:customSound="soundSetting"
 	/>
@@ -77,6 +78,8 @@ import { instance } from '@/instance.js';
 import { juicePublicSettingsCache, juiceRelaysCache } from '@/cache.js';
 import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
 import { soundSettingsButton } from '@/ui/deck/tl-note-notification.js';
+import { langs } from '@@/js/config.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
 
 const props = defineProps<{
 	column: Column;
@@ -90,6 +93,8 @@ const withRenotes = ref(props.column.withRenotes ?? true);
 const withReplies = ref(props.column.withReplies ?? false);
 const withSensitive = ref(props.column.withSensitive ?? true);
 const onlyFiles = ref(props.column.onlyFiles ?? false);
+// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む(カラムごとに独立して選べる)
+const localOnly = ref(props.column.localOnly ?? false);
 
 // JUICE: リレー/メディアタイムラインをタイムラインカラムの種別として選べるように追加。
 // サーバー側で機能自体が無効化されている場合は選択肢に出さず、選択済みでも無効表示にする(timeline.vueと同じ判定)
@@ -164,6 +169,12 @@ watch(onlyFiles, v => {
 	});
 });
 
+watch(localOnly, v => {
+	updateColumn(props.column.id, {
+		localOnly: v,
+	});
+});
+
 watch(soundSetting, v => {
 	updateColumn(props.column.id, { soundSetting: v });
 });
@@ -184,6 +195,35 @@ function relaySelectedRef(id: string) {
 		}),
 	});
 }
+
+// JUICE: タイムラインに表示する言語の絞り込み。アカウント単位の設定のためカラム間で共有される
+// (timeline.vueと同じくi/updateへ保存し、meUpdatedストリームイベント経由で反映される)
+function filteredLanguageSelectedRef(code: string) {
+	return computed<boolean>({
+		get: () => $i != null && $i.filteredLanguages.includes(code),
+		set: (checked) => {
+			if ($i == null) return;
+			misskeyApi('i/update', {
+				filteredLanguages: checked
+					? [...$i.filteredLanguages, code]
+					: $i.filteredLanguages.filter(x => x !== code),
+			});
+		},
+	});
+}
+
+const filteredLanguageRefs = new Map(langs.map(([code]) => [code, filteredLanguageSelectedRef(code)]));
+
+// JUICE: 表示言語の絞り込みが有効な場合でも、自分自身の投稿を常に表示するか
+const excludeOwnNotesFromLanguageFilterRef = computed<boolean>({
+	get: () => $i != null && $i.excludeOwnNotesFromLanguageFilter,
+	set: (checked) => {
+		if ($i == null) return;
+		misskeyApi('i/update', {
+			excludeOwnNotesFromLanguageFilter: checked,
+		});
+	},
+});
 
 async function setType() {
 	// JUICE: リレー/メディアタイムラインの利用可否取得が完了する前に選択肢を組み立ててしまい、
@@ -243,6 +283,7 @@ const menu = computed<MenuItem[]>(() => {
 				type: 'parent',
 				icon: 'ti ti-broadcast',
 				text: i18n.ts._juice.relayTimelineFilter,
+				badge: true,
 				children: () => relays.value.map(relay => ({
 					type: 'switch',
 					text: relay.host,
@@ -257,6 +298,7 @@ const menu = computed<MenuItem[]>(() => {
 			icon: 'ti ti-list-search',
 			text: i18n.ts._juice.mediaTimelineSrc,
 			ref: mediaSrcRef,
+			badge: true,
 			options: availableBasicTimelines().map(t => ({
 				label: i18n.ts._timelines[t],
 				value: t,
@@ -277,6 +319,37 @@ const menu = computed<MenuItem[]>(() => {
 			text: i18n.ts.fileAttachedOnly,
 			ref: onlyFiles,
 			disabled: hasWithReplies(tl) ? withReplies : false,
+		});
+
+		// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む(すでに全ローカルを見せるlocal/socialでは意味が無いためhomeのみ)
+		if (tl === 'home') {
+			menuItems.push({
+				type: 'switch',
+				icon: 'ti ti-planet',
+				text: i18n.ts._juice.localOnlyInHomeTimeline,
+				ref: localOnly,
+				badge: true,
+			});
+		}
+	}
+
+	// JUICE: 表示する投稿を言語で絞り込む(未選択=すべての言語を表示、言語未指定の投稿は常に表示)。
+	// アカウント単位の設定のため、カラムの種別を問わず表示する
+	if ($i) {
+		menuItems.push({
+			type: 'parent',
+			icon: 'ti ti-language',
+			text: i18n.ts._juice.filteredLanguages,
+			badge: true,
+			children: () => [{
+				type: 'switch',
+				text: i18n.ts._juice.excludeOwnNotesFromLanguageFilter,
+				ref: excludeOwnNotesFromLanguageFilterRef,
+			}, ...langs.map(([code, label]) => ({
+				type: 'switch' as const,
+				text: label,
+				ref: filteredLanguageRefs.get(code)!,
+			}))],
 		});
 	}
 

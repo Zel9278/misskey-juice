@@ -169,12 +169,22 @@ export class QueryService {
 	// JUICE: ユーザーが設定した表示言語の絞り込み(filteredLanguages、空なら絞り込み無し)を
 	// タイムラインへ適用する。言語が指定されていないノートは、絞り込みが有効(1つ以上選択済み)な
 	// ときは絞り込み対象(非表示)にする。絞り込みが無効(空)なときのみ表示する。
+	// 突き合わせは完全一致ではなく主言語サブタグ("-"より前、大小無視)単位で行う
+	// (Mastodon/Pleroma/Akkoma等、リージョン無しの言語タグ(例: "en"。AkkomaのAP拡張ドキュメント
+	// にも"a sub key named after the language's ISO 639-1 code"と明記)との互換のため。Misskeyの
+	// アカウント言語設定・フィルター候補はリージョン付き(例: "en-US")が多く、完全一致だと
+	// ほぼ一致しなくなる)。ただし中国語(zh-*)は主言語サブタグが同じでもリージョン/スクリプトの
+	// 違いが別言語同然の意味を持つため例外とし、完全一致でしか突き合わせない(Mastodon本体の
+	// LanguagesHelper::ISO_639_1_REGIONALに倣う。"Chinese, which is not a language but a
+	// language family in spite of sharing the main locale code"というコメント付き)。
+	// ポルトガル語(pt-BR/pt-PT)はMastodon側でも表示名の出し分けのみで、言語フィルタ対象の
+	// SUPPORTED_LOCALESには"pt"単独でしか登録されていないため、ここでは特別扱いしない。
 	// generateBaseNoteFilteringQueryとは異なり、ホーム・ローカル・グローバルタイムラインからのみ
 	// 明示的に呼び出す(ミュート・ブロックのような全タイムライン共通のフィルターではない)。
 	// 純粋なリノート(note自身に言語が無い)は、リノート元ノート(renote)自身の言語で判定するため、
 	// この関数を呼び出すクエリは事前に note.renote を(leftJoinAndSelect等で)joinしておくこと。
-	// Notes for future maintainers: この関数と同等の処理をFanoutTimelineEndpointServiceの
-	// noteFilter(isLanguageFiltered、misc/is-language-filtered.ts)にも実装している。
+	// Notes for future maintainers: この関数と同等の処理をisLanguageFiltered
+	// (misc/is-language-filtered.ts、ストリーミングの realtime パス)にも実装している。
 	// この関数を変更した場合、そちらも変更する必要がある。
 	// alwaysIncludeMyNotesは、FanoutTimelineEndpointServiceのalwaysIncludeMyNotesオプション
 	// (自分の投稿は他のフィルターに関わらず常に表示する)とタイムラインごとの挙動を揃えるためのもの。
@@ -192,7 +202,14 @@ export class QueryService {
 		q.andWhere(new Brackets(qb => {
 			qb
 				.where(`(${filteredLanguagesQuery.getQuery()})::jsonb = '[]'::jsonb`)
-				.orWhere(`(${filteredLanguagesQuery.getQuery()})::jsonb ? COALESCE(note.lang, renote.lang)`);
+				.orWhere(`EXISTS (
+					SELECT 1 FROM jsonb_array_elements_text((${filteredLanguagesQuery.getQuery()})::jsonb) AS filtered_lang
+					WHERE split_part(lower(filtered_lang), '-', 1) = split_part(lower(COALESCE(note.lang, renote.lang)), '-', 1)
+						AND (
+							split_part(lower(filtered_lang), '-', 1) <> 'zh'
+							OR lower(filtered_lang) = lower(COALESCE(note.lang, renote.lang))
+						)
+				)`);
 			if (alwaysIncludeMyNotes) {
 				qb.orWhere('note.userId = :languageFilterMeId', { languageFilterMeId: me.id });
 			}

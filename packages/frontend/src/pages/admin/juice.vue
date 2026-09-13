@@ -123,6 +123,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 									<template #caption>{{ i18n.ts._juice.emojiRequestEnabledCaption }}</template>
 								</MkSwitch>
 							</SearchMarker>
+							<!-- JUICE: 申請フォームでカテゴリ・タグ・ライセンスの入力を必須にするか(既定は任意) -->
+							<SearchMarker>
+								<MkSwitch v-model="emojiRequestRequireCategory">
+									<template #label><SearchLabel>{{ i18n.ts._juice.emojiRequestRequireCategory }}</SearchLabel></template>
+								</MkSwitch>
+							</SearchMarker>
+							<SearchMarker>
+								<MkSwitch v-model="emojiRequestRequireTags">
+									<template #label><SearchLabel>{{ i18n.ts._juice.emojiRequestRequireTags }}</SearchLabel></template>
+								</MkSwitch>
+							</SearchMarker>
+							<SearchMarker>
+								<MkSwitch v-model="emojiRequestRequireLicense">
+									<template #label><SearchLabel>{{ i18n.ts._juice.emojiRequestRequireLicense }}</SearchLabel></template>
+								</MkSwitch>
+							</SearchMarker>
 						</div>
 					</MkFolder>
 				</SearchMarker>
@@ -136,6 +152,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<MkSwitch v-model="avatarDecorationRequestEnabled">
 									<template #label><SearchLabel>{{ i18n.ts._juice.avatarDecorationRequestEnabled }}</SearchLabel></template>
 									<template #caption>{{ i18n.ts._juice.avatarDecorationRequestEnabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+							<!-- JUICE: 申請フォームでカテゴリ・説明の入力を必須にするか(既定は任意) -->
+							<SearchMarker>
+								<MkSwitch v-model="avatarDecorationRequestRequireCategory">
+									<template #label><SearchLabel>{{ i18n.ts._juice.avatarDecorationRequestRequireCategory }}</SearchLabel></template>
+								</MkSwitch>
+							</SearchMarker>
+							<SearchMarker>
+								<MkSwitch v-model="avatarDecorationRequestRequireDescription">
+									<template #label><SearchLabel>{{ i18n.ts._juice.avatarDecorationRequestRequireDescription }}</SearchLabel></template>
 								</MkSwitch>
 							</SearchMarker>
 						</div>
@@ -338,7 +365,12 @@ const invitationRegistrationEnabled = ref(settings.invitationRegistrationEnabled
 const exploreOtherServersEnabled = ref(settings.exploreOtherServersEnabled);
 const defaultEmailLang = ref(settings.defaultEmailLang);
 const emojiRequestEnabled = ref(settings.emojiRequestEnabled);
+const emojiRequestRequireCategory = ref(settings.emojiRequestRequireCategory);
+const emojiRequestRequireTags = ref(settings.emojiRequestRequireTags);
+const emojiRequestRequireLicense = ref(settings.emojiRequestRequireLicense);
 const avatarDecorationRequestEnabled = ref(settings.avatarDecorationRequestEnabled);
+const avatarDecorationRequestRequireCategory = ref(settings.avatarDecorationRequestRequireCategory);
+const avatarDecorationRequestRequireDescription = ref(settings.avatarDecorationRequestRequireDescription);
 const rankingAggregationPeriodHours = ref(settings.rankingAggregationPeriodHours);
 const rankingDisplayCount = ref(settings.rankingDisplayCount);
 const relayTimelineEnabled = ref(settings.relayTimelineEnabled);
@@ -393,7 +425,12 @@ function save() {
 		exploreOtherServersEnabled: exploreOtherServersEnabled.value,
 		defaultEmailLang: defaultEmailLang.value,
 		emojiRequestEnabled: emojiRequestEnabled.value,
+		emojiRequestRequireCategory: emojiRequestRequireCategory.value,
+		emojiRequestRequireTags: emojiRequestRequireTags.value,
+		emojiRequestRequireLicense: emojiRequestRequireLicense.value,
 		avatarDecorationRequestEnabled: avatarDecorationRequestEnabled.value,
+		avatarDecorationRequestRequireCategory: avatarDecorationRequestRequireCategory.value,
+		avatarDecorationRequestRequireDescription: avatarDecorationRequestRequireDescription.value,
 		rankingAggregationPeriodHours: rankingAggregationPeriodHours.value,
 		rankingDisplayCount: rankingDisplayCount.value,
 		relayTimelineEnabled: relayTimelineEnabled.value,

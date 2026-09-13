@@ -27,7 +27,12 @@ export const paramDef = {
 		exploreOtherServersEnabled: { type: 'boolean' },
 		defaultEmailLang: { type: 'string' },
 		emojiRequestEnabled: { type: 'boolean' },
+		emojiRequestRequireCategory: { type: 'boolean' },
+		emojiRequestRequireTags: { type: 'boolean' },
+		emojiRequestRequireLicense: { type: 'boolean' },
 		avatarDecorationRequestEnabled: { type: 'boolean' },
+		avatarDecorationRequestRequireCategory: { type: 'boolean' },
+		avatarDecorationRequestRequireDescription: { type: 'boolean' },
 		rankingAggregationPeriodHours: { type: 'integer', minimum: 1 },
 		rankingDisplayCount: { type: 'integer', minimum: 1, maximum: 100 },
 		relayTimelineEnabled: { type: 'boolean' },
@@ -99,7 +104,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.exploreOtherServersEnabled !== undefined) set.exploreOtherServersEnabled = ps.exploreOtherServersEnabled;
 			if (ps.defaultEmailLang !== undefined) set.defaultEmailLang = ps.defaultEmailLang;
 			if (ps.emojiRequestEnabled !== undefined) set.emojiRequestEnabled = ps.emojiRequestEnabled;
+			if (ps.emojiRequestRequireCategory !== undefined) set.emojiRequestRequireCategory = ps.emojiRequestRequireCategory;
+			if (ps.emojiRequestRequireTags !== undefined) set.emojiRequestRequireTags = ps.emojiRequestRequireTags;
+			if (ps.emojiRequestRequireLicense !== undefined) set.emojiRequestRequireLicense = ps.emojiRequestRequireLicense;
 			if (ps.avatarDecorationRequestEnabled !== undefined) set.avatarDecorationRequestEnabled = ps.avatarDecorationRequestEnabled;
+			if (ps.avatarDecorationRequestRequireCategory !== undefined) set.avatarDecorationRequestRequireCategory = ps.avatarDecorationRequestRequireCategory;
+			if (ps.avatarDecorationRequestRequireDescription !== undefined) set.avatarDecorationRequestRequireDescription = ps.avatarDecorationRequestRequireDescription;
 			if (ps.rankingAggregationPeriodHours !== undefined) set.rankingAggregationPeriodHours = ps.rankingAggregationPeriodHours;
 			if (ps.rankingDisplayCount !== undefined) set.rankingDisplayCount = ps.rankingDisplayCount;
 			if (ps.relayTimelineEnabled !== undefined) set.relayTimelineEnabled = ps.relayTimelineEnabled;

@@ -1527,7 +1527,12 @@ describe('Endpoints', () => {
 				exploreOtherServersEnabled: true,
 				defaultEmailLang: 'ja-JP',
 				emojiRequestEnabled: false,
+				emojiRequestRequireCategory: false,
+				emojiRequestRequireTags: false,
+				emojiRequestRequireLicense: false,
 				avatarDecorationRequestEnabled: false,
+				avatarDecorationRequestRequireCategory: false,
+				avatarDecorationRequestRequireDescription: false,
 				rankingAggregationPeriodHours: 12,
 				rankingDisplayCount: 3,
 				relayTimelineEnabled: false,
@@ -2061,6 +2066,46 @@ describe('Endpoints', () => {
 			}, alice);
 			assert.strictEqual(reset.status, 204);
 		});
+
+		// JUICE: filteredLanguages(言語フィルタ)。リージョン無しの言語タグ(Mastodon/Pleroma/Akkoma等)
+		// との互換のため、主言語サブタグ単位で突き合わせる(完全一致ではない)
+		test('言語フィルタが適用され、リージョン無しの言語タグもリージョン付きのフィルタ設定に一致する', async () => {
+			const enable = await api('admin/juice/update-settings', {
+				relayTimelineEnabled: true,
+			}, alice);
+			assert.strictEqual(enable.status, 204);
+
+			const connection = await initTestDb(true);
+			const Notes = connection.getRepository(MiNote);
+			const Relays = connection.getRepository(MiRelay);
+
+			const noteEnBare = (await api('notes/create', { text: 'hi (region-less, JUICE test)', lang: 'en' }, alice)).body.createdNote;
+			const noteFr = (await api('notes/create', { text: 'bonjour (JUICE test)', lang: 'fr' }, alice)).body.createdNote;
+
+			const relay = await Relays.save(Relays.create({
+				id: randomString(),
+				inbox: `https://relay.example.com/${randomString()}/inbox`,
+				status: 'accepted',
+			}));
+			await Notes.update({ id: noteEnBare.id }, { relayId: relay.id });
+			await Notes.update({ id: noteFr.id }, { relayId: relay.id });
+
+			await api('i/update', { filteredLanguages: ['en-US'] }, alice);
+
+			const res = await api('notes/relay-timeline', {}, alice);
+			assert.strictEqual(res.status, 200);
+			const ids = (res.body as misskey.entities.Note[]).map(n => n.id);
+			assert.strictEqual(ids.includes(noteEnBare.id), true);
+			assert.strictEqual(ids.includes(noteFr.id), false);
+
+			// 他のテストに影響しないよう元に戻す
+			await api('i/update', { filteredLanguages: [] }, alice);
+			await Relays.delete({ id: relay.id });
+			const reset = await api('admin/juice/update-settings', {
+				relayTimelineEnabled: false,
+			}, alice);
+			assert.strictEqual(reset.status, 204);
+		});
 	});
 
 	describe('juice/relays', () => {
@@ -2544,7 +2589,12 @@ describe('Endpoints', () => {
 				invitationRegistrationEnabled: true,
 				exploreOtherServersEnabled: true,
 				emojiRequestEnabled: false,
+				emojiRequestRequireCategory: false,
+				emojiRequestRequireTags: false,
+				emojiRequestRequireLicense: false,
 				avatarDecorationRequestEnabled: false,
+				avatarDecorationRequestRequireCategory: false,
+				avatarDecorationRequestRequireDescription: false,
 				relayTimelineEnabled: false,
 				mediaTimelineEnabled: false,
 				latexEnabled: true,

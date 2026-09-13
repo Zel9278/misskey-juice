@@ -102,7 +102,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			this.queryService.generateBaseNoteFilteringQuery(query, me);
-			if (me) this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+			if (me) {
+				this.queryService.generateMutedUserRenotesQueryForNotes(query, me);
+				// JUICE: 表示言語の絞り込み
+				this.queryService.generateLanguageFilterQuery(query, me);
+			}
 
 			if (ps.withFiles) {
 				query.andWhere('note.fileIds != \'{}\'');

@@ -41,7 +41,29 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			// JUICE: 絵文字申請フォームでカテゴリ・タグ・ライセンスの入力を必須にするか
+			emojiRequestRequireCategory: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			emojiRequestRequireTags: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			emojiRequestRequireLicense: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 			avatarDecorationRequestEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			// JUICE: アバターデコレーション申請フォームでカテゴリ・説明の入力を必須にするか
+			avatarDecorationRequestRequireCategory: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			avatarDecorationRequestRequireDescription: {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},

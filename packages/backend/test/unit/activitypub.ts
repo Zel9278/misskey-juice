@@ -238,6 +238,97 @@ describe('ActivityPub', () => {
 		});
 	});
 
+	// JUICE: Mastodon/Akkomaが実際に送ってくるcontentMapの形("a sub key named after the
+	// language's ISO 639-1 code"、Akkoma AP拡張ドキュメントより)を模したペイロードで、
+	// ApNoteService側のcontentMap→note.lang抽出が実際に動作することを確認する
+	describe('Language tag from contentMap (Mastodon/Akkoma compat, JUICE)', () => {
+		test('Mastodon/Akkoma形式のcontentMap(リージョン無しのISO 639-1コード)からnote.langが取れる', async () => {
+			const actor = createRandomActor();
+			const post = {
+				'@context': 'https://www.w3.org/ns/activitystreams',
+				id: `${host}/notes/${secureRndstr(8)}`,
+				type: 'Note',
+				attributedTo: actor.id,
+				to: 'https://www.w3.org/ns/activitystreams#Public',
+				content: 'Look at that!',
+				contentMap: { en: 'Look at that!' },
+			};
+
+			resolver.register(actor.id, actor);
+			resolver.register(post.id, post);
+
+			const note = await noteService.createNote(post.id, undefined, resolver, true);
+
+			assert.strictEqual(note?.lang, 'en');
+		});
+
+		test('リージョン付き(zh-CN等)のcontentMapキーもそのままnote.langへ渡る', async () => {
+			const actor = createRandomActor();
+			const post = {
+				'@context': 'https://www.w3.org/ns/activitystreams',
+				id: `${host}/notes/${secureRndstr(8)}`,
+				type: 'Note',
+				attributedTo: actor.id,
+				to: 'https://www.w3.org/ns/activitystreams#Public',
+				content: '你好',
+				contentMap: { 'zh-CN': '你好' },
+			};
+
+			resolver.register(actor.id, actor);
+			resolver.register(post.id, post);
+
+			const note = await noteService.createNote(post.id, undefined, resolver, true);
+
+			assert.strictEqual(note?.lang, 'zh-CN');
+		});
+
+		test('contentMapが無ければnote.langはnullになる', async () => {
+			const actor = createRandomActor();
+			const post = {
+				'@context': 'https://www.w3.org/ns/activitystreams',
+				id: `${host}/notes/${secureRndstr(8)}`,
+				type: 'Note',
+				attributedTo: actor.id,
+				to: 'https://www.w3.org/ns/activitystreams#Public',
+				content: 'no language tag',
+			};
+
+			resolver.register(actor.id, actor);
+			resolver.register(post.id, post);
+
+			const note = await noteService.createNote(post.id, undefined, resolver, true);
+
+			assert.strictEqual(note?.lang, null);
+		});
+
+		// JUICE: MastodonがcontentMap送出時にリージョンを主言語サブタグへ切り詰めてしまうため、
+		// JUICE間連合ではリージョンを保持したnote.langそのものを_juice_langとして別途送出し、
+		// 受信側はそちらを優先する(contentMapのみ・_juice_lang無しのMastodon/Akkoma等からの
+		// ノートは、これまで通りcontentMapのキーがそのまま採用される)
+		test('_juice_langがcontentMapより優先される(JUICE間連合、リージョン情報の保持)', async () => {
+			const actor = createRandomActor();
+			const post = {
+				'@context': 'https://www.w3.org/ns/activitystreams',
+				id: `${host}/notes/${secureRndstr(8)}`,
+				type: 'Note',
+				attributedTo: actor.id,
+				to: 'https://www.w3.org/ns/activitystreams#Public',
+				content: 'hello',
+				// Mastodon互換のため主言語サブタグへ切り詰められたcontentMap
+				contentMap: { en: 'hello' },
+				// JUICE間連合用の、リージョンを保持した本来のnote.lang
+				_juice_lang: 'en-US',
+			};
+
+			resolver.register(actor.id, actor);
+			resolver.register(post.id, post);
+
+			const note = await noteService.createNote(post.id, undefined, resolver, true);
+
+			assert.strictEqual(note?.lang, 'en-US');
+		});
+	});
+
 	describe('Name field', () => {
 		test('Truncate long name', async () => {
 			const actor = {

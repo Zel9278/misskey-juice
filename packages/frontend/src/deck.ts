@@ -76,6 +76,8 @@ export type Column = {
 	withReplies?: boolean;
 	withSensitive?: boolean;
 	onlyFiles?: boolean;
+	// JUICE: tl==='home'時にホームタイムラインをローカルユーザーの投稿だけに絞り込む(カラムごとに独立して選べる)
+	localOnly?: boolean;
 	soundSetting?: SoundStore;
 	// The cache for the name of the antenna, channel, list, or role
 	timelineNameCache?: string;

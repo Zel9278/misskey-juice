@@ -30,6 +30,7 @@ import { IdService } from '@/core/IdService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
 import { resolveAiGeneratedFallbackCwSettings } from '@/models/JuiceSettings.js';
+import { canonicalizeLanguageTagForFederation } from '@/misc/is-language-filtered.js';
 import { EmailI18nService } from '@/core/EmailI18nService.js';
 import { escapeHtml } from '@/misc/escape-html.js';
 import { JsonLdService } from './JsonLdService.js';
@@ -482,15 +483,21 @@ export class ApRendererService {
 		let summary = note.cw === '' ? String.fromCharCode(0x200B) : note.cw;
 
 		// JUICE: _juice_isAIGeneratedを解釈できない非JUICE実装でも、AI生成物であることが
-		// 一目でわかるよう、CWが未設定のAI生成ノートに限りsummary(AS2標準のCW相当)へ
-		// フォールバック文言を合成する。DB上のnote.cwは変更しないため、ローカル・JUICE間の
-		// 表示は今まで通りバッジのみ(_juice_summaryIsAIGeneratedFallbackを見て採用を抑制する)
+		// 一目でわかるよう、AI生成ノートのsummary(AS2標準のCW相当)にフォールバック文言を合成する。
+		// 元々CWが無ければ文言のみ、既にCWがある場合は「AI生成 | 元のCW」の形で先頭に付け加える。
+		// DB上のnote.cwは変更しないため、ローカル・JUICE間の表示は今まで通りバッジのみ
+		// (_juice_summaryIsAIGeneratedFallbackを見て採用を抑制し、_juice_originalCwから元の
+		// CWを復元する。合成後のsummaryをそのままCWとして採用すると、JUICE間の連合でも
+		// 「AI生成 | 」が本来のCWの前に混入してしまうため)。
+		// ノート本体のisAIGeneratedだけでなく、添付ファイルのうち1件でもAI生成フラグが
+		// 立っていれば対象にする(ノート本体と添付ファイルは独立したフラグのため)
 		let summaryIsAIGeneratedFallback = false;
-		if (note.cw == null && note.isAIGenerated) {
+		if (note.isAIGenerated || files.some(f => f.isAIGenerated)) {
 			const { aiGeneratedFallbackCwEnabled } = resolveAiGeneratedFallbackCwSettings(await this.juiceSettingsService.fetch());
 			if (aiGeneratedFallbackCwEnabled) {
 				const lang = await this.emailI18nService.resolveLang(note.lang);
-				summary = this.emailI18nService.getI18n(lang).t('aiGenerated');
+				const aiGeneratedLabel = this.emailI18nService.getI18n(lang).t('aiGenerated');
+				summary = (note.cw != null && note.cw !== '') ? `${aiGeneratedLabel} | ${note.cw}` : aiGeneratedLabel;
 				summaryIsAIGeneratedFallback = true;
 			}
 		}
@@ -525,8 +532,14 @@ export class ApRendererService {
 			attributedTo,
 			summary: summary ?? undefined,
 			content: content ?? undefined,
-			// JUICE: 言語タグ付きノートをAS2標準のcontentMapでも連合する(Mastodon/Akkoma互換)
-			...(note.lang && content != null ? { contentMap: { [note.lang]: content } } : {}),
+			// JUICE: 言語タグ付きノートをAS2標準のcontentMapでも連合する(Mastodon/Akkoma互換)。
+			// Mastodon本体はcontentMapのキーをリージョン無しの主言語サブタグ(中国語除く)としてしか
+			// 正規化・照合しないため、note.langをそのまま送るとMastodon側の言語フィルタで認識され
+			// ない場合がある。そのため主言語サブタグへ切り詰めて送る(canonicalizeLanguageTagForFederation参照)
+			...(note.lang && content != null ? { contentMap: { [canonicalizeLanguageTagForFederation(note.lang)]: content } } : {}),
+			// JUICE: リージョン等を保持した本来のnote.langをJUICE間連合用に別途送出する
+			// (受信側ApNoteServiceはこちらを優先して採用する)
+			...(note.lang != null ? { _juice_lang: note.lang } : {}),
 			...(noMisskeyContent ? {} : {
 				_misskey_content: text,
 				source: {
@@ -537,7 +550,10 @@ export class ApRendererService {
 			_misskey_quote: quote,
 			quoteUrl: quote,
 			_juice_isAIGenerated: note.isAIGenerated, // JUICE
-			...(summaryIsAIGeneratedFallback ? { _juice_summaryIsAIGeneratedFallback: true } : {}), // JUICE
+			// JUICE: summaryIsAIGeneratedFallback時、summary自体は非JUICE向けの合成文言(フォールバック
+			// 文言単独、または「フォールバック文言 | 元のCW」)になっているため、JUICE間の連合で
+			// 元のCWをそのまま復元できるよう、DB上のnote.cwを別プロパティとして併せて連合する
+			...(summaryIsAIGeneratedFallback ? { _juice_summaryIsAIGeneratedFallback: true, _juice_originalCw: note.cw } : {}), // JUICE
 			published: this.idService.parse(note.id).date.toISOString(),
 			to,
 			cc,

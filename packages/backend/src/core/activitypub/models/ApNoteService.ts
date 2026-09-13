@@ -182,10 +182,14 @@ export class ApNoteService {
 		const apHashtags = extractApHashtags(note.tag);
 
 		// JUICE: _juice_summaryIsAIGeneratedFallbackが立っている場合、summaryは著者が設定した
-		// 本来のCWではなく、_juice_isAIGeneratedを解釈できない非JUICE実装向けに送信側が合成した
-		// フォールバック文言(ApRendererService参照)。受信側はJUICEとして_juice_isAIGenerated
-		// (下記)を直接解釈できるため、このフォールバックCWはローカルのCWとして採用しない
-		const cw = note.summary === '' || note._juice_summaryIsAIGeneratedFallback ? null : note.summary;
+		// 本来のCWそのものではなく、_juice_isAIGeneratedを解釈できない非JUICE実装向けに送信側が
+		// 合成した文言(フォールバック文言単独、または「フォールバック文言 | 元のCW」、
+		// ApRendererService参照)。受信側はJUICEとして_juice_isAIGenerated(下記)を直接解釈できる
+		// ため、このsummaryをそのままローカルのCWとして採用せず、_juice_originalCw(著者が実際に
+		// 設定していた本来のCW、無ければnull)から復元する
+		const cw = note._juice_summaryIsAIGeneratedFallback
+			? (note._juice_originalCw ?? null)
+			: (note.summary === '' ? null : note.summary);
 
 		// テキストのパース
 		let text: string | null = null;
@@ -197,15 +201,19 @@ export class ApNoteService {
 			text = this.apMfmService.htmlToMfm(note.content, note.tag);
 		}
 
-		// JUICE: ノートの言語(BCP 47言語タグ)。AS2標準のcontentMapから取得する(Mastodon/Akkoma互換)。
-		// 複数言語が指定されていた場合は先頭の1つのみを採用する。指定が無ければnull(未タグ付け扱い)
+		// JUICE: ノートの言語(BCP 47言語タグ)。JUICE間連合では_juice_lang(送信側のnote.langを
+		// リージョン等そのまま保持したもの)を優先し、無ければAS2標準のcontentMapのキーから取得する
+		// (Mastodon/Akkoma互換。ただしMastodon側はcontentMap送出時にリージョンを主言語サブタグへ
+		// 切り詰めているため、こちらは切り詰め後の値になる)。複数言語が指定されていた場合は
+		// contentMapの先頭の1つのみを採用する。指定が無ければnull(未タグ付け扱い)
 		// リモートから届く値は信用できないため、DBカラム長(varchar(32))を超える・空文字の場合は
 		// 不正な値として扱い、タグ付け自体を諦める(insertエラーで受信処理全体を失敗させないため)
 		const contentMapLang = note.contentMap && typeof note.contentMap === 'object'
 			? Object.keys(note.contentMap)[0]
 			: undefined;
-		const lang = contentMapLang && contentMapLang.length > 0 && contentMapLang.length <= 32
-			? contentMapLang
+		const rawLang = typeof note._juice_lang === 'string' ? note._juice_lang : contentMapLang;
+		const lang = rawLang && rawLang.length > 0 && rawLang.length <= 32
+			? rawLang
 			: null;
 
 		const poll = await this.apQuestionService.extractPollFromQuestion(note, resolver).catch(() => undefined);

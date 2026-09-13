@@ -88,6 +88,22 @@ export const meta = {
 			code: 'DUPLICATE_REPLACEMENT_REQUEST',
 			id: '411d70cb-e1e2-4588-aab3-75d2906dfcb6',
 		},
+		// JUICE: 管理者設定で必須にできるフィールドの未入力チェック(差し替え申請では適用しない)
+		categoryRequired: {
+			message: 'Category is required.',
+			code: 'CATEGORY_REQUIRED',
+			id: '9ebd8fc0-6dbc-4c49-be4d-4b8c9fb06d5e',
+		},
+		tagsRequired: {
+			message: 'At least one tag is required.',
+			code: 'TAGS_REQUIRED',
+			id: 'a0ce9fd1-7ecd-4d5a-cf5e-5c9d0fc17e6f',
+		},
+		licenseRequired: {
+			message: 'License is required.',
+			code: 'LICENSE_REQUIRED',
+			id: 'b1df0fe2-8fde-4e6b-d06f-6dae1fd28f7a',
+		},
 	},
 
 	res: {
@@ -167,8 +183,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.captchaFailed, { message: err.message });
 			});
 
-			const { emojiRequestEnabled } = resolveEmojiRequestSettings(await this.juiceSettingsService.fetch());
+			const { emojiRequestEnabled, emojiRequestRequireCategory, emojiRequestRequireTags, emojiRequestRequireLicense } = resolveEmojiRequestSettings(await this.juiceSettingsService.fetch());
 			if (!emojiRequestEnabled) throw new ApiError(meta.errors.functionDisabled);
+
+			// JUICE: 管理者設定で必須にできるフィールドの未入力チェック。1件でも違反があれば
+			// 全体を拒否する(一部だけ作成される中途半端な状態を避ける)。差し替え申請
+			// (targetEmojiId指定時)はこれらのフィールド自体が使われないため対象外
+			for (const req of ps.requests) {
+				if (req.targetEmojiId != null) continue;
+				if (emojiRequestRequireCategory && (req.category == null || req.category.trim() === '')) throw new ApiError(meta.errors.categoryRequired);
+				if (emojiRequestRequireTags && (req.aliases == null || req.aliases.length === 0)) throw new ApiError(meta.errors.tagsRequired);
+				if (emojiRequestRequireLicense && (req.license == null || req.license.trim() === '')) throw new ApiError(meta.errors.licenseRequired);
+			}
 
 			// JUICE: 1件でも無効なファイルがあれば全体を拒否する(一部だけ作成される中途半端な状態を避ける)
 			const driveFiles = await Promise.all(ps.requests.map(async req => {

@@ -1702,6 +1702,57 @@ describe('Timelines', () => {
 				assert.strictEqual(localRes.body.some(note => note.id === bobNoteNoLang.id), false);
 			});
 
+			// JUICE: Mastodon/Pleroma/Akkoma等、リージョン無しの言語タグ(例: "en")との互換のため、
+			// フィルタ・ノートの言語タグは主言語サブタグ単位で突き合わせる(完全一致ではない)
+			test('リージョン無しの言語タグのノートも、リージョン付きのフィルタ設定に一致する(逆も同様)', async () => {
+				const [alice, bob] = await Promise.all([signup(), signup()]);
+
+				await api('following/create', { userId: bob.id }, alice);
+				await api('i/update', { filteredLanguages: ['en-US'] }, alice);
+
+				const bobNoteEnBare = await post(bob, { text: 'hi (region-less)', lang: 'en' });
+				const bobNoteEnGb = await post(bob, { text: 'hi (en-GB)', lang: 'en-GB' });
+				const bobNoteFr = await post(bob, { text: 'bonjour', lang: 'fr' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/timeline', { limit: 100 }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === bobNoteEnBare.id), true);
+					assert.strictEqual(res.body.some(note => note.id === bobNoteEnGb.id), true);
+					assert.strictEqual(res.body.some(note => note.id === bobNoteFr.id), false);
+				}, waitForPushToTlOptions);
+
+				const localRes = await api('notes/local-timeline', { limit: 100 }, alice);
+
+				assert.strictEqual(localRes.body.some(note => note.id === bobNoteEnBare.id), true);
+				assert.strictEqual(localRes.body.some(note => note.id === bobNoteEnGb.id), true);
+				assert.strictEqual(localRes.body.some(note => note.id === bobNoteFr.id), false);
+			});
+
+			// JUICE: 中国語(zh-*)はMastodon本体のLanguagesHelper::ISO_639_1_REGIONALと同様、
+			// 主言語サブタグが同じでもリージョン/スクリプトが異なれば別言語として扱う例外
+			test('中国語(zh-*)はリージョン/スクリプトが異なれば一致しない(簡体字/繁体字の混同を防ぐ)', async () => {
+				const [alice, bob] = await Promise.all([signup(), signup()]);
+
+				await api('following/create', { userId: bob.id }, alice);
+				await api('i/update', { filteredLanguages: ['zh-CN'] }, alice);
+
+				const bobNoteZhCn = await post(bob, { text: '你好 (简体)', lang: 'zh-CN' });
+				const bobNoteZhTw = await post(bob, { text: '你好 (繁體)', lang: 'zh-TW' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/timeline', { limit: 100 }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === bobNoteZhCn.id), true);
+					assert.strictEqual(res.body.some(note => note.id === bobNoteZhTw.id), false);
+				}, waitForPushToTlOptions);
+
+				const localRes = await api('notes/local-timeline', { limit: 100 }, alice);
+
+				assert.strictEqual(localRes.body.some(note => note.id === bobNoteZhCn.id), true);
+				assert.strictEqual(localRes.body.some(note => note.id === bobNoteZhTw.id), false);
+			});
+
 			test('絞り込みが無効(未指定)なら、言語未指定の投稿も含まれる', async () => {
 				const [alice, bob] = await Promise.all([signup(), signup()]);
 
@@ -3518,6 +3569,24 @@ describe('Timelines', () => {
 				assert.strictEqual(res.body.some(note => note.id === aliceNoteEn.id), false);
 				assert.strictEqual(res.body.some(note => note.id === aliceNoteJa.id), true);
 				assert.strictEqual(res.body.some(note => note.id === aliceNoteNoLang.id), false);
+			}, waitForPushToTlOptions);
+		});
+
+		// JUICE: Mastodon/Pleroma/Akkoma等、リージョン無しの言語タグ(例: "en")との互換のため、
+		// フィルタ・ノートの言語タグは主言語サブタグ単位で突き合わせる(完全一致ではない)
+		test('リージョン無しの言語タグの投稿も、リージョン付きのフィルタ設定に一致する', async () => {
+			const [alice] = await Promise.all([signup()]);
+
+			await api('i/update', { filteredLanguages: ['en-US'] }, alice);
+
+			const aliceNoteEnBare = await post(alice, { text: 'hi (region-less)', lang: 'en' });
+			const aliceNoteFr = await post(alice, { text: 'bonjour', lang: 'fr' });
+
+			await vi.waitFor(async () => {
+				const res = await api('notes/global-timeline', { limit: 100 }, alice);
+
+				assert.strictEqual(res.body.some(note => note.id === aliceNoteEnBare.id), true);
+				assert.strictEqual(res.body.some(note => note.id === aliceNoteFr.id), false);
 			}, waitForPushToTlOptions);
 		});
 	});
