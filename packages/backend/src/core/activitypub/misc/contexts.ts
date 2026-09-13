@@ -568,6 +568,8 @@ const extension_context_definition = {
 	juice: 'https://github.com/Zel9278/misskey-juice#',
 	'_juice_isAIGenerated': 'juice:_juice_isAIGenerated',
 	'_juice_summaryIsAIGeneratedFallback': 'juice:_juice_summaryIsAIGeneratedFallback',
+	'_juice_originalCw': 'juice:_juice_originalCw',
+	'_juice_lang': 'juice:_juice_lang',
 	// vcard
 	vcard: 'http://www.w3.org/2006/vcard/ns#',
 } satisfies Context;

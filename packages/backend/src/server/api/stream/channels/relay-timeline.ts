@@ -12,6 +12,7 @@ import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { resolveRelayTimelineSettings } from '@/models/JuiceSettings.js';
 import { isRenotePacked, isQuotePacked } from '@/misc/is-renote.js';
+import { isLanguageFiltered } from '@/misc/is-language-filtered.js';
 import type { JsonObject } from '@/misc/json-value.js';
 import Channel, { type ChannelRequest } from '../channel.js';
 import { REQUEST } from '@nestjs/core';
@@ -70,6 +71,9 @@ export class RelayTimelineChannel extends Channel {
 		if (isRenotePacked(note) && !isQuotePacked(note) && !this.withRenotes) return;
 
 		if (this.isNoteMutedOrBlocked(note)) return;
+
+		// JUICE: 表示言語の絞り込み
+		if (isLanguageFiltered(note, new Set(this.userProfile?.filteredLanguages ?? []))) return;
 
 		const filtered = await this.noteStreamingHidingService.filter(note, this.user?.id ?? null);
 		if (!filtered) return;

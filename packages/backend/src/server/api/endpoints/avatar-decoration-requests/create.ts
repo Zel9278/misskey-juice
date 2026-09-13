@@ -81,6 +81,17 @@ export const meta = {
 			code: 'DUPLICATE_REPLACEMENT_REQUEST',
 			id: '16198780-409b-419a-8ca6-85c31d4b688d',
 		},
+		// JUICE: 管理者設定で必須にできるフィールドの未入力チェック(差し替え申請では適用しない)
+		categoryRequired: {
+			message: 'Category is required.',
+			code: 'CATEGORY_REQUIRED',
+			id: 'c2e01ff3-90ef-4f7c-a17b-4c8a9b06d5e0',
+		},
+		descriptionRequired: {
+			message: 'Description is required.',
+			code: 'DESCRIPTION_REQUIRED',
+			id: 'd3f12004-a1f0-4a8d-b28c-5d9baa17e6f1',
+		},
 	},
 
 	res: {
@@ -143,8 +154,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.captchaFailed, { message: err.message });
 			});
 
-			const { avatarDecorationRequestEnabled } = resolveAvatarDecorationRequestSettings(await this.juiceSettingsService.fetch());
+			const { avatarDecorationRequestEnabled, avatarDecorationRequestRequireCategory, avatarDecorationRequestRequireDescription } = resolveAvatarDecorationRequestSettings(await this.juiceSettingsService.fetch());
 			if (!avatarDecorationRequestEnabled) throw new ApiError(meta.errors.functionDisabled);
+
+			// JUICE: 管理者設定で必須にできるフィールドの未入力チェック。差し替え申請
+			// (targetAvatarDecorationId指定時)はこれらのフィールド自体が使われないため対象外
+			if (ps.targetAvatarDecorationId == null) {
+				if (avatarDecorationRequestRequireCategory && (ps.category == null || ps.category.trim() === '')) throw new ApiError(meta.errors.categoryRequired);
+				if (avatarDecorationRequestRequireDescription && ps.description.trim() === '') throw new ApiError(meta.errors.descriptionRequired);
+			}
 
 			const driveFile = await this.driveFilesRepository.findOneBy({ id: ps.fileId });
 			if (driveFile == null) throw new ApiError(meta.errors.noSuchFile);

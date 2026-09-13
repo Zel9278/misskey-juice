@@ -159,6 +159,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #footer>
 		<div v-if="isEditMode" :class="$style.footer">
 			<MkButton primary rounded @click="moveFilesBulk()"><i class="ti ti-folder-symlink"></i> {{ i18n.ts.move }}...</MkButton>
+			<!-- JUICE: 複数選択したファイルの一括削除(本家には一括移動しか無かったため追加) -->
+			<MkButton danger rounded :disabled="selectedFiles.length === 0" @click="deleteFilesBulk()"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
 		</div>
 	</template>
 </MkStickyContainer>
@@ -601,6 +603,26 @@ async function moveFilesBulk() {
 		folderId: folders[0] ? folders[0].id : null,
 		folder: folders[0] ?? null,
 	})));
+}
+
+// JUICE: Driveページで複数ファイルを選択して一括削除する(本家には一括移動しか無かったため追加)
+async function deleteFilesBulk() {
+	if (selectedFiles.value.length === 0) return;
+
+	const { canceled } = await os.confirm({
+		type: 'warning',
+		text: i18n.tsx.driveFilesDeleteConfirm({ count: selectedFiles.value.length }),
+	});
+	if (canceled) return;
+
+	const deletedFiles = selectedFiles.value;
+
+	await os.apiWithDialog('drive/files/delete-bulk', {
+		fileIds: deletedFiles.map(f => f.id),
+	});
+
+	globalEvents.emit('driveFilesDeleted', deletedFiles);
+	selectedFiles.value = [];
 }
 
 function goRoot() {

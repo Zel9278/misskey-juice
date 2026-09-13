@@ -341,6 +341,10 @@ export interface Locale extends ILocale {
      */
     "driveFileDeleteConfirm": ParameterizedString<"name">;
     /**
+     * 選択した{count}件のファイルを削除しますか？これらのファイルを使用した一部のコンテンツも削除されます。
+     */
+    "driveFilesDeleteConfirm": ParameterizedString<"count">;
+    /**
      * {name}のフォローを解除しますか？
      */
     "unfollowConfirm": ParameterizedString<"name">;
@@ -2172,6 +2176,10 @@ export interface Locale extends ILocale {
      * タグ
      */
     "tags": string;
+    /**
+     * (必須)
+     */
+    "requiredFieldSuffix": string;
     /**
      * このドキュメントのソース
      */
@@ -14669,6 +14677,18 @@ export interface Locale extends ILocale {
          */
         "emojiRequestEnabledCaption": string;
         /**
+         * カテゴリの入力を必須にする
+         */
+        "emojiRequestRequireCategory": string;
+        /**
+         * タグの入力を必須にする
+         */
+        "emojiRequestRequireTags": string;
+        /**
+         * ライセンスの入力を必須にする
+         */
+        "emojiRequestRequireLicense": string;
+        /**
          * アバターデコレーション申請の審査結果をメールで受け取る
          */
         "receiveAvatarDecorationRequestResultEmail": string;
@@ -14688,6 +14708,14 @@ export interface Locale extends ILocale {
          * 無効にすると、一般ユーザーの申請ページ・APIの両方が利用できなくなります。
          */
         "avatarDecorationRequestEnabledCaption": string;
+        /**
+         * カテゴリの入力を必須にする
+         */
+        "avatarDecorationRequestRequireCategory": string;
+        /**
+         * 説明の入力を必須にする
+         */
+        "avatarDecorationRequestRequireDescription": string;
         /**
          * ユーザーランキング
          */
@@ -14853,7 +14881,7 @@ export interface Locale extends ILocale {
          */
         "aiGeneratedFallbackCwEnabled": string;
         /**
-         * AI生成物フラグ(isAIGenerated)はJUICE独自の連合プロパティのため、対応していない実装では無視されます。この設定を有効にすると、CWが未設定のAI生成物に限り、ActivityPub連合時だけCW(内容の折りたたみ)としてフォールバック文言を送信します。ローカル・misskey-juice間の表示は今まで通りバッジのみで、投稿自体のCW設定は変更されません。
+         * AI生成物フラグ(isAIGenerated)はJUICE独自の連合プロパティのため、対応していない実装では無視されます。この設定を有効にすると、投稿本体か添付ファイルのいずれか1つにでもAI生成物フラグが立っていれば、ActivityPub連合時にCW(内容の折りたたみ)としてフォールバック文言を送信します。CWが未設定の投稿はフォールバック文言のみ、既にCWがある投稿は「フォールバック文言 | 元のCW」の形で先頭に付け加えます。ローカル・misskey-juice間の表示は今まで通りバッジのみで、投稿自体のCW設定は変更されません。
          */
         "aiGeneratedFallbackCwEnabledCaption": string;
         /**
@@ -15060,6 +15088,10 @@ export interface Locale extends ILocale {
          * {n}件目
          */
         "requestNumber": ParameterizedString<"n">;
+        /**
+         * 必須項目が未入力です
+         */
+        "requiredFieldsMissing": string;
         /**
          * 審査後にこの画像をDriveから削除する
          */
@@ -15288,6 +15320,10 @@ export interface Locale extends ILocale {
          * {n}件目
          */
         "requestNumber": ParameterizedString<"n">;
+        /**
+         * 必須項目が未入力です
+         */
+        "requiredFieldsMissing": string;
         /**
          * 審査後にこの画像をDriveから削除する
          */

@@ -2036,6 +2036,15 @@ export type paths = {
          */
         post: operations['drive___files___delete'];
     };
+    '/drive/files/delete-bulk': {
+        /**
+         * drive/files/delete-bulk
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:drive*
+         */
+        post: operations['drive___files___delete-bulk'];
+    };
     '/drive/files/find': {
         /**
          * drive/files/find
@@ -11281,7 +11290,12 @@ export interface operations {
                         exploreOtherServersEnabled: boolean;
                         defaultEmailLang: string;
                         emojiRequestEnabled: boolean;
+                        emojiRequestRequireCategory: boolean;
+                        emojiRequestRequireTags: boolean;
+                        emojiRequestRequireLicense: boolean;
                         avatarDecorationRequestEnabled: boolean;
+                        avatarDecorationRequestRequireCategory: boolean;
+                        avatarDecorationRequestRequireDescription: boolean;
                         rankingAggregationPeriodHours: number;
                         rankingDisplayCount: number;
                         relayTimelineEnabled: boolean;
@@ -11461,7 +11475,12 @@ export interface operations {
                     exploreOtherServersEnabled?: boolean;
                     defaultEmailLang?: string;
                     emojiRequestEnabled?: boolean;
+                    emojiRequestRequireCategory?: boolean;
+                    emojiRequestRequireTags?: boolean;
+                    emojiRequestRequireLicense?: boolean;
                     avatarDecorationRequestEnabled?: boolean;
+                    avatarDecorationRequestRequireCategory?: boolean;
+                    avatarDecorationRequestRequireDescription?: boolean;
                     rankingAggregationPeriodHours?: number;
                     rankingDisplayCount?: number;
                     relayTimelineEnabled?: boolean;
@@ -22750,6 +22769,68 @@ export interface operations {
             };
         };
     };
+    'drive___files___delete-bulk': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    fileIds: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     drive___files___find: {
         requestBody: {
             content: {
@@ -32268,7 +32349,12 @@ export interface operations {
                         invitationRegistrationEnabled: boolean;
                         exploreOtherServersEnabled: boolean;
                         emojiRequestEnabled: boolean;
+                        emojiRequestRequireCategory: boolean;
+                        emojiRequestRequireTags: boolean;
+                        emojiRequestRequireLicense: boolean;
                         avatarDecorationRequestEnabled: boolean;
+                        avatarDecorationRequestRequireCategory: boolean;
+                        avatarDecorationRequestRequireDescription: boolean;
                         relayTimelineEnabled: boolean;
                         mediaTimelineEnabled: boolean;
                         latexEnabled: boolean;

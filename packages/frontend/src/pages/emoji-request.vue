@@ -36,6 +36,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 					1件だけの場合でも必要なため、ヘッダー自体はdrafts.length>1で出し分けない -->
 					<div :class="$style.draftHeader">
 						<span v-if="drafts.length > 1">{{ i18n.tsx._emojiRequestPage.requestNumber({ n: i + 1 }) }}</span>
+						<!-- JUICE: まとめて複数件申請しようとしている時、どのカードの何が未入力か
+						一目で分かるように、必須項目が未入力のカードにはヘッダーへ警告バッジを出す -->
+						<span v-if="draftMissingRequiredFields(draft)" :class="$style.draftMissingRequiredBadge">
+							<i class="ti ti-alert-triangle"></i> {{ i18n.ts._emojiRequestPage.requiredFieldsMissing }}
+						</span>
 						<button class="_button" :class="$style.draftRemoveButton" @click="removeDraft(draft.key)">
 							<i class="ti ti-x"></i>
 						</button>
@@ -80,20 +85,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkInput>
 
 					<template v-if="draft.targetEmojiId == null">
-						<MkInput v-model="draft.category" :datalist="customEmojiCategories.filter(x => x != null)">
-							<template #label>{{ i18n.ts.category }}</template>
+						<MkInput v-model="draft.category" :required="requireCategory" :datalist="customEmojiCategories.filter(x => x != null)">
+							<template #label>{{ i18n.ts.category }}{{ requireCategory ? ` ${i18n.ts.requiredFieldSuffix}` : '' }}</template>
 						</MkInput>
 
-						<MkInput v-model="draft.aliases" autocapitalize="off">
-							<template #label>{{ i18n.ts.tags }}</template>
+						<MkInput v-model="draft.aliases" :required="requireTags" autocapitalize="off">
+							<template #label>{{ i18n.ts.tags }}{{ requireTags ? ` ${i18n.ts.requiredFieldSuffix}` : '' }}</template>
 							<template #caption>
 								{{ i18n.ts.theKeywordWhenSearchingForCustomEmoji }}<br/>
 								{{ i18n.ts.setMultipleBySeparatingWithSpace }}
 							</template>
 						</MkInput>
 
-						<MkInput v-model="draft.license" :mfmAutocomplete="true">
-							<template #label>{{ i18n.ts.license }}</template>
+						<MkInput v-model="draft.license" :required="requireLicense" :mfmAutocomplete="true">
+							<template #label>{{ i18n.ts.license }}{{ requireLicense ? ` ${i18n.ts.requiredFieldSuffix}` : '' }}</template>
 						</MkInput>
 
 						<MkSwitch v-model="draft.isSensitive">{{ i18n.ts.sensitive }}</MkSwitch>
@@ -164,8 +169,15 @@ import { buildMockLocalCustomEmojiReaction } from '@/utility/mock-note-reaction.
 const $i = ensureSignin();
 
 const enabled = ref(true);
+// JUICE: 名前以外にどの入力を必須にするかは管理者設定で切り替えられる(既定はすべて任意)
+const requireCategory = ref(false);
+const requireTags = ref(false);
+const requireLicense = ref(false);
 misskeyApi('juice/public-settings').then(res => {
 	enabled.value = res.emojiRequestEnabled;
+	requireCategory.value = res.emojiRequestRequireCategory;
+	requireTags.value = res.emojiRequestRequireTags;
+	requireLicense.value = res.emojiRequestRequireLicense;
 });
 
 // JUICE: 「あと何件申請できるか」「1回でまとめて申請できる上限」を送信前に表示するための状態。
@@ -308,8 +320,19 @@ function exampleNoteFor(draft: EmojiRequestDraft): Misskey.entities.Note {
 	};
 }
 
+// JUICE: 名前以外の入力を管理者設定で必須にできる。差し替え申請(targetEmojiId指定時)は
+// これらのフィールド自体を使わないため対象外にする(フォーム側も入力欄自体を隠している)
+function draftMissingRequiredFields(d: EmojiRequestDraft): boolean {
+	if (d.targetEmojiId != null) return false;
+	if (requireCategory.value && !d.category) return true;
+	if (requireTags.value && d.aliases.split(' ').filter(x => x !== '').length === 0) return true;
+	if (requireLicense.value && !d.license) return true;
+	return false;
+}
+
 const shouldDisableSubmitting = computed((): boolean => {
 	return drafts.value.length === 0 || drafts.value.some(d => !d.name) ||
+		drafts.value.some(draftMissingRequiredFields) ||
 		drafts.value.length > remaining.value ||
 		instance.enableHcaptcha && !hCaptchaResponse.value ||
 		instance.enableMcaptcha && !mCaptchaResponse.value ||
@@ -396,17 +419,38 @@ async function resolveFileId(file: File | Misskey.entities.DriveFile): Promise<s
 	return file.id;
 }
 
+// JUICE: 「PCからアップロード」を選んだドラフトは、この関数が呼ばれた時点で初めてDriveに
+// アップロードされる(resolveFileId参照)。申請自体が失敗・キャンセルされた場合、この時
+// 新規にアップロードされた分だけをDriveから削除して孤立させない(「ドライブから選択」
+// 「URLから」等、元々Driveにあったファイルは削除しない)
+function deleteFreshlyUploadedFiles(fileIds: string[], isFreshUpload: boolean[]) {
+	for (let i = 0; i < fileIds.length; i++) {
+		if (isFreshUpload[i]) {
+			misskeyApi('drive/files/delete', { fileId: fileIds[i] }).catch(() => {});
+		}
+	}
+}
+
 async function submit() {
 	if (drafts.value.length === 0 || drafts.value.some(d => !d.name)) return;
 
 	const done = os.waiting();
-	let fileIds: string[];
-	try {
-		fileIds = await Promise.all(drafts.value.map(d => resolveFileId(d.file)));
-	} catch {
+	const isFreshUpload = drafts.value.map(d => d.file instanceof File);
+
+	// JUICE: Promise.allで一括await すると、一部の draft のアップロードが失敗した場合に
+	// 既に成功した他の draft のアップロード結果(fileId)が失われ、孤立ファイルとして
+	// Driveに残ってしまう。allSettledで個別の成否を確認し、失敗時は成功分だけ削除する
+	const uploadResults = await Promise.allSettled(drafts.value.map(d => resolveFileId(d.file)));
+	const uploadFailed = uploadResults.some(r => r.status === 'rejected');
+	if (uploadFailed) {
 		done();
+		const uploadedFileIds = uploadResults
+			.map((r, i) => (r.status === 'fulfilled' ? { fileId: r.value, isFreshUpload: isFreshUpload[i] } : null))
+			.filter(x => x != null);
+		deleteFreshlyUploadedFiles(uploadedFileIds.map(x => x.fileId), uploadedFileIds.map(x => x.isFreshUpload));
 		return;
 	}
+	const fileIds = uploadResults.map(r => (r as PromiseFulfilledResult<string>).value);
 	done({ success: true });
 
 	os.apiWithDialog('emoji-requests/create-many', {
@@ -465,6 +509,10 @@ async function submit() {
 			dailyRemaining.value = res.dailyRemaining;
 			dailyResetAt.value = res.dailyResetAt;
 		});
+
+		// JUICE: create-many自体が失敗した場合(captcha失敗・レート制限等)も、今回新規に
+		// アップロードした分をDriveに残さず削除する
+		deleteFreshlyUploadedFiles(fileIds, isFreshUpload);
 	});
 }
 
@@ -507,6 +555,13 @@ definePage(() => ({
 	display: flex;
 	align-items: center;
 	font-weight: bold;
+}
+
+.draftMissingRequiredBadge {
+	margin-left: 8px;
+	font-size: 85%;
+	font-weight: normal;
+	color: var(--MI_THEME-infoWarnFg);
 }
 
 .draftRemoveButton {

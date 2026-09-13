@@ -26,8 +26,18 @@ export interface JuiceSettingsValue {
 	defaultEmailLang?: string;
 	/** 絵文字申請機能を有効にするか */
 	emojiRequestEnabled?: boolean;
+	/** 絵文字申請フォームでカテゴリの入力を必須にするか(既定は任意) */
+	emojiRequestRequireCategory?: boolean;
+	/** 絵文字申請フォームでタグ(別名)の入力を必須にするか(既定は任意) */
+	emojiRequestRequireTags?: boolean;
+	/** 絵文字申請フォームでライセンスの入力を必須にするか(既定は任意) */
+	emojiRequestRequireLicense?: boolean;
 	/** アバターデコレーション申請機能を有効にするか */
 	avatarDecorationRequestEnabled?: boolean;
+	/** アバターデコレーション申請フォームでカテゴリの入力を必須にするか(既定は任意) */
+	avatarDecorationRequestRequireCategory?: boolean;
+	/** アバターデコレーション申請フォームで説明の入力を必須にするか(既定は任意) */
+	avatarDecorationRequestRequireDescription?: boolean;
 	/** ユーザーランキングの集計期間(時間単位) */
 	rankingAggregationPeriodHours?: number;
 	/** ユーザーランキングに表示する人数 */
@@ -71,11 +81,13 @@ export interface JuiceSettingsValue {
 	 */
 	blockEmailPlusAliasRegistration?: boolean;
 	/**
-	 * AI生成物フラグ(isAIGenerated)が立っていて著者がCWを設定していないノートを連合する際、
-	 * ActivityPubのsummary(CW相当)にフォールバック文言を合成して送出するか。_juice_isAIGenerated
-	 * を解釈できない非JUICE実装でも、通報を促せるように内容の手前にワンクッション入るようにする
-	 * ための機能。ローカル・JUICE間の表示は_juice_summaryIsAIGeneratedFallback目印により
-	 * 引き続きバッジ表示のみ(DB上のnote.cwは変更しない)
+	 * AI生成物フラグ(isAIGenerated)が、ノート本体か添付ファイルのいずれか1つにでも立っている
+	 * ノートを連合する際、ActivityPubのsummary(CW相当)にフォールバック文言を合成して送出するか。
+	 * CWが未設定なら文言のみ、既にCWがある場合は「フォールバック文言 | 元のCW」の形で先頭に
+	 * 付け加える。_juice_isAIGeneratedを解釈できない非JUICE実装でも、通報を促せるように内容の
+	 * 手前にワンクッション入るための機能。ローカル・JUICE間の表示は
+	 * _juice_summaryIsAIGeneratedFallback目印により引き続きバッジ表示のみ(DB上のnote.cwは
+	 * 変更しない。元のCWは_juice_originalCwとして別途連合し、JUICE間ではそれを使って復元する)
 	 */
 	aiGeneratedFallbackCwEnabled?: boolean;
 }
@@ -147,9 +159,15 @@ export function resolveEmailSettings(settings: JuiceSettingsValue): {
  */
 export function resolveEmojiRequestSettings(settings: JuiceSettingsValue): {
 	emojiRequestEnabled: boolean;
+	emojiRequestRequireCategory: boolean;
+	emojiRequestRequireTags: boolean;
+	emojiRequestRequireLicense: boolean;
 } {
 	return {
 		emojiRequestEnabled: settings.emojiRequestEnabled ?? false,
+		emojiRequestRequireCategory: settings.emojiRequestRequireCategory ?? false,
+		emojiRequestRequireTags: settings.emojiRequestRequireTags ?? false,
+		emojiRequestRequireLicense: settings.emojiRequestRequireLicense ?? false,
 	};
 }
 
@@ -159,9 +177,13 @@ export function resolveEmojiRequestSettings(settings: JuiceSettingsValue): {
  */
 export function resolveAvatarDecorationRequestSettings(settings: JuiceSettingsValue): {
 	avatarDecorationRequestEnabled: boolean;
+	avatarDecorationRequestRequireCategory: boolean;
+	avatarDecorationRequestRequireDescription: boolean;
 } {
 	return {
 		avatarDecorationRequestEnabled: settings.avatarDecorationRequestEnabled ?? false,
+		avatarDecorationRequestRequireCategory: settings.avatarDecorationRequestRequireCategory ?? false,
+		avatarDecorationRequestRequireDescription: settings.avatarDecorationRequestRequireDescription ?? false,
 	};
 }
 

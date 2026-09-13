@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, test } from 'vitest';
-import { isLanguageFiltered } from '@/misc/is-language-filtered.js';
+import { canonicalizeLanguageTagForFederation, isLanguageFiltered } from '@/misc/is-language-filtered.js';
 import { MiNote } from '@/models/Note.js';
 
 const base: MiNote = {
@@ -97,5 +97,75 @@ describe('misc:is-language-filtered', () => {
 			renote: { ...base, id: 'some-renote-id', lang: 'en-US' },
 		} as unknown as MiNote;
 		expect(isLanguageFiltered(note, new Set(['ja-JP']))).toBe(false);
+	});
+
+	// JUICE: Mastodon/Pleroma/Akkoma等、リージョン無しの言語タグ(例: "en")との互換のため、
+	// 主言語サブタグ単位で突き合わせる
+	test('a region-less note lang (e.g. Mastodon/Pleroma/Akkoma style) should match a region-qualified filter entry', () => {
+		const note: MiNote = { ...base, lang: 'en' };
+		expect(isLanguageFiltered(note, new Set(['en-US']))).toBe(false);
+	});
+
+	test('a region-qualified note lang should match a region-less filter entry', () => {
+		const note: MiNote = { ...base, lang: 'en-US' };
+		expect(isLanguageFiltered(note, new Set(['en']))).toBe(false);
+	});
+
+	test('different regions of the same base language should still match', () => {
+		const note: MiNote = { ...base, lang: 'en-GB' };
+		expect(isLanguageFiltered(note, new Set(['en-US']))).toBe(false);
+	});
+
+	test('base language matching is case-insensitive', () => {
+		const note: MiNote = { ...base, lang: 'EN-us' };
+		expect(isLanguageFiltered(note, new Set(['en-US']))).toBe(false);
+	});
+
+	test('different base languages should still be filtered even if unrelated', () => {
+		const note: MiNote = { ...base, lang: 'fr' };
+		expect(isLanguageFiltered(note, new Set(['en-US']))).toBe(true);
+	});
+
+	// JUICE: 中国語(zh-*)はMastodon本体のLanguagesHelper::ISO_639_1_REGIONALと同様、
+	// 主言語サブタグが同じでもリージョン/スクリプトが異なれば別言語として扱う
+	// (簡体字/繁体字は同じ"zh"サブタグを共有するが別スクリプトのため)
+	test('zh-CN and zh-TW should NOT match each other despite sharing the "zh" base tag', () => {
+		const note: MiNote = { ...base, lang: 'zh-CN' };
+		expect(isLanguageFiltered(note, new Set(['zh-TW']))).toBe(true);
+	});
+
+	test('zh-CN should still match an exact zh-CN filter entry', () => {
+		const note: MiNote = { ...base, lang: 'zh-CN' };
+		expect(isLanguageFiltered(note, new Set(['zh-CN']))).toBe(false);
+	});
+
+	test('a region-less "zh" note lang should NOT match a specific zh-CN/zh-TW filter entry (ambiguous script)', () => {
+		const note: MiNote = { ...base, lang: 'zh' };
+		expect(isLanguageFiltered(note, new Set(['zh-CN']))).toBe(true);
+		expect(isLanguageFiltered(note, new Set(['zh-TW']))).toBe(true);
+	});
+
+	test('Portuguese is not treated as region-sensitive (pt-BR should match pt-PT)', () => {
+		const note: MiNote = { ...base, lang: 'pt-BR' };
+		expect(isLanguageFiltered(note, new Set(['pt-PT']))).toBe(false);
+	});
+});
+
+// JUICE: Mastodon本体は受信したcontentMapのキーをリージョン無しの主言語サブタグ(中国語除く)
+// としてしか正規化・照合しないため、連合へ送出する際はこの形へ切り詰める必要がある
+describe('misc:canonicalizeLanguageTagForFederation', () => {
+	test('region-qualified non-Chinese tags are truncated to the base subtag', () => {
+		expect(canonicalizeLanguageTagForFederation('en-US')).toBe('en');
+		expect(canonicalizeLanguageTagForFederation('ja-JP')).toBe('ja');
+		expect(canonicalizeLanguageTagForFederation('pt-BR')).toBe('pt');
+	});
+
+	test('bare (region-less) tags are left unchanged', () => {
+		expect(canonicalizeLanguageTagForFederation('en')).toBe('en');
+	});
+
+	test('Chinese region/script variants are preserved as-is', () => {
+		expect(canonicalizeLanguageTagForFederation('zh-CN')).toBe('zh-CN');
+		expect(canonicalizeLanguageTagForFederation('zh-TW')).toBe('zh-TW');
 	});
 });
