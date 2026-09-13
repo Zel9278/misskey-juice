@@ -36,6 +36,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 					1件だけの場合でも必要なため、ヘッダー自体はdrafts.length>1で出し分けない -->
 					<div :class="$style.draftHeader">
 						<span v-if="drafts.length > 1">{{ i18n.tsx._emojiRequestPage.requestNumber({ n: i + 1 }) }}</span>
+						<!-- JUICE: まとめて複数件申請しようとしている時、どのカードの何が未入力か
+						一目で分かるように、必須項目が未入力のカードにはヘッダーへ警告バッジを出す -->
+						<span v-if="draftMissingRequiredFields(draft)" :class="$style.draftMissingRequiredBadge">
+							<i class="ti ti-alert-triangle"></i> {{ i18n.ts._emojiRequestPage.requiredFieldsMissing }}
+						</span>
 						<button class="_button" :class="$style.draftRemoveButton" @click="removeDraft(draft.key)">
 							<i class="ti ti-x"></i>
 						</button>
@@ -550,6 +555,13 @@ definePage(() => ({
 	display: flex;
 	align-items: center;
 	font-weight: bold;
+}
+
+.draftMissingRequiredBadge {
+	margin-left: 8px;
+	font-size: 85%;
+	font-weight: normal;
+	color: var(--MI_THEME-infoWarnFg);
 }
 
 .draftRemoveButton {

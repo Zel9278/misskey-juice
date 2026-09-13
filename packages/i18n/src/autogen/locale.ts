@@ -15089,6 +15089,10 @@ export interface Locale extends ILocale {
          */
         "requestNumber": ParameterizedString<"n">;
         /**
+         * 必須項目が未入力です
+         */
+        "requiredFieldsMissing": string;
+        /**
          * 審査後にこの画像をDriveから削除する
          */
         "deleteFileAfterReview": string;
@@ -15316,6 +15320,10 @@ export interface Locale extends ILocale {
          * {n}件目
          */
         "requestNumber": ParameterizedString<"n">;
+        /**
+         * 必須項目が未入力です
+         */
+        "requiredFieldsMissing": string;
         /**
          * 審査後にこの画像をDriveから削除する
          */
