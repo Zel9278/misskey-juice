@@ -24,6 +24,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<X2fa/>
 
+		<!-- JUICE: 連携ログイン(Discord/Google/GitHub/GitLab/Microsoft)の設定は/settings/juiceに集約している -->
+		<SearchMarker :keywords="['oauth', 'discord', 'google', 'github', 'gitlab', 'microsoft', 'login', 'signin', 'connect']">
+			<FormLink to="/settings/juice">{{ i18n.ts._oauthLogin.title }}<span class="_juice">JUICE</span></FormLink>
+		</SearchMarker>
+
 		<SearchMarker :keywords="['signin', 'login', 'history', 'log']">
 			<FormSection>
 				<template #label><SearchLabel>{{ i18n.ts.signinHistory }}</SearchLabel></template>
@@ -61,6 +66,7 @@ import { computed, markRaw } from 'vue';
 import X2fa from './2fa.vue';
 import FormSection from '@/components/form/section.vue';
 import FormSlot from '@/components/form/slot.vue';
+import FormLink from '@/components/form/link.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import * as os from '@/os.js';

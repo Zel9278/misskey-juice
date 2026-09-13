@@ -4,151 +4,178 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<SearchMarker path="/settings/juice" :label="i18n.ts.juice" :keywords="['juice', 'email', 'language']" icon="ti ti-droplet">
+<SearchMarker path="/settings/juice" :label="i18n.ts.juice" :keywords="['juice', 'email', 'language']" icon="ti ti-droplet" :inlining="['oauth-connections']">
 	<div class="_gaps_m">
 		<MkInfo v-if="!instance.enableEmail">{{ i18n.ts.emailNotSupported }}</MkInfo>
 
-		<MkDisableSection :disabled="!instance.enableEmail">
-			<SearchMarker :keywords="['email', 'language']">
-				<FormSection first>
-					<template #label><SearchLabel>{{ i18n.ts._juice.emailLanguage }}</SearchLabel></template>
-					<MkSelect v-model="emailLang" :items="langs.map(x => ({ label: x[1], value: x[0] }))" @update:modelValue="save">
-						<template #caption>{{ i18n.ts._juice.emailLanguageCaption }}</template>
-					</MkSelect>
-				</FormSection>
-			</SearchMarker>
-		</MkDisableSection>
+		<!-- JUICE: 設定項目が増えてきたため、カテゴリごとにMkFolderへまとめている -->
+		<SearchMarker v-slot="slotProps">
+			<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+				<template #label><SearchLabel>{{ i18n.ts._juice.settingsGroupAccount }}</SearchLabel></template>
 
-		<SearchMarker :keywords="['ai', 'generated', 'mute', 'hide']">
-			<FormSection>
-				<template #label><SearchLabel>{{ i18n.ts._juice.muteAIGeneratedNotes }}</SearchLabel></template>
-				<MkSelect v-model="muteAIGeneratedNotes" :items="muteAIGeneratedNotesItems" @update:modelValue="saveMuteAIGeneratedNotes">
-					<template #caption>{{ i18n.ts._juice.muteAIGeneratedNotesDescription }}</template>
-				</MkSelect>
-			</FormSection>
-		</SearchMarker>
+				<div class="_gaps_m">
+					<MkDisableSection :disabled="!instance.enableEmail">
+						<SearchMarker :keywords="['email', 'language']">
+							<FormSection first>
+								<template #label><SearchLabel>{{ i18n.ts._juice.emailLanguage }}</SearchLabel></template>
+								<MkSelect v-model="emailLang" :items="langs.map(x => ({ label: x[1], value: x[0] }))" @update:modelValue="save">
+									<template #caption>{{ i18n.ts._juice.emailLanguageCaption }}</template>
+								</MkSelect>
+							</FormSection>
+						</SearchMarker>
+					</MkDisableSection>
 
-		<SearchMarker :keywords="['widget', 'side', 'left', 'right']">
-			<FormSection>
-				<template #label><SearchLabel>{{ i18n.ts._juice.widgetsSide }}</SearchLabel></template>
-				<MkRadios v-model="widgetsSide" :options="[{ value: 'right', label: i18n.ts.right }, { value: 'left', label: i18n.ts.left }]">
-					<template #caption>{{ i18n.ts._juice.widgetsSideCaption }}</template>
-				</MkRadios>
-			</FormSection>
-		</SearchMarker>
+					<XOauthConnections/>
 
-		<SearchMarker v-if="relayTimelineEnabled" :keywords="['relay', 'timeline', 'filter']">
-			<FormSection>
-				<template #label><SearchLabel>{{ i18n.ts._juice.relayTimelineFilter }}</SearchLabel></template>
-				<div class="_gaps_s">
-					<MkInfo v-if="relays.length === 0">{{ i18n.ts._juice.relayTimelineFilterEmpty }}</MkInfo>
-					<!-- JUICE: リレー数が多いと一覧が縦に長くなり設定画面を圧迫するため、折りたたみ式にしている -->
-					<MkFolder v-else>
-						<template #label>{{ relaySelectedCountLabel }}</template>
-						<div class="_gaps_s">
-							<MkInfo>{{ i18n.ts._juice.relayTimelineFilterCaption }}</MkInfo>
-							<MkSwitch
-								v-for="relay in relays"
-								:key="relay.id"
-								:modelValue="isRelaySelected(relay.id)"
-								@update:modelValue="(v) => onChangeRelayFilter(relay.id, v)"
-							>
-								<template #label>{{ relay.host }}</template>
-							</MkSwitch>
-						</div>
-					</MkFolder>
-				</div>
-			</FormSection>
-		</SearchMarker>
-
-		<SearchMarker :keywords="['timeline', 'tab', 'hide', 'show', 'order', 'reorder']">
-			<FormSection>
-				<template #label><SearchLabel>{{ i18n.ts._juice.hiddenTimelineTabs }}</SearchLabel></template>
-				<template #description>{{ i18n.ts._juice.timelineTabOrderCaption }}</template>
-				<MkDraggable
-					:modelValue="orderedTimelineTabItems"
-					direction="vertical"
-					withGaps
-					manualDragStart
-					@update:modelValue="onReorderTimelineTabs"
-				>
-					<template #default="{ item, dragStart }">
-						<div v-panel :class="$style.tabItem">
-							<button class="_button" :class="$style.tabItemHandle" tabindex="-1" @pointerdown.stop="dragStart"><i class="ti ti-menu"></i></button>
-							<MkSwitch
-								:modelValue="isTimelineTabVisible(item.key)"
-								@update:modelValue="(v) => onChangeTimelineTabVisible(item.key, v)"
-							>
-								<template #label>{{ item.label }}</template>
-							</MkSwitch>
-						</div>
-					</template>
-				</MkDraggable>
-			</FormSection>
-		</SearchMarker>
-
-		<SearchMarker :keywords="['language', 'timeline', 'filter']">
-			<FormSection>
-				<template #label><SearchLabel>{{ i18n.ts._juice.filteredLanguages }}</SearchLabel></template>
-				<div class="_gaps_s">
-					<MkSwitch :modelValue="$i.excludeOwnNotesFromLanguageFilter" @update:modelValue="onChangeExcludeOwnNotesFromLanguageFilter">
-						<template #label>{{ i18n.ts._juice.excludeOwnNotesFromLanguageFilter }}</template>
-						<template #caption>{{ i18n.ts._juice.excludeOwnNotesFromLanguageFilterCaption }}</template>
-					</MkSwitch>
-					<!-- JUICE: 対応言語が40件超あり、全展開すると設定画面が非常に長くなり操作の邪魔になるため、折りたたみ式にしている -->
-					<MkFolder>
-						<template #label>{{ languageSelectedCountLabel }}</template>
-						<div class="_gaps_s">
-							<MkInfo>{{ i18n.ts._juice.filteredLanguagesCaption }}</MkInfo>
-							<MkSwitch
-								v-for="[code, label] in langs"
-								:key="code"
-								:modelValue="isLanguageFilterSelected(code)"
-								@update:modelValue="(v) => onChangeLanguageFilter(code, v)"
-							>
-								<template #label>{{ label }}</template>
-							</MkSwitch>
-						</div>
-					</MkFolder>
-				</div>
-			</FormSection>
-		</SearchMarker>
-
-		<SearchMarker :keywords="['signup', 'approval', 'check']">
-			<FormSection>
-				<template #label><SearchLabel>{{ i18n.ts._juice.signupCheck }}</SearchLabel></template>
-				<FormLink to="/signup-check">{{ i18n.ts._signupCheck.openPage }}</FormLink>
-			</FormSection>
-		</SearchMarker>
-
-		<SearchMarker :keywords="['emoji', 'request']">
-			<FormSection>
-				<template #label><SearchLabel>{{ i18n.ts._juice.emojiRequest }}</SearchLabel></template>
-				<div class="_gaps_s">
-					<FormLink to="/emoji-request">{{ i18n.ts._emojiRequestPage.newRequest }}</FormLink>
-					<SearchMarker :keywords="['emoji', 'request', 'email']">
-						<MkSwitch :modelValue="$i.receiveEmojiRequestResultEmail" @update:modelValue="onChangeReceiveEmojiRequestResultEmail">
-							<template #label><SearchLabel>{{ i18n.ts._juice.receiveEmojiRequestResultEmail }}</SearchLabel></template>
-							<template #caption>{{ i18n.ts._juice.receiveEmojiRequestResultEmailCaption }}</template>
-						</MkSwitch>
+					<SearchMarker :keywords="['signup', 'approval', 'check']">
+						<FormSection>
+							<template #label><SearchLabel>{{ i18n.ts._juice.signupCheck }}</SearchLabel></template>
+							<FormLink to="/signup-check">{{ i18n.ts._signupCheck.openPage }}</FormLink>
+						</FormSection>
 					</SearchMarker>
 				</div>
-			</FormSection>
+			</MkFolder>
 		</SearchMarker>
 
-		<SearchMarker :keywords="['avatar', 'decoration', 'request']">
-			<FormSection>
-				<template #label><SearchLabel>{{ i18n.ts._juice.avatarDecorationRequest }}</SearchLabel></template>
-				<div class="_gaps_s">
-					<FormLink to="/avatar-decoration-request">{{ i18n.ts._avatarDecorationRequestPage.newRequest }}</FormLink>
-					<SearchMarker :keywords="['avatar', 'decoration', 'request', 'email']">
-						<MkSwitch :modelValue="$i.receiveAvatarDecorationRequestResultEmail" @update:modelValue="onChangeReceiveAvatarDecorationRequestResultEmail">
-							<template #label><SearchLabel>{{ i18n.ts._juice.receiveAvatarDecorationRequestResultEmail }}</SearchLabel></template>
-							<template #caption>{{ i18n.ts._juice.receiveAvatarDecorationRequestResultEmailCaption }}</template>
-						</MkSwitch>
+		<SearchMarker v-slot="slotProps">
+			<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+				<template #label><SearchLabel>{{ i18n.ts._juice.settingsGroupTimeline }}</SearchLabel></template>
+
+				<div class="_gaps_m">
+					<SearchMarker :keywords="['ai', 'generated', 'mute', 'hide']">
+						<FormSection first>
+							<template #label><SearchLabel>{{ i18n.ts._juice.muteAIGeneratedNotes }}</SearchLabel></template>
+							<MkSelect v-model="muteAIGeneratedNotes" :items="muteAIGeneratedNotesItems" @update:modelValue="saveMuteAIGeneratedNotes">
+								<template #caption>{{ i18n.ts._juice.muteAIGeneratedNotesDescription }}</template>
+							</MkSelect>
+						</FormSection>
+					</SearchMarker>
+
+					<SearchMarker :keywords="['widget', 'side', 'left', 'right']">
+						<FormSection>
+							<template #label><SearchLabel>{{ i18n.ts._juice.widgetsSide }}</SearchLabel></template>
+							<MkRadios v-model="widgetsSide" :options="[{ value: 'right', label: i18n.ts.right }, { value: 'left', label: i18n.ts.left }]">
+								<template #caption>{{ i18n.ts._juice.widgetsSideCaption }}</template>
+							</MkRadios>
+						</FormSection>
+					</SearchMarker>
+
+					<SearchMarker v-if="relayTimelineEnabled" :keywords="['relay', 'timeline', 'filter']">
+						<FormSection>
+							<template #label><SearchLabel>{{ i18n.ts._juice.relayTimelineFilter }}</SearchLabel></template>
+							<div class="_gaps_s">
+								<MkInfo v-if="relays.length === 0">{{ i18n.ts._juice.relayTimelineFilterEmpty }}</MkInfo>
+								<!-- JUICE: リレー数が多いと一覧が縦に長くなり設定画面を圧迫するため、折りたたみ式にしている -->
+								<MkFolder v-else>
+									<template #label>{{ relaySelectedCountLabel }}</template>
+									<div class="_gaps_s">
+										<MkInfo>{{ i18n.ts._juice.relayTimelineFilterCaption }}</MkInfo>
+										<MkSwitch
+											v-for="relay in relays"
+											:key="relay.id"
+											:modelValue="isRelaySelected(relay.id)"
+											@update:modelValue="(v) => onChangeRelayFilter(relay.id, v)"
+										>
+											<template #label>{{ relay.host }}</template>
+										</MkSwitch>
+									</div>
+								</MkFolder>
+							</div>
+						</FormSection>
+					</SearchMarker>
+
+					<SearchMarker :keywords="['timeline', 'tab', 'hide', 'show', 'order', 'reorder']">
+						<FormSection>
+							<template #label><SearchLabel>{{ i18n.ts._juice.hiddenTimelineTabs }}</SearchLabel></template>
+							<template #description>{{ i18n.ts._juice.timelineTabOrderCaption }}</template>
+							<MkDraggable
+								:modelValue="orderedTimelineTabItems"
+								direction="vertical"
+								withGaps
+								manualDragStart
+								@update:modelValue="onReorderTimelineTabs"
+							>
+								<template #default="{ item, dragStart }">
+									<div v-panel :class="$style.tabItem">
+										<button class="_button" :class="$style.tabItemHandle" tabindex="-1" @pointerdown.stop="dragStart"><i class="ti ti-menu"></i></button>
+										<MkSwitch
+											:modelValue="isTimelineTabVisible(item.key)"
+											@update:modelValue="(v) => onChangeTimelineTabVisible(item.key, v)"
+										>
+											<template #label>{{ item.label }}</template>
+										</MkSwitch>
+									</div>
+								</template>
+							</MkDraggable>
+						</FormSection>
+					</SearchMarker>
+
+					<SearchMarker :keywords="['language', 'timeline', 'filter']">
+						<FormSection>
+							<template #label><SearchLabel>{{ i18n.ts._juice.filteredLanguages }}</SearchLabel></template>
+							<div class="_gaps_s">
+								<MkSwitch :modelValue="$i.excludeOwnNotesFromLanguageFilter" @update:modelValue="onChangeExcludeOwnNotesFromLanguageFilter">
+									<template #label>{{ i18n.ts._juice.excludeOwnNotesFromLanguageFilter }}</template>
+									<template #caption>{{ i18n.ts._juice.excludeOwnNotesFromLanguageFilterCaption }}</template>
+								</MkSwitch>
+								<!-- JUICE: 対応言語が40件超あり、全展開すると設定画面が非常に長くなり操作の邪魔になるため、折りたたみ式にしている -->
+								<MkFolder>
+									<template #label>{{ languageSelectedCountLabel }}</template>
+									<div class="_gaps_s">
+										<MkInfo>{{ i18n.ts._juice.filteredLanguagesCaption }}</MkInfo>
+										<MkSwitch
+											v-for="[code, label] in langs"
+											:key="code"
+											:modelValue="isLanguageFilterSelected(code)"
+											@update:modelValue="(v) => onChangeLanguageFilter(code, v)"
+										>
+											<template #label>{{ label }}</template>
+										</MkSwitch>
+									</div>
+								</MkFolder>
+							</div>
+						</FormSection>
 					</SearchMarker>
 				</div>
-			</FormSection>
+			</MkFolder>
+		</SearchMarker>
+
+		<SearchMarker v-slot="slotProps">
+			<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+				<template #label><SearchLabel>{{ i18n.ts._juice.settingsGroupRequests }}</SearchLabel></template>
+
+				<div class="_gaps_m">
+					<SearchMarker :keywords="['emoji', 'request']">
+						<FormSection first>
+							<template #label><SearchLabel>{{ i18n.ts._juice.emojiRequest }}</SearchLabel></template>
+							<div class="_gaps_s">
+								<FormLink to="/emoji-request">{{ i18n.ts._emojiRequestPage.newRequest }}</FormLink>
+								<SearchMarker :keywords="['emoji', 'request', 'email']">
+									<MkSwitch :modelValue="$i.receiveEmojiRequestResultEmail" @update:modelValue="onChangeReceiveEmojiRequestResultEmail">
+										<template #label><SearchLabel>{{ i18n.ts._juice.receiveEmojiRequestResultEmail }}</SearchLabel></template>
+										<template #caption>{{ i18n.ts._juice.receiveEmojiRequestResultEmailCaption }}</template>
+									</MkSwitch>
+								</SearchMarker>
+							</div>
+						</FormSection>
+					</SearchMarker>
+
+					<SearchMarker :keywords="['avatar', 'decoration', 'request']">
+						<FormSection>
+							<template #label><SearchLabel>{{ i18n.ts._juice.avatarDecorationRequest }}</SearchLabel></template>
+							<div class="_gaps_s">
+								<FormLink to="/avatar-decoration-request">{{ i18n.ts._avatarDecorationRequestPage.newRequest }}</FormLink>
+								<SearchMarker :keywords="['avatar', 'decoration', 'request', 'email']">
+									<MkSwitch :modelValue="$i.receiveAvatarDecorationRequestResultEmail" @update:modelValue="onChangeReceiveAvatarDecorationRequestResultEmail">
+										<template #label><SearchLabel>{{ i18n.ts._juice.receiveAvatarDecorationRequestResultEmail }}</SearchLabel></template>
+										<template #caption>{{ i18n.ts._juice.receiveAvatarDecorationRequestResultEmailCaption }}</template>
+									</MkSwitch>
+								</SearchMarker>
+							</div>
+						</FormSection>
+					</SearchMarker>
+				</div>
+			</MkFolder>
 		</SearchMarker>
 	</div>
 </SearchMarker>
@@ -158,6 +185,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { ref, computed } from 'vue';
 import * as Misskey from 'misskey-js';
 import { langs } from '@@/js/config.js';
+import XOauthConnections from './oauth-connections.vue';
 import FormSection from '@/components/form/section.vue';
 import FormLink from '@/components/form/link.vue';
 import MkInfo from '@/components/MkInfo.vue';

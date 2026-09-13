@@ -249,10 +249,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<div class="_gaps_s">
 									<div>{{ i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningLicense }}</div>
 									<I18n :src="i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningTestNotice" tag="div">
-									<template #juiceServer>
-										<a href="https://mk-juice.dev" target="_blank" rel="noopener" class="_link">{{ i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningTestNoticeLinkText }}</a>
-									</template>
-								</I18n>
+										<template #juiceServer>
+											<a href="https://mk-juice.dev" target="_blank" rel="noopener" class="_link">{{ i18n.ts._aboutJuice.reactionPiggybackOnRemoteWarningTestNoticeLinkText }}</a>
+										</template>
+									</I18n>
 								</div>
 							</MkInfo>
 						</div>
@@ -269,6 +269,44 @@ SPDX-License-Identifier: AGPL-3.0-only
 									<template #label><SearchLabel>{{ i18n.ts._juice.aiGeneratedFallbackCwEnabled }}</SearchLabel></template>
 									<template #caption>{{ i18n.ts._juice.aiGeneratedFallbackCwEnabledCaption }}</template>
 								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.oauthLogin }}</SearchLabel></template>
+						<template #caption><SearchText>{{ i18n.ts._juice.oauthLoginCaption }}</SearchText></template>
+
+						<div class="_gaps_m">
+							<MkInfo>
+								{{ i18n.ts._juice.oauthLoginRedirectUriInfo }}
+								<div class="_monospace" :class="$style.redirectUri">{{ oauthRedirectUris.link }}</div>
+								<div class="_monospace" :class="$style.redirectUri">{{ oauthRedirectUris.signin }}</div>
+							</MkInfo>
+
+							<SearchMarker v-for="provider in oauthProviders" :key="provider" :keywords="[provider]">
+								<MkFolder>
+									<template #icon><i :class="oauthProviderIcon(provider)"></i></template>
+									<template #label>{{ oauthProviderLabel(provider) }}</template>
+									<template #suffix><i v-if="oauthSettings[provider].enabled.value" class="ti ti-check" style="color: var(--MI_THEME-success)"></i></template>
+
+									<div class="_gaps_m">
+										<MkInfo>{{ oauthProviderScopeInfo(provider) }}</MkInfo>
+										<MkSwitch v-model="oauthSettings[provider].enabled.value">
+											<template #label>{{ i18n.tsx._juice.oauthLoginProviderEnabled({ provider: oauthProviderLabel(provider) }) }}</template>
+										</MkSwitch>
+										<MkInput v-model="oauthSettings[provider].clientId.value" :disabled="!oauthSettings[provider].enabled.value">
+											<template #prefix><i class="ti ti-key"></i></template>
+											<template #label>{{ i18n.ts._juice.oauthClientId }}</template>
+										</MkInput>
+										<MkInput v-model="oauthSettings[provider].clientSecret.value" :disabled="!oauthSettings[provider].enabled.value">
+											<template #prefix><i class="ti ti-key"></i></template>
+											<template #label>{{ i18n.ts._juice.oauthClientSecret }}</template>
+										</MkInput>
+									</div>
+								</MkFolder>
 							</SearchMarker>
 						</div>
 					</MkFolder>
@@ -342,7 +380,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
-import { langs } from '@@/js/config.js';
+import { langs, apiUrl } from '@@/js/config.js';
 import { useMkSelect } from '@/composables/use-mkselect.js';
 import MkFolder from '@/components/MkFolder.vue';
 import MkInfo from '@/components/MkInfo.vue';
@@ -416,6 +454,79 @@ const blockEmailDotAliasRegistration = ref(settings.blockEmailDotAliasRegistrati
 const blockEmailPlusAliasRegistration = ref(settings.blockEmailPlusAliasRegistration);
 const aiGeneratedFallbackCwEnabled = ref(settings.aiGeneratedFallbackCwEnabled);
 
+// JUICE: 連携ログイン(Discord/Google/GitHub/GitLab/Microsoft)。プロバイダとも設定項目の形が同じなので、
+// providerごとの入力refをまとめたオブジェクトとして管理する
+const oauthProviders = ['discord', 'google', 'github', 'gitlab', 'microsoft'] as const;
+type OauthProvider = typeof oauthProviders[number];
+const oauthProviderLabels: Record<OauthProvider, string> = {
+	discord: 'Discord',
+	google: 'Google',
+	github: 'GitHub',
+	gitlab: 'GitLab',
+	microsoft: 'Microsoft',
+};
+const oauthProviderIcons: Record<OauthProvider, string> = {
+	discord: 'ti ti-brand-discord',
+	google: 'ti ti-brand-google',
+	github: 'ti ti-brand-github',
+	gitlab: 'ti ti-brand-gitlab',
+	microsoft: 'ti ti-brand-windows',
+};
+
+function oauthProviderLabel(provider: OauthProvider): string {
+	return oauthProviderLabels[provider];
+}
+
+function oauthProviderIcon(provider: OauthProvider): string {
+	return oauthProviderIcons[provider];
+}
+
+// JUICE: 各プロバイダの開発者サイトでOAuthアプリを作る際に必要なscope・手順は文章の構造ごと違うため、
+// (provider名を埋め込むだけの)i18n.tsxではなくプロバイダごとに個別のi18nキーを用意する
+function oauthProviderScopeInfo(provider: OauthProvider): string {
+	switch (provider) {
+		case 'discord': return i18n.ts._juice.oauthScopeInfoDiscord;
+		case 'google': return i18n.ts._juice.oauthScopeInfoGoogle;
+		case 'github': return i18n.ts._juice.oauthScopeInfoGithub;
+		case 'gitlab': return i18n.ts._juice.oauthScopeInfoGitlab;
+		case 'microsoft': return i18n.ts._juice.oauthScopeInfoMicrosoft;
+	}
+}
+
+const oauthSettings = {
+	discord: {
+		enabled: ref(settings.discordOauthEnabled),
+		clientId: ref(settings.discordOauthClientId ?? ''),
+		clientSecret: ref(settings.discordOauthClientSecret ?? ''),
+	},
+	google: {
+		enabled: ref(settings.googleOauthEnabled),
+		clientId: ref(settings.googleOauthClientId ?? ''),
+		clientSecret: ref(settings.googleOauthClientSecret ?? ''),
+	},
+	github: {
+		enabled: ref(settings.githubOauthEnabled),
+		clientId: ref(settings.githubOauthClientId ?? ''),
+		clientSecret: ref(settings.githubOauthClientSecret ?? ''),
+	},
+	gitlab: {
+		enabled: ref(settings.gitlabOauthEnabled),
+		clientId: ref(settings.gitlabOauthClientId ?? ''),
+		clientSecret: ref(settings.gitlabOauthClientSecret ?? ''),
+	},
+	microsoft: {
+		enabled: ref(settings.microsoftOauthEnabled),
+		clientId: ref(settings.microsoftOauthClientId ?? ''),
+		clientSecret: ref(settings.microsoftOauthClientSecret ?? ''),
+	},
+};
+// JUICE: プロバイダ共通のコールバックURL(プロバイダとも同じ2つを各サービスのOAuthアプリに
+// 登録してもらう必要があるため、管理画面にそのまま表示して手作業でのタイプミスを防ぐ)
+const oauthRedirectUris = {
+	link: `${apiUrl}/oauth-login/link-callback`,
+	signin: `${apiUrl}/oauth-login/signin-callback`,
+};
+
 function save() {
 	os.apiWithDialog('admin/juice/update-settings', {
 		approvalRequiredForSignup: approvalRequiredForSignup.value,
@@ -447,6 +558,21 @@ function save() {
 		blockEmailDotAliasRegistration: blockEmailDotAliasRegistration.value,
 		blockEmailPlusAliasRegistration: blockEmailPlusAliasRegistration.value,
 		aiGeneratedFallbackCwEnabled: aiGeneratedFallbackCwEnabled.value,
+		discordOauthEnabled: oauthSettings.discord.enabled.value,
+		discordOauthClientId: oauthSettings.discord.clientId.value || null,
+		discordOauthClientSecret: oauthSettings.discord.clientSecret.value || null,
+		googleOauthEnabled: oauthSettings.google.enabled.value,
+		googleOauthClientId: oauthSettings.google.clientId.value || null,
+		googleOauthClientSecret: oauthSettings.google.clientSecret.value || null,
+		githubOauthEnabled: oauthSettings.github.enabled.value,
+		githubOauthClientId: oauthSettings.github.clientId.value || null,
+		githubOauthClientSecret: oauthSettings.github.clientSecret.value || null,
+		gitlabOauthEnabled: oauthSettings.gitlab.enabled.value,
+		gitlabOauthClientId: oauthSettings.gitlab.clientId.value || null,
+		gitlabOauthClientSecret: oauthSettings.gitlab.clientSecret.value || null,
+		microsoftOauthEnabled: oauthSettings.microsoft.enabled.value,
+		microsoftOauthClientId: oauthSettings.microsoft.clientId.value || null,
+		microsoftOauthClientSecret: oauthSettings.microsoft.clientSecret.value || null,
 	});
 }
 
@@ -465,5 +591,13 @@ definePage(() => ({
 	margin-top: 8px;
 	color: var(--MI_THEME-error);
 	font-size: 0.9em;
+}
+
+.redirectUri {
+	margin-top: 8px;
+	padding: 8px;
+	border-radius: var(--MI-radius);
+	background: color-mix(in srgb, var(--MI_THEME-fg), transparent 92%);
+	word-break: break-all;
 }
 </style>

@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveReportCategorySettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveReportCategorySettings, resolveOauthLoginSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['meta'],
@@ -125,6 +125,27 @@ export const meta = {
 					},
 				},
 			},
+			// JUICE: 連携ログインの有効プロバイダ。client_id/secretは非公開(公開APIには出さない)
+			discordOauthEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			googleOauthEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			githubOauthEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			gitlabOauthEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			microsoftOauthEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 		},
 	},
 } as const;
@@ -143,6 +164,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const settings = await this.juiceSettingsService.fetch();
 			const { contactFormEnabled, contactFormRequireAuth, contactFormCategories, contactFormContentMaxLength } = resolveContactFormSettings(settings);
 			const { reportCategories } = resolveReportCategorySettings(settings);
+			const { discordOauthEnabled, googleOauthEnabled, githubOauthEnabled, gitlabOauthEnabled, microsoftOauthEnabled } = resolveOauthLoginSettings(settings);
 			return {
 				...resolveSignupApprovalSettings(settings),
 				...resolveExploreOtherServersSettings(settings),
@@ -159,6 +181,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				contactFormCategories: contactFormCategories.filter(cat => cat.enabled).sort((a, b) => a.order - b.order),
 				// JUICE: 公開設定なので無効化されたカテゴリは含めない
 				reportCategories: reportCategories.filter(cat => cat.enabled).sort((a, b) => a.order - b.order),
+				discordOauthEnabled,
+				googleOauthEnabled,
+				githubOauthEnabled,
+				gitlabOauthEnabled,
+				microsoftOauthEnabled,
 			};
 		});
 	}

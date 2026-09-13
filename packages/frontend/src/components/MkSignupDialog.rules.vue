@@ -102,6 +102,11 @@ const props = withDefaults(defineProps<{
 		contactFormContentMaxLength: 10000,
 		contactFormCategories: [],
 		reportCategories: [],
+		discordOauthEnabled: false,
+		googleOauthEnabled: false,
+		githubOauthEnabled: false,
+		gitlabOauthEnabled: false,
+		microsoftOauthEnabled: false,
 	}),
 });
 

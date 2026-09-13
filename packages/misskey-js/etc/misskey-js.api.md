@@ -1707,6 +1707,10 @@ export type Endpoints = Overwrite<Endpoints_2, {
             };
         };
     };
+    'signin-with-oauth': {
+        req: SigninWithOAuthRequest;
+        res: SigninWithOAuthResponse;
+    };
     'i/2fa/register-key': {
         req: I2faRegisterKeyRequest;
         res: I2faRegisterKeyResponse_2;
@@ -1758,6 +1762,8 @@ declare namespace entities {
         SigninWithPasskeyRequest,
         SigninWithPasskeyInitResponse,
         SigninWithPasskeyResponse,
+        SigninWithOAuthRequest,
+        SigninWithOAuthResponse,
         I2faRegisterKeyResponse_2 as I2faRegisterKeyResponse,
         I2faKeyDoneRequest_2 as I2faKeyDoneRequest,
         PartialRolePolicyOverride,
@@ -2252,6 +2258,7 @@ declare namespace entities {
         INotificationsResponse,
         INotificationsGroupedRequest,
         INotificationsGroupedResponse,
+        IOauthSetLoginEnabledRequest,
         IPageLikesRequest,
         IPageLikesResponse,
         IPagesRequest,
@@ -2376,6 +2383,12 @@ declare namespace entities {
         NotesUserListTimelineRequest,
         NotesUserListTimelineResponse,
         NotificationsCreateRequest,
+        OauthLoginLinkStartRequest,
+        OauthLoginLinkStartResponse,
+        OauthLoginListConnectionsResponse,
+        OauthLoginSigninStartRequest,
+        OauthLoginSigninStartResponse,
+        OauthLoginUnlinkRequest,
         PagePushRequest,
         PagesCreateRequest,
         PagesCreateResponse,
@@ -2998,6 +3011,9 @@ type InviteListRequest = operations['invite___list']['requestBody']['content']['
 type InviteListResponse = operations['invite___list']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type IOauthSetLoginEnabledRequest = operations['i___oauth___set-login-enabled']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type IPageLikesRequest = operations['i___page-likes']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -3474,6 +3490,24 @@ export const notificationTypes: readonly ["note", "follow", "mention", "reply", 
 export function nyaize(text: string): string;
 
 // @public (undocumented)
+type OauthLoginLinkStartRequest = operations['oauth-login___link-start']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type OauthLoginLinkStartResponse = operations['oauth-login___link-start']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type OauthLoginListConnectionsResponse = operations['oauth-login___list-connections']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type OauthLoginSigninStartRequest = operations['oauth-login___signin-start']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type OauthLoginSigninStartResponse = operations['oauth-login___signin-start']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type OauthLoginUnlinkRequest = operations['oauth-login___unlink']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type Page = components['schemas']['Page'];
 
 // @public (undocumented)
@@ -3758,6 +3792,15 @@ type SigninFlowResponse = {
     next: 'passkey';
     authRequest: PublicKeyCredentialRequestOptionsJSON_2;
 };
+
+// @public (undocumented)
+type SigninWithOAuthRequest = {
+    context: string;
+    token?: string;
+};
+
+// @public (undocumented)
+type SigninWithOAuthResponse = SigninFlowResponse;
 
 // @public (undocumented)
 type SigninWithPasskeyInitResponse = {

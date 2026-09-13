@@ -90,6 +90,36 @@ export interface JuiceSettingsValue {
 	 * 変更しない。元のCWは_juice_originalCwとして別途連合し、JUICE間ではそれを使って復元する)
 	 */
 	aiGeneratedFallbackCwEnabled?: boolean;
+	/** 連携ログイン(Discord)を有効にするか */
+	discordOauthEnabled?: boolean;
+	/** 連携ログイン(Discord)のOAuthアプリのクライアントID */
+	discordOauthClientId?: string | null;
+	/** 連携ログイン(Discord)のOAuthアプリのクライアントシークレット */
+	discordOauthClientSecret?: string | null;
+	/** 連携ログイン(Google)を有効にするか */
+	googleOauthEnabled?: boolean;
+	/** 連携ログイン(Google)のOAuthアプリのクライアントID */
+	googleOauthClientId?: string | null;
+	/** 連携ログイン(Google)のOAuthアプリのクライアントシークレット */
+	googleOauthClientSecret?: string | null;
+	/** 連携ログイン(GitHub)を有効にするか */
+	githubOauthEnabled?: boolean;
+	/** 連携ログイン(GitHub)のOAuthアプリのクライアントID */
+	githubOauthClientId?: string | null;
+	/** 連携ログイン(GitHub)のOAuthアプリのクライアントシークレット */
+	githubOauthClientSecret?: string | null;
+	/** 連携ログイン(GitLab)を有効にするか */
+	gitlabOauthEnabled?: boolean;
+	/** 連携ログイン(GitLab)のOAuthアプリのクライアントID */
+	gitlabOauthClientId?: string | null;
+	/** 連携ログイン(GitLab)のOAuthアプリのクライアントシークレット */
+	gitlabOauthClientSecret?: string | null;
+	/** 連携ログイン(Microsoft)を有効にするか */
+	microsoftOauthEnabled?: boolean;
+	/** 連携ログイン(Microsoft)のOAuthアプリのクライアントID */
+	microsoftOauthClientId?: string | null;
+	/** 連携ログイン(Microsoft)のOAuthアプリのクライアントシークレット */
+	microsoftOauthClientSecret?: string | null;
 }
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
@@ -349,6 +379,48 @@ export function resolveAiGeneratedFallbackCwSettings(settings: JuiceSettingsValu
 } {
 	return {
 		aiGeneratedFallbackCwEnabled: settings.aiGeneratedFallbackCwEnabled ?? false,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・admin/juice/update-settings・juice/public-settings・
+ * OAuthLoginServiceの4箇所で共通利用する。既定はすべて無効/null(admin未設定の間は
+ * OAuthログイン機能自体が一切動作しない)
+ */
+export function resolveOauthLoginSettings(settings: JuiceSettingsValue): {
+	discordOauthEnabled: boolean;
+	discordOauthClientId: string | null;
+	discordOauthClientSecret: string | null;
+	googleOauthEnabled: boolean;
+	googleOauthClientId: string | null;
+	googleOauthClientSecret: string | null;
+	githubOauthEnabled: boolean;
+	githubOauthClientId: string | null;
+	githubOauthClientSecret: string | null;
+	gitlabOauthEnabled: boolean;
+	gitlabOauthClientId: string | null;
+	gitlabOauthClientSecret: string | null;
+	microsoftOauthEnabled: boolean;
+	microsoftOauthClientId: string | null;
+	microsoftOauthClientSecret: string | null;
+} {
+	return {
+		discordOauthEnabled: settings.discordOauthEnabled ?? false,
+		discordOauthClientId: settings.discordOauthClientId ?? null,
+		discordOauthClientSecret: settings.discordOauthClientSecret ?? null,
+		googleOauthEnabled: settings.googleOauthEnabled ?? false,
+		googleOauthClientId: settings.googleOauthClientId ?? null,
+		googleOauthClientSecret: settings.googleOauthClientSecret ?? null,
+		githubOauthEnabled: settings.githubOauthEnabled ?? false,
+		githubOauthClientId: settings.githubOauthClientId ?? null,
+		githubOauthClientSecret: settings.githubOauthClientSecret ?? null,
+		gitlabOauthEnabled: settings.gitlabOauthEnabled ?? false,
+		gitlabOauthClientId: settings.gitlabOauthClientId ?? null,
+		gitlabOauthClientSecret: settings.gitlabOauthClientSecret ?? null,
+		microsoftOauthEnabled: settings.microsoftOauthEnabled ?? false,
+		microsoftOauthClientId: settings.microsoftOauthClientId ?? null,
+		microsoftOauthClientSecret: settings.microsoftOauthClientSecret ?? null,
 	};
 }
 

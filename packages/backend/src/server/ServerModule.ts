@@ -52,6 +52,9 @@ import { ReversiGameChannel } from './api/stream/channels/reversi-game.js';
 import { RelayTimelineChannel } from './api/stream/channels/relay-timeline.js';
 import { NoteStreamingHidingService } from './api/stream/NoteStreamingHidingService.js';
 import { SigninWithPasskeyApiService } from './api/SigninWithPasskeyApiService.js';
+import { SigninWithOAuthApiService } from './api/SigninWithOAuthApiService.js';
+import { OAuthLinkCallbackApiService } from './api/OAuthLinkCallbackApiService.js';
+import { OAuthSigninCallbackApiService } from './api/OAuthSigninCallbackApiService.js';
 
 @Module({
 	imports: [
@@ -79,6 +82,9 @@ import { SigninWithPasskeyApiService } from './api/SigninWithPasskeyApiService.j
 		RateLimiterService,
 		SigninApiService,
 		SigninWithPasskeyApiService,
+		SigninWithOAuthApiService,
+		OAuthLinkCallbackApiService,
+		OAuthSigninCallbackApiService,
 		SigninService,
 		SignupApiService,
 		StreamingApiServerService,

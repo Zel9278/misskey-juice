@@ -81,6 +81,21 @@ export const paramDef = {
 		blockEmailDotAliasRegistration: { type: 'boolean' },
 		blockEmailPlusAliasRegistration: { type: 'boolean' },
 		aiGeneratedFallbackCwEnabled: { type: 'boolean' },
+		discordOauthEnabled: { type: 'boolean' },
+		discordOauthClientId: { type: 'string', nullable: true },
+		discordOauthClientSecret: { type: 'string', nullable: true },
+		googleOauthEnabled: { type: 'boolean' },
+		googleOauthClientId: { type: 'string', nullable: true },
+		googleOauthClientSecret: { type: 'string', nullable: true },
+		githubOauthEnabled: { type: 'boolean' },
+		githubOauthClientId: { type: 'string', nullable: true },
+		githubOauthClientSecret: { type: 'string', nullable: true },
+		gitlabOauthEnabled: { type: 'boolean' },
+		gitlabOauthClientId: { type: 'string', nullable: true },
+		gitlabOauthClientSecret: { type: 'string', nullable: true },
+		microsoftOauthEnabled: { type: 'boolean' },
+		microsoftOauthClientId: { type: 'string', nullable: true },
+		microsoftOauthClientSecret: { type: 'string', nullable: true },
 	},
 } as const;
 
@@ -128,6 +143,21 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.blockEmailDotAliasRegistration !== undefined) set.blockEmailDotAliasRegistration = ps.blockEmailDotAliasRegistration;
 			if (ps.blockEmailPlusAliasRegistration !== undefined) set.blockEmailPlusAliasRegistration = ps.blockEmailPlusAliasRegistration;
 			if (ps.aiGeneratedFallbackCwEnabled !== undefined) set.aiGeneratedFallbackCwEnabled = ps.aiGeneratedFallbackCwEnabled;
+			if (ps.discordOauthEnabled !== undefined) set.discordOauthEnabled = ps.discordOauthEnabled;
+			if (ps.discordOauthClientId !== undefined) set.discordOauthClientId = ps.discordOauthClientId;
+			if (ps.discordOauthClientSecret !== undefined) set.discordOauthClientSecret = ps.discordOauthClientSecret;
+			if (ps.googleOauthEnabled !== undefined) set.googleOauthEnabled = ps.googleOauthEnabled;
+			if (ps.googleOauthClientId !== undefined) set.googleOauthClientId = ps.googleOauthClientId;
+			if (ps.googleOauthClientSecret !== undefined) set.googleOauthClientSecret = ps.googleOauthClientSecret;
+			if (ps.githubOauthEnabled !== undefined) set.githubOauthEnabled = ps.githubOauthEnabled;
+			if (ps.githubOauthClientId !== undefined) set.githubOauthClientId = ps.githubOauthClientId;
+			if (ps.githubOauthClientSecret !== undefined) set.githubOauthClientSecret = ps.githubOauthClientSecret;
+			if (ps.gitlabOauthEnabled !== undefined) set.gitlabOauthEnabled = ps.gitlabOauthEnabled;
+			if (ps.gitlabOauthClientId !== undefined) set.gitlabOauthClientId = ps.gitlabOauthClientId;
+			if (ps.gitlabOauthClientSecret !== undefined) set.gitlabOauthClientSecret = ps.gitlabOauthClientSecret;
+			if (ps.microsoftOauthEnabled !== undefined) set.microsoftOauthEnabled = ps.microsoftOauthEnabled;
+			if (ps.microsoftOauthClientId !== undefined) set.microsoftOauthClientId = ps.microsoftOauthClientId;
+			if (ps.microsoftOauthClientSecret !== undefined) set.microsoftOauthClientSecret = ps.microsoftOauthClientSecret;
 
 			const after = await this.juiceSettingsService.update(set);
 

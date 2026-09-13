@@ -307,6 +307,7 @@ export function userDetailed(id = 'someuserid', username = 'miskist', host: enti
 		securityKeys: false,
 		twoFactorEnabled: false,
 		usePasswordLessLogin: false,
+		useOauthLogin: false,
 		twoFactorBackupCodesStock: 'none',
 		updatedAt: null,
 		lastFetchedAt: null,

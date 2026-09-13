@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings, resolveNewAccountFollowRequestSettings, resolveReportCategorySettings, resolveEmailAliasSettings, resolveAiGeneratedFallbackCwSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings, resolveNewAccountFollowRequestSettings, resolveReportCategorySettings, resolveEmailAliasSettings, resolveAiGeneratedFallbackCwSettings, resolveOauthLoginSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -168,6 +168,66 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			discordOauthEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			discordOauthClientId: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			discordOauthClientSecret: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			googleOauthEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			googleOauthClientId: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			googleOauthClientSecret: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			githubOauthEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			githubOauthClientId: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			githubOauthClientSecret: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			gitlabOauthEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			gitlabOauthClientId: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			gitlabOauthClientSecret: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			microsoftOauthEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			microsoftOauthClientId: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			microsoftOauthClientSecret: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 		},
 	},
 } as const;
@@ -201,6 +261,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...resolveReportCategorySettings(settings),
 				...resolveEmailAliasSettings(settings),
 				...resolveAiGeneratedFallbackCwSettings(settings),
+				...resolveOauthLoginSettings(settings),
 			};
 		});
 	}

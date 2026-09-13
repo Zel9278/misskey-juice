@@ -33,6 +33,7 @@ export const DI = {
 	userKeypairsRepository: Symbol('userKeypairsRepository'),
 	userPendingsRepository: Symbol('userPendingsRepository'),
 	userSecurityKeysRepository: Symbol('userSecurityKeysRepository'),
+	userOauthConnectionsRepository: Symbol('userOauthConnectionsRepository'),
 	userPublickeysRepository: Symbol('userPublickeysRepository'),
 	userListsRepository: Symbol('userListsRepository'),
 	userListFavoritesRepository: Symbol('userListFavoritesRepository'),

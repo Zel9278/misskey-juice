@@ -3018,6 +3018,16 @@ export type paths = {
          */
         post: operations['i___notifications-grouped'];
     };
+    '/i/oauth/set-login-enabled': {
+        /**
+         * i/oauth/set-login-enabled
+         * @description No description provided.
+         *
+         *     **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+         *     **Credential required**: *Yes*
+         */
+        post: operations['i___oauth___set-login-enabled'];
+    };
     '/i/page-likes': {
         /**
          * i/page-likes
@@ -3743,6 +3753,45 @@ export type paths = {
          *     **Credential required**: *Yes* / **Permission**: *write:notifications*
          */
         post: operations['notifications___test-notification'];
+    };
+    '/oauth-login/link-start': {
+        /**
+         * oauth-login/link-start
+         * @description No description provided.
+         *
+         *     **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+         *     **Credential required**: *Yes*
+         */
+        post: operations['oauth-login___link-start'];
+    };
+    '/oauth-login/list-connections': {
+        /**
+         * oauth-login/list-connections
+         * @description No description provided.
+         *
+         *     **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+         *     **Credential required**: *Yes*
+         */
+        post: operations['oauth-login___list-connections'];
+    };
+    '/oauth-login/signin-start': {
+        /**
+         * oauth-login/signin-start
+         * @description No description provided.
+         *
+         *     **Credential required**: *No*
+         */
+        post: operations['oauth-login___signin-start'];
+    };
+    '/oauth-login/unlink': {
+        /**
+         * oauth-login/unlink
+         * @description No description provided.
+         *
+         *     **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+         *     **Credential required**: *Yes*
+         */
+        post: operations['oauth-login___unlink'];
     };
     '/page-push': {
         /**
@@ -4521,6 +4570,7 @@ export type components = {
             moderationNote?: string;
             twoFactorEnabled?: boolean;
             usePasswordLessLogin?: boolean;
+            useOauthLogin?: boolean;
             securityKeys?: boolean;
             isFollowing?: boolean;
             isFollowed?: boolean;
@@ -4852,6 +4902,8 @@ export type components = {
             twoFactorEnabled: boolean;
             /** @default false */
             usePasswordLessLogin: boolean;
+            /** @default false */
+            useOauthLogin: boolean;
             /** @default false */
             securityKeys: boolean;
             email?: string | null;
@@ -11326,6 +11378,21 @@ export interface operations {
                         blockEmailDotAliasRegistration: boolean;
                         blockEmailPlusAliasRegistration: boolean;
                         aiGeneratedFallbackCwEnabled: boolean;
+                        discordOauthEnabled: boolean;
+                        discordOauthClientId: string | null;
+                        discordOauthClientSecret: string | null;
+                        googleOauthEnabled: boolean;
+                        googleOauthClientId: string | null;
+                        googleOauthClientSecret: string | null;
+                        githubOauthEnabled: boolean;
+                        githubOauthClientId: string | null;
+                        githubOauthClientSecret: string | null;
+                        gitlabOauthEnabled: boolean;
+                        gitlabOauthClientId: string | null;
+                        gitlabOauthClientSecret: string | null;
+                        microsoftOauthEnabled: boolean;
+                        microsoftOauthClientId: string | null;
+                        microsoftOauthClientSecret: string | null;
                     };
                 };
             };
@@ -11511,6 +11578,21 @@ export interface operations {
                     blockEmailDotAliasRegistration?: boolean;
                     blockEmailPlusAliasRegistration?: boolean;
                     aiGeneratedFallbackCwEnabled?: boolean;
+                    discordOauthEnabled?: boolean;
+                    discordOauthClientId?: string | null;
+                    discordOauthClientSecret?: string | null;
+                    googleOauthEnabled?: boolean;
+                    googleOauthClientId?: string | null;
+                    googleOauthClientSecret?: string | null;
+                    githubOauthEnabled?: boolean;
+                    githubOauthClientId?: string | null;
+                    githubOauthClientSecret?: string | null;
+                    gitlabOauthEnabled?: boolean;
+                    gitlabOauthClientId?: string | null;
+                    gitlabOauthClientSecret?: string | null;
+                    microsoftOauthEnabled?: boolean;
+                    microsoftOauthClientId?: string | null;
+                    microsoftOauthClientSecret?: string | null;
                 };
             };
         };
@@ -30229,6 +30311,68 @@ export interface operations {
             };
         };
     };
+    'i___oauth___set-login-enabled': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    value: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'i___page-likes': {
         requestBody: {
             content: {
@@ -32376,6 +32520,11 @@ export interface operations {
                             order: number;
                             isDefault: boolean;
                         }[];
+                        discordOauthEnabled: boolean;
+                        googleOauthEnabled: boolean;
+                        githubOauthEnabled: boolean;
+                        gitlabOauthEnabled: boolean;
+                        microsoftOauthEnabled: boolean;
                     };
                 };
             };
@@ -36216,6 +36365,288 @@ export interface operations {
             };
             /** @description Too many requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'oauth-login___link-start': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** @enum {string} */
+                    provider: 'discord' | 'google' | 'github' | 'gitlab' | 'microsoft';
+                    returnTo?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        url: string;
+                    };
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'oauth-login___list-connections': {
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        provider: string;
+                        providerUsername: string;
+                        /** Format: date-time */
+                        linkedAt: string;
+                    }[];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'oauth-login___signin-start': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** @enum {string} */
+                    provider: 'discord' | 'google' | 'github' | 'gitlab' | 'microsoft';
+                    returnTo?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        url: string;
+                    };
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'oauth-login___unlink': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** @enum {string} */
+                    provider: 'discord' | 'google' | 'github' | 'gitlab' | 'microsoft';
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
                 headers: {
                     [name: string]: unknown;
                 };

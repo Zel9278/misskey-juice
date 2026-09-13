@@ -48,6 +48,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i class="ti ti-device-usb" style="font-size: medium;"></i>{{ i18n.ts.signinWithPasskey }}
 			</MkButton>
 		</div>
+
+		<!-- JUICE: 連携ログイン(Discord/Google/GitHub) -->
+		<template v-if="oauthProviders.length > 0">
+			<div :class="$style.orHr">
+				<p :class="$style.orMsg">{{ i18n.ts.or }}</p>
+			</div>
+			<div class="_gaps_s">
+				<MkButton v-for="provider in oauthProviders" :key="provider" type="button" style="margin: auto auto;" rounded @click="oauthLogin(provider)">
+					<i :class="oauthProviderIcon(provider)"></i> {{ i18n.tsx._oauthLogin.signinWithProvider({ provider: oauthProviderLabel(provider) }) }}<span class="_juice">JUICE</span>
+				</MkButton>
+			</div>
+		</template>
 	</div>
 </div>
 </template>
@@ -61,6 +73,8 @@ import { host as configHost } from '@@/js/config.js';
 import type { OpenOnRemoteOptions } from '@/utility/please-login.js';
 import { i18n } from '@/i18n.js';
 import * as os from '@/os.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
+import { juicePublicSettingsCache } from '@/cache.js';
 
 import MkButton from '@/components/MkButton.vue';
 import MkInput from '@/components/MkInput.vue';
@@ -84,6 +98,44 @@ const emit = defineEmits<{
 const host = toUnicode(configHost);
 
 const username = ref(props.initialUsername ?? '');
+
+// JUICE: 連携ログイン(Discord/Google/GitHub/GitLab/Microsoft)
+type OauthProvider = 'discord' | 'google' | 'github' | 'gitlab' | 'microsoft';
+const oauthProviders = ref<OauthProvider[]>([]);
+const oauthProviderLabels: Record<OauthProvider, string> = {
+	discord: 'Discord',
+	google: 'Google',
+	github: 'GitHub',
+	gitlab: 'GitLab',
+	microsoft: 'Microsoft',
+};
+const oauthProviderIcons: Record<OauthProvider, string> = {
+	discord: 'ti ti-brand-discord',
+	google: 'ti ti-brand-google',
+	github: 'ti ti-brand-github',
+	gitlab: 'ti ti-brand-gitlab',
+	microsoft: 'ti ti-brand-windows',
+};
+
+function oauthProviderLabel(provider: OauthProvider): string {
+	return oauthProviderLabels[provider];
+}
+
+function oauthProviderIcon(provider: OauthProvider): string {
+	return oauthProviderIcons[provider];
+}
+
+juicePublicSettingsCache.fetch().then(res => {
+	oauthProviders.value = (['discord', 'google', 'github'] as const).filter(p => res[`${p}OauthEnabled`]);
+});
+
+async function oauthLogin(provider: OauthProvider): Promise<void> {
+	const res = await misskeyApi('oauth-login/signin-start', {
+		provider,
+		returnTo: window.location.pathname + window.location.search,
+	});
+	window.location.href = res.url;
+}
 
 //#region Open on remote
 function openRemote(options: OpenOnRemoteOptions, targetHost?: string): void {
