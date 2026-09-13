@@ -1567,6 +1567,21 @@ describe('Endpoints', () => {
 				blockEmailDotAliasRegistration: false,
 				blockEmailPlusAliasRegistration: false,
 				aiGeneratedFallbackCwEnabled: false,
+				discordOauthEnabled: false,
+				discordOauthClientId: null,
+				discordOauthClientSecret: null,
+				googleOauthEnabled: false,
+				googleOauthClientId: null,
+				googleOauthClientSecret: null,
+				githubOauthEnabled: false,
+				githubOauthClientId: null,
+				githubOauthClientSecret: null,
+				gitlabOauthEnabled: false,
+				gitlabOauthClientId: null,
+				gitlabOauthClientSecret: null,
+				microsoftOauthEnabled: false,
+				microsoftOauthClientId: null,
+				microsoftOauthClientSecret: null,
 			});
 		});
 
@@ -2620,6 +2635,11 @@ describe('Endpoints', () => {
 					{ key: 'personal_info', text: '個人情報の晒し', enabled: true, order: 6, isDefault: false },
 					{ key: 'other', text: 'その他', enabled: true, order: 7, isDefault: true },
 				],
+				discordOauthEnabled: false,
+				googleOauthEnabled: false,
+				githubOauthEnabled: false,
+				gitlabOauthEnabled: false,
+				microsoftOauthEnabled: false,
 			});
 		});
 
