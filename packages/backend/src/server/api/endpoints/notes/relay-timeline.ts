@@ -95,7 +95,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.leftJoinAndSelect('note.reply', 'reply')
 				.leftJoinAndSelect('note.renote', 'renote')
 				.leftJoinAndSelect('reply.user', 'replyUser')
-				.leftJoinAndSelect('renote.user', 'renoteUser');
+				.leftJoinAndSelect('renote.user', 'renoteUser')
+				// JUICE: 誰がAnnounce(ブースト)したかを表示するため
+				.leftJoinAndSelect('note.relayAnnouncer', 'relayAnnouncer');
 
 			if (ps.relayIds != null && ps.relayIds.length > 0) {
 				query.andWhere('note.relayId IN (:...relayIds)', { relayIds: ps.relayIds });

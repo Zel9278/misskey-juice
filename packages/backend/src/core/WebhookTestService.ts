@@ -108,6 +108,8 @@ function generateDummyNote(override?: Partial<MiNote>): MiNote {
 		channel: null,
 		relayId: null,
 		relay: null,
+		relayAnnouncerId: null,
+		relayAnnouncer: null,
 		userHost: null,
 		replyUserId: null,
 		replyUserHost: null,

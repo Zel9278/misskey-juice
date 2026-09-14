@@ -121,7 +121,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</button>
 				</div>
 				<MkA v-if="appearNote.channel && !inChannel" :class="$style.channel" :to="`/channels/${appearNote.channel.id}`"><i class="ti ti-device-tv"></i> {{ appearNote.channel.name }}</MkA>
-				<span v-if="relayHost" :class="$style.relay" :title="i18n.tsx._juice.relayTimelineDeliveredVia({ host: relayHost })"><i class="ti ti-antenna"></i> {{ relayHost }}</span>
+				<span v-if="relayHost" :class="$style.relay" :title="i18n.tsx._juice.relayTimelineDeliveredVia({ host: relayHost })">
+					<i class="ti ti-antenna"></i> {{ relayHost }}
+					<!-- JUICE: リレー経由でも投稿元とリレー登録先は無関係なことが多い(誰かのブーストが転送されただけ)ため、
+					実際にAnnounceを送ってきた(ブーストした)ユーザーが分かる場合は併記して紛らわしさを減らす -->
+					<MkA v-if="appearNote.relayAnnouncer" v-user-preview="appearNote.relayAnnouncer.id" :to="userPage(appearNote.relayAnnouncer)" :class="$style.relayAnnouncer" :title="i18n.tsx._juice.relayTimelineAnnouncedBy({ user: acct(appearNote.relayAnnouncer) })">
+						<i class="ti ti-repeat"></i>
+						<MkAvatar :class="$style.relayAnnouncerAvatar" :user="appearNote.relayAnnouncer" link preview/>
+						<MkAcct :user="appearNote.relayAnnouncer"/>
+					</MkA>
+				</span>
 			</div>
 			<MkReactionsViewer
 				v-if="appearNote.reactionAcceptance !== 'likeOnly'"
@@ -221,7 +230,7 @@ import * as Misskey from 'misskey-js';
 import { useNote } from '@/composables/use-note.js';
 import { prefer } from '@/preferences.js';
 import { i18n } from '@/i18n.js';
-import { userPage } from '@/filters/user.js';
+import { userPage, acct } from '@/filters/user.js';
 import { getNoteSummary } from '@/utility/get-note-summary.js';
 import { isEnabledUrlPreview } from '@/utility/url-preview.js';
 import { focusPrev, focusNext } from '@/utility/focus.js';
@@ -745,6 +754,19 @@ const keymap = {
 	display: block;
 	opacity: 0.7;
 	font-size: 80%;
+}
+
+.relayAnnouncer {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	margin-left: 0.75em;
+}
+
+.relayAnnouncerAvatar {
+	width: 1.3em;
+	height: 1.3em;
+	margin: 0 2px;
 }
 
 .footer {

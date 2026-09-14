@@ -14827,6 +14827,10 @@ export interface Locale extends ILocale {
          */
         "relayTimelineDeliveredVia": ParameterizedString<"host">;
         /**
+         * {user}がブーストしたことでリレーに転送されたノートです(投稿元サーバー自体がリレーに登録されているとは限りません)
+         */
+        "relayTimelineAnnouncedBy": ParameterizedString<"user">;
+        /**
          * メディアタイムライン
          */
         "mediaTimeline": string;

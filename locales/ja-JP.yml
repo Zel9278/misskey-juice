@@ -3967,6 +3967,7 @@ _juice:
   relayTimelineFilterCaption: "チェックしたリレー経由のノートだけをリレータイムラインに表示します。1つもチェックしない場合は、すべてのリレーのノートを表示します。"
   relayTimelineFilterEmpty: "絞り込めるリレーがありません。"
   relayTimelineDeliveredVia: "{host}経由で配信"
+  relayTimelineAnnouncedBy: "{user}がブーストしたことでリレーに転送されたノートです(投稿元サーバー自体がリレーに登録されているとは限りません)"
   mediaTimeline: "メディアタイムライン"
   mediaTimelineTab: "メディア"
   mediaTimelineEnabled: "メディアタイムライン機能を有効にする"

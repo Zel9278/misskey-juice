@@ -324,10 +324,13 @@ export class ApInboxService {
 				// JUICE: 既に他経路(通常のフォロー配送等)で存在するノートでも、
 				// リレー経由のAnnounceだと確認できたなら、リレーTL用にrelayIdを追従させる。
 				// (matchedRelayはfromRelay===trueのときのみnon-null)
+				// relayAnnouncerIdには実際にAnnounceを送ってきたactor(=ブーストした人)を記録し、
+				// リレーTLでの表示を「登録リレー自身の投稿」ではなく「誰かがブーストした結果」と
+				// わかりやすくする
 				if (fromRelay && matchedRelay != null && exist.visibility === 'public') {
 					await this.notesRepository.update(
 						{ id: exist.id, relayId: IsNull() },
-						{ relayId: matchedRelay.id },
+						{ relayId: matchedRelay.id, relayAnnouncerId: actor.id },
 					);
 				}
 				return;
@@ -353,16 +356,18 @@ export class ApInboxService {
 			if (fromRelay) {
 				this.logger.info(`Publishing relay-delivered note: ${uri}`);
 
-				// JUICE: リレーTL用に、どのリレー経由で届いたかを記録する。
+				// JUICE: リレーTL用に、どのリレー経由で届いたか・誰がAnnounceしたか(ブーストした人)を記録する。
 				// 複数リレーから同じノートが届く場合はfirst-writer-winsで良いため、
 				// まだ未設定(IsNull)の場合のみ更新する。公開ノートのみが対象。
 				if (renote.visibility === 'public') {
 					const updateResult = await this.notesRepository.update(
 						{ id: renote.id, relayId: IsNull() },
-						{ relayId: matchedRelay.id },
+						{ relayId: matchedRelay.id, relayAnnouncerId: actor.id },
 					);
 					if (updateResult.affected) {
 						renote.relayId = matchedRelay.id;
+						renote.relayAnnouncerId = actor.id;
+						renote.relayAnnouncer = actor;
 					}
 				}
 

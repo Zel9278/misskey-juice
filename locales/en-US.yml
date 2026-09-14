@@ -4059,6 +4059,7 @@ _juice:
   registerWithInvitation: "Sign up with an invitation code"
   relayTimeline: "Relay timeline"
   relayTimelineDeliveredVia: "Delivered via {host}"
+  relayTimelineAnnouncedBy: "This note was forwarded to the relay because {user} boosted it (the original server isn't necessarily registered with the relay)"
   relayTimelineEnabled: "Enable the relay timeline"
   relayTimelineEnabledCaption: "A timeline containing only public notes received via your registered relays. When disabled, the timeline entry point, the API, and stream delivery are all unavailable."
   relayTimelineFilter: "Relays to show"
