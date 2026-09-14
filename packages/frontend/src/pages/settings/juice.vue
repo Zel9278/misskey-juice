@@ -204,6 +204,7 @@ import { instance } from '@/instance.js';
 import { prefer } from '@/preferences.js';
 import { juicePublicSettingsCache, juiceRelaysCache } from '@/cache.js';
 import { availableBasicTimelines } from '@/timelines.js';
+import { pruneRelayTimelineFilter } from '@/utility/juice-relay-timeline-filter.js';
 
 const $i = ensureSignin();
 
@@ -221,6 +222,7 @@ juicePublicSettingsCache.fetch().then(res => {
 	if (relayTimelineEnabled.value) {
 		juiceRelaysCache.fetch().then(r => {
 			relays.value = r;
+			pruneRelayTimelineFilter(r.map(relay => relay.id));
 		});
 	}
 });

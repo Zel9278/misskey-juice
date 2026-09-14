@@ -47,6 +47,7 @@ import { definePage } from '@/page.js';
 import { antennasCache, userListsCache, favoritedChannelsCache, juicePublicSettingsCache, juiceRelaysCache } from '@/cache.js';
 import { deviceKind } from '@/utility/device-kind.js';
 import { deepMerge } from '@/utility/merge.js';
+import { pruneRelayTimelineFilter } from '@/utility/juice-relay-timeline-filter.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
 import { prefer } from '@/preferences.js';
@@ -138,6 +139,7 @@ juicePublicSettingsCache.fetch().then(res => {
 	if (relayTimelineAvailable.value) {
 		juiceRelaysCache.fetch().then(res => {
 			relays.value = res;
+			pruneRelayTimelineFilter(res.map(relay => relay.id));
 		});
 	}
 });

@@ -65,6 +65,11 @@ export class RelayService {
 		this.queueService.deliver(relayActor, activity, relay.inbox, false);
 
 		await this.relaysRepository.delete(relay.id);
+		// JUICE: 承認済みリレー一覧のキャッシュ(getAcceptedRelays)が最大10分古いままだと、
+		// 削除直後に同じホストを再登録した際、既に存在しないリレーIDをgetRelayForActorが
+		// 返し続けてしまう(ApInboxServiceでnote.relayIdへの書き込みが外部キー違反になる)ため、
+		// 削除時点で即座に無効化する
+		this.relaysCache.delete();
 	}
 
 	@bindThis
@@ -79,6 +84,9 @@ export class RelayService {
 			status: 'accepted',
 		});
 
+		// JUICE: 承認済み一覧のキャッシュに即座に反映させる(下のrelayRejectedと同じ理由)
+		this.relaysCache.delete();
+
 		return JSON.stringify(result);
 	}
 
@@ -87,6 +95,10 @@ export class RelayService {
 		const result = await this.relaysRepository.update(id, {
 			status: 'rejected',
 		});
+
+		// JUICE: 承認済みだったリレーが却下された場合も、古いキャッシュがgetRelayForActorに
+		// 残り続けないよう即座に無効化する
+		this.relaysCache.delete();
 
 		return JSON.stringify(result);
 	}
