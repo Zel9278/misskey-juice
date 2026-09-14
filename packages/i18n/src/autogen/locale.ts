@@ -533,6 +533,14 @@ export interface Locale extends ILocale {
      */
     "sensitive": string;
     /**
+     * 再生
+     */
+    "play": string;
+    /**
+     * 一時停止
+     */
+    "pause": string;
+    /**
      * 追加
      */
     "add": string;
@@ -14827,6 +14835,10 @@ export interface Locale extends ILocale {
          */
         "relayTimelineDeliveredVia": ParameterizedString<"host">;
         /**
+         * {user}がブーストしたことでリレーに転送されたノートです(投稿元サーバー自体がリレーに登録されているとは限りません)
+         */
+        "relayTimelineAnnouncedBy": ParameterizedString<"user">;
+        /**
          * メディアタイムライン
          */
         "mediaTimeline": string;
@@ -14858,6 +14870,18 @@ export interface Locale extends ILocale {
          * 次のメディア
          */
         "mediaTimelineNext": string;
+        /**
+         * MIDIプレイヤー
+         */
+        "midiPlayer": string;
+        /**
+         * 再生を許可する最大ファイルサイズ(KB)
+         */
+        "midiPlayerMaxSize": string;
+        /**
+         * ノートに添付されたMIDIファイルのプレイヤーで、再生ボタンを表示する上限のファイルサイズです。黒MIDI等、ノートイベント数が極端に多いファイルを解析・再生してブラウザが固まることを防ぐための設定で、これを超えるファイルは警告のみ表示され再生できません。
+         */
+        "midiPlayerMaxSizeCaption": string;
         /**
          * ブロックしてから凍結
          */
@@ -15046,6 +15070,14 @@ export interface Locale extends ILocale {
          * {n}件選択中
          */
         "nSelected": ParameterizedString<"n">;
+        /**
+         * このMIDIファイルはサイズが大きいため再生できません({size} / 上限{limit})。過度に密集したノートを含むファイル(いわゆる黒MIDI等)による負荷を防ぐための制限です。
+         */
+        "midiPlayerTooLarge": ParameterizedString<"size" | "limit">;
+        /**
+         * このファイルを解析できませんでした。壊れているか、対応していない形式のMIDIファイルの可能性があります。
+         */
+        "midiPlayerParseError": string;
     };
     "_juiceApprovals": {
         /**

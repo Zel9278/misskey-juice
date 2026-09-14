@@ -80,6 +80,7 @@ import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBa
 import { soundSettingsButton } from '@/ui/deck/tl-note-notification.js';
 import { langs } from '@@/js/config.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
+import { pruneRelayTimelineFilter } from '@/utility/juice-relay-timeline-filter.js';
 
 const props = defineProps<{
 	column: Column;
@@ -114,6 +115,7 @@ async function loadJuiceTimelineAvailability() {
 	mediaTimelineEnabled.value = res.mediaTimelineEnabled;
 	if (relayTimelineAvailable.value && relays.value.length === 0) {
 		relays.value = await juiceRelaysCache.fetch();
+		pruneRelayTimelineFilter(relays.value.map(relay => relay.id));
 	}
 }
 

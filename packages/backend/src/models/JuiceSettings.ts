@@ -120,6 +120,12 @@ export interface JuiceSettingsValue {
 	microsoftOauthClientId?: string | null;
 	/** 連携ログイン(Microsoft)のOAuthアプリのクライアントシークレット */
 	microsoftOauthClientSecret?: string | null;
+	/**
+	 * ノート添付のMIDIファイルプレイヤーで再生を許可する最大ファイルサイズ(バイト単位)。
+	 * 黒MIDI等、ノートイベント数が極端に多いファイルを解析・再生してブラウザが
+	 * 固まることを防ぐための安全装置。これを超えるファイルは再生ボタン自体を出さない
+	 */
+	midiPlayerMaxSize?: number;
 }
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
@@ -421,6 +427,18 @@ export function resolveOauthLoginSettings(settings: JuiceSettingsValue): {
 		microsoftOauthEnabled: settings.microsoftOauthEnabled ?? false,
 		microsoftOauthClientId: settings.microsoftOauthClientId ?? null,
 		microsoftOauthClientSecret: settings.microsoftOauthClientSecret ?? null,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・admin/juice/update-settings・juice/public-settingsの3箇所で共通利用する。
+ */
+export function resolveMidiPlayerSettings(settings: JuiceSettingsValue): {
+	midiPlayerMaxSize: number;
+} {
+	return {
+		midiPlayerMaxSize: settings.midiPlayerMaxSize ?? 500 * 1024,
 	};
 }
 

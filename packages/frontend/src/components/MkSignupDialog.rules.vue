@@ -107,6 +107,7 @@ const props = withDefaults(defineProps<{
 		githubOauthEnabled: false,
 		gitlabOauthEnabled: false,
 		microsoftOauthEnabled: false,
+		midiPlayerMaxSize: 500 * 1024,
 	}),
 });
 

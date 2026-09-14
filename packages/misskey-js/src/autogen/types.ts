@@ -5085,6 +5085,7 @@ export type components = {
              * @example xxxxxxxxxx
              */
             relayId?: string | null;
+            relayAnnouncer?: components['schemas']['UserLite'];
             /** @enum {string|null} */
             reactionAcceptance: 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote' | null;
             reactionEmojis: {
@@ -11393,6 +11394,7 @@ export interface operations {
                         microsoftOauthEnabled: boolean;
                         microsoftOauthClientId: string | null;
                         microsoftOauthClientSecret: string | null;
+                        midiPlayerMaxSize: number;
                     };
                 };
             };
@@ -11593,6 +11595,7 @@ export interface operations {
                     microsoftOauthEnabled?: boolean;
                     microsoftOauthClientId?: string | null;
                     microsoftOauthClientSecret?: string | null;
+                    midiPlayerMaxSize?: number;
                 };
             };
         };
@@ -32525,6 +32528,7 @@ export interface operations {
                         githubOauthEnabled: boolean;
                         gitlabOauthEnabled: boolean;
                         microsoftOauthEnabled: boolean;
+                        midiPlayerMaxSize: number;
                     };
                 };
             };

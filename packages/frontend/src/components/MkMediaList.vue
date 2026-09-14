@@ -5,6 +5,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div :class="$style.root">
+	<!-- JUICE: MIDIは<audio>で直接再生できないため、独自の軽量プレイヤー(XMidi)を
+	     プレビュー可能なメディアのグリッドとは別枠で表示する -->
+	<XMidi v-for="media in medias.midi" :key="media.id" :midi="media" :class="$style.midiPlayer"/>
 	<XBanner v-for="media in medias.nonPreviewable" :key="media.id" :media="media"/>
 	<div v-if="count > 0" :class="$style.container">
 		<div
@@ -65,6 +68,7 @@ import XBanner from '@/components/MkMediaBanner.vue';
 import XAudio from '@/components/MkMediaAudio.vue';
 import XImage from '@/components/MkMediaImage.vue';
 import XVideo from '@/components/MkMediaVideo.vue';
+import XMidi from '@/components/MkMediaMidi.vue';
 import * as os from '@/os.js';
 import { prefer } from '@/preferences.js';
 import { isPreviewable, getType } from '@/utility/lightbox.js';
@@ -87,8 +91,11 @@ const gallery = useTemplateRef('gallery');
 const medias = computed(() => {
 	const previewable: Misskey.entities.DriveFile[] = [];
 	const nonPreviewable: Misskey.entities.DriveFile[] = [];
+	const midi: Misskey.entities.DriveFile[] = []; // JUICE
 	for (const file of props.mediaList) {
-		if (isPreviewable(file.type)) {
+		if (file.type === 'audio/midi') { // JUICE: 独自プレイヤー(XMidi)で扱う
+			midi.push(file);
+		} else if (isPreviewable(file.type)) {
 			previewable.push(file);
 		} else {
 			nonPreviewable.push(file);
@@ -98,6 +105,7 @@ const medias = computed(() => {
 	return {
 		previewable,
 		nonPreviewable,
+		midi,
 	};
 });
 const mediaComponents = new Map<string, MediaComponentExposes | null>();
@@ -207,6 +215,11 @@ defineExpose({
 <style lang="scss" module>
 .root {
 	container-type: inline-size;
+}
+
+.midiPlayer {
+	width: 100%;
+	margin-top: 4px;
 }
 
 .container {
