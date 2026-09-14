@@ -310,6 +310,7 @@ export * as 'i/juice/update-mute-ai-generated' from './endpoints/i/juice/update-
 export * as 'i/move' from './endpoints/i/move.js';
 export * as 'i/notifications' from './endpoints/i/notifications.js';
 export * as 'i/notifications-grouped' from './endpoints/i/notifications-grouped.js';
+export * as 'i/oauth/set-login-enabled' from './endpoints/i/oauth/set-login-enabled.js';
 export * as 'i/page-likes' from './endpoints/i/page-likes.js';
 export * as 'i/pages' from './endpoints/i/pages.js';
 export * as 'i/pin' from './endpoints/i/pin.js';
@@ -390,6 +391,10 @@ export * as 'notifications/create' from './endpoints/notifications/create.js';
 export * as 'notifications/flush' from './endpoints/notifications/flush.js';
 export * as 'notifications/mark-all-as-read' from './endpoints/notifications/mark-all-as-read.js';
 export * as 'notifications/test-notification' from './endpoints/notifications/test-notification.js';
+export * as 'oauth-login/link-start' from './endpoints/oauth-login/link-start.js';
+export * as 'oauth-login/list-connections' from './endpoints/oauth-login/list-connections.js';
+export * as 'oauth-login/signin-start' from './endpoints/oauth-login/signin-start.js';
+export * as 'oauth-login/unlink' from './endpoints/oauth-login/unlink.js';
 export * as 'page-push' from './endpoints/page-push.js';
 export * as 'pages/create' from './endpoints/pages/create.js';
 export * as 'pages/delete' from './endpoints/pages/delete.js';

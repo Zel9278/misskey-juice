@@ -50,6 +50,7 @@ import { NoteDeleteService } from './NoteDeleteService.js';
 import { NotePiningService } from './NotePiningService.js';
 import { NoteDraftService } from './NoteDraftService.js';
 import { NotificationService } from './NotificationService.js';
+import { OAuthLoginService } from './OAuthLoginService.js';
 import { PollService } from './PollService.js';
 import { PushNotificationService } from './PushNotificationService.js';
 import { QueryService } from './QueryService.js';
@@ -203,6 +204,7 @@ const $NoteDeleteService: Provider = { provide: 'NoteDeleteService', useExisting
 const $NotePiningService: Provider = { provide: 'NotePiningService', useExisting: NotePiningService };
 const $NoteDraftService: Provider = { provide: 'NoteDraftService', useExisting: NoteDraftService };
 const $NotificationService: Provider = { provide: 'NotificationService', useExisting: NotificationService };
+const $OAuthLoginService: Provider = { provide: 'OAuthLoginService', useExisting: OAuthLoginService };
 const $PollService: Provider = { provide: 'PollService', useExisting: PollService };
 const $SystemAccountService: Provider = { provide: 'SystemAccountService', useExisting: SystemAccountService };
 const $PushNotificationService: Provider = { provide: 'PushNotificationService', useExisting: PushNotificationService };
@@ -365,6 +367,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		NotePiningService,
 		NoteDraftService,
 		NotificationService,
+		OAuthLoginService,
 		PollService,
 		SystemAccountService,
 		PushNotificationService,
@@ -524,6 +527,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$NotePiningService,
 		$NoteDraftService,
 		$NotificationService,
+		$OAuthLoginService,
 		$PollService,
 		$SystemAccountService,
 		$PushNotificationService,
@@ -684,6 +688,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		NotePiningService,
 		NoteDraftService,
 		NotificationService,
+		OAuthLoginService,
 		PollService,
 		SystemAccountService,
 		PushNotificationService,
@@ -842,6 +847,7 @@ const $ApQuestionService: Provider = { provide: 'ApQuestionService', useExisting
 		$NotePiningService,
 		$NoteDraftService,
 		$NotificationService,
+		$OAuthLoginService,
 		$PollService,
 		$SystemAccountService,
 		$PushNotificationService,

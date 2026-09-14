@@ -170,6 +170,16 @@ export class MiUserProfile {
 	})
 	public usePasswordLessLogin: boolean;
 
+	// JUICE: 連携ログイン(Discord/Google/GitHub)を実際のサインイン手段として使うかどうか。
+	// 連携先アカウントの乗っ取りだけでサインインできてしまわないよう、trueにできるのは
+	// 2段階認証(twoFactorEnabled)が有効なアカウントに限る(i/oauth/set-login-enabled側で強制)。
+	// falseのままでもプロフィールへの連携自体(バッジ表示用)は可能
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether to allow signing in via a linked OAuth provider (Discord/Google/GitHub) (JUICE). Requires twoFactorEnabled.',
+	})
+	public useOauthLogin: boolean;
+
 	@Column('varchar', {
 		length: 128, nullable: true,
 		comment: 'The password hash of the User. It will be null if the origin of the user is local.',

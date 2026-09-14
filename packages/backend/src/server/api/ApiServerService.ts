@@ -18,6 +18,9 @@ import { ApiCallService } from './ApiCallService.js';
 import { SignupApiService } from './SignupApiService.js';
 import { SigninApiService } from './SigninApiService.js';
 import { SigninWithPasskeyApiService } from './SigninWithPasskeyApiService.js';
+import { SigninWithOAuthApiService } from './SigninWithOAuthApiService.js';
+import { OAuthLinkCallbackApiService } from './OAuthLinkCallbackApiService.js';
+import { OAuthSigninCallbackApiService } from './OAuthSigninCallbackApiService.js';
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
 
 @Injectable()
@@ -39,6 +42,9 @@ export class ApiServerService {
 		private signupApiService: SignupApiService,
 		private signinApiService: SigninApiService,
 		private signinWithPasskeyApiService: SigninWithPasskeyApiService,
+		private signinWithOAuthApiService: SigninWithOAuthApiService,
+		private oAuthLinkCallbackApiService: OAuthLinkCallbackApiService,
+		private oAuthSigninCallbackApiService: OAuthSigninCallbackApiService,
 	) {
 		//this.createServer = this.createServer.bind(this);
 	}
@@ -141,6 +147,17 @@ export class ApiServerService {
 				context?: string;
 			};
 		}>('/signin-with-passkey', (request, reply) => this.signinWithPasskeyApiService.signin(request, reply));
+
+		// JUICE: 連携ログイン(Discord/Google/GitHub)
+		fastify.post<{
+			Body: {
+				context?: string;
+				token?: string;
+			};
+		}>('/signin-with-oauth', (request, reply) => this.signinWithOAuthApiService.signin(request, reply));
+
+		fastify.get('/oauth-login/link-callback', (request, reply) => this.oAuthLinkCallbackApiService.callback(request, reply));
+		fastify.get('/oauth-login/signin-callback', (request, reply) => this.oAuthSigninCallbackApiService.callback(request, reply));
 
 		fastify.post<{ Body: { code: string; } }>('/signup-pending', (request, reply) => this.signupApiService.signupPending(request, reply));
 

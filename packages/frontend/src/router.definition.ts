@@ -301,6 +301,15 @@ export const ROUTE_DEF = [{
 	path: '/auth/:token',
 	component: page(() => import('@/pages/auth.vue')),
 }, {
+	// JUICE: 連携ログイン(Discord/Google/GitHub)のサインイン完了ページ
+	path: '/oauth-complete',
+	component: page(() => import('@/pages/oauth-complete.vue')),
+	query: {
+		context: 'context',
+		error: 'error',
+		returnTo: 'returnTo',
+	},
+}, {
 	path: '/miauth/:session',
 	component: page(() => import('@/pages/miauth.vue')),
 	query: {

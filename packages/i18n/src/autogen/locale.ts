@@ -10168,6 +10168,56 @@ export interface Locale extends ILocale {
          */
         "moreDetailedGuideHere": string;
     };
+    "_oauthLogin": {
+        /**
+         * 連携ログイン
+         */
+        "title": string;
+        /**
+         * Discord・Google・GitHub・GitLab・Microsoftのアカウントをこのアカウントに紐付けます。紐付けるだけでは実際のサインインには使われず、2段階認証を有効にしたうえで下記のスイッチをオンにすることで初めてサインイン手段として使えるようになります。
+         */
+        "description": string;
+        /**
+         * 連携する
+         */
+        "connect": string;
+        /**
+         * 「{username}」として連携中
+         */
+        "connectedAs": ParameterizedString<"username">;
+        /**
+         * {provider}との連携を解除しますか？
+         */
+        "unlinkConfirm": ParameterizedString<"provider">;
+        /**
+         * サインイン手段として使う
+         */
+        "useAsSigninMethod": string;
+        /**
+         * オンにすると、連携済みのアカウントでサインインできるようになります。連携先アカウントの乗っ取りだけでサインインされてしまわないよう、2段階認証が有効なアカウントでのみオンにできます。
+         */
+        "useAsSigninMethodDescription": string;
+        /**
+         * サインイン手段として使うには、先に2段階認証を有効にしてください。
+         */
+        "twoFactorRequiredWarning": string;
+        /**
+         * {provider}でサインイン
+         */
+        "signinWithProvider": ParameterizedString<"provider">;
+        /**
+         * 連携ログインに失敗しました。もう一度お試しください。
+         */
+        "signinFailed": string;
+        /**
+         * セッションの有効期限が切れました。もう一度お試しください。
+         */
+        "signinExpired": string;
+        /**
+         * 連携ログインの設定はこちら
+         */
+        "goToSettings": string;
+    };
     "_permissions": {
         /**
          * アカウントの情報を見る
@@ -14605,6 +14655,18 @@ export interface Locale extends ILocale {
          */
         "approvalSignupNotice": string;
         /**
+         * アカウント
+         */
+        "settingsGroupAccount": string;
+        /**
+         * タイムライン・表示
+         */
+        "settingsGroupTimeline": string;
+        /**
+         * 申請フォーム
+         */
+        "settingsGroupRequests": string;
+        /**
          * メール関連
          */
         "emailSettings": string;
@@ -14884,6 +14946,50 @@ export interface Locale extends ILocale {
          * AI生成物フラグ(isAIGenerated)はJUICE独自の連合プロパティのため、対応していない実装では無視されます。この設定を有効にすると、投稿本体か添付ファイルのいずれか1つにでもAI生成物フラグが立っていれば、ActivityPub連合時にCW(内容の折りたたみ)としてフォールバック文言を送信します。CWが未設定の投稿はフォールバック文言のみ、既にCWがある投稿は「フォールバック文言 | 元のCW」の形で先頭に付け加えます。ローカル・misskey-juice間の表示は今まで通りバッジのみで、投稿自体のCW設定は変更されません。
          */
         "aiGeneratedFallbackCwEnabledCaption": string;
+        /**
+         * 連携ログイン
+         */
+        "oauthLogin": string;
+        /**
+         * Discord・Google・GitHub・GitLab・Microsoftのアカウントを使ったログイン(連携ログイン)を有効にします。各サービスの開発者向けサイトでOAuthアプリを作成し、発行されたクライアントID・クライアントシークレットを入力してください。有効にしただけではユーザーはサインインできず、各ユーザーが自分の設定(セキュリティ)ページで2段階認証を有効にしたうえで連携・サインイン手段として使うことを個別にオンにする必要があります。
+         */
+        "oauthLoginCaption": string;
+        /**
+         * 各サービスのOAuthアプリ設定で、以下の2つをリダイレクトURI(コールバックURL)として登録してください。プロバイダによらず共通です。
+         */
+        "oauthLoginRedirectUriInfo": string;
+        /**
+         * {provider}連携ログインを有効にする
+         */
+        "oauthLoginProviderEnabled": ParameterizedString<"provider">;
+        /**
+         * クライアントID
+         */
+        "oauthClientId": string;
+        /**
+         * クライアントシークレット
+         */
+        "oauthClientSecret": string;
+        /**
+         * Discord Developer Portal (discord.com/developers/applications) でアプリケーションを作成し、OAuth2設定に上記のリダイレクトURIを登録してください。scopeは identify のみで動作します。
+         */
+        "oauthScopeInfoDiscord": string;
+        /**
+         * Google Cloud Console (console.cloud.google.com) で「OAuthクライアントID」(種類: ウェブアプリケーション)を作成し、承認済みのリダイレクトURIに上記を登録してください。OAuth同意画面でopenid・email・profileスコープが必要です。
+         */
+        "oauthScopeInfoGoogle": string;
+        /**
+         * GitHub の Settings → Developer settings → OAuth Apps でOAuth App(GitHub Appではありません)を作成し、Authorization callback URLに上記を登録してください。追加のスコープ設定は不要です。
+         */
+        "oauthScopeInfoGithub": string;
+        /**
+         * GitLab の User Settings → Applications(インスタンス管理者はAdmin Area → Applications)でアプリケーションを作成し、Redirect URIに上記を登録したうえでScopesの read_user にチェックを入れてください。
+         */
+        "oauthScopeInfoGitlab": string;
+        /**
+         * Microsoft Entra 管理センター(旧Azure AD)でアプリの登録を行い、プラットフォームに「Web」を追加して上記をリダイレクトURIとして登録してください。API のアクセス許可に Microsoft Graph の User.Read(委任済み)が必要です。テナントによっては管理者の同意が必要になる場合があります。
+         */
+        "oauthScopeInfoMicrosoft": string;
         /**
          * タイムラインに表示する言語
          */

@@ -492,6 +492,7 @@ import type {
 	INotificationsResponse,
 	INotificationsGroupedRequest,
 	INotificationsGroupedResponse,
+	IOauthSetLoginEnabledRequest,
 	IPageLikesRequest,
 	IPageLikesResponse,
 	IPagesRequest,
@@ -616,6 +617,12 @@ import type {
 	NotesUserListTimelineRequest,
 	NotesUserListTimelineResponse,
 	NotificationsCreateRequest,
+	OauthLoginLinkStartRequest,
+	OauthLoginLinkStartResponse,
+	OauthLoginListConnectionsResponse,
+	OauthLoginSigninStartRequest,
+	OauthLoginSigninStartResponse,
+	OauthLoginUnlinkRequest,
 	PagePushRequest,
 	PagesCreateRequest,
 	PagesCreateResponse,
@@ -1060,6 +1067,7 @@ export type Endpoints = {
 	'i/move': { req: IMoveRequest; res: IMoveResponse };
 	'i/notifications': { req: INotificationsRequest; res: INotificationsResponse };
 	'i/notifications-grouped': { req: INotificationsGroupedRequest; res: INotificationsGroupedResponse };
+	'i/oauth/set-login-enabled': { req: IOauthSetLoginEnabledRequest; res: EmptyResponse };
 	'i/page-likes': { req: IPageLikesRequest; res: IPageLikesResponse };
 	'i/pages': { req: IPagesRequest; res: IPagesResponse };
 	'i/pin': { req: IPinRequest; res: IPinResponse };
@@ -1140,6 +1148,10 @@ export type Endpoints = {
 	'notifications/flush': { req: EmptyRequest; res: EmptyResponse };
 	'notifications/mark-all-as-read': { req: EmptyRequest; res: EmptyResponse };
 	'notifications/test-notification': { req: EmptyRequest; res: EmptyResponse };
+	'oauth-login/link-start': { req: OauthLoginLinkStartRequest; res: OauthLoginLinkStartResponse };
+	'oauth-login/list-connections': { req: EmptyRequest; res: OauthLoginListConnectionsResponse };
+	'oauth-login/signin-start': { req: OauthLoginSigninStartRequest; res: OauthLoginSigninStartResponse };
+	'oauth-login/unlink': { req: OauthLoginUnlinkRequest; res: EmptyResponse };
 	'page-push': { req: PagePushRequest; res: EmptyResponse };
 	'pages/create': { req: PagesCreateRequest; res: PagesCreateResponse };
 	'pages/delete': { req: PagesDeleteRequest; res: EmptyResponse };

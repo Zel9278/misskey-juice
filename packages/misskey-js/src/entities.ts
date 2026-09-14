@@ -209,6 +209,15 @@ export type SigninWithPasskeyResponse = {
 	signinResponse: SigninFlowResponse & { finished: true };
 };
 
+// JUICE: 連携ログイン(Discord/Google/GitHub)
+export type SigninWithOAuthRequest = {
+	context: string;
+	token?: string;
+};
+
+// JUICE
+export type SigninWithOAuthResponse = SigninFlowResponse;
+
 export type I2faRegisterKeyResponse = PublicKeyCredentialCreationOptionsJSON;
 
 export type I2faKeyDoneRequest = {

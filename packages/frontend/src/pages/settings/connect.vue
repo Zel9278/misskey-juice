@@ -22,6 +22,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</FormSection>
 		</SearchMarker>
 
+		<!-- JUICE: 連携ログイン(Discord/Google/GitHub)は「サービス連携」ではなく
+		セキュリティ設定(/settings/security)側にあるため、探しに来た人向けの導線だけ置く -->
+		<SearchMarker :keywords="['oauth', 'discord', 'google', 'github', 'login', 'signin']">
+			<FormLink to="/settings/security">{{ i18n.ts._oauthLogin.goToSettings }}<span class="_juice">JUICE</span></FormLink>
+		</SearchMarker>
+
 		<SearchMarker :keywords="['webhook']">
 			<FormSection>
 				<template #label><i class="ti ti-webhook"></i> <SearchLabel>{{ i18n.ts._settings.webhook }}</SearchLabel></template>

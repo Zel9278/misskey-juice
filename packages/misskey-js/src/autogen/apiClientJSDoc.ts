@@ -3682,6 +3682,18 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
+     * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+     * **Credential required**: *Yes*
+     */
+    request<E extends 'i/oauth/set-login-enabled', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
      * **Credential required**: *Yes* / **Permission**: *read:page-likes*
      */
     request<E extends 'i/page-likes', P extends Endpoints[E]['req']>(
@@ -4560,6 +4572,53 @@ declare module '../api.js' {
      * **Credential required**: *Yes* / **Permission**: *write:notifications*
      */
     request<E extends 'notifications/test-notification', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+     * **Credential required**: *Yes*
+     */
+    request<E extends 'oauth-login/link-start', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+     * **Credential required**: *Yes*
+     */
+    request<E extends 'oauth-login/list-connections', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Credential required**: *No*
+     */
+    request<E extends 'oauth-login/signin-start', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+     * **Credential required**: *Yes*
+     */
+    request<E extends 'oauth-login/unlink', P extends Endpoints[E]['req']>(
       endpoint: E,
       params: P,
       credential?: string | null,

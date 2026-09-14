@@ -16,6 +16,8 @@ import {
 	SigninWithPasskeyInitResponse,
 	SigninWithPasskeyRequest,
 	SigninWithPasskeyResponse,
+	SigninWithOAuthRequest,
+	SigninWithOAuthResponse,
 	SignupPendingRequest,
 	SignupPendingResponse,
 	SignupRequest,
@@ -112,6 +114,11 @@ export type Endpoints = Overwrite<
 					$default: SigninWithPasskeyInitResponse;
 				},
 			},
+		},
+		// JUICE: 連携ログイン(Discord/Google/GitHub)。api.jsonには載せないものなのでここで定義
+		'signin-with-oauth': {
+			req: SigninWithOAuthRequest;
+			res: SigninWithOAuthResponse;
 		},
 		'i/2fa/register-key': {
 			req: I2faRegisterKeyRequest;

@@ -401,6 +401,11 @@ export const packedUserDetailedNotMeOnlySchema = {
 			type: 'boolean',
 			nullable: false, optional: true,
 		},
+		// JUICE: 連携ログイン(Discord/Google/GitHub)をサインイン手段として使っているか
+		useOauthLogin: {
+			type: 'boolean',
+			nullable: false, optional: true,
+		},
 		securityKeys: {
 			type: 'boolean',
 			nullable: false, optional: true,
@@ -690,6 +695,12 @@ export const packedMeDetailedOnlySchema = {
 			default: false,
 		},
 		usePasswordLessLogin: {
+			type: 'boolean',
+			nullable: false, optional: false,
+			default: false,
+		},
+		// JUICE: 連携ログイン(Discord/Google/GitHub)をサインイン手段として使っているか
+		useOauthLogin: {
 			type: 'boolean',
 			nullable: false, optional: false,
 			default: false,

@@ -157,6 +157,7 @@ describe('ユーザー', () => {
 			policies: user.policies,
 			twoFactorEnabled: user.twoFactorEnabled,
 			usePasswordLessLogin: user.usePasswordLessLogin,
+			useOauthLogin: user.useOauthLogin, // JUICE
 			securityKeys: user.securityKeys,
 			...(security ? {
 				email: user.email,
