@@ -121,15 +121,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</button>
 				</div>
 				<MkA v-if="appearNote.channel && !inChannel" :class="$style.channel" :to="`/channels/${appearNote.channel.id}`"><i class="ti ti-device-tv"></i> {{ appearNote.channel.name }}</MkA>
-				<span v-if="relayHost" :class="$style.relay" :title="i18n.tsx._juice.relayTimelineDeliveredVia({ host: relayHost })">
-					<i class="ti ti-antenna"></i> {{ relayHost }}
+				<span v-if="relayHost" :class="$style.relay">
+					<span v-tooltip="i18n.tsx._juice.relayTimelineDeliveredVia({ host: relayHost })"><i class="ti ti-antenna"></i> {{ relayHost }}</span>
 					<!-- JUICE: リレー経由でも投稿元とリレー登録先は無関係なことが多い(誰かのブーストが転送されただけ)ため、
-					実際にAnnounceを送ってきた(ブーストした)ユーザーが分かる場合は併記して紛らわしさを減らす -->
-					<MkA v-if="appearNote.relayAnnouncer" v-user-preview="appearNote.relayAnnouncer.id" :to="userPage(appearNote.relayAnnouncer)" :class="$style.relayAnnouncer" :title="i18n.tsx._juice.relayTimelineAnnouncedBy({ user: acct(appearNote.relayAnnouncer) })">
-						<i class="ti ti-repeat"></i>
-						<MkAvatar :class="$style.relayAnnouncerAvatar" :user="appearNote.relayAnnouncer" link preview/>
-						<MkAcct :user="appearNote.relayAnnouncer"/>
-					</MkA>
+					実際にAnnounceを送ってきた(ブーストした)ユーザーが分かる場合は併記して紛らわしさを減らす。
+					説明文はリンク(MkA)の:titleではなくv-tooltip:dialogを別の小さなヘルプアイコンに付け、
+					スマホ(titleがそもそも出せない・タップ即ナビゲートしてしまう)でも読めるようにする -->
+					<template v-if="appearNote.relayAnnouncer">
+						<MkA v-user-preview="appearNote.relayAnnouncer.id" :to="userPage(appearNote.relayAnnouncer)" :class="$style.relayAnnouncer">
+							<i class="ti ti-repeat"></i>
+							<MkAvatar :class="$style.relayAnnouncerAvatar" :user="appearNote.relayAnnouncer" preview/>
+							<MkAcct :user="appearNote.relayAnnouncer"/>
+						</MkA>
+						<button v-tooltip:dialog="i18n.tsx._juice.relayTimelineAnnouncedBy({ user: acct(appearNote.relayAnnouncer) })" class="_button _help" :class="$style.relayAnnouncerHelp">
+							<i class="ti ti-help-circle"></i>
+						</button>
+					</template>
 				</span>
 			</div>
 			<MkReactionsViewer
@@ -751,22 +758,31 @@ const keymap = {
 }
 
 .relay {
-	display: block;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	column-gap: 0.75em;
+	row-gap: 2px;
 	opacity: 0.7;
 	font-size: 80%;
+	line-height: 1.3em;
 }
 
 .relayAnnouncer {
 	display: inline-flex;
 	align-items: center;
-	gap: 2px;
-	margin-left: 0.75em;
+	gap: 4px;
+}
+
+.relayAnnouncerHelp {
+	display: inline-flex;
+	align-items: center;
 }
 
 .relayAnnouncerAvatar {
 	width: 1.3em;
 	height: 1.3em;
-	margin: 0 2px;
+	flex-shrink: 0;
 }
 
 .footer {
