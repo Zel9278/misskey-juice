@@ -68,6 +68,7 @@ const juicePublicSettings = ref<Misskey.entities.JuicePublicSettingsResponse>({
 	githubOauthEnabled: false,
 	gitlabOauthEnabled: false,
 	microsoftOauthEnabled: false,
+	midiPlayerMaxSize: 500 * 1024,
 });
 misskeyApi('juice/public-settings').then(res => {
 	juicePublicSettings.value = res;

@@ -11394,6 +11394,7 @@ export interface operations {
                         microsoftOauthEnabled: boolean;
                         microsoftOauthClientId: string | null;
                         microsoftOauthClientSecret: string | null;
+                        midiPlayerMaxSize: number;
                     };
                 };
             };
@@ -11594,6 +11595,7 @@ export interface operations {
                     microsoftOauthEnabled?: boolean;
                     microsoftOauthClientId?: string | null;
                     microsoftOauthClientSecret?: string | null;
+                    midiPlayerMaxSize?: number;
                 };
             };
         };
@@ -32526,6 +32528,7 @@ export interface operations {
                         githubOauthEnabled: boolean;
                         gitlabOauthEnabled: boolean;
                         microsoftOauthEnabled: boolean;
+                        midiPlayerMaxSize: number;
                     };
                 };
             };

@@ -220,6 +220,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<SearchMarker v-slot="slotProps">
 					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.midiPlayer }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkInput v-model="midiPlayerMaxSizeKb" type="number" :min="1">
+									<template #label><SearchLabel>{{ i18n.ts._juice.midiPlayerMaxSize }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.midiPlayerMaxSizeCaption }}</template>
+								</MkInput>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 						<template #label><SearchLabel>{{ i18n.ts._juice.latex }}</SearchLabel></template>
 
 						<div class="_gaps_m">
@@ -413,6 +428,8 @@ const rankingAggregationPeriodHours = ref(settings.rankingAggregationPeriodHours
 const rankingDisplayCount = ref(settings.rankingDisplayCount);
 const relayTimelineEnabled = ref(settings.relayTimelineEnabled);
 const mediaTimelineEnabled = ref(settings.mediaTimelineEnabled);
+const midiPlayerMaxSizeKb = ref(settings.midiPlayerMaxSize / 1024);
+const midiPlayerMaxSize = computed(() => Math.round(midiPlayerMaxSizeKb.value * 1024));
 const latexEnabled = ref(settings.latexEnabled);
 const reactionPiggybackOnRemoteEnabled = ref(settings.reactionPiggybackOnRemoteEnabled);
 const contactFormEnabled = ref(settings.contactFormEnabled);
@@ -546,6 +563,7 @@ function save() {
 		rankingDisplayCount: rankingDisplayCount.value,
 		relayTimelineEnabled: relayTimelineEnabled.value,
 		mediaTimelineEnabled: mediaTimelineEnabled.value,
+		midiPlayerMaxSize: midiPlayerMaxSize.value,
 		latexEnabled: latexEnabled.value,
 		reactionPiggybackOnRemoteEnabled: reactionPiggybackOnRemoteEnabled.value,
 		contactFormEnabled: contactFormEnabled.value,

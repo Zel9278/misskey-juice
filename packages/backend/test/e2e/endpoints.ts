@@ -1582,6 +1582,7 @@ describe('Endpoints', () => {
 				microsoftOauthEnabled: false,
 				microsoftOauthClientId: null,
 				microsoftOauthClientSecret: null,
+				midiPlayerMaxSize: 500 * 1024,
 			});
 		});
 
@@ -1590,6 +1591,7 @@ describe('Endpoints', () => {
 				signupReasonMaxLength: 1000,
 				defaultEmailLang: 'en-US',
 				rankingAggregationPeriodHours: 6,
+				midiPlayerMaxSize: 1024 * 1024,
 			}, alice);
 			assert.strictEqual(res.status, 204);
 
@@ -1598,6 +1600,7 @@ describe('Endpoints', () => {
 			assert.strictEqual(after.body.signupReasonMaxLength, 1000);
 			assert.strictEqual(after.body.defaultEmailLang, 'en-US');
 			assert.strictEqual(after.body.rankingAggregationPeriodHours, 6);
+			assert.strictEqual(after.body.midiPlayerMaxSize, 1024 * 1024);
 
 			// 他のテストに影響しないよう元に戻す
 			const reset = await api('admin/juice/update-settings', {
@@ -1606,8 +1609,17 @@ describe('Endpoints', () => {
 				signupReasonMaxLength: 4096,
 				defaultEmailLang: 'ja-JP',
 				rankingAggregationPeriodHours: 12,
+				midiPlayerMaxSize: 500 * 1024,
 			}, alice);
 			assert.strictEqual(reset.status, 204);
+		});
+
+		test('MIDIプレイヤーの最大サイズはしきい値の範囲外だと更新を拒否する', async () => {
+			const tooSmall = await api('admin/juice/update-settings', { midiPlayerMaxSize: 1023 }, alice);
+			assert.strictEqual(tooSmall.status, 400);
+
+			const tooLarge = await api('admin/juice/update-settings', { midiPlayerMaxSize: 50 * 1024 * 1024 + 1 }, alice);
+			assert.strictEqual(tooLarge.status, 400);
 		});
 
 		test('管理者以外は設定を取得できない', async () => {
@@ -2640,6 +2652,7 @@ describe('Endpoints', () => {
 				githubOauthEnabled: false,
 				gitlabOauthEnabled: false,
 				microsoftOauthEnabled: false,
+				midiPlayerMaxSize: 500 * 1024,
 			});
 		});
 
