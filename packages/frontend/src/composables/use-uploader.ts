@@ -224,7 +224,7 @@ export function useUploader(options: {
 			}, {
 				type: 'switch',
 				text: i18n.ts.aiGenerated,
-				icon: 'ti ti-sparkles',
+				icon: 'ti ti-ai _juiceAiIcon',
 				ref: computed({
 					get: () => item.isAIGenerated ?? false,
 					set: (value) => item.isAIGenerated = value,

@@ -108,6 +108,7 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		text: i18n.ts.juice,
 		to: '/settings/juice',
 		active: currentPage.value?.route.name === 'juice',
+		badge: true,
 	}, {
 		icon: 'ti ti-lock',
 		text: i18n.ts.security,

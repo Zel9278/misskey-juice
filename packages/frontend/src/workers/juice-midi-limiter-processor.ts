@@ -28,9 +28,15 @@ declare function registerProcessor(
 const THRESHOLD_DB = -1; // このdBFSを超えないようゲインを絞る(超えないための余白は呼び出し元のheadroom gainと合わせて確保する)
 const RELEASE_MS = 50; // ゲインをしきい値超え前まで戻す速さ
 const PEAK_DECAY_MS = 5; // ピーク検出の減衰(参照実装の"lookahead"パラメータに相当。実際の信号遅延は発生しない)
+// JUICE: ゲインの下限。黒MIDIのような極端な和音密度だと素の信号がしきい値の何十〜何百倍にも
+// 跳ね上がることがあり、下限が無いと threshold/peak がほぼ0になって実質無音になってしまう
+// (アタックが瞬時・リリースも短いため、密度が高い区間が続く限りゲインが張り付いたまま戻らない)。
+// 多少のクリッピングを許容してでも「聞こえなくなる」よりはマシという判断で床を設ける
+const MIN_GAIN_DB = -24;
 
 class JuiceMidiLimiterProcessor extends AudioWorkletProcessor {
 	private readonly threshold = Math.pow(10, THRESHOLD_DB / 20);
+	private readonly minGain = Math.pow(10, MIN_GAIN_DB / 20);
 	private readonly releaseCoef: number;
 	private readonly peakDecayCoef: number;
 	private peakEnvelope: number[] = [];
@@ -61,12 +67,14 @@ class JuiceMidiLimiterProcessor extends AudioWorkletProcessor {
 			let linkedGain = 1;
 			for (let ch = 0; ch < channelCount; ch++) {
 				const sample = input[ch][i];
-				const absSample = Math.abs(sample);
+				// JUICE: FluidSynth側が万一NaN/Infinityを出しても、ゲイン計算がNaNのまま
+				// 張り付いて恒久的に無音化しないよう、その場合は無視(このサンプルの影響を無いことにする)
+				const absSample = Number.isFinite(sample) ? Math.abs(sample) : 0;
 
 				this.peakEnvelope[ch] *= this.peakDecayCoef;
 				if (absSample > this.peakEnvelope[ch]) this.peakEnvelope[ch] = absSample;
 
-				const instantGain = this.peakEnvelope[ch] <= this.threshold ? 1 : this.threshold / this.peakEnvelope[ch];
+				const instantGain = this.peakEnvelope[ch] <= this.threshold ? 1 : Math.max(this.minGain, this.threshold / this.peakEnvelope[ch]);
 				if (instantGain < this.smoothedGain[ch]) {
 					this.smoothedGain[ch] = instantGain; // アタック: 即座に反映(音割れを確実に防ぐ)
 				} else {
@@ -77,7 +85,8 @@ class JuiceMidiLimiterProcessor extends AudioWorkletProcessor {
 			}
 
 			for (let ch = 0; ch < channelCount; ch++) {
-				output[ch][i] = input[ch][i] * linkedGain;
+				const out = input[ch][i] * linkedGain;
+				output[ch][i] = Number.isFinite(out) ? out : 0;
 			}
 		}
 

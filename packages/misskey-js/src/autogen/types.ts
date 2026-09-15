@@ -5085,7 +5085,6 @@ export type components = {
              * @example xxxxxxxxxx
              */
             relayId?: string | null;
-            relayAnnouncer?: components['schemas']['UserLite'];
             /** @enum {string|null} */
             reactionAcceptance: 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote' | null;
             reactionEmojis: {

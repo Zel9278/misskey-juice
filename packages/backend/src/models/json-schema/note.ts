@@ -221,12 +221,6 @@ export const packedNoteSchema = {
 			format: 'id',
 			example: 'xxxxxxxxxx',
 		},
-		// JUICE: このノートをリレーTLへ流すきっかけとなったAnnounceを送ってきたユーザー(ブーストした人)
-		relayAnnouncer: {
-			type: 'object',
-			ref: 'UserLite',
-			optional: true, nullable: false,
-		},
 		reactionAcceptance: {
 			type: 'string',
 			optional: false, nullable: true,

@@ -59,7 +59,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-if="['image/gif', 'image/apng'].includes(image.type)" :class="$style.indicator">GIF</div>
 			<div v-if="image.comment" :class="$style.indicator">ALT</div>
 			<div v-if="image.isSensitive" :class="$style.indicator" style="color: var(--MI_THEME-warn);" :title="i18n.ts.sensitive"><i class="ti ti-eye-exclamation"></i></div>
-			<div v-if="image.isAIGenerated" :class="$style.indicator" :title="i18n.ts.aiGenerated" :aria-label="i18n.ts.aiGenerated" role="img"><i class="ti ti-sparkles"></i></div>
+			<div v-if="image.isAIGenerated" :class="[$style.indicator, $style.aiGeneratedIndicator]" :title="i18n.ts.aiGenerated" :aria-label="i18n.ts.aiGenerated" role="img"><i class="ti ti-ai"></i></div>
 		</div>
 		<button :class="[$style.menu, $style.menuBottom]" class="_button" @click.stop="showMenu"><i class="ti ti-dots" style="vertical-align: middle;" aria-hidden="true"></i></button>
 		<button :class="[$style.menu, $style.menuTop]" class="_button" @click.stop="hide = true"><i class="ti ti-eye-off" style="vertical-align: middle;" aria-hidden="true"></i></button>
@@ -262,6 +262,12 @@ html[data-color-scheme=light] .visible {
 	font-weight: bold;
 	font-size: 0.8em;
 	padding: 2px 5px;
+}
+
+// JUICE: AI生成物バッジのアイコン(ti-ai)だけ、他の.indicator(GIF/ALTの文字ラベル・
+// センシティブの目アイコン)と共有の0.8emだと小さすぎたため、このバッジだけ少し拡大する
+.aiGeneratedIndicator {
+	font-size: 0.95em;
 }
 
 .image {

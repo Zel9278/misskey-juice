@@ -22,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div :class="$style.tabInner">
 				<span v-if="t.icon" :class="$style.tabIconWrapper">
 					<i :class="[$style.tabIcon, t.icon]"></i>
-					<i v-if="t.badge && t.iconOnly" class="ti ti-droplet-filled" :class="$style.tabIconBadge"></i>
+					<img v-if="t.badge && t.iconOnly" src="/client-assets/juice-glass.svg" alt="" :class="$style.tabIconBadge"/>
 				</span>
 				<div
 					v-if="!t.iconOnly || (!prefer.s.animation && t.key === tab)"
@@ -258,17 +258,15 @@ onUnmounted(() => {
 	display: inline-flex;
 }
 
-// JUICE: iconOnlyタブでタイトルが非表示のときも、JUICE独自タブであることを示す小さい雫アイコン。
-// 単色の丸ドットだと通知の未読バッジ等と紛らわしいため、tabler-iconsのdroplet-filledを使う。
-// 色はテーマ依存の--MI_THEME-*ではなく、投稿フォームのAI生成物ボタン(MkPostForm.vueの
-// footerButtonJuice)やabout-juice.vueの雨エフェクトと同じJUICEブランドカラーで固定する
+// JUICE: iconOnlyタブでタイトルが非表示のときも、JUICE独自タブであることを示す小さいバッジ。
+// 単色の丸ドットだと通知の未読バッジ等と紛らわしいため、JUICE独自のオレンジジュースの
+// グラスのSVG(juice-glass.svg、misskey-juiceアプリ自体のロゴ(雫)とは別物)を使う
 .tabIconBadge {
 	position: absolute;
-	top: -3px;
-	right: -3px;
-	font-size: 9px;
-	line-height: 1;
-	color: #f2841f;
+	bottom: -4px;
+	right: -6px;
+	width: 13px;
+	height: 13px;
 }
 
 .tabIconWrapper + .tabTitle {

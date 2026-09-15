@@ -5,7 +5,7 @@
 
 import { watch, version as vueVersion } from 'vue';
 import { compareVersions } from 'compare-versions';
-import { version, lang, isSafeMode } from '@@/js/config.js';
+import { version, misskeyVersion, juiceVersion, parseJuiceVersion, lang, isSafeMode } from '@@/js/config.js';
 // JUICE: 標準の初期テーマをJuice Orangeに変更
 import defaultLightTheme from '@@/themes/l-juice-orange.json5';
 import defaultDarkTheme from '@@/themes/d-juice-orange.json5';
@@ -73,8 +73,20 @@ export async function common(createVue: () => Promise<App<Element>>) {
 		miLocalStorage.setItem('lastVersion', version);
 
 		try { // 変なバージョン文字列来るとcompareVersionsでエラーになるため
-			if (lastVersion != null && compareVersions(version, lastVersion) === 1) {
-				isClientUpdated = true;
+			if (lastVersion != null) {
+				// JUICE: compare-versionsはsemver仕様に従い、"+"以降のビルドメタデータ
+				// (JUICE独自バージョンをここに埋め込んでいる)を優劣判定から無視する。
+				// そのため本家部分(misskeyVersion)とJUICE部分(juiceVersion)を分けて比較し、
+				// どちらか一方でも上がっていれば更新とみなす(本家部分のみのcompareVersionsだと
+				// "2026.9.0-juice+3.9"→"2026.9.0-juice+3.10"のようなJUICE単独の更新を
+				// 検知できなかった)
+				const last = parseJuiceVersion(lastVersion);
+				const misskeyUpdated = compareVersions(misskeyVersion, last.misskeyVersion) === 1;
+				const juiceUpdated = juiceVersion != null && last.juiceVersion != null
+					&& compareVersions(juiceVersion, last.juiceVersion) === 1;
+				if (misskeyUpdated || juiceUpdated) {
+					isClientUpdated = true;
+				}
 			}
 		} catch (err) { /* empty */ }
 	}

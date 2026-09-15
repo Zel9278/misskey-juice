@@ -140,6 +140,42 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 		</SearchMarker>
 
+		<!-- JUICE: 単体の機能(サブグループを持たない)のため、他のsettingsGroup*のような
+		     カテゴリ折りたたみで包まず、トップレベルのMkFolderとして単独で表示する -->
+		<SearchMarker :keywords="['midi', 'visualizer', 'piano', 'roll', 'speed', 'polyphony']">
+			<MkFolder>
+				<template #label><SearchLabel>{{ i18n.ts._juice.midiVisualizer }}</SearchLabel></template>
+				<div class="_gaps_s">
+					<MkSwitch v-model="midiVisualizerEnabled">
+						<template #label>{{ i18n.ts._juice.midiVisualizerEnabled }}</template>
+						<template #caption>{{ i18n.ts._juice.midiVisualizerEnabledCaption }}</template>
+					</MkSwitch>
+					<MkRange
+						v-if="midiVisualizerEnabled"
+						v-model="midiRollWindowSeconds"
+						:min="0.2"
+						:max="3"
+						:step="0.05"
+						:continuousUpdate="true"
+						:textConverter="(v) => `${v.toFixed(2)}s`"
+					>
+						<template #label>{{ i18n.ts._juice.midiRollSpeed }}</template>
+						<template #caption>{{ i18n.ts._juice.midiRollSpeedCaption }}</template>
+					</MkRange>
+					<MkRange
+						v-model="midiMaxPolyphony"
+						:min="32"
+						:max="640"
+						:step="32"
+						:continuousUpdate="true"
+					>
+						<template #label>{{ i18n.ts._juice.midiMaxPolyphony }}</template>
+						<template #caption>{{ i18n.ts._juice.midiMaxPolyphonyCaption }}</template>
+					</MkRange>
+				</div>
+			</MkFolder>
+		</SearchMarker>
+
 		<SearchMarker v-slot="slotProps">
 			<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 				<template #label><SearchLabel>{{ i18n.ts._juice.settingsGroupRequests }}</SearchLabel></template>
@@ -191,6 +227,7 @@ import FormLink from '@/components/form/link.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkSelect from '@/components/MkSelect.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
+import MkRange from '@/components/MkRange.vue';
 import MkDraggable from '@/components/MkDraggable.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkRadios from '@/components/MkRadios.vue';
@@ -310,6 +347,11 @@ function onChangeExcludeOwnNotesFromLanguageFilter(v: boolean) {
 
 // JUICE: ウィジェットパネル/ドロワーを画面のどちら側に表示するか
 const widgetsSide = prefer.model('widgetsSide');
+
+// JUICE: 添付MIDIファイル再生時のピアノロール・鍵盤ビジュアライザー表示設定
+const midiVisualizerEnabled = prefer.model('midiVisualizerEnabled');
+const midiRollWindowSeconds = prefer.model('midiRollWindowSeconds');
+const midiMaxPolyphony = prefer.model('midiMaxPolyphony');
 
 const muteAIGeneratedNotesItems = [
 	{ label: i18n.ts.none, value: 'none' },

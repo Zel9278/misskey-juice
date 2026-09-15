@@ -117,6 +117,26 @@ export const PREF_DEF = definePreferences({
 		default: 0.25,
 	},
 
+	// JUICE: 添付MIDIファイル再生時のピアノロール・鍵盤ビジュアライザーを表示するか。
+	// 黒MIDI等ノート数が極端に多いファイルでは描画コスト自体を避けたい場合もあるため無効化できる
+	midiVisualizerEnabled: {
+		default: true,
+	},
+
+	// JUICE: ピアノロールが何秒ぶんを一画面に収めるか(小さいほどノートが速く流れる)。
+	// 曲頭のテンポを基準に、テンポに依存しないtick軸のスクロール速度へ1回だけ変換して使う
+	midiRollWindowSeconds: {
+		default: 0.8,
+	},
+
+	// JUICE: MIDI再生時のFluidSynthの同時発音数上限(synth.polyphony)。既定はFluidSynth本体の
+	// 既定値(256)に合わせてある。黒MIDI等で音が薄くなりやすい曲では上げると改善することがあるが、
+	// 上げすぎるとAudioWorkletの実時間レンダリングが追いつかず逆に無音になることがある
+	// (詳細はjuice-midi-player.tsのコメント参照)。設定画面のスライダーは32-640の範囲に収めている
+	midiMaxPolyphony: {
+		default: 256,
+	},
+
 	// JUICE: タイムラインページのタブバーから、閲覧者側の好みで個別に非表示にしたベーシックタイムライン
 	// (ホーム/ローカル/ソーシャル/グローバル)およびリレー/メディアタイムラインのタブ一覧(空 = 全て表示)
 	hiddenTimelineTabs: {

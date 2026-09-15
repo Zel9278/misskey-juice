@@ -123,20 +123,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkA v-if="appearNote.channel && !inChannel" :class="$style.channel" :to="`/channels/${appearNote.channel.id}`"><i class="ti ti-device-tv"></i> {{ appearNote.channel.name }}</MkA>
 				<span v-if="relayHost" :class="$style.relay">
 					<span v-tooltip="i18n.tsx._juice.relayTimelineDeliveredVia({ host: relayHost })"><i class="ti ti-antenna"></i> {{ relayHost }}</span>
-					<!-- JUICE: リレー経由でも投稿元とリレー登録先は無関係なことが多い(誰かのブーストが転送されただけ)ため、
-					実際にAnnounceを送ってきた(ブーストした)ユーザーが分かる場合は併記して紛らわしさを減らす。
-					説明文はリンク(MkA)の:titleではなくv-tooltip:dialogを別の小さなヘルプアイコンに付け、
-					スマホ(titleがそもそも出せない・タップ即ナビゲートしてしまう)でも読めるようにする -->
-					<template v-if="appearNote.relayAnnouncer">
-						<MkA v-user-preview="appearNote.relayAnnouncer.id" :to="userPage(appearNote.relayAnnouncer)" :class="$style.relayAnnouncer">
-							<i class="ti ti-repeat"></i>
-							<MkAvatar :class="$style.relayAnnouncerAvatar" :user="appearNote.relayAnnouncer" preview/>
-							<MkAcct :user="appearNote.relayAnnouncer"/>
-						</MkA>
-						<button v-tooltip:dialog="i18n.tsx._juice.relayTimelineAnnouncedBy({ user: acct(appearNote.relayAnnouncer) })" class="_button _help" :class="$style.relayAnnouncerHelp">
-							<i class="ti ti-help-circle"></i>
-						</button>
-					</template>
+					<!-- JUICE: リレー経由でも投稿元サーバー自体がリレーに登録されているとは限らない(誰かのブーストが
+					転送されただけのことがある)ため、注意書きを併記する。スマホ(titleがそもそも出せない)でも
+					読めるよう、v-tooltip(hover用)とは別に小さなヘルプアイコンにv-tooltip:dialogを付ける -->
+					<button v-tooltip:dialog="i18n.tsx._juice.relayTimelineDeliveredVia({ host: relayHost })" class="_button _help" :class="$style.relayHelp">
+						<i class="ti ti-help-circle"></i>
+					</button>
 				</span>
 			</div>
 			<MkReactionsViewer
@@ -768,21 +760,9 @@ const keymap = {
 	line-height: 1.3em;
 }
 
-.relayAnnouncer {
+.relayHelp {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
-}
-
-.relayAnnouncerHelp {
-	display: inline-flex;
-	align-items: center;
-}
-
-.relayAnnouncerAvatar {
-	width: 1.3em;
-	height: 1.3em;
-	flex-shrink: 0;
 }
 
 .footer {

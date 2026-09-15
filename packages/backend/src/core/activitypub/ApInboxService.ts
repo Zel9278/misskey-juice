@@ -324,11 +324,8 @@ export class ApInboxService {
 				// JUICE: 既に他経路(通常のフォロー配送等)で存在するノートでも、
 				// リレー経由のAnnounceだと確認できたなら、リレーTL用にrelayIdを追従させる。
 				// (matchedRelayはfromRelay===trueのときのみnon-null)
-				// relayAnnouncerIdには実際にAnnounceを送ってきたactor(=ブーストした人)を記録し、
-				// リレーTLでの表示を「登録リレー自身の投稿」ではなく「誰かがブーストした結果」と
-				// わかりやすくする
 				if (fromRelay && matchedRelay != null && exist.visibility === 'public') {
-					await this.updateNoteRelayId(exist.id, matchedRelay.id, actor.id);
+					await this.updateNoteRelayId(exist.id, matchedRelay.id);
 				}
 				return;
 			}
@@ -353,15 +350,13 @@ export class ApInboxService {
 			if (fromRelay) {
 				this.logger.info(`Publishing relay-delivered note: ${uri}`);
 
-				// JUICE: リレーTL用に、どのリレー経由で届いたか・誰がAnnounceしたか(ブーストした人)を記録する。
-				// 複数リレーから同じノートが届く場合はfirst-writer-winsで良いため、
-				// まだ未設定(IsNull)の場合のみ更新する。公開ノートのみが対象。
+				// JUICE: リレーTL用に、どのリレー経由で届いたかを記録する。複数リレーから同じノートが
+				// 届く場合はfirst-writer-winsで良いため、まだ未設定(IsNull)の場合のみ更新する。
+				// 公開ノートのみが対象
 				if (renote.visibility === 'public') {
-					const attached = await this.updateNoteRelayId(renote.id, matchedRelay.id, actor.id);
+					const attached = await this.updateNoteRelayId(renote.id, matchedRelay.id);
 					if (attached) {
 						renote.relayId = matchedRelay.id;
-						renote.relayAnnouncerId = actor.id;
-						renote.relayAnnouncer = actor;
 					}
 				}
 
@@ -399,7 +394,7 @@ export class ApInboxService {
 	}
 
 	/**
-	 * JUICE: ノートをリレーTL用に紐付ける(note.relayId/relayAnnouncerIdを設定する)。
+	 * JUICE: ノートをリレーTL用に紐付ける(note.relayIdを設定する)。
 	 * note.relayIdはrelayテーブルへの外部キーのため、RelayServiceの承認済みリレー一覧
 	 * キャッシュが万一古いままだと、既に削除されたリレーのIDを書き込もうとして外部キー違反に
 	 * なりうる(通常はRelayService側でリレーの削除・承認・却下のたびにキャッシュを即時
@@ -407,11 +402,11 @@ export class ApInboxService {
 	 * その場合はinboxジョブ全体を失敗させず、リレーTLへの紐付けだけを諦める
 	 */
 	@bindThis
-	private async updateNoteRelayId(noteId: string, relayId: string, relayAnnouncerId: string): Promise<boolean> {
+	private async updateNoteRelayId(noteId: string, relayId: string): Promise<boolean> {
 		try {
 			const result = await this.notesRepository.update(
 				{ id: noteId, relayId: IsNull() },
-				{ relayId, relayAnnouncerId },
+				{ relayId },
 			);
 			return !!result.affected;
 		} catch (e) {

@@ -477,7 +477,7 @@ export function getNoteMenu(props: {
 			}
 
 			menuItems.push({
-				icon: 'ti ti-sparkles',
+				icon: 'ti ti-ai _juiceAiIcon',
 				text: appearNote.isAIGenerated ? i18n.ts.unmarkAsAIGenerated : i18n.ts.markAsAIGenerated,
 				badge: true,
 				action: () => toggleAIGenerated(!appearNote.isAIGenerated),

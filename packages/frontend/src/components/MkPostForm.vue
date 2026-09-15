@@ -98,7 +98,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<button v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.fromDrive + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromDrive"><i class="ti ti-cloud-download"></i></button>
 			<button v-tooltip="i18n.ts.poll" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: poll }]" @click="togglePoll"><i class="ti ti-chart-arrows"></i></button>
 			<button v-tooltip="i18n.ts.useCw" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]" @click="useCw = !useCw"><i class="ti ti-eye-off"></i></button>
-			<button v-tooltip="i18n.ts.aiGenerated" class="_button" :class="[$style.footerButton, $style.footerButtonJuice, { [$style.footerButtonActive]: isAIGenerated }]" @click="isAIGenerated = !isAIGenerated"><i class="ti ti-sparkles"></i><i class="ti ti-droplet-filled" :class="$style.footerButtonJuiceBadge"></i></button>
+			<button v-tooltip="i18n.ts.aiGenerated" class="_button" :class="[$style.footerButton, $style.footerButtonJuice, { [$style.footerButtonActive]: isAIGenerated }]" @click="isAIGenerated = !isAIGenerated"><i class="ti ti-ai" :class="$style.aiGeneratedButtonIcon"></i><img src="/client-assets/juice-glass.svg" alt="" :class="$style.footerButtonJuiceBadge"/></button>
 			<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
 			<button v-tooltip="i18n.ts.mention" class="_button" :class="$style.footerButton" @click="insertMention"><i class="ti ti-at"></i></button>
 			<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
@@ -1948,26 +1948,36 @@ html[data-color-scheme=light] .preview {
 		background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.05));
 	}
 
-	// JUICE: 本家に無いJUICE独自ボタンであることを示す小さい雫アイコン。アイコンのみでラベル文字が
-	// 無いため、_juiceの文字バッジではなくMkPageHeader.tabs.vueのアイコン専用タブと同じ
-	// 小さい雫アイコン方式を採用する(単色の丸ドットだと通知バッジ等と紛らわしいため、
-	// tabler-iconsのdroplet-filledを使う。色はJUICEブランドカラーで固定)
-	&.footerButtonJuice {
-		position: relative;
-	}
-
 	&.footerButtonActive {
 		color: var(--MI_THEME-accent);
+	}
+
+	// JUICE: 本家に無いJUICE独自ボタンであることを示すため、小さいオレンジジュースのグラスの
+	// SVG(juice-glass.svg、MkPageHeader.tabs.vueのタブバッジと同じアセット)をボタンの角に重ねる
+	&.footerButtonJuice {
+		position: relative;
 	}
 }
 
 .footerButtonJuiceBadge {
 	position: absolute;
-	top: 4px;
+	bottom: 4px;
 	right: 4px;
-	font-size: 9px;
-	line-height: 1;
-	color: #f2841f;
+	width: 13px;
+	height: 13px;
+	pointer-events: none;
+}
+
+// JUICE: ti-aiは「AI」の文字を描いた線画のため、他のfooterButtonの単一記号アイコン
+// (ti-photo-plus等、24x24のボックスをほぼ埋める)と同じfont-sizeでも余白が多く小さく見える。
+// このボタンだけ少し拡大する
+// JUICE: font-sizeで拡大すると、アイコン自身のレイアウト用ボックスも一緒に広がり、
+// footerButtonの幅(width: auto、中身にフィットするサイズ)が他のfooterButtonより
+// 広くなってツールバーの並びがガタつく(実機で確認済み)ため、レイアウトに影響しない
+// transform: scale()で見た目だけ拡大する
+.aiGeneratedButtonIcon {
+	display: inline-block;
+	transform: scale(1.5);
 }
 
 .previewButtonActive {
