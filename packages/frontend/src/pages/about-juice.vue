@@ -213,7 +213,7 @@ const contributors = [
 
 const features = [
 	{ icon: 'ti ti-user-check', text: i18n.ts._aboutJuice._features.approvalSignup },
-	{ icon: 'ti ti-sparkles', text: i18n.ts._aboutJuice._features.aiGenerated },
+	{ icon: 'ti ti-ai', text: i18n.ts._aboutJuice._features.aiGenerated },
 	{ icon: 'ti ti-mood-plus', text: i18n.ts._aboutJuice._features.emojiRequest },
 	{ icon: 'ti ti-frame', text: i18n.ts._aboutJuice._features.avatarDecorationRequest },
 	{ icon: 'ti ti-replace', text: i18n.ts._aboutJuice._features.requestReplacement },

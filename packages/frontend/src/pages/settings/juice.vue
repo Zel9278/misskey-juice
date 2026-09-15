@@ -136,40 +136,42 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</div>
 						</FormSection>
 					</SearchMarker>
+				</div>
+			</MkFolder>
+		</SearchMarker>
 
-					<SearchMarker :keywords="['midi', 'visualizer', 'piano', 'roll', 'speed', 'polyphony']">
-						<MkFolder>
-							<template #label><SearchLabel>{{ i18n.ts._juice.midiVisualizer }}</SearchLabel></template>
-							<div class="_gaps_s">
-								<MkSwitch v-model="midiVisualizerEnabled">
-									<template #label>{{ i18n.ts._juice.midiVisualizerEnabled }}</template>
-									<template #caption>{{ i18n.ts._juice.midiVisualizerEnabledCaption }}</template>
-								</MkSwitch>
-								<MkRange
-									v-if="midiVisualizerEnabled"
-									v-model="midiRollWindowSeconds"
-									:min="0.2"
-									:max="3"
-									:step="0.05"
-									:continuousUpdate="true"
-									:textConverter="(v) => `${v.toFixed(2)}s`"
-								>
-									<template #label>{{ i18n.ts._juice.midiRollSpeed }}</template>
-									<template #caption>{{ i18n.ts._juice.midiRollSpeedCaption }}</template>
-								</MkRange>
-								<MkRange
-									v-model="midiMaxPolyphony"
-									:min="32"
-									:max="640"
-									:step="32"
-									:continuousUpdate="true"
-								>
-									<template #label>{{ i18n.ts._juice.midiMaxPolyphony }}</template>
-									<template #caption>{{ i18n.ts._juice.midiMaxPolyphonyCaption }}</template>
-								</MkRange>
-							</div>
-						</MkFolder>
-					</SearchMarker>
+		<!-- JUICE: 単体の機能(サブグループを持たない)のため、他のsettingsGroup*のような
+		     カテゴリ折りたたみで包まず、トップレベルのMkFolderとして単独で表示する -->
+		<SearchMarker :keywords="['midi', 'visualizer', 'piano', 'roll', 'speed', 'polyphony']">
+			<MkFolder>
+				<template #label><SearchLabel>{{ i18n.ts._juice.midiVisualizer }}</SearchLabel></template>
+				<div class="_gaps_s">
+					<MkSwitch v-model="midiVisualizerEnabled">
+						<template #label>{{ i18n.ts._juice.midiVisualizerEnabled }}</template>
+						<template #caption>{{ i18n.ts._juice.midiVisualizerEnabledCaption }}</template>
+					</MkSwitch>
+					<MkRange
+						v-if="midiVisualizerEnabled"
+						v-model="midiRollWindowSeconds"
+						:min="0.2"
+						:max="3"
+						:step="0.05"
+						:continuousUpdate="true"
+						:textConverter="(v) => `${v.toFixed(2)}s`"
+					>
+						<template #label>{{ i18n.ts._juice.midiRollSpeed }}</template>
+						<template #caption>{{ i18n.ts._juice.midiRollSpeedCaption }}</template>
+					</MkRange>
+					<MkRange
+						v-model="midiMaxPolyphony"
+						:min="32"
+						:max="640"
+						:step="32"
+						:continuousUpdate="true"
+					>
+						<template #label>{{ i18n.ts._juice.midiMaxPolyphony }}</template>
+						<template #caption>{{ i18n.ts._juice.midiMaxPolyphonyCaption }}</template>
+					</MkRange>
 				</div>
 			</MkFolder>
 		</SearchMarker>

@@ -475,6 +475,18 @@ rt {
 	display: inline-block;
 }
 
+// JUICE: ti-ai(「AI」の文字を描いた線画)は、単一記号のアイコン(ti-photo-plus等、24x24の
+// ボックスをほぼ埋める)と同じfont-sizeでも余白が多く小さく見える。MenuItem.iconはプレーンな
+// 文字列クラス(MkMenu.vueがCSS Modulesを経由せずそのままclassへ渡す)のため、メニュー項目・
+// トグルのアイコンとしてti-aiを使う箇所はこのクラスを併記して拡大する。
+// font-sizeで拡大すると、アイコン自身のレイアウト用ボックスも一緒に広がり、隣接するテキストの
+// 開始位置が他のメニュー項目(既定サイズのアイコン+一定のmargin-right)とズレてしまう
+// (実機で確認済み)ため、レイアウトに影響しないtransform: scale()で見た目だけ拡大する
+._juiceAiIcon {
+	display: inline-block;
+	transform: scale(1.3);
+}
+
 ._table {
 	> ._row {
 		display: flex;

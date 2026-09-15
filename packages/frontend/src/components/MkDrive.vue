@@ -714,7 +714,7 @@ function getMenu() {
 	}, { type: 'divider' }, {
 		type: 'switch',
 		text: i18n.ts.aiGeneratedOnly,
-		icon: 'ti ti-sparkles',
+		icon: 'ti ti-ai _juiceAiIcon',
 		badge: true,
 		ref: onlyAIGenerated,
 	}, {

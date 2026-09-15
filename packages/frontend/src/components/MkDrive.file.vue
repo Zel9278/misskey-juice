@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 		<MkDriveFileThumbnail :class="$style.thumbnail" :file="file" fit="contain"/>
 
-		<div v-if="file.isAIGenerated" v-tooltip="i18n.ts.aiGenerated" :class="$style.aiGeneratedBadge" :aria-label="i18n.ts.aiGenerated" role="img"><i class="ti ti-sparkles"></i></div>
+		<div v-if="file.isAIGenerated" v-tooltip="i18n.ts.aiGenerated" :class="$style.aiGeneratedBadge" :aria-label="i18n.ts.aiGenerated" role="img"><i class="ti ti-ai"></i></div>
 
 		<p :class="$style.name">
 			<span>{{ file.name.lastIndexOf('.') != -1 ? file.name.substring(0, file.name.lastIndexOf('.')) : file.name }}</span>
@@ -233,7 +233,7 @@ function onDragend() {
 	border-radius: 50%;
 	background: var(--MI_THEME-accent);
 	color: var(--MI_THEME-fgOnAccent);
-	font-size: 11px;
+	font-size: 13px;
 	pointer-events: none;
 }
 

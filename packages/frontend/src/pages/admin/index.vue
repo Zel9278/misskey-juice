@@ -245,6 +245,7 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		text: i18n.ts.juice,
 		to: '/admin/juice',
 		active: currentPage.value?.route.name === 'juice',
+		badge: true,
 	}, {
 		icon: 'ti ti-user-question',
 		text: i18n.ts._juiceApprovals.title,

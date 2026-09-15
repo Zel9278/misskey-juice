@@ -181,7 +181,7 @@ function showFileMenu(file: Misskey.entities.DriveFile, ev: PointerEvent | Keybo
 		action: () => { toggleSensitive(file); },
 	}, {
 		text: file.isAIGenerated ? i18n.ts.unmarkAsAIGenerated : i18n.ts.markAsAIGenerated,
-		icon: 'ti ti-sparkles',
+		icon: 'ti ti-ai _juiceAiIcon',
 		badge: true,
 		action: () => { toggleAIGenerated(file); },
 	}, {
