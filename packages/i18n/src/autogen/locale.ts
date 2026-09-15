@@ -9376,6 +9376,22 @@ export interface Locale extends ILocale {
              * ログイン不要で送信できるお問い合わせフォーム(カテゴリ・返信方法選択、モデレーター向けの状態管理・担当者割り当て)
              */
             "contactForm": string;
+            /**
+             * 通報のカテゴリ分類、ノート・チャットメッセージの構造化紐付け(モデレーター向けプレビュー表示)
+             */
+            "reportCategories": string;
+            /**
+             * 絵文字/アバターデコレーション申請・承認式登録・お問い合わせ・通報の新着を、通常の通知一覧でも確認可能
+             */
+            "moderationNotifications": string;
+            /**
+             * Discord/Google/GitHub/GitLab/Microsoftアカウントを使った連携ログイン(サインイン手段として使うには2段階認証の有効化が必須)
+             */
+            "oauthLogin": string;
+            /**
+             * ノート添付MIDIファイルの軽量プレイヤー(FluidSynthベースのサウンドフォント再生、ピアノロールビジュアライザー)
+             */
+            "midiPlayer": string;
         };
         /**
          * どういう経路で実装されたか

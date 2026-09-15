@@ -2456,6 +2456,10 @@ _aboutJuice:
     nickname: "他ユーザーに対する自分専用のニックネーム設定(プロフィールページ・ユーザーホバープレビューに表示)"
     loginFailedNotification: "ログイン試行の失敗をアカウント本人へ通知(アプリ内通知・メール)"
     contactForm: "ログイン不要で送信できるお問い合わせフォーム(カテゴリ・返信方法選択、モデレーター向けの状態管理・担当者割り当て)"
+    reportCategories: "通報のカテゴリ分類、ノート・チャットメッセージの構造化紐付け(モデレーター向けプレビュー表示)"
+    moderationNotifications: "絵文字/アバターデコレーション申請・承認式登録・お問い合わせ・通報の新着を、通常の通知一覧でも確認可能"
+    oauthLogin: "Discord/Google/GitHub/GitLab/Microsoftアカウントを使った連携ログイン(サインイン手段として使うには2段階認証の有効化が必須)"
+    midiPlayer: "ノート添付MIDIファイルの軽量プレイヤー(FluidSynthベースのサウンドフォント再生、ピアノロールビジュアライザー)"
   route: "どういう経路で実装されたか"
   _route:
     base: "本家Misskey"

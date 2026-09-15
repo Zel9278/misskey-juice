@@ -232,6 +232,10 @@ const features = [
 	{ icon: 'ti ti-tag', text: i18n.ts._aboutJuice._features.nickname },
 	{ icon: 'ti ti-shield-exclamation', text: i18n.ts._aboutJuice._features.loginFailedNotification },
 	{ icon: 'ti ti-mail', text: i18n.ts._aboutJuice._features.contactForm },
+	{ icon: 'ti ti-message-report', text: i18n.ts._aboutJuice._features.reportCategories },
+	{ icon: 'ti ti-bell-exclamation', text: i18n.ts._aboutJuice._features.moderationNotifications },
+	{ icon: 'ti ti-brand-oauth', text: i18n.ts._aboutJuice._features.oauthLogin },
+	{ icon: 'ti ti-piano', text: i18n.ts._aboutJuice._features.midiPlayer },
 ];
 
 // JUICE: この一覧に載っている機能が、どういう経路で実装されたかをざっくり示す
