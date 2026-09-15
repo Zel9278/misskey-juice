@@ -4041,6 +4041,7 @@ _juice:
   nSelected: "{n}件選択中"
   midiPlayerTooLarge: "このMIDIファイルはサイズが大きいため再生できません({size} / 上限{limit})。過度に密集したノートを含むファイル(いわゆる黒MIDI等)による負荷を防ぐための制限です。"
   midiPlayerParseError: "このファイルを解析できませんでした。壊れているか、対応していない形式のMIDIファイルの可能性があります。"
+  misskeyJuiceUpdated: "Misskey Juiceが更新されました！"
 
 _juiceApprovals:
   title: "承認待ちユーザー"

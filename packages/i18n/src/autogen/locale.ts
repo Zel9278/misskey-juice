@@ -15122,6 +15122,10 @@ export interface Locale extends ILocale {
          * このファイルを解析できませんでした。壊れているか、対応していない形式のMIDIファイルの可能性があります。
          */
         "midiPlayerParseError": string;
+        /**
+         * Misskey Juiceが更新されました！
+         */
+        "misskeyJuiceUpdated": string;
     };
     "_juiceApprovals": {
         /**

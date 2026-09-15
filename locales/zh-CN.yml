@@ -4095,6 +4095,7 @@ _juice:
   midiRollSpeedCaption: "设置钢琴卷帘一次显示多少秒的内容(数值越小，音符流动越快)。这是以曲首速度为基准的大致秒数，实际速度按不依赖速度的基准固定，因此曲中速度变化时，实际可见的秒数会随之变化。"
   midiMaxPolyphony: "同时发音数上限"
   midiMaxPolyphonyCaption: "设置MIDI播放引擎(FluidSynth)可同时发出的音符数量上限。和弦密度较高的曲子如果感觉声音单薄，调高该值可能有所改善，但调得过高会导致处理跟不上，反而变成无声。更改将在下次开始播放时生效。"
+  misskeyJuiceUpdated: "Misskey Juice已更新！"
 _juiceApprovals:
   approve: "批准"
   approveConfirm: "要批准@{username}的注册吗？"

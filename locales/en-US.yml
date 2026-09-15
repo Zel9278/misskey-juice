@@ -4095,6 +4095,7 @@ _juice:
   midiRollSpeedCaption: "Sets how many seconds of the piano roll are shown on screen at once (a smaller value makes notes scroll faster). This is an approximate reference based on the tempo at the start of the song; the actual speed is fixed on a tempo-independent basis, so the number of seconds actually visible will vary if the tempo changes partway through."
   midiMaxPolyphony: "Maximum simultaneous voices"
   midiMaxPolyphonyCaption: "Sets the maximum number of notes the MIDI playback engine (FluidSynth) can sound at the same time. Raising it can help if dense chords sound thin, but setting it too high can cause processing to fall behind and result in silence instead. Changes take effect the next time playback starts."
+  misskeyJuiceUpdated: "Misskey Juice has been updated!"
 _juiceApprovals:
   approve: "Approve"
   approveConfirm: "Approve the registration of @{username}?"
