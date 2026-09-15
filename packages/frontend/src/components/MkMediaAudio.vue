@@ -99,7 +99,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, provide, useTemplateRef, defineAsyncComponent } from 'vue';
+import { ref, computed, provide, useTemplateRef, defineAsyncComponent, onDeactivated } from 'vue';
 import * as Misskey from 'misskey-js';
 import type { MediaComponentExposes } from '@/types/media-component.js';
 import type { Content } from '@/components/MkLightbox.item.vue';
@@ -192,6 +192,13 @@ function togglePlayPause() {
 function onExpandAction(ev: MouseEvent) {
 	emit('mediaClick', ev as unknown as PointerEvent);
 }
+
+// JUICE: RouterView.vueがページを<KeepAlive>でキャッシュしているため、ページ遷移してもこの
+// コンポーネントはアンマウントされず、裏で再生され続けてしまう。ページが非アクティブ化される
+// タイミングで明示的に一時停止する
+onDeactivated(() => {
+	audioVisualizer.value?.audioEl?.pause();
+});
 
 function showMenu(ev: PointerEvent) {
 	os.popupMenu(getFileMenu(props.audio, (newHide) => { hide.value = newHide; }), (ev.currentTarget ?? ev.target ?? undefined) as HTMLElement | undefined);

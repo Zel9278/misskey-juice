@@ -83,6 +83,47 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</FormSection>
 
 				<FormSection>
+					<template #label>{{ i18n.ts._aboutJuice.midiSoundfont }}</template>
+					<div class="_gaps_s">
+						<div>{{ i18n.ts._aboutJuice.midiSoundfontText }}</div>
+						<FormLink to="https://github.com/mrbumpy409/GeneralUser-GS" external>
+							<template #icon><i class="ti ti-music"></i></template>
+							GeneralUser GS
+							<template #suffix>GitHub</template>
+						</FormLink>
+						<MkKeyValue>
+							<template #key>{{ i18n.ts.license }}</template>
+							<template #value>{{ i18n.ts._aboutJuice.midiSoundfontLicense }}</template>
+						</MkKeyValue>
+					</div>
+				</FormSection>
+
+				<FormSection>
+					<template #label>{{ i18n.ts._aboutJuice.midiSynth }}</template>
+					<div class="_gaps_s">
+						<div>{{ i18n.ts._aboutJuice.midiSynthText }}</div>
+						<FormLink to="https://github.com/jet2jet/js-synthesizer" external>
+							<template #icon><i class="ti ti-code"></i></template>
+							js-synthesizer
+							<template #suffix>GitHub</template>
+						</FormLink>
+						<MkKeyValue>
+							<template #key>{{ i18n.ts.license }}</template>
+							<template #value>BSD-3-Clause</template>
+						</MkKeyValue>
+						<FormLink to="https://www.fluidsynth.org/" external>
+							<template #icon><i class="ti ti-code"></i></template>
+							FluidSynth
+							<template #suffix>fluidsynth.org</template>
+						</FormLink>
+						<MkKeyValue>
+							<template #key>{{ i18n.ts.license }}</template>
+							<template #value>LGPL-2.1-only</template>
+						</MkKeyValue>
+					</div>
+				</FormSection>
+
+				<FormSection>
 					<template #label>{{ i18n.ts._aboutJuice.inspiredBy }}</template>
 					<div class="_gaps_s">
 						<FormLink to="https://github.com/kokonect-link/cherrypick" external>

@@ -405,11 +405,6 @@ export class NoteEntityService implements OnModuleInit {
 			isAIGenerated: note.isAIGenerated,
 			hideFromMediaTimeline: note.hideFromMediaTimeline, // JUICE
 			relayId: note.relayId ?? undefined,
-			// JUICE: 実際にAnnounceを送ってきた(ブーストした)ユーザー。リレー未経由や、
-			// リレー経由でもUserが既に削除済み等でrelayAnnouncerIdがnullの場合はundefined
-			relayAnnouncer: note.relayAnnouncerId != null
-				? this.userEntityService.pack(note.relayAnnouncer ?? note.relayAnnouncerId, me)
-				: undefined,
 			reactionAcceptance: note.reactionAcceptance,
 			visibleUserIds: note.visibility === 'specified' ? note.visibleUserIds : undefined,
 			renoteCount: note.renoteCount,

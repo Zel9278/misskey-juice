@@ -250,24 +250,6 @@ export class MiNote {
 	@JoinColumn()
 	public relay: MiRelay | null;
 
-	// JUICE: リレー経由のAnnounceを送ってきたactor(実際にブーストした人)。
-	// relayIdだけでは「どのリレーから届いたか」しか分からず、投稿元ホストがリレー登録者とは
-	// 無関係なことも多い(誰かが外部の投稿をブーストしただけ)ため、リレータイムラインでの
-	// 表示をわかりやすくする目的で追加
-	@Index()
-	@Column({
-		...id(),
-		nullable: true,
-		comment: 'The ID of the user (relay subscriber) whose Announce caused this note to be tagged with relayId (JUICE).',
-	})
-	public relayAnnouncerId: MiUser['id'] | null;
-
-	@ManyToOne(() => MiUser, {
-		onDelete: 'SET NULL',
-	})
-	@JoinColumn()
-	public relayAnnouncer: MiUser | null;
-
 	//#region Denormalized fields
 	@Index()
 	@Column('varchar', {

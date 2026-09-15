@@ -11,6 +11,7 @@
 export type JuiceMidiNoteEvent = {
 	type: 'noteOn' | 'noteOff';
 	time: number; // 秒
+	tick: number; // MIDIファイルの生tick値。テンポに依存しない軸(ピアノロールのスクロール)用
 	track: number; // 0-indexed、元のMTrkチャンクの並び順(トラックごとのビジュアライザー色分け用)
 	channel: number; // 0-15
 	note: number; // 0-127
@@ -51,11 +52,43 @@ export type JuiceMidiTempoEvent = {
 
 export type JuiceMidiEvent = JuiceMidiNoteEvent | JuiceMidiProgramChangeEvent | JuiceMidiControlChangeEvent | JuiceMidiPitchBendEvent | JuiceMidiTempoEvent;
 
+// JUICE: シーク時の秒→tick逆変換用のテンポ変化点。tick昇順(=time昇順)で、
+// 必ず先頭に曲頭(tick 0, time 0)の要素を持つ
+export type JuiceMidiTempoCheckpoint = {
+	tick: number;
+	time: number; // 秒
+	microsPerQuarter: number;
+};
+
+// JUICE: ピアノロール表示用。noteOn/noteOffのペアを開始時刻・長さの形にまとめたもの
+// (events側は発音/消音を別々のイベントとして持つため、ロール描画のたびに毎回ペアリングし
+// 直さずに済むよう、パース時に1回だけ作っておく)
+export type JuiceMidiNoteSpan = {
+	time: number; // 秒(発音開始)
+	duration: number; // 秒
+	tick: number; // 発音開始(生tick値)。ピアノロールのスクロール軸はテンポに依存しないtick基準で計算する
+	tickDuration: number; // 長さ(tick単位)
+	track: number; // 0-indexed
+	channel: number; // 0-15
+	note: number; // 0-127
+	velocity: number; // 0-127
+};
+
 export type JuiceMidiSong = {
 	events: JuiceMidiEvent[]; // time昇順
+	// JUICE: ピアノロール表示用。ノート番号(0-127)ごとにtime昇順で束ねてある(添字=ノート番号)。
+	// 密集した曲でも「今の可視ウィンドウに重なるノートだけ」をノート番号単位の二分探索+
+	// 打ち切りスキャンで拾えるようにするための構造(avu2-midi-infoのnote_spans[pitch]を移植)
+	notesByPitch: JuiceMidiNoteSpan[][];
+	// JUICE: notesByPitch[p][0..i]における終了tick(tick+tickDuration)の累積最大値。
+	// 後方(過去方向)へ走査する際、この値がウィンドウの下限を下回った時点で
+	// それより前のノートは全て可視ウィンドウの外と確定するため打ち切れる(同じくnote_max_end[pitch]を移植)
+	notesMaxEndByPitch: number[][];
 	durationSeconds: number;
 	trackCount: number;
 	initialBpm: number; // 最初のノート等が鳴るまでに有効なテンポ(明示的な設定が無ければ120)
+	ticksPerQuarter: number; // MIDIファイルヘッダのdivision。FluidSynthのseekPlayer()が期待するtick単位と同じ
+	tempoMap: JuiceMidiTempoCheckpoint[];
 };
 
 const DEFAULT_TEMPO_MICROS_PER_QUARTER = 500000; // 120bpm
@@ -248,7 +281,10 @@ export function parseMidiFile(buffer: ArrayBuffer): JuiceMidiSong {
 	};
 
 	const events: JuiceMidiEvent[] = [];
+	// JUICE: シーク時の秒→tick逆変換用。曲頭のテンポを基準点として必ず含めておく
+	const tempoMap: JuiceMidiTempoCheckpoint[] = [{ tick: 0, time: 0, microsPerQuarter: DEFAULT_TEMPO_MICROS_PER_QUARTER }];
 	let maxTime = 0;
+	let maxTick = 0;
 	// JUICE: 最初のノート等が鳴るまでに有効だったテンポをBPM表示の初期値として使う
 	let initialBpm: number | null = null;
 	for (const raw of rawEvents) {
@@ -259,10 +295,11 @@ export function parseMidiFile(buffer: ArrayBuffer): JuiceMidiSong {
 		if (raw.kind === 'tempo') {
 			microsPerQuarter = raw.microsPerQuarter!;
 			events.push({ type: 'tempo', time, track: raw.track, bpm: 60_000_000 / microsPerQuarter });
+			tempoMap.push({ tick: raw.tick, time, microsPerQuarter });
 		} else {
 			initialBpm ??= 60_000_000 / microsPerQuarter;
 			if (raw.kind === 'noteOn' || raw.kind === 'noteOff') {
-				events.push({ type: raw.kind, time, track: raw.track, channel: raw.channel!, note: raw.note!, velocity: raw.velocity ?? 0 });
+				events.push({ type: raw.kind, time, tick: raw.tick, track: raw.track, channel: raw.channel!, note: raw.note!, velocity: raw.velocity ?? 0 });
 			} else if (raw.kind === 'programChange') {
 				events.push({ type: 'programChange', time, track: raw.track, channel: raw.channel!, program: raw.program! });
 			} else if (raw.kind === 'controlChange') {
@@ -273,9 +310,95 @@ export function parseMidiFile(buffer: ArrayBuffer): JuiceMidiSong {
 			}
 		}
 		if (time > maxTime) maxTime = time;
+		if (raw.tick > maxTick) maxTick = raw.tick;
 	}
 
 	events.sort((a, b) => a.time - b.time);
 
-	return { events, durationSeconds: maxTime, trackCount, initialBpm: initialBpm ?? (60_000_000 / DEFAULT_TEMPO_MICROS_PER_QUARTER) };
+	// JUICE: ピアノロール用に、チャンネル+ノート番号ごとにnoteOn/noteOffをFIFOでペアリングする。
+	// サステインペダル等の演出は無視し、生のnoteOn〜noteOffの区間だけを長さとして扱う
+	const openNotesByKey = new Map<string, { time: number; tick: number; track: number; channel: number; note: number; velocity: number }[]>();
+	const notes: JuiceMidiNoteSpan[] = [];
+	for (const event of events) {
+		if (event.type !== 'noteOn' && event.type !== 'noteOff') continue;
+		const key = `${event.channel}:${event.note}`;
+		if (event.type === 'noteOn') {
+			let stack = openNotesByKey.get(key);
+			if (stack == null) {
+				stack = [];
+				openNotesByKey.set(key, stack);
+			}
+			stack.push({ time: event.time, tick: event.tick, track: event.track, channel: event.channel, note: event.note, velocity: event.velocity });
+		} else {
+			const open = openNotesByKey.get(key)?.shift();
+			if (open != null) {
+				notes.push({
+					time: open.time,
+					duration: Math.max(0, event.time - open.time),
+					tick: open.tick,
+					tickDuration: Math.max(0, event.tick - open.tick),
+					track: open.track,
+					channel: open.channel,
+					note: open.note,
+					velocity: open.velocity,
+				});
+			}
+		}
+	}
+	// JUICE: 壊れたファイル等でnoteOffが無いまま終わったノートは、曲の終わりまで伸ばして扱う
+	for (const stack of openNotesByKey.values()) {
+		for (const open of stack) {
+			notes.push({
+				time: open.time,
+				duration: Math.max(0, maxTime - open.time),
+				tick: open.tick,
+				tickDuration: Math.max(0, maxTick - open.tick),
+				track: open.track,
+				channel: open.channel,
+				note: open.note,
+				velocity: open.velocity,
+			});
+		}
+	}
+	notes.sort((a, b) => a.time - b.time);
+
+	// JUICE: ノート番号(0-127)ごとに束ね直し、それぞれtime昇順(=tick昇順)を保ったまま、
+	// 終了tick(tick+tickDuration)の累積最大値も同時に作る(打ち切りスキャン用。ピアノロールの
+	// スクロール軸はテンポに依存しないtick基準で計算するため、ここもtick基準にしてある)
+	const notesByPitch: JuiceMidiNoteSpan[][] = Array.from({ length: 128 }, () => []);
+	for (const note of notes) notesByPitch[note.note].push(note);
+	const notesMaxEndByPitch: number[][] = notesByPitch.map(spans => {
+		let runningMax = -Infinity;
+		return spans.map(span => {
+			runningMax = Math.max(runningMax, span.tick + span.tickDuration);
+			return runningMax;
+		});
+	});
+
+	return {
+		events,
+		notesByPitch,
+		notesMaxEndByPitch,
+		durationSeconds: maxTime,
+		trackCount,
+		initialBpm: initialBpm ?? (60_000_000 / DEFAULT_TEMPO_MICROS_PER_QUARTER),
+		ticksPerQuarter,
+		tempoMap,
+	};
+}
+
+// JUICE: 秒→tickの変換(テンポマップを区間ごとに辿って厳密に逆算する。juice-midi-player.tsの
+// private secondsToTicks()と同じ式)。ピアノロールがテンポに依存しないtick軸で滑らかに
+// スクロールできるよう、呼び出し側の都合で丸めずに連続値のまま返す(FluidSynthへ渡す整数tickが
+// 必要な場面は引き続きplayer側の丸め済みメソッドを使う)
+export function secondsToTicks(song: Pick<JuiceMidiSong, 'tempoMap' | 'ticksPerQuarter'>, timeSeconds: number): number {
+	const tempoMap = song.tempoMap;
+	let checkpoint = tempoMap[0];
+	for (const candidate of tempoMap) {
+		if (candidate.time > timeSeconds) break;
+		checkpoint = candidate;
+	}
+	const deltaSeconds = timeSeconds - checkpoint.time;
+	const deltaTicks = deltaSeconds * song.ticksPerQuarter * 1_000_000 / checkpoint.microsPerQuarter;
+	return Math.max(0, checkpoint.tick + deltaTicks);
 }

@@ -9268,6 +9268,26 @@ export interface Locale extends ILocale {
          */
         "sourceAndLicense": string;
         /**
+         * 添付MIDIファイルの再生に使う音源
+         */
+        "midiSoundfont": string;
+        /**
+         * 添付されたMIDIファイルの再生には、S. Christian Collins氏によるサウンドフォント「GeneralUser GS」を同梱して使用しています。
+         */
+        "midiSoundfontText": string;
+        /**
+         * GeneralUser GS License v2.0(私的・商用問わず利用・改変・再配布を許諾)
+         */
+        "midiSoundfontLicense": string;
+        /**
+         * 添付MIDIファイルの再生に使う音源エンジン
+         */
+        "midiSynth": string;
+        /**
+         * 添付されたMIDIファイルの再生には、FluidSynthをWebAssemblyへコンパイルして呼び出すラッパーライブラリ「js-synthesizer」、および音の合成自体を担う「FluidSynth」本体を使用しています。
+         */
+        "midiSynthText": string;
+        /**
          * 参考にしたプロジェクト
          */
         "inspiredBy": string;
@@ -14831,13 +14851,9 @@ export interface Locale extends ILocale {
          */
         "relayTimelineFilterEmpty": string;
         /**
-         * {host}経由で配信
+         * {host}経由で配信されたノートです。投稿元サーバー自体がリレーに登録されているとは限りません(リレーに登録されたサーバー上の誰かがブーストしたことで転送されてきた投稿である場合があります)
          */
         "relayTimelineDeliveredVia": ParameterizedString<"host">;
-        /**
-         * {user}がブーストしたことでリレーに転送されたノートです(投稿元サーバー自体がリレーに登録されているとは限りません)
-         */
-        "relayTimelineAnnouncedBy": ParameterizedString<"user">;
         /**
          * メディアタイムライン
          */
@@ -14934,6 +14950,34 @@ export interface Locale extends ILocale {
          * デスクトップの常設ウィジェットパネル、モバイル表示のウィジェットドロワーを画面の左右どちらから表示するかを設定します。
          */
         "widgetsSideCaption": string;
+        /**
+         * MIDIビジュアライザー
+         */
+        "midiVisualizer": string;
+        /**
+         * MIDI再生時にピアノロール・鍵盤を表示する
+         */
+        "midiVisualizerEnabled": string;
+        /**
+         * 添付されたMIDIファイルを再生する際、ノートが鍵盤へ降ってくるピアノロール表示を行うかどうかを設定します。無効にすると再生ボタン・シークバーのみのシンプルな表示になり、ノート数が非常に多いファイルでの描画負荷も避けられます。
+         */
+        "midiVisualizerEnabledCaption": string;
+        /**
+         * ピアノロールの速さ
+         */
+        "midiRollSpeed": string;
+        /**
+         * ピアノロールが何秒ぶんを一画面に収めるかを設定します(値が小さいほどノートが速く流れます)。曲頭のテンポを基準にした目安の秒数で、実際の速さはテンポに依存しない基準で固定されるため、曲の途中でテンポが変わると見える秒数は前後します。
+         */
+        "midiRollSpeedCaption": string;
+        /**
+         * 同時発音数の上限
+         */
+        "midiMaxPolyphony": string;
+        /**
+         * MIDI再生エンジン(FluidSynth)が同時に鳴らせる音の数の上限を設定します。和音密度が高い曲で音が薄く感じる場合は上げると改善することがありますが、上げすぎると処理が追いつかず逆に無音になることがあります。変更は次に再生を開始した時から反映されます。
+         */
+        "midiMaxPolyphonyCaption": string;
         /**
          * LaTeX(数式)
          */

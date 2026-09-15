@@ -723,6 +723,9 @@ importers:
       is-file-animated:
         specifier: 1.0.2
         version: 1.0.2
+      js-synthesizer:
+        specifier: 1.13.0
+        version: 1.13.0
       json5:
         specifier: 2.2.3
         version: 2.2.3
@@ -6302,6 +6305,10 @@ packages:
 
   js-stringify@1.0.2:
     resolution: {integrity: sha512-rtS5ATOo2Q5k1G+DADISilDA6lv79zIiwFd6CcjuIxGKLFm5C+RLImRscVap9k55i+MOZwgliw+NejvkLuGD5g==}
+
+  js-synthesizer@1.13.0:
+    resolution: {integrity: sha512-KXhyJcY90mUvJwbfF1aBNurodm16w8R/wrZYRRc+SSlm58EtL88bspbs7ixtAmoV9QQvf/2EuPAwxj2ExdZSmQ==}
+    engines: {node: '>=22', npm: '>=11'}
 
   js-tokens@10.0.0:
     resolution: {integrity: sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==}
@@ -12184,9 +12191,9 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(happy-dom@20.12.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(msw@2.15.0(@types/node@26.4.0)(typescript@6.0.2))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.48.0)(tsx@4.23.13))
+      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(@vitest/coverage-v8@4.1.11)(happy-dom@20.12.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(msw@2.15.0(@types/node@26.4.0)(typescript@6.0.3))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.48.0)(tsx@4.23.13))
     optionalDependencies:
-      '@vitest/browser': 4.1.11(bufferutil@4.1.0)(msw@2.15.0(@types/node@26.4.0)(typescript@6.0.2))(utf-8-validate@6.0.6)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.48.0)(tsx@4.23.13))(vitest@4.1.11)
+      '@vitest/browser': 4.1.11(bufferutil@4.1.0)(msw@2.15.0(@types/node@26.4.0)(typescript@6.0.3))(utf-8-validate@6.0.6)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(sass-embedded@1.103.1)(sass@1.103.1)(terser@5.48.0)(tsx@4.23.13))(vitest@4.1.11)
 
   '@vitest/expect@2.0.5':
     dependencies:
@@ -13605,13 +13612,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.68.0(eslint@9.39.5(supports-color@5.5.0))(supports-color@5.5.0)(typescript@6.0.3))(eslint-import-resolver-node@0.3.10(supports-color@10.2.2))(eslint@9.39.5(supports-color@5.5.0))(supports-color@5.5.0):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.68.0(eslint@9.39.5(supports-color@5.5.0))(supports-color@5.5.0)(typescript@6.0.3))(eslint-import-resolver-node@0.3.10(supports-color@5.5.0))(eslint@9.39.5(supports-color@5.5.0))(supports-color@5.5.0):
     dependencies:
       debug: 3.2.7(supports-color@5.5.0)
     optionalDependencies:
       '@typescript-eslint/parser': 8.68.0(eslint@9.39.5(supports-color@5.5.0))(supports-color@5.5.0)(typescript@6.0.3)
       eslint: 9.39.5(supports-color@5.5.0)
-      eslint-import-resolver-node: 0.3.10(supports-color@10.2.2)
+      eslint-import-resolver-node: 0.3.10(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -13684,7 +13691,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.5(supports-color@5.5.0)
       eslint-import-resolver-node: 0.3.10(supports-color@5.5.0)
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.68.0(eslint@9.39.5(supports-color@5.5.0))(supports-color@5.5.0)(typescript@6.0.3))(eslint-import-resolver-node@0.3.10(supports-color@10.2.2))(eslint@9.39.5(supports-color@5.5.0))(supports-color@5.5.0)
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.68.0(eslint@9.39.5(supports-color@5.5.0))(supports-color@5.5.0)(typescript@6.0.3))(eslint-import-resolver-node@0.3.10(supports-color@5.5.0))(eslint@9.39.5(supports-color@5.5.0))(supports-color@5.5.0)
       hasown: 2.0.4
       is-core-module: 2.16.2
       is-glob: 4.0.3
@@ -14849,6 +14856,8 @@ snapshots:
   js-levenshtein@1.1.6: {}
 
   js-stringify@1.0.2: {}
+
+  js-synthesizer@1.13.0: {}
 
   js-tokens@10.0.0: {}
 

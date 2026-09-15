@@ -42,8 +42,6 @@ describe('NoteCreateService', () => {
 			hideFromMediaTimeline: false,
 			relayId: null,
 			relay: null,
-			relayAnnouncerId: null,
-			relayAnnouncer: null,
 			reactionAcceptance: null,
 			renoteCount: 0,
 			repliesCount: 0,
