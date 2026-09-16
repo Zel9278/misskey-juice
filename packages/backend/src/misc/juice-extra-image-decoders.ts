@@ -17,7 +17,12 @@ import { fileURLToPath } from 'node:url';
 import * as path from 'node:path';
 import sharp from 'sharp';
 
-const require = createRequire(import.meta.url);
+// JUICE: 変数名を"require"にすると、rolldownのdev/watchビルドがCJS依存(libheif-js)を
+// バンドルする際に自動注入するCJS相互運用用の"require"束縛と衝突し、
+// "Identifier 'require' has already been declared"というSyntaxErrorでbackend起動が
+// 落ちる(pnpm buildの通常ビルドでは発生せず、pnpm dev(--watch)でのみ再現した)。
+// 衝突を避けるため別名にする
+const nodeRequire = createRequire(import.meta.url);
 
 // JUICE: libheif-jsは型定義を持たないため、実際に使用しているAPI表面だけ最小限に宣言する
 type LibheifDisplayData = { data: Uint8ClampedArray };
@@ -76,7 +81,7 @@ async function decodeJxlToPng(buffer: Buffer): Promise<Buffer> {
 let libheifModule: LibheifModule | null = null;
 
 function loadLibheifModule(): LibheifModule {
-	libheifModule ??= require('libheif-js/wasm-bundle') as LibheifModule;
+	libheifModule ??= nodeRequire('libheif-js/wasm-bundle') as LibheifModule;
 	return libheifModule;
 }
 
