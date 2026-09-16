@@ -236,6 +236,7 @@ const features = [
 	{ icon: 'ti ti-bell-exclamation', text: i18n.ts._aboutJuice._features.moderationNotifications },
 	{ icon: 'ti ti-brand-oauth', text: i18n.ts._aboutJuice._features.oauthLogin },
 	{ icon: 'ti ti-piano', text: i18n.ts._aboutJuice._features.midiPlayer },
+	{ icon: 'ti ti-photo-plus', text: i18n.ts._aboutJuice._features.extraImageFormats },
 ];
 
 // JUICE: この一覧に載っている機能が、どういう経路で実装されたかをざっくり示す
