@@ -117,6 +117,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 							@click.stop="onMediaClick"
 							@loadedmetadata="originalContentLoaded = true"
 						/>
+						<!-- JUICE: MIDIプレイヤー。エンジン部分はインラインの軽量プレイヤー(MkMediaMidi.vue)と
+						     同じcomposable(use-juice-midi-player.ts)を使う -->
+						<div v-else-if="content.type === 'midi' && midiPlayer != null" :class="$style.midiRoot">
+							<div :class="$style.midiCanvasWrapper">
+								<canvas v-if="prefer.r.midiVisualizerEnabled.value" ref="visualizerEl" :class="$style.midiVisualizer" width="900" height="432" aria-hidden="true"></canvas>
+								<!-- JUICE: 全画面表示だとフッターのコントロールバーから遠く、インラインの.metaと同じ
+								     BPM・同時発音数・ノート数の表示が目に入りにくいため、描画の左上に重ねて出す -->
+								<div v-if="midiPlayer.totalNoteCount.value > 0" :class="$style.midiStatsOverlay">
+									<span :class="$style.midiStatItem"><i class="ti ti-metronome"></i> {{ Math.round(midiPlayer.bpm.value) }}</span>
+									<span :class="$style.midiStatItem"><i class="ti ti-stack-2"></i> {{ midiPlayer.activeNoteCount.value }}</span>
+									<span :class="$style.midiStatItem"><i class="ti ti-music"></i> {{ midiPlayer.playedNoteCount.value }} / {{ midiPlayer.totalNoteCount.value }}</span>
+								</div>
+							</div>
+						</div>
 					</template>
 
 					<div v-if="activated && (!originalContentLoaded || (isMediaControlledByMisskey && isMediaPlaying && (!isMediaReady || !isMediaActuallyPlaying)))" :class="$style.loading">
@@ -141,12 +155,38 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-if="isMediaControlledByMisskey && !hide" :class="$style.mediaControl">
 			<XControl v-if="mediaEl != null" ref="mediaControl" v-model:volume="volume" :externalVolumeControl="isVolumeHandledByVisualizer"/>
 		</div>
+		<!-- JUICE: MIDIはネイティブのHTMLMediaElementを持たずXControlに乗せられないため、
+		     専用の簡易コントロールバーを表示する -->
+		<div v-else-if="content.type === 'midi' && midiPlayer != null && !hide" :class="[$style.mediaControl, $style.midiControl]">
+			<button
+				class="_button"
+				:class="$style.midiPlayButton"
+				:disabled="midiPlayer.loading.value === 'loading'"
+				:aria-label="midiPlayer.isPlaying.value ? i18n.ts.pause : i18n.ts.play"
+				@click="midiPlayer.togglePlayPause"
+			>
+				<MkLoading v-if="midiPlayer.loading.value === 'loading'" :em="true"/>
+				<i v-else-if="midiPlayer.isPlaying.value" class="ti ti-player-pause" aria-hidden="true"></i>
+				<i v-else class="ti ti-player-play" aria-hidden="true"></i>
+			</button>
+			<div :class="$style.midiProgressWrapper">
+				<MkMediaRange v-model="midiPlayer.seekPosition.value" @dragEnded="midiPlayer.onSeekEnded"/>
+				<div v-if="midiPlayer.loading.value === 'loading' && midiPlayer.loadProgress.value != null" :class="$style.midiTime">{{ Math.round(midiPlayer.loadProgress.value * 100) }}%</div>
+				<div v-else :class="$style.midiTime">{{ formatMidiTime(midiPlayer.currentTime.value) }} / {{ formatMidiTime(midiPlayer.duration.value) }}</div>
+			</div>
+			<button class="_button" :class="$style.midiVolumeButton" :aria-label="i18n.ts.volume" @click="toggleMidiMute">
+				<i v-if="volume === 0" class="ti ti-volume-3" aria-hidden="true"></i>
+				<i v-else class="ti ti-volume" aria-hidden="true"></i>
+			</button>
+			<MkMediaRange v-model="volume" :class="$style.midiVolumeSlider"/>
+		</div>
 	</div>
 </div>
 </template>
 
 <script lang="ts">
 import * as Misskey from 'misskey-js';
+import type { JuiceMidiPlayerState } from '@/composables/use-juice-midi-player.js';
 
 type Size = {
 	width: number;
@@ -160,7 +200,7 @@ type Rect = Size & {
 
 export type Content = {
 	id: string;
-	type: 'image' | 'video' | 'audio';
+	type: 'image' | 'video' | 'audio' | 'midi'; // JUICE: 'midi'を追加
 	url: string;
 	thumbnailUrl?: string | null;
 	width?: number | null;
@@ -168,6 +208,10 @@ export type Content = {
 	filename?: string | null;
 	file?: Misskey.entities.DriveFile;
 	sourceElement?: HTMLElement | null;
+	// JUICE: type: 'midi'の場合のみ使う。拡大元のインラインプレイヤー(MkMediaMidi.vue)が
+	// 既に持っているエンジンをそのまま渡すことで、拡大時に再生状態(再生中か・再生位置・
+	// 音量等)を同期させる。渡されなかった場合はライトボックス側で新規に生成する
+	sharedMidiPlayer?: JuiceMidiPlayerState | null;
 };
 
 export function calculateSourceTransform({
@@ -199,6 +243,7 @@ export function calculateSourceTransform({
 <script lang="ts" setup>
 import { computed, nextTick, ref, useTemplateRef, markRaw, watch, provide, onBeforeUnmount, defineAsyncComponent } from 'vue';
 import MkBlurhash from '@/components/MkBlurhash.vue';
+import MkMediaRange from '@/components/MkMediaRange.vue';
 import XControl from './MkLightbox.item.controls.vue';
 import type XAudioVisualizer__TypeReferenceOnly from './MkLightbox.item.audio-visualizer.vue';
 import XFileInfo from './MkLightbox.item.fileinfo.vue';
@@ -212,6 +257,7 @@ import { makeDoubleTapDetector } from '@/utility/double-tap.js';
 import { deviceKind } from '@/utility/device-kind.js';
 import { isTouchUsing } from '@/utility/touch.js';
 import { getFileMenu } from '@/utility/get-file-menu.js';
+import { useJuiceMidiPlayer, bindMidiVisualizerCanvas, formatMidiTime } from '@/composables/use-juice-midi-player.js';
 
 const props = withDefaults(defineProps<{
 	content: Content;
@@ -262,7 +308,9 @@ const mediaEl = computed<HTMLVideoElement | HTMLAudioElement | null>(() => {
 
 provide(DI.mkLightboxItemMediaEl, mediaEl);
 
-const originalContentLoaded = ref(false);
+// JUICE: MIDIには画像のような「実寸データが届くまでのサムネイル」の概念が無く、
+// 実際の解析・再生は再生ボタンを押した時点まで遅延するため、ロード中スピナーの対象外にする
+const originalContentLoaded = ref(props.content.type === 'midi');
 const thumbnailContentLoaded = ref(false);
 const enableTransition = ref(false);
 const infoShowing = ref(false);
@@ -280,6 +328,21 @@ const isMediaPlaying = computed(() => mediaControl.value?.isPlaying ?? false);
 const isMediaActuallyPlaying = computed(() => mediaControl.value?.isActuallyPlaying ?? false);
 let canOpenAnimation = false;
 
+// JUICE: MIDIプレイヤーは画像/動画/音声と違いネイティブのHTMLMediaElementを持たないため、
+// XControl(video/audio用の共有コントロールバー)には乗せられない。エンジン自体は
+// インラインの軽量プレイヤー(MkMediaMidi.vue)と同じcomposableを使い、フッターには
+// 専用のシンプルな再生バーを別途描画する。content.sharedMidiPlayerが渡されていれば
+// (=MkMediaList.vue経由で拡大元のインラインプレイヤーを特定できていれば)それをそのまま
+// 使い回して再生状態を同期させ、無ければ(file単体しか無い呼び出し元向けに)新規に生成する
+const midiPlayer = props.content.type === 'midi'
+	? (props.content.sharedMidiPlayer ?? (props.content.file != null ? useJuiceMidiPlayer(props.content.file, () => hide.value) : null))
+	: null;
+// JUICE: 共有インスタンスであっても、描画先canvasはこのコンポーネント自身のテンプレートの
+// `ref="visualizerEl"`(=ライトボックス側のcanvas)を登録する必要がある(useTemplateRef()は
+// 呼び出したコンポーネントにしか結び付かないため、stateを使い回すだけでは描画先が
+// インライン側のcanvasのままになってしまう)
+if (midiPlayer != null) bindMidiVisualizerCanvas(midiPlayer);
+
 const contentHideFileIcon = computed(() => {
 	switch (props.content.type) {
 		case 'image':
@@ -288,6 +351,8 @@ const contentHideFileIcon = computed(() => {
 			return 'ti-movie';
 		case 'audio':
 			return 'ti-music';
+		case 'midi':
+			return 'ti-piano'; // JUICE
 		default:
 			return '';
 	}
@@ -300,10 +365,18 @@ const contentHideFileText = computed(() => {
 			return i18n.ts.video;
 		case 'audio':
 			return i18n.ts.audio;
+		case 'midi':
+			return 'MIDI'; // JUICE: 汎用のi18nキーが無いため固定表記(MkMediaMidi.vueの非表示時ラベルと同じ)
 		default:
 			return '';
 	}
 });
+
+// JUICE: MIDIの音量ミュート切り替え(音声/動画側はXControl内部で完結しているため、
+// MIDI用フッターにだけ独自にトグル関数が必要)
+function toggleMidiMute() {
+	volume.value = volume.value === 0 ? .25 : 0;
+}
 
 const videoAspectRatio = ref<number | null>(
 	props.content.width != null && props.content.height != null && props.content.width > 0 && props.content.height > 0
@@ -321,7 +394,8 @@ function onVideoLoadedMetadata() {
 }
 
 const headerSize = 30;
-const footerSize = isMediaControlledByMisskey.value ? 80 : 0;
+// JUICE: MIDI専用フッターも同じ高さぶん確保する
+const footerSize = (isMediaControlledByMisskey.value || (props.content.type === 'midi' && midiPlayer != null)) ? 80 : 0;
 
 const padding = deviceKind === 'smartphone' ? {
 	top: Math.max(0, headerSize + 10),
@@ -996,6 +1070,14 @@ function openMenu(ev: PointerEvent) {
 		});
 	}
 
+	// JUICE: MIDIプレイヤーの設定(ビジュアライザー有効/無効・ロール速度・同時発音数上限)を
+	// インラインの軽量プレイヤーと同じ内容でここにも出す(ライトボックス側には専用の設定
+	// ボタンを別途設けず、既存のファイル情報メニューへ統合する)。区切り線はXFileInfoの直後に
+	// 既に1本入っているため、ここでは重ねて追加しない
+	if (props.content.type === 'midi' && midiPlayer != null) {
+		menu.push(...midiPlayer.buildMidiSettingsMenuItems());
+	}
+
 	menu.push({
 		text: i18n.ts.hide,
 		icon: 'ti ti-eye-off',
@@ -1027,6 +1109,8 @@ function onDeactive() {
 	if (mediaEl.value != null && props.activated) {
 		mediaEl.value.pause();
 	}
+	// JUICE: 他のコンテンツへスワイプした際、MIDIの再生も止める(video/audioと同じ扱い)
+	midiPlayer?.pause();
 }
 
 onBeforeUnmount(() => {
@@ -1106,6 +1190,57 @@ defineExpose({
 
 .audio {
 	width: 100%;
+}
+
+// JUICE: MIDIプレイヤーのピアノロール表示エリア。薄暗い背景を敷いて、ノート・鍵盤の
+// コントラストを見やすくする(動画の黒背景レターボックスに近い扱い)
+.midiRoot {
+	width: 100%;
+	height: 100%;
+	margin: 0 auto;
+	max-width: min(100cqw, calc(100cqh * 900 / 432));
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	background: rgba(0, 0, 0, 0.4);
+}
+
+.midiCanvasWrapper {
+	position: relative;
+	width: 100%;
+}
+
+.midiVisualizer {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 900 / 432;
+	color: var(--MI_THEME-accent);
+}
+
+// JUICE: BPM・同時発音数・ノート数のオーバーレイ(全画面表示だとフッターの操作列が
+// 遠く見えにくいため、描画そのものの左上に重ねて表示する)
+.midiStatsOverlay {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 4px 8px;
+	border-radius: 6px;
+	background: rgba(0, 0, 0, 0.5);
+	color: #fff;
+	font-size: 0.8em;
+	pointer-events: none;
+}
+
+.midiStatItem {
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	white-space: nowrap;
 }
 
 .loading {
@@ -1313,5 +1448,49 @@ defineExpose({
 	.mediaControl {
 		padding: 8px 12px;
 	}
+}
+
+// JUICE: MIDI専用のフッターコントロールバー(.mediaControlのレイアウトに、
+// インラインの軽量プレイヤーMkMediaMidi.vueと同じ操作列を組み合わせる)
+.midiControl {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.midiPlayButton {
+	flex-shrink: 0;
+	display: grid;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 100%;
+	background: var(--MI_THEME-accent);
+	color: var(--MI_THEME-fgOnAccent);
+}
+
+.midiProgressWrapper {
+	flex: 1;
+	min-width: 0;
+}
+
+.midiTime {
+	margin-top: 2px;
+	font-size: 0.75em;
+	opacity: 0.7;
+}
+
+.midiVolumeButton {
+	flex-shrink: 0;
+	opacity: 0.7;
+	width: 28px;
+	height: 28px;
+	display: grid;
+	place-items: center;
+}
+
+.midiVolumeSlider {
+	width: 90px;
+	flex-shrink: 0;
 }
 </style>

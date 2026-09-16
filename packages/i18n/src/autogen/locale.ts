@@ -15139,6 +15139,18 @@ export interface Locale extends ILocale {
          */
         "midiPlayerParseError": string;
         /**
+         * iPhone/iPadでは、サイレントモード(消音スイッチ)がオンになっていると音が鳴りません。再生する場合はサイレントモードを解除してください。
+         */
+        "midiPlayerIosSilentModeWarning": string;
+        /**
+         * 全画面表示
+         */
+        "midiPlayerFullscreen": string;
+        /**
+         * 全画面表示を終了
+         */
+        "midiPlayerExitFullscreen": string;
+        /**
          * Misskey Juiceが更新されました！
          */
         "misskeyJuiceUpdated": string;

@@ -48,6 +48,8 @@ export interface MenuLabel extends MenuBase {
 	type: 'label';
 	text: Text;
 	caption?: Text | null | undefined | ComputedRef<null | undefined>;
+	/** JUICE: 本家に無いJUICE独自のメニュー項目であることを示すバッジを表示する */
+	badge?: boolean;
 }
 
 export interface MenuLink extends TextMenuBase {

@@ -4045,6 +4045,9 @@ _juice:
   nSelected: "{n}件選択中"
   midiPlayerTooLarge: "このMIDIファイルはサイズが大きいため再生できません({size} / 上限{limit})。過度に密集したノートを含むファイル(いわゆる黒MIDI等)による負荷を防ぐための制限です。"
   midiPlayerParseError: "このファイルを解析できませんでした。壊れているか、対応していない形式のMIDIファイルの可能性があります。"
+  midiPlayerIosSilentModeWarning: "iPhone/iPadでは、サイレントモード(消音スイッチ)がオンになっていると音が鳴りません。再生する場合はサイレントモードを解除してください。"
+  midiPlayerFullscreen: "全画面表示"
+  midiPlayerExitFullscreen: "全画面表示を終了"
   misskeyJuiceUpdated: "Misskey Juiceが更新されました！"
 
 _juiceApprovals:
