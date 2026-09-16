@@ -373,9 +373,10 @@ const contentHideFileText = computed(() => {
 });
 
 // JUICE: MIDIの音量ミュート切り替え(音声/動画側はXControl内部で完結しているため、
-// MIDI用フッターにだけ独自にトグル関数が必要)
+// MIDI用フッターにだけ独自のボタンが必要。トグル処理自体はcomposable側のtoggleMuteと
+// 同一ロジックなので、二重管理にならないようそちらへ委譲する)
 function toggleMidiMute() {
-	volume.value = volume.value === 0 ? .25 : 0;
+	midiPlayer?.toggleMute();
 }
 
 const videoAspectRatio = ref<number | null>(
@@ -1117,6 +1118,10 @@ onBeforeUnmount(() => {
 	if (rafHandle) {
 		window.cancelAnimationFrame(rafHandle);
 	}
+	// JUICE: video/audioは要素ごと破棄されて自然に止まるが、MIDIはインラインと共有する
+	// エンジン(DOM要素を持たない)のため、ライトボックスが閉じられても明示的にpauseしない
+	// 限り裏で鳴り続けてしまう
+	midiPlayer?.pause();
 });
 
 defineExpose({

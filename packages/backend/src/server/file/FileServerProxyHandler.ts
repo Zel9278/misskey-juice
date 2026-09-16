@@ -13,8 +13,9 @@ import { StatusError } from '@/misc/status-error.js';
 import { contentDisposition } from '@/misc/content-disposition.js';
 import { correctFilename } from '@/misc/correct-filename.js';
 import { isMimeImage } from '@/misc/is-mime-image.js';
-import { decodeToPngIfSupported, EXTRA_DECODABLE_IMAGE_MIME_TYPES } from '@/misc/juice-extra-image-decoders.js';
+import { resolveDecodedSource } from '@/misc/juice-extra-image-decoders.js';
 import { IImageStreamable, ImageProcessingService, webpDefault } from '@/core/ImageProcessingService.js';
+import type Logger from '@/logger.js';
 import { createRangeStream, attachStreamCleanup, needsCleanup } from './FileServerUtils.js';
 import type { DownloadedFileResult, FileResolveResult, FileServerFileResolver } from './FileServerFileResolver.js';
 import type { FastifyReply, FastifyRequest } from 'fastify';
@@ -38,6 +39,7 @@ export class FileServerProxyHandler {
 		private fileResolver: FileServerFileResolver,
 		private assetsPath: string,
 		private imageProcessingService: ImageProcessingService,
+		private logger: Logger,
 	) {}
 
 	public async handle(request: FastifyRequest<{ Params: { url: string }; Querystring: ProxyQuery }>, reply: FastifyReply) {
@@ -95,8 +97,10 @@ export class FileServerProxyHandler {
 			// のICO/BMPデコード処理(あるいはsharp自体)が例外を投げる(不正なデータに対する
 			// 想定外の例外であり、StatusErrorとして意図的に投げたものではない)。想定外の例外を
 			// そのまま再送出すると生の500になってしまうため、意図的なStatusErrorはそのまま、
-			// それ以外は画像処理失敗として404にフォールバックさせる
+			// それ以外は画像処理失敗として404にフォールバックさせる。
+			// ただしデコーダ自体の不具合を見逃さないよう、変換前にログへ残す
 			if (e instanceof StatusError) throw e;
+			this.logger.warn(`Failed to process image (mime=${file.mime}): ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
 			throw new StatusError('Failed to process image', 404, 'Failed to process image');
 		}
 	}
@@ -145,7 +149,7 @@ export class FileServerProxyHandler {
 		// 専用デコーダで事前にPNGへ変換しておく。以降はsourceが常に「sharpで直接扱える
 		// もの」になるため、この関数の外(processEmojiOrAvatar等)は元のmime/pathを使う場合と
 		// 何も変わらない
-		const { source, mime } = await this.resolveEffectiveSharpSource(file);
+		const { source, mime } = await resolveDecodedSource(file.path, file.mime);
 
 		const requiresImageConversion = 'emoji' in query || 'avatar' in query || 'static' in query || 'preview' in query || 'badge' in query;
 		const isConvertibleImage = isMimeImage(mime, 'sharp-convertible-image-with-bmp');
@@ -188,19 +192,6 @@ export class FileServerProxyHandler {
 		}
 
 		return this.createDefaultStream(file, request, reply);
-	}
-
-	// JUICE: 対象のファイルがsharpで直接デコードできない形式(JPEG XL・HEIC/HEIF)の場合、
-	// 専用デコーダでPNGバイト列へ変換して返す。対象外の場合は元のpath/mimeをそのまま返す
-	private async resolveEffectiveSharpSource(file: AvailableFile): Promise<{ source: string | Buffer; mime: string }> {
-		if (!(EXTRA_DECODABLE_IMAGE_MIME_TYPES as readonly string[]).includes(file.mime)) {
-			return { source: file.path, mime: file.mime };
-		}
-
-		const original = await fs.promises.readFile(file.path);
-		const png = await decodeToPngIfSupported(original, file.mime);
-		if (png == null) return { source: file.path, mime: file.mime };
-		return { source: png, mime: 'image/png' };
 	}
 
 	/**

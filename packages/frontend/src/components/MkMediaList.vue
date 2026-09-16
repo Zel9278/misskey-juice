@@ -175,9 +175,11 @@ function onMediaClick(file: Misskey.entities.DriveFile) {
 
 async function openGallery(id?: string) {
 	if (id == null) {
-		const firstImage = medias.value.previewable[0];
-		if (firstImage == null) return;
-		id = firstImage.id;
+		// JUICE: 添付がMIDIのみの投稿では、previewableに何も無くてもmidiにはあるため
+		// フォールバックしないと「oキー」等のid省略呼び出しでギャラリーが開かなくなる
+		const first = medias.value.previewable[0] ?? medias.value.midi[0];
+		if (first == null) return;
+		id = first.id;
 	}
 
 	const getElementByMarker = (marker: string) => {

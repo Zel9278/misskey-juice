@@ -19,6 +19,20 @@ import sharp from 'sharp';
 
 const require = createRequire(import.meta.url);
 
+// JUICE: libheif-jsは型定義を持たないため、実際に使用しているAPI表面だけ最小限に宣言する
+type LibheifDisplayData = { data: Uint8ClampedArray };
+type LibheifImage = {
+	get_width(): number;
+	get_height(): number;
+	display(target: LibheifDisplayData & { width: number; height: number }, callback: (displayData: LibheifDisplayData | null) => void): void;
+};
+type LibheifDecoder = {
+	decode(buffer: Buffer): LibheifImage[];
+};
+type LibheifModule = {
+	HeifDecoder: new () => LibheifDecoder;
+};
+
 type JxlModule = typeof import('jxl-oxide-wasm');
 
 let jxlModulePromise: Promise<JxlModule> | null = null;
@@ -59,12 +73,10 @@ async function decodeJxlToPng(buffer: Buffer): Promise<Buffer> {
 
 // JUICE: libheif-jsは複数のバリアントを持つが、Node.js向けにwasmバイナリを
 // あらかじめ埋め込み済みの'wasm-bundle'を使う(別途ファイルパス解決が不要で安全)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let libheifModule: any | null = null;
+let libheifModule: LibheifModule | null = null;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function loadLibheifModule(): any {
-	libheifModule ??= require('libheif-js/wasm-bundle');
+function loadLibheifModule(): LibheifModule {
+	libheifModule ??= require('libheif-js/wasm-bundle') as LibheifModule;
 	return libheifModule;
 }
 
@@ -78,8 +90,8 @@ async function decodeHeifToPng(buffer: Buffer): Promise<Buffer> {
 	const width: number = image.get_width();
 	const height: number = image.get_height();
 
-	const imageData = await new Promise<{ data: Uint8ClampedArray }>((resolve, reject) => {
-		image.display({ data: new Uint8ClampedArray(width * height * 4), width, height }, (displayData: { data: Uint8ClampedArray } | null) => {
+	const imageData = await new Promise<LibheifDisplayData>((resolve, reject) => {
+		image.display({ data: new Uint8ClampedArray(width * height * 4), width, height }, (displayData) => {
 			if (displayData == null) {
 				reject(new Error('Failed to decode HEIF image'));
 				return;
@@ -109,3 +121,19 @@ export async function decodeToPngIfSupported(buffer: Buffer, mime: string): Prom
 
 /** decodeToPngIfSupported()が対応しているmimeタイプの一覧 */
 export const EXTRA_DECODABLE_IMAGE_MIME_TYPES = ['image/jxl', 'image/heic', 'image/heif'] as const;
+
+/**
+ * ファイルパスとmimeを受け取り、sharpが直接デコードできない形式であればPNGバイト列に
+ * 変換して返す(source/mimeとも変換後の値になる)。対象外・変換不要な場合は
+ * 元のpath/mimeをそのまま返す(呼び出し側はfsストリームでの配信を継続できる)
+ */
+export async function resolveDecodedSource(filePath: string, mime: string): Promise<{ source: string | Buffer; mime: string }> {
+	if (!(EXTRA_DECODABLE_IMAGE_MIME_TYPES as readonly string[]).includes(mime)) {
+		return { source: filePath, mime };
+	}
+
+	const original = await readFile(filePath);
+	const png = await decodeToPngIfSupported(original, mime);
+	if (png == null) return { source: filePath, mime };
+	return { source: png, mime: 'image/png' };
+}
