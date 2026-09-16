@@ -4,6 +4,7 @@
  */
 
 import * as fs from 'node:fs';
+import { Readable } from 'node:stream';
 import sharp from 'sharp';
 import { sharpBmp } from '@misskey-dev/sharp-read-bmp';
 import type { Config } from '@/config.js';
@@ -12,6 +13,7 @@ import { StatusError } from '@/misc/status-error.js';
 import { contentDisposition } from '@/misc/content-disposition.js';
 import { correctFilename } from '@/misc/correct-filename.js';
 import { isMimeImage } from '@/misc/is-mime-image.js';
+import { decodeToPngIfSupported, EXTRA_DECODABLE_IMAGE_MIME_TYPES } from '@/misc/juice-extra-image-decoders.js';
 import { IImageStreamable, ImageProcessingService, webpDefault } from '@/core/ImageProcessingService.js';
 import { createRangeStream, attachStreamCleanup, needsCleanup } from './FileServerUtils.js';
 import type { DownloadedFileResult, FileResolveResult, FileServerFileResolver } from './FileServerFileResolver.js';
@@ -87,7 +89,15 @@ export class FileServerProxyHandler {
 			return image.data;
 		} catch (e) {
 			if (needsCleanup(file)) file.cleanup();
-			throw e;
+			// JUICE: file-typeのシグネチャ判定は先頭バイトだけを見るため、TGA等ヘッダーに
+			// 確実な識別子を持たない形式が別形式(例: image/x-icon)に誤検出されることがある。
+			// その場合、実体は宣言された形式として不正なデータのため、@misskey-dev/sharp-read-bmp
+			// のICO/BMPデコード処理(あるいはsharp自体)が例外を投げる(不正なデータに対する
+			// 想定外の例外であり、StatusErrorとして意図的に投げたものではない)。想定外の例外を
+			// そのまま再送出すると生の500になってしまうため、意図的なStatusErrorはそのまま、
+			// それ以外は画像処理失敗として404にフォールバックさせる
+			if (e instanceof StatusError) throw e;
+			throw new StatusError('Failed to process image', 404, 'Failed to process image');
 		}
 	}
 
@@ -131,30 +141,46 @@ export class FileServerProxyHandler {
 	): Promise<IImageStreamable> {
 		const query = request.query;
 
+		// JUICE: sharp(libvips)単体ではデコードできない画像形式(JPEG XL・HEIC/HEIF)は、
+		// 専用デコーダで事前にPNGへ変換しておく。以降はsourceが常に「sharpで直接扱える
+		// もの」になるため、この関数の外(processEmojiOrAvatar等)は元のmime/pathを使う場合と
+		// 何も変わらない
+		const { source, mime } = await this.resolveEffectiveSharpSource(file);
+
 		const requiresImageConversion = 'emoji' in query || 'avatar' in query || 'static' in query || 'preview' in query || 'badge' in query;
-		const isConvertibleImage = isMimeImage(file.mime, 'sharp-convertible-image-with-bmp');
+		const isConvertibleImage = isMimeImage(mime, 'sharp-convertible-image-with-bmp');
 		if (requiresImageConversion && !isConvertibleImage) {
 			throw new StatusError('Unexpected mime', 404);
 		}
 
 		if ('emoji' in query || 'avatar' in query) {
-			return this.processEmojiOrAvatar(file, query);
+			return this.processEmojiOrAvatar(file, query, source, mime);
 		}
 
 		if ('static' in query) {
-			return this.imageProcessingService.convertSharpToWebpStream(await sharpBmp(file.path, file.mime), 498, 422);
+			return this.imageProcessingService.convertSharpToWebpStream(await sharpBmp(source, mime), 498, 422);
 		}
 
 		if ('preview' in query) {
-			return this.imageProcessingService.convertSharpToWebpStream(await sharpBmp(file.path, file.mime), 200, 200);
+			return this.imageProcessingService.convertSharpToWebpStream(await sharpBmp(source, mime), 200, 200);
 		}
 
 		if ('badge' in query) {
-			return this.processBadge(file);
+			return this.processBadge(source, mime);
 		}
 
-		if (file.mime === 'image/svg+xml') {
+		if (mime === 'image/svg+xml') {
 			return this.imageProcessingService.convertToWebpStream(file.path, 2048, 2048);
+		}
+
+		// JUICE: 専用デコーダで変換済み(=元は本家では表示できなかった形式)の場合は、
+		// 変換後のPNGとしてそのまま返す(browsersafe判定は変換後のPNGなので通す必要が無い)
+		if (mime !== file.mime) {
+			return {
+				data: Readable.from(source as Buffer),
+				ext: 'png',
+				type: 'image/png',
+			};
 		}
 
 		if (!file.mime.startsWith('image/') || !FILE_TYPE_BROWSERSAFE.includes(file.mime)) {
@@ -164,14 +190,29 @@ export class FileServerProxyHandler {
 		return this.createDefaultStream(file, request, reply);
 	}
 
+	// JUICE: 対象のファイルがsharpで直接デコードできない形式(JPEG XL・HEIC/HEIF)の場合、
+	// 専用デコーダでPNGバイト列へ変換して返す。対象外の場合は元のpath/mimeをそのまま返す
+	private async resolveEffectiveSharpSource(file: AvailableFile): Promise<{ source: string | Buffer; mime: string }> {
+		if (!(EXTRA_DECODABLE_IMAGE_MIME_TYPES as readonly string[]).includes(file.mime)) {
+			return { source: file.path, mime: file.mime };
+		}
+
+		const original = await fs.promises.readFile(file.path);
+		const png = await decodeToPngIfSupported(original, file.mime);
+		if (png == null) return { source: file.path, mime: file.mime };
+		return { source: png, mime: 'image/png' };
+	}
+
 	/**
 	 * 絵文字またはアバター用の画像を処理する
 	 */
 	private async processEmojiOrAvatar(
 		file: AvailableFile,
 		query: Pick<ProxyQuery, 'emoji' | 'avatar' | 'static'>,
+		source: string | Buffer,
+		mime: string,
 	): Promise<IImageStreamable> {
-		const isAnimationConvertibleImage = isMimeImage(file.mime, 'sharp-animation-convertible-image-with-bmp');
+		const isAnimationConvertibleImage = isMimeImage(mime, 'sharp-animation-convertible-image-with-bmp');
 		if (!isAnimationConvertibleImage && !('static' in query)) {
 			return {
 				data: fs.createReadStream(file.path),
@@ -180,7 +221,7 @@ export class FileServerProxyHandler {
 			};
 		}
 
-		const data = (await sharpBmp(file.path, file.mime, { animated: !('static' in query) }))
+		const data = (await sharpBmp(source, mime, { animated: !('static' in query) }))
 			.resize({
 				height: 'emoji' in query ? 128 : 320,
 				withoutEnlargement: true,
@@ -197,8 +238,8 @@ export class FileServerProxyHandler {
 	/**
 	 * バッジ用の画像を処理する
 	 */
-	private async processBadge(file: AvailableFile): Promise<IImageStreamable> {
-		const mask = (await sharpBmp(file.path, file.mime))
+	private async processBadge(source: string | Buffer, mime: string): Promise<IImageStreamable> {
+		const mask = (await sharpBmp(source, mime))
 			.resize(96, 96, {
 				fit: 'contain',
 				position: 'centre',
