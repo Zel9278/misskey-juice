@@ -34,7 +34,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div v-if="item.type === 'divider'" role="separator" tabindex="-1" :class="$style.divider"></div>
 
 			<div v-else-if="item.type === 'label'" role="menuitem" tabindex="-1" :class="[$style.label]">
-				<span>{{ item.text }}</span>
+				<span>{{ item.text }}<span v-if="item.badge" class="_juice">JUICE</span></span>
 			</div>
 
 			<span v-else-if="item.type === 'pending'" role="menuitem" tabindex="0" :class="[$style.pending, $style.item]">

@@ -80,11 +80,10 @@ export class JuiceMidiPlayer {
 	// 一時待避列。これが無いと、消費した瞬間(最大SCHEDULE_AHEAD_SECONDS秒早い)に鍵盤が
 	// 光ってしまい、ピアノロールのノートが鍵盤へ「当たる」タイミングとズレて見える
 	private pendingVisualizerEvents: JuiceMidiEvent[] = [];
-	// JUICE: ビジュアライザー帳簿専用。実際の発音状態(FluidSynth内部)とは独立している
+	// JUICE: ビジュアライザー帳簿専用。実際の発音状態(FluidSynth内部)とは独立している。
+	// サステインペダル(CC64)で実際の発音が延びていても、鍵盤ハイライトはnoteOff(鍵を離した
+	// タイミング)で消す(FluidSynth側の音自体はサステインの仕様通り鳴り続ける)
 	private activeNotes = new Map<string, ActiveNote>();
-	private channelSustain = new Map<number, boolean>(); // CC64、既定false
-	// サステインペダルが踏まれている間、noteOffが来ても鍵盤表示を消さずに保留しているキー集合
-	private sustainedNotes = new Map<number, Set<string>>();
 
 	// JUICE: 再生済みノート数(noteOnをなぞった数)。pendingVisualizerEventsを介すため、
 	// 実際にそのノートの発音タイミングへ達してから増える
@@ -217,16 +216,14 @@ export class JuiceMidiPlayer {
 		this.master.gain.linearRampToValueAtTime(clamped, this.ctx.currentTime + 0.05);
 	}
 
-	// JUICE: シークバーからの移動。ビジュアライザー帳簿側は、移動先の直前までのサステイン状態
-	// だけを再構築する
+	// JUICE: シークバーからの移動。ビジュアライザー帳簿側の鍵盤ハイライトは、
+	// どうせ直後にtick()が新しいノートの発音状況で上書きするため空のまま
 	public seek(time: number): void {
 		if (this.disposed) return;
 		const clamped = Math.max(0, Math.min(time, this.duration));
 		const now = this.ctx.currentTime;
 
 		this.activeNotes.clear();
-		this.channelSustain.clear();
-		this.sustainedNotes.clear();
 		this.pendingVisualizerEvents.length = 0;
 		this.currentBpm = this.song.initialBpm;
 
@@ -236,8 +233,6 @@ export class JuiceMidiPlayer {
 			const event = this.song.events[index];
 			if (event.type === 'noteOn') {
 				playedNoteCount++;
-			} else if (event.type === 'controlChange' && event.controller === 64) {
-				this.channelSustain.set(event.channel, event.value >= 64);
 			} else if (event.type === 'tempo') {
 				this.currentBpm = event.bpm;
 			}
@@ -310,8 +305,6 @@ export class JuiceMidiPlayer {
 			this.synth.seekPlayer(0);
 			this.playerStarted = false;
 			this.activeNotes.clear();
-			this.channelSustain.clear();
-			this.sustainedNotes.clear();
 			this.pendingVisualizerEvents.length = 0;
 			// JUICE: currentTimeと同様、終了直後は最終値(全ノート再生済み)を1回通知してから
 			// 次回の曲頭再生に備えてリセットする
@@ -337,27 +330,12 @@ export class JuiceMidiPlayer {
 		return frame;
 	}
 
-	// JUICE: サステインペダルが離されたとき、それまで保留していた鍵盤表示をまとめて消す
-	private releaseSustainedNotes(channel: number): void {
-		const keys = this.sustainedNotes.get(channel);
-		if (keys == null || keys.size === 0) return;
-		for (const key of keys) this.activeNotes.delete(key);
-		keys.clear();
-	}
-
-	// JUICE: 実際の発音(FluidSynth)には一切関与せず、ビジュアライザー帳簿だけを進める
+	// JUICE: 実際の発音(FluidSynth)には一切関与せず、ビジュアライザー帳簿だけを進める。
+	// サステインペダル(CC64)は無視する: 鍵盤ハイライトはnoteOffで即座に消す(実際の音は
+	// FluidSynth側でペダルの仕様通り延びるが、それとは独立した「鍵盤が押されているか」の表示)
 	private applyVisualizerEvent(event: JuiceMidiEvent): void {
 		if (event.type === 'tempo') {
 			this.currentBpm = event.bpm;
-			return;
-		}
-
-		if (event.type === 'controlChange') {
-			if (event.controller !== 64) return;
-			const wasSustained = this.channelSustain.get(event.channel) ?? false;
-			const isSustained = event.value >= 64;
-			this.channelSustain.set(event.channel, isSustained);
-			if (wasSustained && !isSustained) this.releaseSustainedNotes(event.channel);
 			return;
 		}
 
@@ -366,21 +344,11 @@ export class JuiceMidiPlayer {
 		const key = `${event.channel}:${event.note}`;
 
 		if (event.type === 'noteOff') {
-			if (this.channelSustain.get(event.channel)) {
-				let keys = this.sustainedNotes.get(event.channel);
-				if (keys == null) {
-					keys = new Set();
-					this.sustainedNotes.set(event.channel, keys);
-				}
-				keys.add(key);
-			} else {
-				this.activeNotes.delete(key);
-			}
+			this.activeNotes.delete(key);
 			return;
 		}
 
 		// noteOn: 同じ音が既に鳴っていたら(壊れたファイル等)一旦上書きする
-		this.sustainedNotes.get(event.channel)?.delete(key);
 		this.playedNoteCount++;
 
 		const velocity = Math.max(0, Math.min(1, event.velocity / 127));

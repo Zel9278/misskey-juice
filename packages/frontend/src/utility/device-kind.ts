@@ -22,3 +22,7 @@ export let deviceKind: DeviceKind = DEFAULT_DEVICE_KIND;
 export function updateDeviceKind(kind: DeviceKind | null) {
 	deviceKind = kind ?? DEFAULT_DEVICE_KIND;
 }
+
+// JUICE: iPadOS 13以降のSafariはデスクトップ版と同じUAを名乗る(iPadを名乗らない)ため、
+// タッチ対応の"MacIntel"であることも合わせて判定する
+export const isIosFamily = /iphone|ipod|ipad/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);

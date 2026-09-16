@@ -6,8 +6,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <div :class="$style.root">
 	<!-- JUICE: MIDIは<audio>で直接再生できないため、独自の軽量プレイヤー(XMidi)を
-	     プレビュー可能なメディアのグリッドとは別枠で表示する -->
-	<XMidi v-for="media in medias.midi" :key="media.id" :midi="media" :class="$style.midiPlayer"/>
+	     プレビュー可能なメディアのグリッドとは別枠で表示する。拡大表示は画像/動画と同じく
+	     ライトボックス(openGallery)を開く。ref経由でプレイヤーの状態を捕まえておき、
+	     拡大時にそのまま渡して再生状態を同期させる -->
+	<XMidi
+		v-for="media in medias.midi"
+		:key="media.id"
+		:ref="(comp) => { midiComponents.set(media.id, comp as InstanceType<typeof XMidi> | null); }"
+		:midi="media"
+		:class="$style.midiPlayer"
+		@mediaClick="onMediaClick(media)"
+	/>
 	<XBanner v-for="media in medias.nonPreviewable" :key="media.id" :media="media"/>
 	<div v-if="count > 0" :class="$style.container">
 		<div
@@ -109,6 +118,8 @@ const medias = computed(() => {
 	};
 });
 const mediaComponents = new Map<string, MediaComponentExposes | null>();
+// JUICE: 拡大時に再生状態を同期させるため、XMidiのインスタンス(defineExposeしたmidiPlayerを持つ)を捕まえておく
+const midiComponents = new Map<string, InstanceType<typeof XMidi> | null>();
 const count = computed(() => medias.value.previewable.length);
 const markerId = genId();
 
@@ -151,6 +162,7 @@ onMounted(() => {
 
 onUnmounted(() => {
 	mediaComponents.clear();
+	midiComponents.clear();
 });
 
 function onMediaClick(file: Misskey.entities.DriveFile) {
@@ -163,9 +175,11 @@ function onMediaClick(file: Misskey.entities.DriveFile) {
 
 async function openGallery(id?: string) {
 	if (id == null) {
-		const firstImage = medias.value.previewable[0];
-		if (firstImage == null) return;
-		id = firstImage.id;
+		// JUICE: 添付がMIDIのみの投稿では、previewableに何も無くてもmidiにはあるため
+		// フォールバックしないと「oキー」等のid省略呼び出しでギャラリーが開かなくなる
+		const first = medias.value.previewable[0] ?? medias.value.midi[0];
+		if (first == null) return;
+		id = first.id;
 	}
 
 	const getElementByMarker = (marker: string) => {
@@ -185,6 +199,26 @@ async function openGallery(id?: string) {
 		filename: media.name,
 		file: media,
 		sourceElement: getElementByMarker(`${markerId}:${media.id}`),
+	}));
+
+	// JUICE: MIDIはisPreviewable/getType(他の添付ファイルプレビュー全般で使う汎用の判定)の
+	// 対象には含めず、ここでライトボックス表示専用に個別マッピングする(XMidiはグリッドの外に
+	// 表示されるため、sourceElementは取得できずアニメーション無しでの表示になる)。
+	// sharedMidiPlayerに拡大元のプレイヤーを渡すことで、拡大時も再生状態を同期させる。
+	// os.popupAsyncWithDialog()に渡るprops(contents)はos.popups(ref)経由でreactive化されるため、
+	// markRaw()しないとsharedMidiPlayer内部のRefが「reactiveオブジェクト内のref自動アンラップ」で
+	// 生の値に化けてしまい(sourceElementと同じ理由でmarkRaw済みなのと同じ扱いが必要)、
+	// テンプレート側の`.value`アクセスが壊れる
+	contents.push(...medias.value.midi.map<Content>(media => {
+		const sharedMidiPlayer = midiComponents.get(media.id)?.midiPlayer;
+		return {
+			id: media.id,
+			type: 'midi',
+			url: media.url,
+			filename: media.name,
+			file: media,
+			sharedMidiPlayer: sharedMidiPlayer != null ? markRaw(sharedMidiPlayer) : null,
+		};
 	}));
 
 	const initiallyRevealedContentIds = contents

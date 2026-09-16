@@ -1,6 +1,11 @@
 services:
   app:
     restart: unless-stopped
+    # PID 1がsleep infinityのままだとSIGCHLDを回収せず、restartスクリプトのpkillが
+    # 取りこぼした子プロセス(esbuild watch等)がPID 1に再親化されてゾンビのまま
+    # 溜まり続けてしまう。initを有効にしてDocker組み込みのtiniをPID 1に挟み、
+    # ゾンビを正しく回収させる
+    init: true
     build:
       context: .
       dockerfile: Dockerfile

@@ -9392,6 +9392,10 @@ export interface Locale extends ILocale {
              * ノート添付MIDIファイルの軽量プレイヤー(FluidSynthベースのサウンドフォント再生、ピアノロールビジュアライザー)
              */
             "midiPlayer": string;
+            /**
+             * リモートの絵文字・アバター等でのJPEG XL・HEIC/HEIF表示対応
+             */
+            "extraImageFormats": string;
         };
         /**
          * どういう経路で実装されたか
@@ -15138,6 +15142,18 @@ export interface Locale extends ILocale {
          * このファイルを解析できませんでした。壊れているか、対応していない形式のMIDIファイルの可能性があります。
          */
         "midiPlayerParseError": string;
+        /**
+         * iPhone/iPadでは、サイレントモード(消音スイッチ)がオンになっていると音が鳴りません。再生する場合はサイレントモードを解除してください。
+         */
+        "midiPlayerIosSilentModeWarning": string;
+        /**
+         * 全画面表示
+         */
+        "midiPlayerFullscreen": string;
+        /**
+         * 全画面表示を終了
+         */
+        "midiPlayerExitFullscreen": string;
         /**
          * Misskey Juiceが更新されました！
          */

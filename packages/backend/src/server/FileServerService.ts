@@ -60,12 +60,14 @@ export class FileServerService {
 			this.fileResolver,
 			this.assets,
 			this.videoProcessingService,
+			this.logger,
 		);
 		this.proxyHandler = new FileServerProxyHandler(
 			this.config,
 			this.fileResolver,
 			this.assets,
 			this.imageProcessingService,
+			this.logger,
 		);
 
 		//this.createServer = this.createServer.bind(this);
