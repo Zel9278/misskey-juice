@@ -3711,7 +3711,6 @@ _aboutJuice:
     loginFailedNotification: "登录尝试失败时通知账户本人(应用内通知与邮件)"
     mediaTimeline: "仅汇集带附件笔记并以网格/轮播形式展示的媒体时间线(PixelFed风格界面、灯箱放大显示、按笔记单独排除的开关)"
     midiPlayer: "笔记附件MIDI文件的轻量播放器(基于FluidSynth的音源库播放、钢琴卷帘可视化)"
-    extraImageFormats: "支持在远程自定义表情、头像等处显示JPEG XL、HEIC/HEIF格式"
     moderationNotifications: "表情/头像装饰申请、审批式注册、联系表单、举报的新动态也会显示在普通通知列表中"
     nickname: "为其他用户设置只有自己可见的专属昵称(显示在其个人资料页与用户悬浮预览中)"
     oauthLogin: "使用Discord/Google/GitHub/GitLab/Microsoft账号的联合登录(作为登录方式使用需先启用两步验证)"

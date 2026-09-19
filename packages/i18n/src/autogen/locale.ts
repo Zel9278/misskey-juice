@@ -9392,10 +9392,6 @@ export interface Locale extends ILocale {
              * ノート添付MIDIファイルの軽量プレイヤー(FluidSynthベースのサウンドフォント再生、ピアノロールビジュアライザー)
              */
             "midiPlayer": string;
-            /**
-             * リモートの絵文字・アバター等でのJPEG XL・HEIC/HEIF表示対応
-             */
-            "extraImageFormats": string;
         };
         /**
          * どういう経路で実装されたか

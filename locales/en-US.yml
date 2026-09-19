@@ -3711,7 +3711,6 @@ _aboutJuice:
     loginFailedNotification: "Notify the account owner of failed sign-in attempts (in-app notification and email)"
     mediaTimeline: "A media timeline that collects notes with attached files in a grid/carousel view (PixelFed-style UI, lightbox expansion, a per-note opt-out flag)"
     midiPlayer: "A lightweight player for MIDI files attached to notes (FluidSynth-based soundfont playback, piano roll visualizer)"
-    extraImageFormats: "JPEG XL and HEIC/HEIF support for remote custom emoji, avatars, etc."
     moderationNotifications: "New emoji/avatar decoration requests, approval-required signups, contact form submissions, and reports also appear in the regular notification list"
     nickname: "Set a private nickname for other users (shown on their profile page and hover preview)"
     oauthLogin: "OAuth sign-in with Discord/Google/GitHub/GitLab/Microsoft accounts (requires two-factor authentication to be enabled to use as a sign-in method)"
