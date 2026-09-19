@@ -9,6 +9,7 @@ import type { MiMeta, UsedUsernamesRepository, UsersRepository } from '@/models/
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { localUsernameSchema } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
+import { UtilityService } from '@/core/UtilityService.js';
 
 export const meta = {
 	tags: ['users'],
@@ -46,6 +47,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		@Inject(DI.usedUsernamesRepository)
 		private usedUsernamesRepository: UsedUsernamesRepository,
+
+		private utilityService: UtilityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const exist = await this.usersRepository.countBy({
@@ -57,8 +60,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const isPreserved = this.serverSettings.preservedUsernames.map(x => x.toLowerCase()).includes(ps.username.toLowerCase());
 
+			// JUICE: 禁止ワード(ユーザーの名前)はSignupService.ts側で実際の登録時にusernameへも
+			// 適用されるが、この事前空き状況チェックでは見ていなかったため、登録直前まで
+			// 「使えます」と表示されて実際は弾かれるという体験のズレがあった
+			const hasProhibitedWords = this.utilityService.isKeyWordIncluded(ps.username.toLowerCase(), this.serverSettings.prohibitedWordsForNameOfUser);
+
 			return {
-				available: exist === 0 && exist2 === 0 && !isPreserved,
+				available: exist === 0 && exist2 === 0 && !isPreserved && !hasProhibitedWords,
 			};
 		});
 	}
