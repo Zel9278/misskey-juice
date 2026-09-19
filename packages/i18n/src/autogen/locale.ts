@@ -14999,6 +14999,26 @@ export interface Locale extends ILocale {
          */
         "midiMaxPolyphonyCaption": string;
         /**
+         * 装飾MFMの自動ローカル限定
+         */
+        "autoLocalOnlyForMfm": string;
+        /**
+         * 標準マークダウン系の装飾を含む投稿を自動でローカルのみにする
+         */
+        "autoLocalOnlyForMarkdownMfm": string;
+        /**
+         * 本文またはCW(閲覧注意)欄に、太字・斜体・取り消し線・コード(インライン/ブロック)等、一般的なMarkdownにも存在する記法が含まれる投稿を、公開範囲に関わらず自動的に連合させない(ローカルのみ)ようにします。ダイレクトメッセージ(指定ユーザーのみ)や、リモートユーザーへの返信(自動適用すると相手に届かずスレッドが分断されるため)は対象外です。
+         */
+        "autoLocalOnlyForMarkdownMfmCaption": string;
+        /**
+         * MFM独自の装飾を含む投稿を自動でローカルのみにする
+         */
+        "autoLocalOnlyForFnMfm": string;
+        /**
+         * 本文またはCW(閲覧注意)欄に、center・small・検索・数式・$[]関数構文等、MFM独自の(標準Markdownには無い)装飾が含まれる投稿を、公開範囲に関わらず自動的に連合させない(ローカルのみ)ようにします。ダイレクトメッセージ(指定ユーザーのみ)や、リモートユーザーへの返信(自動適用すると相手に届かずスレッドが分断されるため)は対象外です。
+         */
+        "autoLocalOnlyForFnMfmCaption": string;
+        /**
          * LaTeX(数式)
          */
         "latex": string;

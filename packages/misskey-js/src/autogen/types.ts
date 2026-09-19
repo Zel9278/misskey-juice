@@ -2972,6 +2972,15 @@ export type paths = {
          */
         post: operations['i___import-user-lists'];
     };
+    '/i/juice/update-auto-local-only-for-mfm': {
+        /**
+         * i/juice/update-auto-local-only-for-mfm
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:account*
+         */
+        post: operations['i___juice___update-auto-local-only-for-mfm'];
+    };
     '/i/juice/update-email-lang': {
         /**
          * i/juice/update-email-lang
@@ -4911,6 +4920,8 @@ export type components = {
             emailLang?: string | null;
             /** @enum {string} */
             muteAIGeneratedNotes?: 'none' | 'mute' | 'hardMute';
+            autoLocalOnlyForMarkdownMfm?: boolean;
+            autoLocalOnlyForFnMfm?: boolean;
             securityKeysList?: {
                 /**
                  * Format: id
@@ -29925,6 +29936,69 @@ export interface operations {
             };
             /** @description Too many requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'i___juice___update-auto-local-only-for-mfm': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    autoLocalOnlyForMarkdownMfm?: boolean;
+                    autoLocalOnlyForFnMfm?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
                 headers: {
                     [name: string]: unknown;
                 };

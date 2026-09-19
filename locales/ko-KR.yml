@@ -4103,6 +4103,11 @@ _juice:
   midiRollSpeedCaption: "피아노 롤이 몇 초 분량을 한 화면에 담을지 설정합니다(값이 작을수록 노트가 빠르게 흐릅니다). 곡 시작 부분의 템포를 기준으로 한 대략적인 초 수이며, 실제 속도는 템포에 의존하지 않는 기준으로 고정되므로 곡 도중 템포가 바뀌면 실제로 보이는 초 수는 달라집니다."
   midiMaxPolyphony: "동시 발음 수 상한"
   midiMaxPolyphonyCaption: "MIDI 재생 엔진(FluidSynth)이 동시에 낼 수 있는 음의 수 상한을 설정합니다. 화음 밀도가 높은 곡에서 소리가 얇게 느껴질 때 값을 올리면 개선될 수 있지만, 너무 높이면 처리가 따라가지 못해 오히려 무음이 될 수 있습니다. 변경 사항은 다음 재생을 시작할 때부터 반영됩니다."
+  autoLocalOnlyForMfm: "장식 MFM 자동 로컬 한정"
+  autoLocalOnlyForMarkdownMfm: "표준 마크다운 계열 장식이 포함된 게시물을 자동으로 로컬 전용으로 설정"
+  autoLocalOnlyForMarkdownMfmCaption: "본문 또는 CW(주의 환기) 필드에 굵게, 기울임, 취소선, 코드(인라인/블록) 등 일반적인 Markdown에도 존재하는 서식이 포함된 게시물을, 공개 범위와 관계없이 자동으로 연합하지 않도록(로컬 전용) 합니다. 다이렉트 메시지(지정 사용자만)나 원격 사용자에 대한 답글(자동 적용 시 상대방에게 전달되지 않아 스레드가 끊어지므로)에는 적용되지 않습니다."
+  autoLocalOnlyForFnMfm: "MFM 고유 장식이 포함된 게시물을 자동으로 로컬 전용으로 설정"
+  autoLocalOnlyForFnMfmCaption: "본문 또는 CW(주의 환기) 필드에 center, small, 검색, 수식, $[] 함수 구문 등 표준 Markdown에는 없는 MFM 고유의 장식이 포함된 게시물을, 공개 범위와 관계없이 자동으로 연합하지 않도록(로컬 전용) 합니다. 다이렉트 메시지(지정 사용자만)나 원격 사용자에 대한 답글(자동 적용 시 상대방에게 전달되지 않아 스레드가 끊어지므로)에는 적용되지 않습니다."
   misskeyJuiceUpdated: "Misskey Juice가 업데이트되었습니다!"
 _juiceApprovals:
   approve: "승인"

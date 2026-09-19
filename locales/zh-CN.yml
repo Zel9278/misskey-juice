@@ -4103,6 +4103,11 @@ _juice:
   midiRollSpeedCaption: "设置钢琴卷帘一次显示多少秒的内容(数值越小，音符流动越快)。这是以曲首速度为基准的大致秒数，实际速度按不依赖速度的基准固定，因此曲中速度变化时，实际可见的秒数会随之变化。"
   midiMaxPolyphony: "同时发音数上限"
   midiMaxPolyphonyCaption: "设置MIDI播放引擎(FluidSynth)可同时发出的音符数量上限。和弦密度较高的曲子如果感觉声音单薄，调高该值可能有所改善，但调得过高会导致处理跟不上，反而变成无声。更改将在下次开始播放时生效。"
+  autoLocalOnlyForMfm: "装饰性MFM自动仅限本站"
+  autoLocalOnlyForMarkdownMfm: "自动将包含标准Markdown系装饰的帖子设为仅限本站"
+  autoLocalOnlyForMarkdownMfmCaption: "正文或CW(内容警告)栏中包含粗体、斜体、删除线、代码(行内/块)等一般Markdown中也存在的格式的帖子,无论公开范围如何,都会自动不进行联合(仅限本站)。私信(指定用户)以及对远程用户的回复(自动应用会导致对方收不到回复、话题串断裂)不受此设置影响。"
+  autoLocalOnlyForFnMfm: "自动将包含MFM独有装饰的帖子设为仅限本站"
+  autoLocalOnlyForFnMfmCaption: "正文或CW(内容警告)栏中包含center、small、搜索、数学公式、$[]函数语法等标准Markdown中没有的MFM独有装饰的帖子,无论公开范围如何,都会自动不进行联合(仅限本站)。私信(指定用户)以及对远程用户的回复(自动应用会导致对方收不到回复、话题串断裂)不受此设置影响。"
   misskeyJuiceUpdated: "Misskey Juice已更新！"
 _juiceApprovals:
   approve: "批准"

@@ -728,6 +728,14 @@ export const packedMeDetailedOnlySchema = {
 			nullable: false, optional: true,
 			enum: ['none', 'mute', 'hardMute'],
 		},
+		autoLocalOnlyForMarkdownMfm: {
+			type: 'boolean',
+			nullable: false, optional: true,
+		},
+		autoLocalOnlyForFnMfm: {
+			type: 'boolean',
+			nullable: false, optional: true,
+		},
 		securityKeysList: {
 			type: 'array',
 			nullable: false, optional: true,
