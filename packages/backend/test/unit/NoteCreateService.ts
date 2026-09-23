@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { setTimeout } from 'node:timers/promises';
 import { beforeAll, afterAll, beforeEach, afterEach, describe, test, expect } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 
@@ -204,6 +205,10 @@ describe('NoteCreateService', () => {
 		});
 
 		afterEach(async () => {
+			// create()は投稿後の処理(配送準備・返信数の加算等)を待たずに返すため、それが終わる前に
+			// レコードを消したりapp.close()でDB接続を閉じたりすると、テスト終了後に
+			// "Connection terminated" の未処理rejectionになりCIが落ちる。少し待って吐き出させる
+			await setTimeout(500);
 			await userProfilesRepository.deleteAll();
 			await usersRepository.deleteAll();
 		});

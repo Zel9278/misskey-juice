@@ -164,6 +164,8 @@ describe('ユーザー', () => {
 				emailVerified: user.emailVerified,
 				emailLang: user.emailLang,
 				muteAIGeneratedNotes: user.muteAIGeneratedNotes,
+				autoLocalOnlyForMarkdownMfm: user.autoLocalOnlyForMarkdownMfm, // JUICE
+				autoLocalOnlyForFnMfm: user.autoLocalOnlyForFnMfm, // JUICE
 				securityKeysList: user.securityKeysList,
 			} : {}),
 		});
