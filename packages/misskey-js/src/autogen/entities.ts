@@ -487,6 +487,7 @@ export type IImportBlockingRequest = operations['i___import-blocking']['requestB
 export type IImportFollowingRequest = operations['i___import-following']['requestBody']['content']['application/json'];
 export type IImportMutingRequest = operations['i___import-muting']['requestBody']['content']['application/json'];
 export type IImportUserListsRequest = operations['i___import-user-lists']['requestBody']['content']['application/json'];
+export type IJuiceUpdateAutoLocalOnlyForMfmRequest = operations['i___juice___update-auto-local-only-for-mfm']['requestBody']['content']['application/json'];
 export type IJuiceUpdateEmailLangRequest = operations['i___juice___update-email-lang']['requestBody']['content']['application/json'];
 export type IJuiceUpdateMuteAiGeneratedRequest = operations['i___juice___update-mute-ai-generated']['requestBody']['content']['application/json'];
 export type IMoveRequest = operations['i___move']['requestBody']['content']['application/json'];

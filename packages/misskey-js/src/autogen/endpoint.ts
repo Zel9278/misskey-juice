@@ -484,6 +484,7 @@ import type {
 	IImportFollowingRequest,
 	IImportMutingRequest,
 	IImportUserListsRequest,
+	IJuiceUpdateAutoLocalOnlyForMfmRequest,
 	IJuiceUpdateEmailLangRequest,
 	IJuiceUpdateMuteAiGeneratedRequest,
 	IMoveRequest,
@@ -1062,6 +1063,7 @@ export type Endpoints = {
 	'i/import-following': { req: IImportFollowingRequest; res: EmptyResponse };
 	'i/import-muting': { req: IImportMutingRequest; res: EmptyResponse };
 	'i/import-user-lists': { req: IImportUserListsRequest; res: EmptyResponse };
+	'i/juice/update-auto-local-only-for-mfm': { req: IJuiceUpdateAutoLocalOnlyForMfmRequest; res: EmptyResponse };
 	'i/juice/update-email-lang': { req: IJuiceUpdateEmailLangRequest; res: EmptyResponse };
 	'i/juice/update-mute-ai-generated': { req: IJuiceUpdateMuteAiGeneratedRequest; res: EmptyResponse };
 	'i/move': { req: IMoveRequest; res: IMoveResponse };

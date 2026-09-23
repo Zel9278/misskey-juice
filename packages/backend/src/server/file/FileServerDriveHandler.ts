@@ -7,16 +7,13 @@ import * as fs from 'node:fs';
 import rename from 'rename';
 import type { Config } from '@/config.js';
 import type { IImageStreamable } from '@/core/ImageProcessingService.js';
-import { StatusError } from '@/misc/status-error.js';
 import { contentDisposition } from '@/misc/content-disposition.js';
 import { correctFilename } from '@/misc/correct-filename.js';
 import { isMimeImage } from '@/misc/is-mime-image.js';
-import { resolveDecodedSource } from '@/misc/juice-extra-image-decoders.js';
 import { VideoProcessingService } from '@/core/VideoProcessingService.js';
 import { attachStreamCleanup, handleRangeRequest, setFileResponseHeaders, getSafeContentType, needsCleanup } from './FileServerUtils.js';
 import type { FileServerFileResolver } from './FileServerFileResolver.js';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import type Logger from '@/logger.js';
 
 export class FileServerDriveHandler {
 	constructor(
@@ -24,7 +21,6 @@ export class FileServerDriveHandler {
 		private fileResolver: FileServerFileResolver,
 		private assetsPath: string,
 		private videoProcessingService: VideoProcessingService,
-		private logger: Logger,
 	) {}
 
 	public async handle(request: FastifyRequest<{ Params: { key: string } }>, reply: FastifyReply) {
@@ -80,29 +76,18 @@ export class FileServerDriveHandler {
 					}
 				}
 
-				if (image == null) {
-					// JUICE: sharp(libvips)が直接デコードできない形式(JPEG XL・HEIC/HEIF)は、
-					// 専用デコーダでPNGへ変換してから配信する(対象外ならpath/mimeそのまま)
-					const { source, mime } = await resolveDecodedSource(file.path, file.mime);
-					image = typeof source === 'string'
-						? {
-							data: handleRangeRequest(reply, request.headers.range as string | undefined, file.file.size, file.path),
-							ext: file.ext,
-							type: file.mime,
-						}
-						: {
-							data: source,
-							ext: 'png',
-							type: mime,
-						};
-				}
+				image ??= {
+					data: handleRangeRequest(reply, request.headers.range as string | undefined, file.file.size, file.path),
+					ext: file.ext,
+					type: file.mime,
+				};
 
 				attachStreamCleanup(image.data, file.cleanup);
 
-				// JUICE: デコーダ変換後はBufferとして返しており、サイズがfile.file.size(元ファイル)
-				// と一致しないため、実データのサイズをContent-Lengthとして使う
 				reply.header('Content-Type', getSafeContentType(image.type));
-				reply.header('Content-Length', Buffer.isBuffer(image.data) ? image.data.length : file.file.size);
+				if (request.headers.range == null) {
+					reply.header('Content-Length', file.file.size);
+				}
 				reply.header('Cache-Control', 'max-age=31536000, immutable');
 				reply.header('Content-Disposition',
 					contentDisposition(
@@ -122,23 +107,12 @@ export class FileServerDriveHandler {
 				setFileResponseHeaders(reply, { mime: file.mime, filename });
 				return handleRangeRequest(reply, request.headers.range as string | undefined, file.file.size, file.path);
 			} else {
-				// JUICE: sharp(libvips)が直接デコードできない形式(JPEG XL・HEIC/HEIF)は、
-				// 専用デコーダでPNGへ変換してから配信する(対象外ならpath/mimeそのまま)
-				const { source, mime } = await resolveDecodedSource(file.path, file.mime);
-				if (typeof source === 'string') {
-					setFileResponseHeaders(reply, { mime: file.file.type, filename: file.filename, size: file.file.size });
-					return handleRangeRequest(reply, request.headers.range as string | undefined, file.file.size, file.path);
-				}
-				setFileResponseHeaders(reply, { mime, filename: correctFilename(file.filename, 'png'), size: source.length });
-				return source;
+				setFileResponseHeaders(reply, { mime: file.file.type, filename: file.filename, size: file.file.size });
+				return handleRangeRequest(reply, request.headers.range as string | undefined, file.file.size, file.path);
 			}
 		} catch (e) {
 			if (file.kind === 'remote') file.cleanup();
-			// JUICE: 専用デコーダの想定外の失敗(壊れたJXL/HEICファイル等)を生の500にせず、
-			// FileServerProxyHandlerと同じ方針で404にフォールバックさせる
-			if (e instanceof StatusError) throw e;
-			this.logger.warn(`Failed to serve drive file (mime=${file.mime}): ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
-			throw new StatusError('Failed to process file', 404, 'Failed to process file');
+			throw e;
 		}
 	}
 }

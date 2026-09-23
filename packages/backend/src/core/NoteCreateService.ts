@@ -58,6 +58,7 @@ import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { CollapsedQueue } from '@/misc/collapsed-queue.js';
 import { CacheService } from '@/core/CacheService.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
+import { containsMarkdownStyleMfm, containsFnStyleMfm } from '@/misc/juice-contains-decorative-mfm.js';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention';
 
@@ -601,20 +602,51 @@ export class NoteCreateService implements OnApplicationShutdown {
 		let mentionedUsers = data.apMentions;
 
 		// Parse MFM if needed
+		// JUICE: bodyTokens/cwTokensは下の装飾的MFM自動ローカル限定機能でも使うため、
+		// このifの外側で宣言しておき、二重にmfm.parse()しないようにする
+		let bodyTokens: mfm.MfmNode[] | undefined;
+		let cwTokens: mfm.MfmNode[] | undefined;
 		if (!tags || !emojis || !mentionedUsers) {
-			const tokens = (data.text ? mfm.parse(data.text)! : []);
-			const cwTokens = data.cw ? mfm.parse(data.cw)! : [];
+			bodyTokens = (data.text ? mfm.parse(data.text)! : []);
+			cwTokens = data.cw ? mfm.parse(data.cw)! : [];
 			const choiceTokens = data.poll && data.poll.choices
 				? concat(data.poll.choices.map(choice => mfm.parse(choice)!))
 				: [];
 
-			const combinedTokens = tokens.concat(cwTokens).concat(choiceTokens);
+			const combinedTokens = bodyTokens.concat(cwTokens).concat(choiceTokens);
 
 			tags = data.apHashtags ?? extractHashtags(combinedTokens);
 
 			emojis = data.apEmojis ?? extractCustomEmojisFromMfm(combinedTokens);
 
 			mentionedUsers = data.apMentions ?? (await this.extractMentionedUsers(user, combinedTokens));
+		}
+
+		// JUICE: 装飾的なMFM(太字・斜体・取り消し線・コードブロック等の標準マークダウン系、
+		// center・small・quote・search・数式・fn関数等のMFM独自装飾系)を、本文またはCW欄に
+		// 含む投稿を自動でローカルのみにする機能。ポール選択肢の文字列は対象外(本文・CWのみ)。
+		// ユーザー個別設定(2種類のトグルを独立して持つ)。DM(specified)は用途が異なるため
+		// 対象外、リモートユーザーへの返信も対象外にする(自動でlocalOnlyにすると相手に
+		// 配送されずスレッドが分断されてしまうため)。ローカルユーザーの投稿にのみ適用する
+		// (AP経由で取り込むリモートノートには適用しない)。tags/emojis/mentionedUsers の
+		// 有無(noExtractMentions等のクライアント指定)に依存させず user.host で直接判定
+		// することで、それらのパラメータによるバイパスを避ける
+		if (
+			user.host == null &&
+			!data.localOnly &&
+			data.visibility !== 'specified' &&
+			!(data.reply && data.reply.userHost != null)
+		) {
+			const profile = await this.cacheService.userProfileCache.fetch(user.id);
+			if (profile.autoLocalOnlyForMarkdownMfm || profile.autoLocalOnlyForFnMfm) {
+				bodyTokens ??= (data.text ? mfm.parse(data.text)! : []);
+				cwTokens ??= data.cw ? mfm.parse(data.cw)! : [];
+				const matchesMarkdown = profile.autoLocalOnlyForMarkdownMfm && (containsMarkdownStyleMfm(bodyTokens) || containsMarkdownStyleMfm(cwTokens));
+				const matchesFn = profile.autoLocalOnlyForFnMfm && (containsFnStyleMfm(bodyTokens) || containsFnStyleMfm(cwTokens));
+				if (matchesMarkdown || matchesFn) {
+					data.localOnly = true;
+				}
+			}
 		}
 
 		// if the host is media-silenced, custom emojis are not allowed

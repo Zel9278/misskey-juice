@@ -2250,6 +2250,7 @@ declare namespace entities {
         IImportFollowingRequest,
         IImportMutingRequest,
         IImportUserListsRequest,
+        IJuiceUpdateAutoLocalOnlyForMfmRequest,
         IJuiceUpdateEmailLangRequest,
         IJuiceUpdateMuteAiGeneratedRequest,
         IMoveRequest,
@@ -2967,6 +2968,9 @@ type IImportMutingRequest = operations['i___import-muting']['requestBody']['cont
 
 // @public (undocumented)
 type IImportUserListsRequest = operations['i___import-user-lists']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type IJuiceUpdateAutoLocalOnlyForMfmRequest = operations['i___juice___update-auto-local-only-for-mfm']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type IJuiceUpdateEmailLangRequest = operations['i___juice___update-email-lang']['requestBody']['content']['application/json'];

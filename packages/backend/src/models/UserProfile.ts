@@ -84,6 +84,18 @@ export class MiUserProfile {
 	})
 	public muteAIGeneratedNotes: typeof aiGeneratedNoteMuteModes[number];
 
+	@Column('boolean', {
+		default: false,
+		comment: 'Automatically make notes local-only when they contain standard Markdown-style decoration (bold/italic/strikethrough/code), checked separately from MFM-only decoration (JUICE).',
+	})
+	public autoLocalOnlyForMarkdownMfm: boolean;
+
+	@Column('boolean', {
+		default: false,
+		comment: 'Automatically make notes local-only when they contain MFM-only decoration (center/small/quote/search/math/fn functions), checked separately from standard Markdown-style decoration (JUICE).',
+	})
+	public autoLocalOnlyForFnMfm: boolean;
+
 	@Column('varchar', {
 		length: 512, nullable: true,
 		comment: 'Remote URL of the user.',

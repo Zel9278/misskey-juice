@@ -650,6 +650,8 @@ export class UserEntityService implements OnModuleInit {
 				emailVerified: profile!.emailVerified,
 				emailLang: profile!.emailLang,
 				muteAIGeneratedNotes: profile!.muteAIGeneratedNotes,
+				autoLocalOnlyForMarkdownMfm: profile!.autoLocalOnlyForMarkdownMfm,
+				autoLocalOnlyForFnMfm: profile!.autoLocalOnlyForFnMfm,
 				securityKeysList: profile!.twoFactorEnabled
 					? this.userSecurityKeysRepository.find({
 						where: {

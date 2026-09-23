@@ -176,6 +176,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 		</SearchMarker>
 
+		<!-- JUICE: 単体の機能(サブグループを持たない)のため、他のsettingsGroup*のような
+		     カテゴリ折りたたみで包まず、トップレベルのMkFolderとして単独で表示する -->
+		<SearchMarker :keywords="['mfm', 'local', 'only', 'markdown', 'bold', 'decoration']">
+			<MkFolder>
+				<template #label><SearchLabel>{{ i18n.ts._juice.autoLocalOnlyForMfm }}</SearchLabel></template>
+				<div class="_gaps_s">
+					<MkSwitch v-model="autoLocalOnlyForMarkdownMfm" @update:modelValue="saveAutoLocalOnlyForMfm">
+						<template #label>{{ i18n.ts._juice.autoLocalOnlyForMarkdownMfm }}</template>
+						<template #caption>{{ i18n.ts._juice.autoLocalOnlyForMarkdownMfmCaption }}</template>
+					</MkSwitch>
+					<MkSwitch v-model="autoLocalOnlyForFnMfm" @update:modelValue="saveAutoLocalOnlyForMfm">
+						<template #label>{{ i18n.ts._juice.autoLocalOnlyForFnMfm }}</template>
+						<template #caption>{{ i18n.ts._juice.autoLocalOnlyForFnMfmCaption }}</template>
+					</MkSwitch>
+				</div>
+			</MkFolder>
+		</SearchMarker>
+
 		<SearchMarker v-slot="slotProps">
 			<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 				<template #label><SearchLabel>{{ i18n.ts._juice.settingsGroupRequests }}</SearchLabel></template>
@@ -247,6 +265,8 @@ const $i = ensureSignin();
 
 const emailLang = ref($i.emailLang ?? 'ja-JP');
 const muteAIGeneratedNotes = ref($i.muteAIGeneratedNotes ?? 'none');
+const autoLocalOnlyForMarkdownMfm = ref($i.autoLocalOnlyForMarkdownMfm ?? false);
+const autoLocalOnlyForFnMfm = ref($i.autoLocalOnlyForFnMfm ?? false);
 
 // JUICE: リレータイムラインの絞り込み設定(機能自体が無効なインスタンスでは項目を出さない)
 const relayTimelineEnabled = ref(false);
@@ -371,6 +391,13 @@ function saveMuteAIGeneratedNotes() {
 	os.apiWithDialog('i/juice/update-mute-ai-generated', {
 		// MkSelect の items 型が緩い string のため、送信時にエンドポイント側の厳密な enum 型へ合わせる
 		muteAIGeneratedNotes: muteAIGeneratedNotes.value as Misskey.entities.IJuiceUpdateMuteAiGeneratedRequest['muteAIGeneratedNotes'],
+	});
+}
+
+function saveAutoLocalOnlyForMfm() {
+	os.apiWithDialog('i/juice/update-auto-local-only-for-mfm', {
+		autoLocalOnlyForMarkdownMfm: autoLocalOnlyForMarkdownMfm.value,
+		autoLocalOnlyForFnMfm: autoLocalOnlyForFnMfm.value,
 	});
 }
 
