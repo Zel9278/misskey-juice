@@ -29,7 +29,7 @@ import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { IdService } from '@/core/IdService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveAiGeneratedFallbackCwSettings } from '@/models/JuiceSettings.js';
+import { resolveAiGeneratedFallbackCwSettings, resolveNovelFallbackCwSettings } from '@/models/JuiceSettings.js';
 import { canonicalizeLanguageTagForFederation } from '@/misc/is-language-filtered.js';
 import { EmailI18nService } from '@/core/EmailI18nService.js';
 import { escapeHtml } from '@/misc/escape-html.js';
@@ -491,14 +491,32 @@ export class ApRendererService {
 		// 「AI生成 | 」が本来のCWの前に混入してしまうため)。
 		// ノート本体のisAIGeneratedだけでなく、添付ファイルのうち1件でもAI生成フラグが
 		// 立っていれば対象にする(ノート本体と添付ファイルは独立したフラグのため)
+		const juiceSettings = (note.isAIGenerated || files.some(f => f.isAIGenerated) || note.isNovel) ? await this.juiceSettingsService.fetch() : null;
+
 		let summaryIsAIGeneratedFallback = false;
 		if (note.isAIGenerated || files.some(f => f.isAIGenerated)) {
-			const { aiGeneratedFallbackCwEnabled } = resolveAiGeneratedFallbackCwSettings(await this.juiceSettingsService.fetch());
+			const { aiGeneratedFallbackCwEnabled } = resolveAiGeneratedFallbackCwSettings(juiceSettings!);
 			if (aiGeneratedFallbackCwEnabled) {
 				const lang = await this.emailI18nService.resolveLang(note.lang);
 				const aiGeneratedLabel = this.emailI18nService.getI18n(lang).t('aiGenerated');
 				summary = (note.cw != null && note.cw !== '') ? `${aiGeneratedLabel} | ${note.cw}` : aiGeneratedLabel;
 				summaryIsAIGeneratedFallback = true;
+			}
+		}
+
+		// JUICE: _juice_isNovelを解釈できない非JUICE実装でも、小説(長文フィクション)投稿で
+		// あることが一目でわかるよう、summaryにフォールバック文言を合成する。仕組みはisAIGenerated
+		// と同じ(_juice_summaryIsNovelFallback目印・_juice_originalCwでの復元、DB上のnote.cwは
+		// 変更しない)。isAIGenerated側のフォールバックが既に適用されている場合は、summaryへの
+		// 二重合成は行わず優先させる(_juice_isNovel自体はJUICE間連合用に引き続き個別に送出する)
+		let summaryIsNovelFallback = false;
+		if (note.isNovel && !summaryIsAIGeneratedFallback) {
+			const { novelFallbackCwEnabled } = resolveNovelFallbackCwSettings(juiceSettings!);
+			if (novelFallbackCwEnabled) {
+				const lang = await this.emailI18nService.resolveLang(note.lang);
+				const novelLabel = this.emailI18nService.getI18n(lang).t('novel');
+				summary = (note.cw != null && note.cw !== '') ? `${novelLabel} | ${note.cw}` : novelLabel;
+				summaryIsNovelFallback = true;
 			}
 		}
 
@@ -554,6 +572,8 @@ export class ApRendererService {
 			// 文言単独、または「フォールバック文言 | 元のCW」)になっているため、JUICE間の連合で
 			// 元のCWをそのまま復元できるよう、DB上のnote.cwを別プロパティとして併せて連合する
 			...(summaryIsAIGeneratedFallback ? { _juice_summaryIsAIGeneratedFallback: true, _juice_originalCw: note.cw } : {}), // JUICE
+			_juice_isNovel: note.isNovel, // JUICE
+			...(summaryIsNovelFallback ? { _juice_summaryIsNovelFallback: true, _juice_originalCw: note.cw } : {}), // JUICE
 			published: this.idService.parse(note.id).date.toISOString(),
 			to,
 			cc,

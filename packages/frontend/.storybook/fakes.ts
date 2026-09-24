@@ -138,6 +138,7 @@ export function file(isSensitive = false): entities.DriveFile {
 		size: 77752,
 		isSensitive,
 		isAIGenerated: false,
+		isNovel: false,
 		blurhash: 'eQAmoa^-MH8w9ZIvNLSvo^$*MwRPbwtSxutRozjEiwR.RjWBoeozog',
 		properties: {
 			width: 1024,
@@ -238,6 +239,7 @@ export function note(id = 'somenoteid'): entities.Note {
 		visibility: 'public',
 		isAIGenerated: false,
 		hideFromMediaTimeline: false,
+		isNovel: false,
 		reactionAcceptance: 'nonSensitiveOnly',
 		reactionEmojis: {},
 		reactions: {},

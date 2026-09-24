@@ -581,6 +581,8 @@ import type {
 	NotesHybridTimelineResponse,
 	NotesJuiceUpdateAiGeneratedRequest,
 	NotesJuiceUpdateAiGeneratedResponse,
+	NotesJuiceUpdateNovelRequest,
+	NotesJuiceUpdateNovelResponse,
 	NotesLocalTimelineRequest,
 	NotesLocalTimelineResponse,
 	NotesMentionsRequest,
@@ -1125,6 +1127,7 @@ export type Endpoints = {
 	'notes/global-timeline': { req: NotesGlobalTimelineRequest; res: NotesGlobalTimelineResponse };
 	'notes/hybrid-timeline': { req: NotesHybridTimelineRequest; res: NotesHybridTimelineResponse };
 	'notes/juice/update-ai-generated': { req: NotesJuiceUpdateAiGeneratedRequest; res: NotesJuiceUpdateAiGeneratedResponse };
+	'notes/juice/update-novel': { req: NotesJuiceUpdateNovelRequest; res: NotesJuiceUpdateNovelResponse };
 	'notes/local-timeline': { req: NotesLocalTimelineRequest; res: NotesLocalTimelineResponse };
 	'notes/mentions': { req: NotesMentionsRequest; res: NotesMentionsResponse };
 	'notes/polls/recommendation': { req: NotesPollsRecommendationRequest; res: NotesPollsRecommendationResponse };

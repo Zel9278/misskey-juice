@@ -583,6 +583,38 @@ describe('Timelines', () => {
 				}, waitForPushToTlOptions);
 			}, 1000 * 10);
 
+			// JUICE: 「小説」フラグが付いたノートは添付ファイルが無くてもwithFiles:trueの対象に含まれる
+			test('[withFiles: true] 「小説」フラグが付いたノートは添付ファイルが無くても含まれる', async () => {
+				const [alice, bob] = await Promise.all([signup(), signup()]);
+
+				await api('following/create', { userId: bob.id }, alice);
+				const bobNovelNote = await post(bob, { text: 'novel', isNovel: true });
+				const bobTextOnlyNote = await post(bob, { text: 'hi' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/timeline', { limit: 100, withFiles: true }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === bobNovelNote.id), true);
+					assert.strictEqual(res.body.some(note => note.id === bobTextOnlyNote.id), false);
+				}, waitForPushToTlOptions);
+			}, 1000 * 10);
+
+			// JUICE: onlyNovel:trueは「小説」フラグが付いたノートだけに絞り込む
+			test('[onlyNovel: true] 「小説」フラグが付いたノートのみ含まれる', async () => {
+				const [alice, bob] = await Promise.all([signup(), signup()]);
+
+				await api('following/create', { userId: bob.id }, alice);
+				const bobNovelNote = await post(bob, { text: 'novel', isNovel: true });
+				const bobTextOnlyNote = await post(bob, { text: 'hi' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/timeline', { limit: 100, onlyNovel: true }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === bobNovelNote.id), true);
+					assert.strictEqual(res.body.some(note => note.id === bobTextOnlyNote.id), false);
+				}, waitForPushToTlOptions);
+			}, 1000 * 10);
+
 			test('フォローしているユーザーのチャンネル投稿が含まれない', async () => {
 				const [alice, bob] = await Promise.all([signup(), signup()]);
 
@@ -1397,6 +1429,21 @@ describe('Timelines', () => {
 				}, waitForPushToTlOptions);
 			}, 1000 * 10);
 
+			// JUICE: onlyNovel:trueは「小説」フラグが付いたノートだけに絞り込む
+			test('[onlyNovel: true] 「小説」フラグが付いたノートのみ含まれる', async () => {
+				const [alice, bob] = await Promise.all([signup(), signup()]);
+
+				const bobNovelNote = await post(bob, { text: 'novel', isNovel: true });
+				const bobTextOnlyNote = await post(bob, { text: 'hi' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/local-timeline', { limit: 100, onlyNovel: true }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === bobNovelNote.id), true);
+					assert.strictEqual(res.body.some(note => note.id === bobTextOnlyNote.id), false);
+				}, waitForPushToTlOptions);
+			}, 1000 * 10);
+
 			describe('Channel', () => {
 				test('チャンネル未フォロー　＋　ユーザ未フォロー　＝　TLに流れない', async () => {
 					const [alice, bob] = await Promise.all([signup(), signup()]);
@@ -2058,6 +2105,21 @@ describe('Timelines', () => {
 
 					assert.strictEqual(res.body.some(note => note.id === carolRenote.id), true);
 					assert.strictEqual(res.body.some(note => note.id === carolTextOnlyNote.id), false);
+				}, waitForPushToTlOptions);
+			}, 1000 * 10);
+
+			// JUICE: onlyNovel:trueは「小説」フラグが付いたノートだけに絞り込む
+			test('[onlyNovel: true] 「小説」フラグが付いたノートのみ含まれる', async () => {
+				const [alice, bob] = await Promise.all([signup(), signup()]);
+
+				const bobNovelNote = await post(bob, { text: 'novel', isNovel: true });
+				const bobTextOnlyNote = await post(bob, { text: 'hi' });
+
+				await vi.waitFor(async () => {
+					const res = await api('notes/hybrid-timeline', { limit: 100, onlyNovel: true }, alice);
+
+					assert.strictEqual(res.body.some(note => note.id === bobNovelNote.id), true);
+					assert.strictEqual(res.body.some(note => note.id === bobTextOnlyNote.id), false);
 				}, waitForPushToTlOptions);
 			}, 1000 * 10);
 

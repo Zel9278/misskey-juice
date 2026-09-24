@@ -67,6 +67,7 @@ const exampleCWNote = reactive<Misskey.entities.Note>({
 	localOnly: false,
 	isAIGenerated: false,
 	hideFromMediaTimeline: false,
+	isNovel: false,
 	reactionAcceptance: null,
 	renoteCount: 0,
 	repliesCount: 1,

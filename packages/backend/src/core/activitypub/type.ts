@@ -28,6 +28,10 @@ export interface IObject {
 	// (無ければnull)。summaryが合成文言で上書きされてしまうため、JUICE間の連合で元のCWを
 	// 復元するために別プロパティとして送出する
 	_juice_originalCw?: string | null;
+	// JUICE: 「小説」フラグ。仕組みはisAIGenerated系と同じ(_juice_summaryIsNovelFallback・
+	// _juice_originalCwを共用する)
+	_juice_isNovel?: boolean;
+	_juice_summaryIsNovelFallback?: boolean;
 	// JUICE: ノートの言語(BCP 47言語タグ)。AS2標準のcontentMapのキーはMastodon/Akkoma等の
 	// 非JUICE実装向けに正規化(主言語サブタグへ切り詰め、中国語除く)されているため、リージョン
 	// 情報を保持したnote.langそのものをJUICE間連合用に別途送出する。受信側(ApNoteService)は

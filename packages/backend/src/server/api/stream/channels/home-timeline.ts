@@ -24,6 +24,8 @@ export class HomeTimelineChannel extends Channel {
 	private withFiles: boolean;
 	// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
 	private localOnly: boolean;
+	// JUICE: 「小説」フラグが付いた投稿だけに絞り込む
+	private onlyNovel: boolean;
 
 	constructor(
 		@Inject(REQUEST)
@@ -41,6 +43,7 @@ export class HomeTimelineChannel extends Channel {
 		this.withRenotes = !!(params.withRenotes ?? true);
 		this.withFiles = !!(params.withFiles ?? false);
 		this.localOnly = !!(params.localOnly ?? false);
+		this.onlyNovel = !!(params.onlyNovel ?? false);
 
 		this.subscriber.on('notesStream', this.onNote);
 	}
@@ -51,15 +54,19 @@ export class HomeTimelineChannel extends Channel {
 
 		// JUICE: 純粋なリノート(本文・自身のファイルを持たない)は、リノート元の投稿にファイルが
 		// あればメディアタイムラインの対象に含める。hideFromMediaTimelineは実際にファイルを
-		// 提供している側(自身、またはリノート元)の投稿の設定を見る
+		// 提供している側(自身、またはリノート元)の投稿の設定を見る。
+		// 「小説」フラグが付いた投稿は添付ファイルの有無にかかわらず対象に含める
 		if (this.withFiles) {
 			const hasOwnMedia = note.fileIds != null && note.fileIds.length > 0 && !note.hideFromMediaTimeline;
 			const hasRenotedMedia = note.renote != null && note.renote.fileIds != null && note.renote.fileIds.length > 0 && !note.renote.hideFromMediaTimeline;
-			if (!hasOwnMedia && !hasRenotedMedia) return;
+			if (!hasOwnMedia && !hasRenotedMedia && !note.isNovel) return;
 		}
 
 		// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
 		if (this.localOnly && !isMe && note.user.host != null) return;
+
+		// JUICE: 「小説」フラグが付いた投稿だけに絞り込む
+		if (this.onlyNovel && !note.isNovel) return;
 
 		if (note.channelId) {
 			// そのチャンネルをフォローしていない

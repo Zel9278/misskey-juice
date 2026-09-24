@@ -57,6 +57,7 @@ const exampleNote = reactive<Misskey.entities.Note>({
 	localOnly: false,
 	isAIGenerated: false,
 	hideFromMediaTimeline: false,
+	isNovel: false,
 	reactionAcceptance: null,
 	renoteCount: 0,
 	repliesCount: 1,
@@ -73,6 +74,7 @@ const exampleNote = reactive<Misskey.entities.Note>({
 		size: 827532,
 		isSensitive: false,
 		isAIGenerated: false,
+		isNovel: false,
 		blurhash: 'LXNA3TD*XAIA%1%M%gt7.TofRioz',
 		properties: {
 			width: 256,

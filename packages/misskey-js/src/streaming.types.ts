@@ -75,6 +75,7 @@ export type Channels = {
 			withRenotes?: boolean;
 			withFiles?: boolean;
 			localOnly?: boolean;
+			onlyNovel?: boolean;
 		};
 		events: {
 			note: (payload: Note) => void;
@@ -86,6 +87,7 @@ export type Channels = {
 			withRenotes?: boolean;
 			withReplies?: boolean;
 			withFiles?: boolean;
+			onlyNovel?: boolean;
 		};
 		events: {
 			note: (payload: Note) => void;
@@ -97,6 +99,7 @@ export type Channels = {
 			withRenotes?: boolean;
 			withReplies?: boolean;
 			withFiles?: boolean;
+			onlyNovel?: boolean;
 		};
 		events: {
 			note: (payload: Note) => void;
@@ -107,6 +110,7 @@ export type Channels = {
 		params: {
 			withRenotes?: boolean;
 			withFiles?: boolean;
+			onlyNovel?: boolean;
 		};
 		events: {
 			note: (payload: Note) => void;
@@ -365,6 +369,12 @@ export type NoteUpdatedEvent = { id: Note['id'] } & ({
 	type: 'aiGeneratedChanged';
 	body: {
 		isAIGenerated: boolean;
+	};
+} | {
+	// JUICE
+	type: 'novelChanged';
+	body: {
+		isNovel: boolean;
 	};
 });
 

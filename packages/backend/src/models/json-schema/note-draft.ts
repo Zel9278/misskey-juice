@@ -166,6 +166,11 @@ export const packedNoteDraftSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		// JUICE: 「小説」フラグ
+		isNovel: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 		reactionAcceptance: {
 			type: 'string',
 			optional: false, nullable: true,

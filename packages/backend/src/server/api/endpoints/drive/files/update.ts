@@ -66,6 +66,7 @@ export const paramDef = {
 		name: { type: 'string' },
 		isSensitive: { type: 'boolean' },
 		isAIGenerated: { type: 'boolean' },
+		isNovel: { type: 'boolean' }, // JUICE
 		comment: { type: 'string', nullable: true, maxLength: 512 },
 	},
 	required: ['fileId'],
@@ -98,6 +99,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					name: ps.name,
 					isSensitive: ps.isSensitive,
 					isAIGenerated: ps.isAIGenerated,
+					isNovel: ps.isNovel,
 					comment: ps.comment,
 				}, me);
 			} catch (e) {

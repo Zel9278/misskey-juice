@@ -845,6 +845,7 @@ export type Channels = {
             withRenotes?: boolean;
             withFiles?: boolean;
             localOnly?: boolean;
+            onlyNovel?: boolean;
         };
         events: {
             note: (payload: Note) => void;
@@ -856,6 +857,7 @@ export type Channels = {
             withRenotes?: boolean;
             withReplies?: boolean;
             withFiles?: boolean;
+            onlyNovel?: boolean;
         };
         events: {
             note: (payload: Note) => void;
@@ -867,6 +869,7 @@ export type Channels = {
             withRenotes?: boolean;
             withReplies?: boolean;
             withFiles?: boolean;
+            onlyNovel?: boolean;
         };
         events: {
             note: (payload: Note) => void;
@@ -877,6 +880,7 @@ export type Channels = {
         params: {
             withRenotes?: boolean;
             withFiles?: boolean;
+            onlyNovel?: boolean;
         };
         events: {
             note: (payload: Note) => void;
@@ -2347,6 +2351,8 @@ declare namespace entities {
         NotesHybridTimelineResponse,
         NotesJuiceUpdateAiGeneratedRequest,
         NotesJuiceUpdateAiGeneratedResponse,
+        NotesJuiceUpdateNovelRequest,
+        NotesJuiceUpdateNovelResponse,
         NotesLocalTimelineRequest,
         NotesLocalTimelineResponse,
         NotesMentionsRequest,
@@ -3365,6 +3371,12 @@ type NotesJuiceUpdateAiGeneratedRequest = operations['notes___juice___update-ai-
 type NotesJuiceUpdateAiGeneratedResponse = operations['notes___juice___update-ai-generated']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type NotesJuiceUpdateNovelRequest = operations['notes___juice___update-novel']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type NotesJuiceUpdateNovelResponse = operations['notes___juice___update-novel']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type NotesLocalTimelineRequest = operations['notes___local-timeline']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -4159,8 +4171,8 @@ type VerifyEmailRequest = operations['verify-email']['requestBody']['content']['
 // Warnings were encountered during analysis:
 //
 // src/streaming.ts:57:3 - (ae-forgotten-export) The symbol "ReconnectingWebSocket" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:267:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:282:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
+// src/streaming.types.ts:271:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
+// src/streaming.types.ts:286:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

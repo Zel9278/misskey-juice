@@ -168,6 +168,8 @@ export const paramDef = {
 		isAIGenerated: { type: 'boolean', default: false },
 		// JUICE: trueの場合、withFiles指定のタイムライン(メディアタイムライン)からこの投稿を除外する
 		hideFromMediaTimeline: { type: 'boolean', default: false },
+		// JUICE: 「小説」フラグ
+		isNovel: { type: 'boolean', default: false },
 		reactionAcceptance: { type: 'string', nullable: true, enum: [null, 'likeOnly', 'likeOnlyForRemote', 'nonSensitiveOnly', 'nonSensitiveOnlyForLocalLikeOnlyForRemote'], default: null },
 		replyId: { type: 'string', format: 'misskey:id', nullable: true },
 		renoteId: { type: 'string', format: 'misskey:id', nullable: true },
@@ -232,6 +234,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				localOnly: ps.localOnly,
 				isAIGenerated: ps.isAIGenerated,
 				hideFromMediaTimeline: ps.hideFromMediaTimeline,
+				isNovel: ps.isNovel,
 				reactionAcceptance: ps.reactionAcceptance,
 				visibility: ps.visibility,
 				visibleUserIds: ps.visibleUserIds ?? [],

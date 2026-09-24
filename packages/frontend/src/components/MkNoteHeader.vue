@@ -15,6 +15,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<!-- JUICE: 投稿1件ごとに出る要素のため、他のJUICEバッジ(設定画面・メニュー等、1画面に数回しか出ない箇所)とは異なり
 	     意図的にJUICEバッジを付けていない(タイムライン上で常時大量に表示されると視認性を損なうため) -->
 	<div v-if="isAIGenerated" v-tooltip="i18n.ts.aiGenerated" :class="$style.aiGenerated" :aria-label="i18n.ts.aiGenerated" role="img"><i class="ti ti-ai"></i></div>
+	<!-- JUICE: 「小説」フラグ付きの投稿であることを示すバッジ。押すと小説ビューワーで開く -->
+	<template v-if="isNovel">
+		<div v-if="mock" :class="$style.novel" :aria-label="i18n.ts._juice.readAsNovel" role="img"><i class="ti ti-book"></i></div>
+		<MkA v-else v-tooltip="i18n.ts._juice.readAsNovel" :class="$style.novel" :to="`/notes/${note.id}/novel-viewer`" :aria-label="i18n.ts._juice.readAsNovel"><i class="ti ti-book"></i></MkA>
+	</template>
 	<div :class="$style.username"><MkAcct :user="note.user"/></div>
 	<div v-if="note.user.badgeRoles" :class="$style.badgeRoles">
 		<img v-for="(role, i) in note.user.badgeRoles" :key="i" v-tooltip="role.name" :class="$style.badgeRole" :src="role.iconUrl!"/>
@@ -49,11 +54,13 @@ const props = defineProps<{
 	note: Misskey.entities.Note;
 	// JUICE: リアクション等と同様、ストリーム経由でリアクティブに上書きしたい場合に渡す(未指定ならnoteの値をそのまま使う)
 	isAIGenerated?: boolean;
+	isNovel?: boolean;
 }>();
 
 const mock = inject(DI.mock, false);
 
 const isAIGenerated = computed(() => props.isAIGenerated ?? props.note.isAIGenerated);
+const isNovel = computed(() => props.isNovel ?? props.note.isNovel);
 </script>
 
 <style lang="scss" module>
@@ -89,7 +96,8 @@ const isAIGenerated = computed(() => props.isAIGenerated ?? props.note.isAIGener
 	border-radius: 3px;
 }
 
-.aiGenerated {
+.aiGenerated,
+.novel {
 	flex-shrink: 0;
 	align-self: center;
 	margin: 0 .5em 0 0;
@@ -97,6 +105,15 @@ const isAIGenerated = computed(() => props.isAIGenerated ?? props.note.isAIGener
 	font-size: 95%;
 	border: solid 0.5px var(--MI_THEME-divider);
 	border-radius: 3px;
+}
+
+.novel {
+	color: inherit;
+
+	&:hover {
+		text-decoration: none;
+		background: var(--MI_THEME-buttonHoverBg);
+	}
 }
 
 .username {

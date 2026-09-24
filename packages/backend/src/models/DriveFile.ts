@@ -162,6 +162,12 @@ export class MiDriveFile {
 	})
 	public isAIGenerated: boolean;
 
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether the DriveFile (a .txt file) is flagged as a novel/long-form fiction text (JUICE).',
+	})
+	public isNovel: boolean;
+
 	@Index()
 	@Column('boolean', {
 		default: false,

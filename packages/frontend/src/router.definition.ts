@@ -42,6 +42,12 @@ export const ROUTE_DEF = [{
 	path: '/@:acct/:page?',
 	component: page(() => import('@/pages/user/index.vue')),
 }, {
+	// JUICE: 「小説」フラグが付いたノートを読みやすく表示する専用ビューワー。
+	// note ルート(:initialTab?)より前に置かないとinitialTabとして誤って吸収される
+	name: 'novel-viewer',
+	path: '/notes/:noteId/novel-viewer',
+	component: page(() => import('@/pages/novel-viewer.vue')),
+}, {
 	name: 'note',
 	path: '/notes/:noteId/:initialTab?',
 	component: page(() => import('@/pages/note.vue')),

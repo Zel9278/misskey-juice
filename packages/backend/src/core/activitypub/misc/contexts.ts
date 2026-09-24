@@ -570,6 +570,8 @@ const extension_context_definition = {
 	'_juice_summaryIsAIGeneratedFallback': 'juice:_juice_summaryIsAIGeneratedFallback',
 	'_juice_originalCw': 'juice:_juice_originalCw',
 	'_juice_lang': 'juice:_juice_lang',
+	'_juice_isNovel': 'juice:_juice_isNovel',
+	'_juice_summaryIsNovelFallback': 'juice:_juice_summaryIsNovelFallback',
 	// vcard
 	vcard: 'http://www.w3.org/2006/vcard/ns#',
 } satisfies Context;

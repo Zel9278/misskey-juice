@@ -215,6 +215,11 @@ export const packedNoteSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		// JUICE: 「小説」フラグ。onlyNovel指定のタイムラインの絞り込み対象になる
+		isNovel: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 		relayId: {
 			type: 'string',
 			optional: true, nullable: true,

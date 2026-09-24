@@ -25,6 +25,8 @@ export class HybridTimelineChannel extends Channel {
 	private withRenotes: boolean;
 	private withReplies: boolean;
 	private withFiles: boolean;
+	// JUICE: 「小説」フラグが付いた投稿だけに絞り込む
+	private onlyNovel: boolean;
 
 	constructor(
 		@Inject(REQUEST)
@@ -47,6 +49,7 @@ export class HybridTimelineChannel extends Channel {
 		this.withRenotes = !!(params.withRenotes ?? true);
 		this.withReplies = !!(params.withReplies ?? false);
 		this.withFiles = !!(params.withFiles ?? false);
+		this.onlyNovel = !!(params.onlyNovel ?? false);
 
 		// Subscribe events
 		this.subscriber.on('notesStream', this.onNote);
@@ -58,11 +61,12 @@ export class HybridTimelineChannel extends Channel {
 
 		// JUICE: 純粋なリノート(本文・自身のファイルを持たない)は、リノート元の投稿にファイルが
 		// あればメディアタイムラインの対象に含める。hideFromMediaTimelineは実際にファイルを
-		// 提供している側(自身、またはリノート元)の投稿の設定を見る
+		// 提供している側(自身、またはリノート元)の投稿の設定を見る。
+		// 「小説」フラグが付いた投稿は添付ファイルの有無にかかわらず対象に含める
 		if (this.withFiles) {
 			const hasOwnMedia = note.fileIds != null && note.fileIds.length > 0 && !note.hideFromMediaTimeline;
 			const hasRenotedMedia = note.renote != null && note.renote.fileIds != null && note.renote.fileIds.length > 0 && !note.renote.hideFromMediaTimeline;
-			if (!hasOwnMedia && !hasRenotedMedia) return;
+			if (!hasOwnMedia && !hasRenotedMedia && !note.isNovel) return;
 		}
 
 		if (!note.channelId) {
@@ -87,6 +91,9 @@ export class HybridTimelineChannel extends Channel {
 
 		if (!this.isNoteVisibleForMe(note)) return;
 		if (this.isNoteMutedOrBlocked(note)) return;
+
+		// JUICE: 「小説」フラグが付いた投稿だけに絞り込む
+		if (this.onlyNovel && !note.isNovel) return;
 
 		// JUICE: 表示言語の絞り込み(自分自身の投稿を常に表示するかはユーザー設定に従う)
 		if ((!isMe || !(this.userProfile?.excludeOwnNotesFromLanguageFilter ?? true)) && isLanguageFiltered(note, new Set(this.userProfile?.filteredLanguages ?? []))) return;
