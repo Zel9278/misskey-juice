@@ -9396,6 +9396,10 @@ export interface Locale extends ILocale {
              * ノート添付MIDIファイルの軽量プレイヤー(FluidSynthベースのサウンドフォント再生、ピアノロールビジュアライザー)
              */
             "midiPlayer": string;
+            /**
+             * 小説フラグと小説ビューワー(縦書きの文庫本風ページめくり・見開き表示、ルビ・青空文庫記法、.txtファイルの長編対応)
+             */
+            "novel": string;
         };
         /**
          * どういう経路で実装されたか

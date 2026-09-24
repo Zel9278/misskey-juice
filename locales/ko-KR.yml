@@ -3711,6 +3711,7 @@ _aboutJuice:
     loginFailedNotification: "로그인 시도 실패를 계정 본인에게 알림(앱 내 알림·이메일)"
     mediaTimeline: "첨부 파일이 있는 노트만 그리드/캐러셀로 모아 보여주는 미디어 타임라인(PixelFed풍 UI, 라이트박스 확대 표시, 노트별 표시 제외 플래그)"
     midiPlayer: "노트에 첨부된 MIDI 파일용 경량 플레이어(FluidSynth 기반 사운드폰트 재생, 피아노롤 비주얼라이저)"
+    novel: "소설 플래그와 소설 뷰어(세로쓰기 문고본 스타일 페이지 넘김·펼침 표시, 루비·아오조라 문고 표기법, .txt 파일 장편 지원)"
     moderationNotifications: "이모지·아바타 장식 신청, 승인식 신규 가입, 문의, 신고의 새 소식을 일반 알림 목록에서도 확인 가능"
     nickname: "다른 사용자에 대한 나만의 닉네임 설정(프로필 페이지·사용자 호버 미리보기에 표시)"
     oauthLogin: "Discord/Google/GitHub/GitLab/Microsoft 계정을 이용한 연동 로그인(로그인 수단으로 사용하려면 2단계 인증 활성화 필수)"
