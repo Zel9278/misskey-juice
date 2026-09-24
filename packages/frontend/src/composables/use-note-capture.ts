@@ -22,6 +22,7 @@ export const noteEvents = new EventEmitter<{
 	[ev: `pollVoted:${string}`]: (ctx: { userId: Misskey.entities.User['id']; choice: number; }) => void;
 	// JUICE
 	[ev: `aiGeneratedChanged:${string}`]: (ctx: { isAIGenerated: boolean; }) => void;
+	[ev: `novelChanged:${string}`]: (ctx: { isNovel: boolean; }) => void;
 }>();
 
 const fetchEvent = new EventEmitter<{
@@ -164,6 +165,14 @@ function realtimeSubscribe(props: {
 				});
 				break;
 			}
+
+			case 'novelChanged': {
+				// JUICE
+				noteEvents.emit(`novelChanged:${id}`, {
+					isNovel: body.isNovel,
+				});
+				break;
+			}
 		}
 	}
 
@@ -197,6 +206,7 @@ export type ReactiveNoteData = {
 	myReaction: Misskey.entities.Note['myReaction'];
 	pollChoices: NonNullable<Misskey.entities.Note['poll']>['choices'];
 	isAIGenerated: Misskey.entities.Note['isAIGenerated']; // JUICE
+	isNovel: Misskey.entities.Note['isNovel']; // JUICE
 };
 
 const noReaction = Symbol();
@@ -227,12 +237,14 @@ export function useNoteCapture(props: {
 		myReaction: note.myReaction,
 		pollChoices: note.poll?.choices ?? [],
 		isAIGenerated: note.isAIGenerated, // JUICE
+		isNovel: note.isNovel, // JUICE
 	});
 
 	noteEvents.on(`reacted:${note.id}`, onReacted);
 	noteEvents.on(`unreacted:${note.id}`, onUnreacted);
 	noteEvents.on(`pollVoted:${note.id}`, onPollVoted);
 	noteEvents.on(`aiGeneratedChanged:${note.id}`, onAIGeneratedChanged); // JUICE
+	noteEvents.on(`novelChanged:${note.id}`, onNovelChanged); // JUICE
 
 	// 操作がダブっていないかどうかを簡易的に記録するためのMap
 	const reactionUserMap = new Map<Misskey.entities.User['id'], string | typeof noReaction>();
@@ -299,6 +311,11 @@ export function useNoteCapture(props: {
 		$note.isAIGenerated = ctx.isAIGenerated;
 	}
 
+	// JUICE
+	function onNovelChanged(ctx: { isNovel: boolean; }): void {
+		$note.isNovel = ctx.isNovel;
+	}
+
 	function subscribe() {
 		if (mock) {
 			// モックモードでは購読しない
@@ -322,6 +339,7 @@ export function useNoteCapture(props: {
 		noteEvents.off(`unreacted:${note.id}`, onUnreacted);
 		noteEvents.off(`pollVoted:${note.id}`, onPollVoted);
 		noteEvents.off(`aiGeneratedChanged:${note.id}`, onAIGeneratedChanged); // JUICE
+		noteEvents.off(`novelChanged:${note.id}`, onNovelChanged); // JUICE
 	});
 
 	// 投稿からある程度経過している(=タイムラインを遡って表示した)ノートは、イベントが発生する可能性が低いためそもそも購読しない

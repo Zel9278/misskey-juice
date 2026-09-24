@@ -1567,6 +1567,7 @@ describe('Endpoints', () => {
 				blockEmailDotAliasRegistration: false,
 				blockEmailPlusAliasRegistration: false,
 				aiGeneratedFallbackCwEnabled: false,
+				novelFallbackCwEnabled: false,
 				discordOauthEnabled: false,
 				discordOauthClientId: null,
 				discordOauthClientSecret: null,

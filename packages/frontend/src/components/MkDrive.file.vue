@@ -28,6 +28,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkDriveFileThumbnail :class="$style.thumbnail" :file="file" fit="contain"/>
 
 		<div v-if="file.isAIGenerated" v-tooltip="i18n.ts.aiGenerated" :class="$style.aiGeneratedBadge" :aria-label="i18n.ts.aiGenerated" role="img"><i class="ti ti-ai"></i></div>
+		<!-- JUICE: 「小説」フラグ付きの.txtファイル。AI生成バッジと重ならないよう左下に出す -->
+		<div v-if="file.isNovel" v-tooltip="i18n.ts.novel" :class="[$style.aiGeneratedBadge, $style.novelBadge]" :aria-label="i18n.ts.novel" role="img"><i class="ti ti-book"></i></div>
 
 		<p :class="$style.name">
 			<span>{{ file.name.lastIndexOf('.') != -1 ? file.name.substring(0, file.name.lastIndexOf('.')) : file.name }}</span>
@@ -235,6 +237,11 @@ function onDragend() {
 	color: var(--MI_THEME-fgOnAccent);
 	font-size: 13px;
 	pointer-events: none;
+}
+
+.novelBadge {
+	right: auto;
+	left: calc(50% - 57px);
 }
 
 .name {

@@ -97,6 +97,7 @@ function createRender(params: {
 							size: file.size,
 							isSensitive: false,
 							isAIGenerated: false,
+							isNovel: false,
 							blurhash: null,
 							properties: {},
 							url: base64,

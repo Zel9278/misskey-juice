@@ -89,6 +89,12 @@ export class MiNoteDraft {
 	})
 	public hideFromMediaTimeline: boolean;
 
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether this note draft is flagged as a novel/long-form fiction post (JUICE).',
+	})
+	public isNovel: boolean;
+
 	@Column('varchar', {
 		length: 64, nullable: true,
 	})

@@ -81,6 +81,7 @@ export const paramDef = {
 		blockEmailDotAliasRegistration: { type: 'boolean' },
 		blockEmailPlusAliasRegistration: { type: 'boolean' },
 		aiGeneratedFallbackCwEnabled: { type: 'boolean' },
+		novelFallbackCwEnabled: { type: 'boolean' },
 		discordOauthEnabled: { type: 'boolean' },
 		discordOauthClientId: { type: 'string', nullable: true },
 		discordOauthClientSecret: { type: 'string', nullable: true },
@@ -146,6 +147,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.blockEmailDotAliasRegistration !== undefined) set.blockEmailDotAliasRegistration = ps.blockEmailDotAliasRegistration;
 			if (ps.blockEmailPlusAliasRegistration !== undefined) set.blockEmailPlusAliasRegistration = ps.blockEmailPlusAliasRegistration;
 			if (ps.aiGeneratedFallbackCwEnabled !== undefined) set.aiGeneratedFallbackCwEnabled = ps.aiGeneratedFallbackCwEnabled;
+			if (ps.novelFallbackCwEnabled !== undefined) set.novelFallbackCwEnabled = ps.novelFallbackCwEnabled;
 			if (ps.discordOauthEnabled !== undefined) set.discordOauthEnabled = ps.discordOauthEnabled;
 			if (ps.discordOauthClientId !== undefined) set.discordOauthClientId = ps.discordOauthClientId;
 			if (ps.discordOauthClientSecret !== undefined) set.discordOauthClientSecret = ps.discordOauthClientSecret;

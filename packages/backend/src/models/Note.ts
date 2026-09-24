@@ -116,6 +116,13 @@ export class MiNote {
 	})
 	public hideFromMediaTimeline: boolean;
 
+	@Index()
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether this note is flagged as a novel/long-form fiction post (JUICE).',
+	})
+	public isNovel: boolean;
+
 	@Column('varchar', {
 		length: 64, nullable: true,
 	})

@@ -291,6 +291,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<SearchMarker v-slot="slotProps">
 					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._juice.novelFallbackCw }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="novelFallbackCwEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._juice.novelFallbackCwEnabled }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._juice.novelFallbackCwEnabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 						<template #label><SearchLabel>{{ i18n.ts._juice.oauthLogin }}</SearchLabel></template>
 						<template #caption><SearchText>{{ i18n.ts._juice.oauthLoginCaption }}</SearchText></template>
 
@@ -470,6 +485,7 @@ const customSplashTextTooLongLineCount = computed(() => customSplashTextLines.va
 const blockEmailDotAliasRegistration = ref(settings.blockEmailDotAliasRegistration);
 const blockEmailPlusAliasRegistration = ref(settings.blockEmailPlusAliasRegistration);
 const aiGeneratedFallbackCwEnabled = ref(settings.aiGeneratedFallbackCwEnabled);
+const novelFallbackCwEnabled = ref(settings.novelFallbackCwEnabled);
 
 // JUICE: 連携ログイン(Discord/Google/GitHub/GitLab/Microsoft)。プロバイダとも設定項目の形が同じなので、
 // providerごとの入力refをまとめたオブジェクトとして管理する
@@ -576,6 +592,7 @@ function save() {
 		blockEmailDotAliasRegistration: blockEmailDotAliasRegistration.value,
 		blockEmailPlusAliasRegistration: blockEmailPlusAliasRegistration.value,
 		aiGeneratedFallbackCwEnabled: aiGeneratedFallbackCwEnabled.value,
+		novelFallbackCwEnabled: novelFallbackCwEnabled.value,
 		discordOauthEnabled: oauthSettings.discord.enabled.value,
 		discordOauthClientId: oauthSettings.discord.clientId.value || null,
 		discordOauthClientSecret: oauthSettings.discord.clientSecret.value || null,

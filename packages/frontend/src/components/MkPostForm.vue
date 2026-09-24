@@ -99,6 +99,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<button v-tooltip="i18n.ts.poll" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: poll }]" @click="togglePoll"><i class="ti ti-chart-arrows"></i></button>
 			<button v-tooltip="i18n.ts.useCw" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]" @click="useCw = !useCw"><i class="ti ti-eye-off"></i></button>
 			<button v-tooltip="i18n.ts.aiGenerated" class="_button" :class="[$style.footerButton, $style.footerButtonJuice, { [$style.footerButtonActive]: isAIGenerated }]" @click="isAIGenerated = !isAIGenerated"><i class="ti ti-ai" :class="$style.aiGeneratedButtonIcon"></i><img src="/client-assets/juice-glass.svg" alt="" :class="$style.footerButtonJuiceBadge"/></button>
+			<button v-tooltip="i18n.ts._juice.isNovel" class="_button" :class="[$style.footerButton, $style.footerButtonJuice, { [$style.footerButtonActive]: isNovel }]" @click="isNovel = !isNovel"><i class="ti ti-book"></i><img src="/client-assets/juice-glass.svg" alt="" :class="$style.footerButtonJuiceBadge"/></button>
 			<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
 			<button v-tooltip="i18n.ts.mention" class="_button" :class="$style.footerButton" @click="insertMention"><i class="ti ti-at"></i></button>
 			<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
@@ -204,6 +205,14 @@ const useCw = ref<boolean>(!!props.initialCw);
 const isAIGenerated = ref<boolean>(false);
 // JUICE: メディアタイムラインからこの投稿を除外するか
 const hideFromMediaTimeline = ref<boolean>(false);
+// JUICE: 「小説」フラグ
+const isNovel = ref<boolean>(false);
+// JUICE: ドライブで「小説」フラグを付けた.txtファイルが新たに添付されたら、投稿自体にも
+// 小説フラグを立てる(新しく加わったファイルだけを見るので、後から手動で外した場合は尊重する)
+watch(() => files.value.map(f => f.id), (ids, oldIds) => {
+	const added = files.value.filter(f => !(oldIds ?? []).includes(f.id));
+	if (added.some(f => f.isNovel)) isNovel.value = true;
+}, { immediate: true });
 const mediaTimelineEnabled = ref(false);
 juicePublicSettingsCache.fetch().then(res => {
 	mediaTimelineEnabled.value = res.mediaTimelineEnabled;
@@ -451,6 +460,7 @@ function watchForDraft() {
 	watch(localOnly, () => saveDraft());
 	watch(isAIGenerated, () => saveDraft());
 	watch(hideFromMediaTimeline, () => saveDraft());
+	watch(isNovel, () => saveDraft());
 	watch(quoteId, () => saveDraft());
 	watch(reactionAcceptance, () => saveDraft());
 	watch(scheduledAt, () => saveDraft());
@@ -922,6 +932,7 @@ type StoredDrafts = {
 			localOnly: boolean;
 			isAIGenerated: boolean;
 			hideFromMediaTimeline: boolean;
+			isNovel: boolean;
 			files: Misskey.entities.DriveFile[];
 			poll: PollEditorModelValue | null;
 			visibleUserIds?: string[];
@@ -947,6 +958,7 @@ function saveDraft() {
 			localOnly: localOnly.value,
 			isAIGenerated: isAIGenerated.value,
 			hideFromMediaTimeline: hideFromMediaTimeline.value,
+			isNovel: isNovel.value,
 			files: files.value,
 			poll: poll.value,
 			...( visibleUsers.value.length > 0 ? { visibleUserIds: visibleUsers.value.map(x => x.id) } : {}),
@@ -978,6 +990,7 @@ async function saveServerDraft(options: {
 		localOnly: localOnly.value,
 		isAIGenerated: isAIGenerated.value,
 		hideFromMediaTimeline: hideFromMediaTimeline.value,
+		isNovel: isNovel.value,
 		hashtag: hashtags.value,
 		fileIds: files.value.map(f => f.id),
 		poll: poll.value,
@@ -1086,6 +1099,7 @@ async function post(ev?: PointerEvent) {
 		localOnly: visibility.value === 'specified' ? false : localOnly.value,
 		isAIGenerated: isAIGenerated.value,
 		hideFromMediaTimeline: hideFromMediaTimeline.value,
+		isNovel: isNovel.value,
 		visibility: visibility.value,
 		visibleUserIds: visibility.value === 'specified' ? visibleUsers.value.map(u => u.id) : undefined,
 		reactionAcceptance: reactionAcceptance.value,
@@ -1357,6 +1371,7 @@ async function openAccountMenu(ev: PointerEvent) {
 				localOnly.value = draft.localOnly ?? false;
 				isAIGenerated.value = draft.isAIGenerated ?? false;
 				hideFromMediaTimeline.value = draft.hideFromMediaTimeline ?? false;
+				isNovel.value = draft.isNovel ?? false;
 				files.value = draft.files ?? [];
 				hashtags.value = draft.hashtag ?? '';
 				if (draft.hashtag) withHashtags.value = true;
@@ -1522,6 +1537,7 @@ onMounted(() => {
 				localOnly.value = draft.data.localOnly;
 				isAIGenerated.value = draft.data.isAIGenerated ?? false;
 				hideFromMediaTimeline.value = draft.data.hideFromMediaTimeline ?? false;
+				isNovel.value = draft.data.isNovel ?? false;
 				files.value = (draft.data.files || []).filter(draftFile => draftFile);
 				if (draft.data.poll) {
 					poll.value = draft.data.poll;
@@ -1547,6 +1563,7 @@ onMounted(() => {
 			localOnly.value = init.localOnly ?? false;
 			isAIGenerated.value = init.isAIGenerated ?? false;
 			hideFromMediaTimeline.value = init.hideFromMediaTimeline ?? false;
+			isNovel.value = init.isNovel ?? false;
 			files.value = init.files ?? [];
 			if (init.poll) {
 				poll.value = {

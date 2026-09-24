@@ -55,6 +55,7 @@ export class PostScheduledNoteProcessorService {
 				localOnly: draft.localOnly,
 				isAIGenerated: draft.isAIGenerated,
 				hideFromMediaTimeline: draft.hideFromMediaTimeline,
+				isNovel: draft.isNovel,
 				reactionAcceptance: draft.reactionAcceptance,
 				visibility: draft.visibility,
 				visibleUserIds: draft.visibleUserIds,

@@ -94,6 +94,8 @@ const props = withDefaults(defineProps<{
 	onlyFiles?: boolean;
 	// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
 	localOnly?: boolean;
+	// JUICE: 「小説」フラグが付いた投稿だけに絞り込む
+	onlyNovel?: boolean;
 	// JUICE: メディアタイムライン表示中か(PixelFed風の見た目に切り替える)。呼び出し元のtimeline.vueでは
 	// このコンポーネント自身のsrcが実際のタイムライン種別('home'等)になり'media'にはならないため、
 	// 別途boolean propとして渡してもらう
@@ -104,6 +106,7 @@ const props = withDefaults(defineProps<{
 	withSensitive: true,
 	onlyFiles: false,
 	localOnly: false,
+	onlyNovel: false,
 	sound: false,
 	customSound: null,
 	pixelfedMode: false,
@@ -132,6 +135,7 @@ if (props.src === 'antenna') {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			localOnly: props.localOnly,
+			onlyNovel: props.onlyNovel,
 		})),
 		useShallowRef: true,
 	}));
@@ -141,6 +145,7 @@ if (props.src === 'antenna') {
 			withRenotes: props.withRenotes,
 			withReplies: props.withReplies,
 			withFiles: props.onlyFiles ? true : undefined,
+			onlyNovel: props.onlyNovel,
 		})),
 		useShallowRef: true,
 	}));
@@ -150,6 +155,7 @@ if (props.src === 'antenna') {
 			withRenotes: props.withRenotes,
 			withReplies: props.withReplies,
 			withFiles: props.onlyFiles ? true : undefined,
+			onlyNovel: props.onlyNovel,
 		})),
 		useShallowRef: true,
 	}));
@@ -158,6 +164,7 @@ if (props.src === 'antenna') {
 		computedParams: computed(() => ({
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
+			onlyNovel: props.onlyNovel,
 		})),
 		useShallowRef: true,
 	}));
@@ -354,6 +361,7 @@ function connectChannel() {
 		connections.homeTimeline = stream.useChannel('homeTimeline', {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
+			onlyNovel: props.onlyNovel,
 			localOnly: props.localOnly,
 		});
 		connections.main = stream.useChannel('main');
@@ -363,6 +371,7 @@ function connectChannel() {
 			withRenotes: props.withRenotes,
 			withReplies: props.withReplies,
 			withFiles: props.onlyFiles ? true : undefined,
+			onlyNovel: props.onlyNovel,
 		});
 		connections.localTimeline.on('note', prepend);
 	} else if (props.src === 'social') {
@@ -370,12 +379,14 @@ function connectChannel() {
 			withRenotes: props.withRenotes,
 			withReplies: props.withReplies,
 			withFiles: props.onlyFiles ? true : undefined,
+			onlyNovel: props.onlyNovel,
 		});
 		connections.hybridTimeline.on('note', prepend);
 	} else if (props.src === 'global') {
 		connections.globalTimeline = stream.useChannel('globalTimeline', {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
+			onlyNovel: props.onlyNovel,
 		});
 		connections.globalTimeline.on('note', prepend);
 	} else if (props.src === 'mentions') {
@@ -432,7 +443,7 @@ if (store.s.realtimeMode) {
 	connectChannel();
 }
 
-watch(() => [props.list, props.antenna, props.channel, props.role, props.relays, props.withRenotes, props.localOnly], () => {
+watch(() => [props.list, props.antenna, props.channel, props.role, props.relays, props.withRenotes, props.localOnly, props.onlyNovel], () => {
 	if (store.s.realtimeMode) {
 		disconnectChannel();
 		connectChannel();

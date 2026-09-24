@@ -57,6 +57,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkA>
 						<span v-if="appearNote.user.isBot" :class="$style.isBot">bot</span>
 						<span v-if="$appearNote.isAIGenerated" v-tooltip="i18n.ts.aiGenerated" :class="$style.aiGenerated" :aria-label="i18n.ts.aiGenerated" role="img"><i class="ti ti-ai"></i></span>
+						<!-- JUICE: 「小説」フラグ付きの投稿であることを示すバッジ。押すと小説ビューワーで開く -->
+						<MkA v-if="$appearNote.isNovel" v-tooltip="i18n.ts._juice.readAsNovel" :class="[$style.aiGenerated, $style.novel]" :to="`/notes/${appearNote.id}/novel-viewer`" :aria-label="i18n.ts._juice.readAsNovel"><i class="ti ti-book"></i></MkA>
 						<div :class="$style.noteHeaderInfo">
 							<span v-if="appearNote.visibility !== 'public'" style="margin-left: 0.5em;" :title="i18n.ts._visibility[appearNote.visibility]">
 								<i v-if="appearNote.visibility === 'home'" class="ti ti-home"></i>
@@ -538,6 +540,15 @@ const keymap = {
 	line-height: 1;
 	border: solid 0.5px var(--MI_THEME-divider);
 	border-radius: 4px;
+}
+
+.novel {
+	color: inherit;
+
+	&:hover {
+		text-decoration: none;
+		background: var(--MI_THEME-buttonHoverBg);
+	}
 }
 
 .noteHeaderInfo {

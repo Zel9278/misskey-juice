@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkPostForm v-if="prefer.r.showFixedPostForm.value" :class="$style.postForm" class="_panel" fixed style="margin-bottom: var(--MI-margin);"/>
 		<MkStreamingNotesTimeline
 			ref="tlComponent"
-			:key="src + withRenotes + effectiveWithReplies + effectiveOnlyFiles + withSensitive + localOnly + relayTimelineFilter.join(',') + mediaTimelineSrc + ($i ? $i.filteredLanguages.join(',') + $i.excludeOwnNotesFromLanguageFilter : '')"
+			:key="src + withRenotes + effectiveWithReplies + effectiveOnlyFiles + withSensitive + localOnly + onlyNovel + relayTimelineFilter.join(',') + mediaTimelineSrc + ($i ? $i.filteredLanguages.join(',') + $i.excludeOwnNotesFromLanguageFilter : '')"
 			:class="$style.tl"
 			:src="(src === 'media' ? mediaTimelineSrc : src.split(':')[0]) as (BasicTimelineType | 'list' | 'relay')"
 			:list="src.split(':')[1]"
@@ -22,6 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			:withSensitive="withSensitive"
 			:onlyFiles="effectiveOnlyFiles"
 			:localOnly="localOnly"
+			:onlyNovel="src === 'media' ? false : onlyNovel"
 			:pixelfedMode="src === 'media'"
 			:sound="true"
 		/>
@@ -213,6 +214,12 @@ const localOnly = computed<boolean>({
 	set: (x) => saveTlFilter('localOnly', x),
 });
 
+// JUICE: 「小説」フラグが付いた投稿だけに絞り込む
+const onlyNovel = computed<boolean>({
+	get: () => store.r.tl.value.filter.onlyNovel,
+	set: (x) => saveTlFilter('onlyNovel', x),
+});
+
 const showFixedPostForm = prefer.model('showFixedPostForm');
 
 async function chooseList(ev: PointerEvent): Promise<void> {
@@ -357,6 +364,17 @@ const headerActions = computed<PageHeaderItem[]>(() => {
 					icon: 'ti ti-planet',
 					text: i18n.ts._juice.localOnlyInHomeTimeline,
 					ref: localOnly,
+					badge: true,
+				});
+			}
+
+			// JUICE: 「小説」フラグが付いた投稿だけに絞り込む
+			if (isBasicTimeline(src.value)) {
+				menuItems.push({
+					type: 'switch',
+					icon: 'ti ti-book',
+					text: i18n.ts._juice.novelOnly,
+					ref: onlyNovel,
 					badge: true,
 				});
 			}

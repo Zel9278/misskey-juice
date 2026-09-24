@@ -23,6 +23,7 @@ import { isSupportShare } from '@/utility/navigator.js';
 import { getAppearNote } from '@/utility/get-appear-note.js';
 import { genEmbedCode } from '@/utility/get-embed-code.js';
 import { prefer } from '@/preferences.js';
+import { mainRouter } from '@/router.js';
 import { getPluginHandlers } from '@/plugin.js';
 import { globalEvents } from '@/events.js';
 import { noteEvents } from '@/composables/use-note-capture.js';
@@ -274,6 +275,18 @@ export function getNoteMenu(props: {
 		});
 	}
 
+	// JUICE: toggleAIGeneratedと同じ仕組みで、投稿後に「小説」フラグだけを切り替える
+	function toggleNovel(value: boolean): void {
+		os.apiWithDialog('notes/juice/update-novel', {
+			noteId: appearNote.id,
+			isNovel: value,
+		}).then(() => {
+			// JUICE: 次にメニューを開いたときの表示(マーク/解除・「小説として読む」の有無)にも反映させる
+			appearNote.isNovel = value;
+			noteEvents.emit(`novelChanged:${appearNote.id}`, { isNovel: value });
+		});
+	}
+
 	async function unclip(): Promise<void> {
 		if (!props.currentClip) return;
 		os.apiWithDialog('clips/remove-note', { clipId: props.currentClip.id, noteId: appearNote.id });
@@ -315,6 +328,13 @@ export function getNoteMenu(props: {
 
 	function openDetail(): void {
 		os.pageWindow(`/notes/${appearNote.id}`);
+	}
+
+	// JUICE: 「小説」フラグが付いたノートを縦書き/横書き切り替え対応の専用ビューワーで開く
+	function openNovelViewer(): void {
+		// JUICE: 詳細表示(openDetail)とは違い、腰を据えて読むためのビューワーなので
+		// 小さいウィンドウではなく通常のページ遷移として開く
+		mainRouter.pushByPath(`/notes/${appearNote.id}/novel-viewer`);
 	}
 
 	async function translate(): Promise<void> {
@@ -394,6 +414,16 @@ export function getNoteMenu(props: {
 			text: i18n.ts.copyContent,
 			action: copyContent,
 		}, getCopyNoteLinkMenu(appearNote, i18n.ts.copyLink));
+
+		// JUICE: 「小説」フラグが付いたノートには専用ビューワーへの導線を追加
+		if (appearNote.isNovel) {
+			menuItems.push({
+				icon: 'ti ti-book',
+				text: i18n.ts._juice.readAsNovel,
+				badge: true,
+				action: openNovelViewer,
+			});
+		}
 
 		if (link) {
 			menuItems.push({
@@ -481,6 +511,13 @@ export function getNoteMenu(props: {
 				text: appearNote.isAIGenerated ? i18n.ts.unmarkAsAIGenerated : i18n.ts.markAsAIGenerated,
 				badge: true,
 				action: () => toggleAIGenerated(!appearNote.isAIGenerated),
+			});
+
+			menuItems.push({
+				icon: 'ti ti-book',
+				text: appearNote.isNovel ? i18n.ts._juice.unmarkAsNovel : i18n.ts._juice.markAsNovel,
+				badge: true,
+				action: () => toggleNovel(!appearNote.isNovel),
 			});
 		}
 

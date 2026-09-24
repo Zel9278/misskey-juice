@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings, resolveNewAccountFollowRequestSettings, resolveReportCategorySettings, resolveEmailAliasSettings, resolveAiGeneratedFallbackCwSettings, resolveOauthLoginSettings, resolveMidiPlayerSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings, resolveNewAccountFollowRequestSettings, resolveReportCategorySettings, resolveEmailAliasSettings, resolveAiGeneratedFallbackCwSettings, resolveNovelFallbackCwSettings, resolveOauthLoginSettings, resolveMidiPlayerSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -168,6 +168,10 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			novelFallbackCwEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 			discordOauthEnabled: {
 				type: 'boolean',
 				optional: false, nullable: false,
@@ -265,6 +269,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...resolveReportCategorySettings(settings),
 				...resolveEmailAliasSettings(settings),
 				...resolveAiGeneratedFallbackCwSettings(settings),
+				...resolveNovelFallbackCwSettings(settings),
 				...resolveOauthLoginSettings(settings),
 				...resolveMidiPlayerSettings(settings),
 			};

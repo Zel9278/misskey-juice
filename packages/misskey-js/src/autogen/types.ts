@@ -3538,6 +3538,15 @@ export type paths = {
          */
         post: operations['notes___juice___update-ai-generated'];
     };
+    '/notes/juice/update-novel': {
+        /**
+         * notes/juice/update-novel
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:notes*
+         */
+        post: operations['notes___juice___update-novel'];
+    };
     '/notes/local-timeline': {
         /**
          * notes/local-timeline
@@ -5091,6 +5100,7 @@ export type components = {
             localOnly?: boolean;
             isAIGenerated: boolean;
             hideFromMediaTimeline: boolean;
+            isNovel: boolean;
             /**
              * Format: id
              * @example xxxxxxxxxx
@@ -5159,6 +5169,7 @@ export type components = {
             localOnly: boolean;
             isAIGenerated: boolean;
             hideFromMediaTimeline: boolean;
+            isNovel: boolean;
             /** @enum {string|null} */
             reactionAcceptance: 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote' | null;
             scheduledAt: number | null;
@@ -5555,6 +5566,7 @@ export type components = {
             size: number;
             isSensitive: boolean;
             isAIGenerated: boolean;
+            isNovel: boolean;
             blurhash: string | null;
             properties: {
                 /** @example 1280 */
@@ -11389,6 +11401,7 @@ export interface operations {
                         blockEmailDotAliasRegistration: boolean;
                         blockEmailPlusAliasRegistration: boolean;
                         aiGeneratedFallbackCwEnabled: boolean;
+                        novelFallbackCwEnabled: boolean;
                         discordOauthEnabled: boolean;
                         discordOauthClientId: string | null;
                         discordOauthClientSecret: string | null;
@@ -11590,6 +11603,7 @@ export interface operations {
                     blockEmailDotAliasRegistration?: boolean;
                     blockEmailPlusAliasRegistration?: boolean;
                     aiGeneratedFallbackCwEnabled?: boolean;
+                    novelFallbackCwEnabled?: boolean;
                     discordOauthEnabled?: boolean;
                     discordOauthClientId?: string | null;
                     discordOauthClientSecret?: string | null;
@@ -23204,6 +23218,7 @@ export interface operations {
                     name?: string;
                     isSensitive?: boolean;
                     isAIGenerated?: boolean;
+                    isNovel?: boolean;
                     comment?: string | null;
                 };
             };
@@ -33596,6 +33611,8 @@ export interface operations {
                     isAIGenerated?: boolean;
                     /** @default false */
                     hideFromMediaTimeline?: boolean;
+                    /** @default false */
+                    isNovel?: boolean;
                     /**
                      * @default null
                      * @enum {string|null}
@@ -33841,6 +33858,8 @@ export interface operations {
                     isAIGenerated?: boolean;
                     /** @default false */
                     hideFromMediaTimeline?: boolean;
+                    /** @default false */
+                    isNovel?: boolean;
                     /**
                      * @default null
                      * @enum {string|null}
@@ -34084,6 +34103,7 @@ export interface operations {
                     localOnly?: boolean;
                     isAIGenerated?: boolean;
                     hideFromMediaTimeline?: boolean;
+                    isNovel?: boolean;
                     /** @enum {string|null} */
                     reactionAcceptance?: null | 'likeOnly' | 'likeOnlyForRemote' | 'nonSensitiveOnly' | 'nonSensitiveOnlyForLocalLikeOnlyForRemote';
                     /** Format: misskey:id */
@@ -34394,6 +34414,8 @@ export interface operations {
                     untilId?: string;
                     sinceDate?: number;
                     untilDate?: number;
+                    /** @default false */
+                    onlyNovel?: boolean;
                 };
             };
         };
@@ -34480,6 +34502,8 @@ export interface operations {
                     withRenotes?: boolean;
                     /** @default false */
                     withReplies?: boolean;
+                    /** @default false */
+                    onlyNovel?: boolean;
                 };
             };
         };
@@ -34616,6 +34640,82 @@ export interface operations {
             };
         };
     };
+    'notes___juice___update-novel': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    noteId: string;
+                    isNovel: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Note'];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'notes___local-timeline': {
         requestBody: {
             content: {
@@ -34636,6 +34736,8 @@ export interface operations {
                     allowPartial?: boolean;
                     sinceDate?: number;
                     untilDate?: number;
+                    /** @default false */
+                    onlyNovel?: boolean;
                 };
             };
         };
@@ -35925,6 +36027,8 @@ export interface operations {
                     withRenotes?: boolean;
                     /** @default false */
                     localOnly?: boolean;
+                    /** @default false */
+                    onlyNovel?: boolean;
                 };
             };
         };

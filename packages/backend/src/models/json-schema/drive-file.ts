@@ -46,6 +46,10 @@ export const packedDriveFileSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		isNovel: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 		blurhash: {
 			type: 'string',
 			optional: false, nullable: true,

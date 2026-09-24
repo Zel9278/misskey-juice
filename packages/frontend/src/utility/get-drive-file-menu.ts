@@ -89,6 +89,23 @@ function toggleAIGenerated(file: Misskey.entities.DriveFile) {
 	});
 }
 
+// JUICE: .txtファイルに「小説」フラグを付け外しする。フラグ付きのファイルを投稿フォームで
+// 添付すると、投稿自体にも自動で「小説」フラグが立つ
+function toggleNovel(file: Misskey.entities.DriveFile) {
+	misskeyApi('drive/files/update', {
+		fileId: file.id,
+		isNovel: !file.isNovel,
+	}).then(updated => {
+		globalEvents.emit('driveFilesUpdated', [updated]);
+	}).catch(err => {
+		os.alert({
+			type: 'error',
+			title: i18n.ts.error,
+			text: err.message,
+		});
+	});
+}
+
 function copyUrl(file: Misskey.entities.DriveFile) {
 	copyToClipboard(file.url);
 }
@@ -110,6 +127,11 @@ async function deleteFile(file: Misskey.entities.DriveFile) {
 	});
 
 	globalEvents.emit('driveFilesDeleted', [file]);
+}
+
+// JUICE: 小説ビューワーが本文として読み込める.txtファイルかどうか(novel-viewer.vueと同じ判定)
+function isTextFile(file: Misskey.entities.DriveFile): boolean {
+	return file.type === 'text/plain' || file.name.toLowerCase().endsWith('.txt');
 }
 
 /** 自分のドライブファイルを操作する際のメニュー */
@@ -140,7 +162,12 @@ export function getDriveFileMenu(file: Misskey.entities.DriveFile, folder?: Miss
 		icon: 'ti ti-ai _juiceAiIcon',
 		badge: true,
 		action: () => toggleAIGenerated(file),
-	}, {
+	}, ...(isTextFile(file) ? [{
+		text: file.isNovel ? i18n.ts._juice.unmarkAsNovel : i18n.ts._juice.markAsNovel,
+		icon: 'ti ti-book',
+		badge: true,
+		action: () => toggleNovel(file),
+	}] : []), {
 		text: i18n.ts.describeFile,
 		icon: 'ti ti-text-caption',
 		action: () => describe(file),

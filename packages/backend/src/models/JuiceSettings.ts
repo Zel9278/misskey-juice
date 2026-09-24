@@ -90,6 +90,15 @@ export interface JuiceSettingsValue {
 	 * 変更しない。元のCWは_juice_originalCwとして別途連合し、JUICE間ではそれを使って復元する)
 	 */
 	aiGeneratedFallbackCwEnabled?: boolean;
+	/**
+	 * 「小説」フラグ(isNovel)が立っているノートを連合する際、ActivityPubのsummary
+	 * (CW相当)にフォールバック文言を合成して送出するか。CWが未設定なら文言のみ、既に
+	 * CWがある場合は「フォールバック文言 | 元のCW」の形で先頭に付け加える。
+	 * aiGeneratedFallbackCwEnabledと同じ仕組み(_juice_summaryIsNovelFallback目印・
+	 * _juice_originalCwでの復元)。AI生成物フォールバックが既に適用されている場合は
+	 * 二重合成せず、そちらを優先する
+	 */
+	novelFallbackCwEnabled?: boolean;
 	/** 連携ログイン(Discord)を有効にするか */
 	discordOauthEnabled?: boolean;
 	/** 連携ログイン(Discord)のOAuthアプリのクライアントID */
@@ -385,6 +394,18 @@ export function resolveAiGeneratedFallbackCwSettings(settings: JuiceSettingsValu
 } {
 	return {
 		aiGeneratedFallbackCwEnabled: settings.aiGeneratedFallbackCwEnabled ?? false,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・admin/juice/update-settings・ApRendererServiceの3箇所で共通利用する。
+ */
+export function resolveNovelFallbackCwSettings(settings: JuiceSettingsValue): {
+	novelFallbackCwEnabled: boolean;
+} {
+	return {
+		novelFallbackCwEnabled: settings.novelFallbackCwEnabled ?? false,
 	};
 }
 

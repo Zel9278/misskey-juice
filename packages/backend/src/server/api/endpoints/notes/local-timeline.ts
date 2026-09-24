@@ -60,6 +60,8 @@ export const paramDef = {
 		allowPartial: { type: 'boolean', default: false }, // true is recommended but for compatibility false by default
 		sinceDate: { type: 'integer' },
 		untilDate: { type: 'integer' },
+		// JUICE: 「小説」フラグが付いた投稿だけに絞り込む
+		onlyNovel: { type: 'boolean', default: false },
 	},
 	required: [],
 } as const;
@@ -100,6 +102,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					limit: ps.limit,
 					withFiles: ps.withFiles,
 					withReplies: ps.withReplies,
+					onlyNovel: ps.onlyNovel,
 				}, me);
 
 				process.nextTick(() => {
@@ -130,13 +133,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				// JUICE: 表示言語の絞り込みが有効でも自分自身の投稿を常に表示するか(ユーザー設定)
 				alwaysIncludeMyNotes: profile?.excludeOwnNotesFromLanguageFilter ?? true,
 				excludePureRenotes: !ps.withRenotes,
-				noteFilter: note => !isLanguageFiltered(note, filteredLanguages),
+				noteFilter: note => {
+					if (isLanguageFiltered(note, filteredLanguages)) return false;
+					// JUICE: 「小説」フラグが付いた投稿だけに絞り込む
+					if (ps.onlyNovel && !note.isNovel) return false;
+					return true;
+				},
 				dbFallback: async (untilId, sinceId, limit) => await this.getFromDb({
 					untilId,
 					sinceId,
 					limit,
 					withFiles: ps.withFiles,
 					withReplies: ps.withReplies,
+					onlyNovel: ps.onlyNovel,
 				}, me),
 			});
 
@@ -156,6 +165,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		limit: number,
 		withFiles: boolean,
 		withReplies: boolean,
+		onlyNovel: boolean,
 	}, me: MiLocalUser | null) {
 		const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'),
 			ps.sinceId, ps.untilId)
@@ -188,7 +198,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		if (ps.withFiles) {
 			// JUICE: 純粋なリノート(本文・自身のファイルを持たない)は、リノート元の投稿にファイルが
 			// あればメディアタイムラインの対象に含める。hideFromMediaTimelineは実際にファイルを
-			// 提供している側(自身、またはリノート元)の投稿の設定を見る
+			// 提供している側(自身、またはリノート元)の投稿の設定を見る。
+			// 「小説」フラグが付いた投稿は添付ファイルの有無にかかわらず対象に含める
 			query.andWhere(new Brackets(qb => {
 				qb.orWhere(new Brackets(qb2 => {
 					qb2.andWhere('note.fileIds != \'{}\'');
@@ -199,6 +210,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					qb2.andWhere('renote.fileIds != \'{}\'');
 					qb2.andWhere('renote.hideFromMediaTimeline = FALSE');
 				}));
+				qb.orWhere('note.isNovel = TRUE');
 			}));
 		}
 
@@ -212,6 +224,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 							.andWhere('note.replyUserId = note.userId');
 					}));
 			}));
+		}
+
+		// JUICE: 「小説」フラグが付いた投稿だけに絞り込む
+		if (ps.onlyNovel) {
+			query.andWhere('note.isNovel = TRUE');
 		}
 
 		return await query.limit(ps.limit).getMany();

@@ -181,6 +181,8 @@ type Option = {
 	isAIGenerated?: boolean | null;
 	// JUICE: trueの場合、withFiles指定のタイムライン(メディアタイムライン)からこの投稿を除外する
 	hideFromMediaTimeline?: boolean | null;
+	// JUICE: 「小説」フラグ。onlyNovel指定のタイムラインの絞り込み対象になる
+	isNovel?: boolean | null;
 	reactionAcceptance?: MiNote['reactionAcceptance'];
 	cw?: string | null;
 	// JUICE: このノートの言語(BCP 47言語タグ)。デフォルト解決(未指定時にユーザーの表示言語設定を
@@ -303,6 +305,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		localOnly: boolean;
 		isAIGenerated: boolean;
 		hideFromMediaTimeline: boolean;
+		isNovel: boolean;
 		reactionAcceptance: MiNote['reactionAcceptance'];
 		poll: IPoll | null;
 		apMentions?: MinimumUser[] | null;
@@ -443,6 +446,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			localOnly: data.localOnly,
 			isAIGenerated: data.isAIGenerated,
 			hideFromMediaTimeline: data.hideFromMediaTimeline,
+			isNovel: data.isNovel,
 			reactionAcceptance: data.reactionAcceptance,
 			visibility: data.visibility,
 			visibleUsers,
@@ -711,6 +715,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			localOnly: data.localOnly!,
 			isAIGenerated: data.isAIGenerated ?? false,
 			hideFromMediaTimeline: data.hideFromMediaTimeline ?? false,
+			isNovel: data.isNovel ?? false,
 			reactionAcceptance: data.reactionAcceptance ?? null,
 			visibility: data.visibility as any,
 			visibleUserIds: data.visibility === 'specified'
@@ -1127,10 +1132,12 @@ export class NoteCreateService implements OnApplicationShutdown {
 		// JUICE: メディアタイムライン機能(home/local/hybrid/globalが読むwithFiles系のfanoutリスト)の
 		// 対象判定。純粋なリノート(本文・自身のファイルを持たない)は投稿自体にファイルが無いため、
 		// リノート元の投稿にファイルがあればここで対象に含める。hideFromMediaTimelineは実際に
-		// ファイルを提供している側(自身、またはリノート元)の投稿の設定を見る
+		// ファイルを提供している側(自身、またはリノート元)の投稿の設定を見る。
+		// 「小説」フラグが付いた投稿は添付ファイルの有無にかかわらず対象に含める
 		const qualifiesForMediaTimeline =
 			(note.fileIds.length > 0 && !note.hideFromMediaTimeline) ||
-			(renote != null && renote.fileIds.length > 0 && !renote.hideFromMediaTimeline);
+			(renote != null && renote.fileIds.length > 0 && !renote.hideFromMediaTimeline) ||
+			note.isNovel;
 
 		if (note.channelId) {
 			this.fanoutTimelineService.push(`channelTimeline:${note.channelId}`, note.id, this.config.perChannelMaxNoteCacheCount, r);

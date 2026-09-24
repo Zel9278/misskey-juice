@@ -145,6 +145,9 @@ export interface NoteEventTypes {
 	aiGeneratedChanged: {
 		isAIGenerated: boolean;
 	};
+	novelChanged: {
+		isNovel: boolean;
+	};
 }
 type NoteStreamEventTypes = {
 	[key in keyof NoteEventTypes]: {

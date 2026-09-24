@@ -161,7 +161,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div :class="$style.features">
 							<div v-for="feature in features" :key="feature.text" :class="$style.feature">
 								<i :class="[feature.icon, $style.featureIcon]"></i>
-								<span>{{ feature.text }}</span>
+								<span :class="$style.featureText">{{ feature.text }}</span>
 							</div>
 						</div>
 					</div>
@@ -236,6 +236,7 @@ const features = [
 	{ icon: 'ti ti-bell-exclamation', text: i18n.ts._aboutJuice._features.moderationNotifications },
 	{ icon: 'ti ti-brand-oauth', text: i18n.ts._aboutJuice._features.oauthLogin },
 	{ icon: 'ti ti-piano', text: i18n.ts._aboutJuice._features.midiPlayer },
+	{ icon: 'ti ti-book', text: i18n.ts._aboutJuice._features.novel },
 ];
 
 // JUICE: この一覧に載っている機能が、どういう経路で実装されたかをざっくり示す
@@ -413,6 +414,13 @@ $juice-rain-color: #f2841f;
 	flex-shrink: 0;
 	font-size: 20px;
 	color: var(--MI_THEME-accent);
+}
+
+// JUICE: 「Discord/Google/GitHub/GitLab/Microsoft」のように区切り位置の無い長い英字列がカードの
+// 外へはみ出さないよう、必要なら単語の途中でも折り返す(flexの子はmin-widthが中身の幅になるため0に)
+.featureText {
+	min-width: 0;
+	overflow-wrap: anywhere;
 }
 
 // JUICE: 「どういう経路で実装されたか」の折りたたみ表示

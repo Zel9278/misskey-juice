@@ -23,6 +23,7 @@ const base: MiNote = {
 	localOnly: false,
 	isAIGenerated: false,
 	hideFromMediaTimeline: false,
+	isNovel: false,
 	relayId: null,
 	relay: null,
 	reactionAcceptance: null,

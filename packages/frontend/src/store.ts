@@ -60,12 +60,59 @@ export const store = markRaw(new Pizzax('base', {
 				onlyFiles: false,
 				// JUICE: ホームタイムラインをローカルユーザーの投稿だけに絞り込む
 				localOnly: false,
+				// JUICE: 「小説」フラグが付いた投稿だけに絞り込む
+				onlyNovel: false,
 			},
 		},
 	},
 	darkMode: {
 		where: 'device',
 		default: false,
+	},
+	// JUICE: 小説ビューワーの書字方向
+	novelViewerWritingMode: {
+		where: 'device',
+		default: 'vertical' as 'vertical' | 'horizontal',
+	},
+	// JUICE: 小説ビューワーの文字サイズ(em単位の倍率)
+	novelViewerFontSize: {
+		where: 'device',
+		default: 1.1,
+	},
+	// JUICE: 小説ビューワーの背景テーマ
+	novelViewerTheme: {
+		where: 'device',
+		default: 'auto' as 'auto' | 'light' | 'sepia' | 'dark' | 'custom',
+	},
+	// JUICE: 小説ビューワーの段落字下げ(行頭に全角スペースが無ければ自動で補う)
+	novelViewerParagraphIndent: {
+		where: 'device',
+		default: true,
+	},
+	// JUICE: 小説ビューワーの青空文庫記法変換(｜漢字《かんじ》のルビ、［＃ここからN字下げ］等)
+	novelViewerAozoraNotation: {
+		where: 'device',
+		default: true,
+	},
+	// JUICE: 小説ビューワーの書体
+	novelViewerFontFamily: {
+		where: 'device',
+		default: 'default' as 'default' | 'mincho' | 'gothic',
+	},
+	// JUICE: 小説ビューワーのカスタムテーマ(novelViewerTheme: 'custom' のときに使う文字色・背景色)
+	novelViewerCustomTextColor: {
+		where: 'device',
+		default: '#1a1a1a',
+	},
+	novelViewerCustomBgColor: {
+		where: 'device',
+		default: '#ffffff',
+	},
+	// JUICE: 小説ビューワーの続きから読める位置(ノートIDごと、縦書きページめくりモードのみ)。
+	// 際限無く増えないよう、直近50件を上限にMkEmojiPicker.vueのrecentlyUsedEmojisと同じ方式で切り詰める
+	novelViewerProgress: {
+		where: 'device',
+		default: {} as Record<string, { page: number; updatedAt: number }>,
 	},
 	realtimeMode: {
 		where: 'device',

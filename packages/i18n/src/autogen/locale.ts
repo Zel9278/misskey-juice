@@ -617,6 +617,10 @@ export interface Locale extends ILocale {
      */
     "unmarkAsAIGenerated": string;
     /**
+     * 小説
+     */
+    "novel": string;
+    /**
      * ファイル名を入力
      */
     "enterFileName": string;
@@ -9392,6 +9396,10 @@ export interface Locale extends ILocale {
              * ノート添付MIDIファイルの軽量プレイヤー(FluidSynthベースのサウンドフォント再生、ピアノロールビジュアライザー)
              */
             "midiPlayer": string;
+            /**
+             * 小説フラグと小説ビューワー(縦書きの文庫本風ページめくり・見開き表示、ルビ・青空文庫記法、.txtファイルの長編対応)
+             */
+            "novel": string;
         };
         /**
          * どういう経路で実装されたか
@@ -14927,6 +14935,154 @@ export interface Locale extends ILocale {
          */
         "hideFromMediaTimeline": string;
         /**
+         * 小説としてマーク
+         */
+        "isNovel": string;
+        /**
+         * 小説のみ表示
+         */
+        "novelOnly": string;
+        /**
+         * 小説として読む
+         */
+        "readAsNovel": string;
+        /**
+         * 小説としてマーク
+         */
+        "markAsNovel": string;
+        /**
+         * 小説のマークを解除
+         */
+        "unmarkAsNovel": string;
+        /**
+         * 小説ビューワー
+         */
+        "novelViewer": string;
+        /**
+         * 縦書き
+         */
+        "novelViewerVerticalMode": string;
+        /**
+         * 横書き
+         */
+        "novelViewerHorizontalMode": string;
+        /**
+         * 表示設定
+         */
+        "novelViewerSettings": string;
+        /**
+         * 文字サイズ
+         */
+        "novelViewerFontSize": string;
+        /**
+         * 小
+         */
+        "novelViewerFontSizeSmall": string;
+        /**
+         * 標準
+         */
+        "novelViewerFontSizeMedium": string;
+        /**
+         * 大
+         */
+        "novelViewerFontSizeLarge": string;
+        /**
+         * 特大
+         */
+        "novelViewerFontSizeXLarge": string;
+        /**
+         * 背景
+         */
+        "novelViewerTheme": string;
+        /**
+         * 自動
+         */
+        "novelViewerThemeAuto": string;
+        /**
+         * 白
+         */
+        "novelViewerThemeLight": string;
+        /**
+         * セピア
+         */
+        "novelViewerThemeSepia": string;
+        /**
+         * 黒
+         */
+        "novelViewerThemeDark": string;
+        /**
+         * カスタム
+         */
+        "novelViewerThemeCustom": string;
+        /**
+         * 文字色
+         */
+        "novelViewerCustomTextColor": string;
+        /**
+         * 背景色
+         */
+        "novelViewerCustomBgColor": string;
+        /**
+         * 段落の字下げ
+         */
+        "novelViewerParagraphIndent": string;
+        /**
+         * 行頭に全角スペースが無い段落へ自動で字下げを補います。既に字下げされている段落はそのままです。
+         */
+        "novelViewerParagraphIndentCaption": string;
+        /**
+         * 青空文庫記法を解釈する
+         */
+        "novelViewerAozoraNotation": string;
+        /**
+         * ｜漢字《かんじ》のルビや［＃ここからN字下げ］等、青空文庫形式のテキストによくある入力者注記を解釈して反映します(対応しきれない注記は非表示にします)。
+         */
+        "novelViewerAozoraNotationCaption": string;
+        /**
+         * 書体
+         */
+        "novelViewerFontFamily": string;
+        /**
+         * 標準
+         */
+        "novelViewerFontFamilyDefault": string;
+        /**
+         * 明朝体
+         */
+        "novelViewerFontFamilyMincho": string;
+        /**
+         * ゴシック体
+         */
+        "novelViewerFontFamilyGothic": string;
+        /**
+         * 目次
+         */
+        "novelViewerToc": string;
+        /**
+         * 第{n}章
+         */
+        "novelViewerChapter": ParameterizedString<"n">;
+        /**
+         * 次のページ
+         */
+        "novelViewerNextPage": string;
+        /**
+         * 前のページ
+         */
+        "novelViewerPrevPage": string;
+        /**
+         * 次の章
+         */
+        "novelViewerNextChapter": string;
+        /**
+         * 前の章
+         */
+        "novelViewerPrevChapter": string;
+        /**
+         * {from}-{to}
+         */
+        "novelViewerPageRange": ParameterizedString<"from" | "to">;
+        /**
          * 表示するタブ
          */
         "hiddenTimelineTabs": string;
@@ -15050,6 +15206,18 @@ export interface Locale extends ILocale {
          * AI生成物フラグ(isAIGenerated)はJUICE独自の連合プロパティのため、対応していない実装では無視されます。この設定を有効にすると、投稿本体か添付ファイルのいずれか1つにでもAI生成物フラグが立っていれば、ActivityPub連合時にCW(内容の折りたたみ)としてフォールバック文言を送信します。CWが未設定の投稿はフォールバック文言のみ、既にCWがある投稿は「フォールバック文言 | 元のCW」の形で先頭に付け加えます。ローカル・misskey-juice間の表示は今まで通りバッジのみで、投稿自体のCW設定は変更されません。
          */
         "aiGeneratedFallbackCwEnabledCaption": string;
+        /**
+         * 小説投稿のCWフォールバック
+         */
+        "novelFallbackCw": string;
+        /**
+         * 非対応インスタンスへの連合時にCWとして扱う
+         */
+        "novelFallbackCwEnabled": string;
+        /**
+         * 「小説」フラグ(isNovel)はJUICE独自の連合プロパティのため、対応していない実装では無視されます。この設定を有効にすると、小説フラグが立っている投稿のActivityPub連合時に、CW(内容の折りたたみ)としてフォールバック文言を送信します。CWが未設定の投稿はフォールバック文言のみ、既にCWがある投稿は「フォールバック文言 | 元のCW」の形で先頭に付け加えます。ローカル・misskey-juice間の表示は今まで通りバッジのみで、投稿自体のCW設定は変更されません。AI生成物のCWフォールバックが同時に適用される場合は、そちらを優先し二重には合成しません。
+         */
+        "novelFallbackCwEnabledCaption": string;
         /**
          * 連携ログイン
          */
