@@ -14,11 +14,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkAcct :class="$style.authorAcct" :user="appearNote.user"/>
 				</div>
 			</div>
+			<!-- JUICE: 本文の文字数と、読み終わるまでのおおよその時間 -->
+			<div v-if="!novelFileLoading && !novelFileError && novelCharCount > 0" :class="$style.stats">
+				<span><i class="ti ti-letter-case"></i> {{ i18n.tsx._juice.novelViewerCharCount({ n: number(novelCharCount) }) }}</span>
+				<span><i class="ti ti-clock"></i> {{ i18n.tsx._juice.novelViewerReadingTime({ n: number(novelReadingMinutes) }) }}</span>
+			</div>
 			<p v-if="appearNote.cw != null" :class="$style.cw">
-				<Mfm v-if="appearNote.cw !== ''" :text="appearNote.cw" :author="appearNote.user" :nyaize="'respect'"/>
+				<span v-if="appearNote.cw !== ''" :class="$style.novelText">{{ appearNote.cw }}</span>
 				<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll"/>
 			</p>
-			<div v-show="appearNote.cw == null || showContent">
+			<!-- JUICE: 全画面表示では、この本文部分だけを画面いっぱいに広げる(上のツールバー付き)。
+			ページの外枠にはposition: fixedの基準になる要素(transform等)があり、その中のままでは
+			画面全体を覆えないため、全画面の間だけ<body>の直下へ移す(DOMを移すだけで作り直さない) -->
+			<Teleport to="body" :disabled="!isFullscreen">
+			<div v-show="appearNote.cw == null || showContent" ref="readerEl" :class="[$style.reader, { [$style.fullscreen]: isFullscreen }]">
+				<div v-if="isFullscreen" :class="$style.fullscreenToolbar">
+					<button v-if="chapters.length > 1" v-tooltip="i18n.ts._juice.novelViewerToc" class="_button" :class="$style.fullscreenToolbarButton" :aria-label="i18n.ts._juice.novelViewerToc" @click="openToc"><i class="ti ti-list"></i></button>
+					<button v-tooltip="i18n.ts._juice.novelViewerSettings" class="_button" :class="$style.fullscreenToolbarButton" :aria-label="i18n.ts._juice.novelViewerSettings" @click="openSettings"><i class="ti ti-adjustments"></i></button>
+					<button v-tooltip="writingModeToggleLabel" class="_button" :class="$style.fullscreenToolbarButton" :aria-label="writingModeToggleLabel" @click="toggleWritingMode"><i class="ti ti-camera-rotate"></i></button>
+					<button v-tooltip="i18n.ts._juice.novelViewerExitFullscreen" class="_button" :class="$style.fullscreenToolbarButton" :aria-label="i18n.ts._juice.novelViewerExitFullscreen" @click="exitFullscreen"><i class="ti ti-minimize"></i></button>
+				</div>
 				<div
 					ref="outerEl"
 					:class="$style.body"
@@ -37,12 +52,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 					vertical-rl環境で機能しないため使えず、パネルを2つ並べる方式にしている) -->
 					<div v-else-if="writingMode === 'vertical' && isSpread" :class="$style.spread">
 						<div :data-mode="writingMode" :class="$style.panel">
-							<div :ref="(el) => setPanelViewportEl(0, el as HTMLElement | null)" :data-mode="writingMode" :class="$style.panelViewport">
+							<div :ref="(el) => setPanelViewportEl(0, el as HTMLElement | null)" :data-mode="writingMode" :class="$style.panelViewport" @scroll="onViewportScroll">
 								<div :ref="(el) => setPanelInnerEl(0, el as HTMLElement | null)" :class="$style.panelInner">
-									<template v-for="(chapter, i) in chapters" :key="i">
-										<div v-if="i > 0" :class="$style.chapterBreak" aria-hidden="true">⁂</div>
+									<template v-for="(chapter, i) in chapters" :key="`${i}:${chapter.text}`">
+										<div v-if="i > 0 && chapter.sectionStart" :class="$style.pageBreak" aria-hidden="true"></div>
+										<div v-else-if="i > 0" :class="$style.chapterBreak" aria-hidden="true">⁂</div>
 										<span :ref="(el) => setChapterMarkerEl(i, el as HTMLElement | null)" :class="$style.chapterMarker"></span>
-										<Mfm :text="chapter.text" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis" class="_selectable"/>
+										<span :class="[$style.novelText, '_selectable']"><template v-for="(seg, j) in chapter.segments" :key="j"><ruby v-if="seg.type === 'ruby'" :class="decorationClass(seg)">{{ seg.base }}<rt>{{ seg.reading }}</rt></ruby><span v-else-if="seg.bold || seg.italic || seg.strike || seg.emphasis" :class="decorationClass(seg)">{{ seg.text }}</span><template v-else>{{ seg.text }}</template></template></span>
 									</template>
 								</div>
 							</div>
@@ -50,16 +66,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div :class="$style.spreadGutter" aria-hidden="true"></div>
 						<!-- JUICE: 左パネルは「次ページのめくれ具合」を見せる視覚上の複製に過ぎず、本文としては
 						右パネル(主パネル)側が唯一の正本。読み上げ・タブ移動・選択で本文が二重に扱われない
-						よう、aria-hidden+inertで補助技術から隠し、選択もCSS側で禁止する。本文が右パネルで
+						よう、aria-hidden+inertで補助技術から隠し、選択もCSS側で禁止する(本文はMFMを通さない
+						素のテキストなので、リンク等の操作できる要素はそもそも無い)。本文が右パネルで
 						最終ページに達し、次ページの中身が存在しないときは、同じ内容を複製して見せるのではなく
 						見開きの裏面として空白のまま(本を閉じる直前の白紙ページのイメージ)にする -->
 						<div :data-mode="writingMode" :class="$style.panel" aria-hidden="true" inert>
-							<div :ref="(el) => setPanelViewportEl(1, el as HTMLElement | null)" :data-mode="writingMode" :class="$style.panelViewport">
+							<div :ref="(el) => setPanelViewportEl(1, el as HTMLElement | null)" :data-mode="writingMode" :class="$style.panelViewport" @scroll="onViewportScroll">
 								<div :ref="(el) => setPanelInnerEl(1, el as HTMLElement | null)" :class="$style.panelInner">
 									<template v-if="currentPage < pageCount">
-										<template v-for="(chapter, i) in chapters" :key="i">
-											<div v-if="i > 0" :class="$style.chapterBreak" aria-hidden="true">⁂</div>
-											<Mfm :text="chapter.text" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis"/>
+										<template v-for="(chapter, i) in chapters" :key="`${i}:${chapter.text}`">
+											<div v-if="i > 0 && chapter.sectionStart" :class="$style.pageBreak" aria-hidden="true"></div>
+											<div v-else-if="i > 0" :class="$style.chapterBreak" aria-hidden="true">⁂</div>
+											<span :class="$style.novelText"><template v-for="(seg, j) in chapter.segments" :key="j"><ruby v-if="seg.type === 'ruby'" :class="decorationClass(seg)">{{ seg.base }}<rt>{{ seg.reading }}</rt></ruby><span v-else-if="seg.bold || seg.italic || seg.strike || seg.emphasis" :class="decorationClass(seg)">{{ seg.text }}</span><template v-else>{{ seg.text }}</template></template></span>
 										</template>
 									</template>
 								</div>
@@ -67,21 +85,36 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</div>
 					</div>
 					<div v-else :data-mode="writingMode" :class="$style.panel">
-						<div :ref="(el) => setPanelViewportEl(0, el as HTMLElement | null)" :data-mode="writingMode" :class="$style.panelViewport">
+						<div :ref="(el) => setPanelViewportEl(0, el as HTMLElement | null)" :data-mode="writingMode" :class="$style.panelViewport" @scroll="onViewportScroll">
 							<div :ref="(el) => setPanelInnerEl(0, el as HTMLElement | null)" :class="$style.panelInner">
 								<!-- JUICE: 「小説家になろう」等を踏まえ、横書き時は各章の境目ごとに目次・前後の章への
 								導線を置く(文書の最初と最後だけだと、読んでいる途中の章からは遠くて使えないため) -->
-								<template v-for="(chapter, i) in chapters" :key="i">
-									<div v-if="writingMode === 'horizontal' && chapters.length > 1" :class="$style.chapterNav">
+								<div v-if="writingMode === 'horizontal' && sectionCount > 1" :class="$style.chapterNav">
+									<button class="_button" :class="$style.chapterNavLink" :disabled="currentSection === 0" @click="goToSection(currentSection - 1)"><i class="ti ti-chevron-left"></i> {{ i18n.ts._juice.novelViewerPrevPage }}</button>
+									<span :class="$style.sectionCount">{{ currentSection + 1 }} / {{ sectionCount }}</span>
+									<button class="_button" :class="$style.chapterNavLink" :disabled="currentSection === sectionCount - 1" @click="goToSection(currentSection + 1)">{{ i18n.ts._juice.novelViewerNextPage }} <i class="ti ti-chevron-right"></i></button>
+								</div>
+								<!-- JUICE: 横書きで[newpage]による改ページがある場合は、今のページに属する章だけを描画する -->
+								<template v-for="(chapter, i) in chapters" :key="`${i}:${chapter.text}`">
+									<template v-if="writingMode !== 'horizontal' || chapter.section === currentSection">
+									<div v-if="writingMode === 'horizontal' && chapters.length > 1 && !(sectionCount > 1 && chapter.sectionStart)" :class="$style.chapterNav">
 										<button class="_button" :class="$style.chapterNavLink" :disabled="i === 0" @click="jumpToChapter(i - 1)"><i class="ti ti-chevron-left"></i> {{ i18n.ts._juice.novelViewerPrevChapter }}</button>
 										<button class="_button" :class="$style.chapterNavLink" @click="openToc">{{ i18n.ts._juice.novelViewerToc }}</button>
 										<button class="_button" :class="$style.chapterNavLink" :disabled="i === chapters.length - 1" @click="jumpToChapter(i + 1)">{{ i18n.ts._juice.novelViewerNextChapter }} <i class="ti ti-chevron-right"></i></button>
 									</div>
-									<div v-else-if="i > 0" :class="$style.chapterBreak" aria-hidden="true">⁂</div>
+									<div v-else-if="writingMode !== 'horizontal' && i > 0 && chapter.sectionStart" :class="$style.pageBreak" aria-hidden="true"></div>
+									<div v-else-if="writingMode !== 'horizontal' && i > 0" :class="$style.chapterBreak" aria-hidden="true">⁂</div>
 									<span :ref="(el) => setChapterMarkerEl(i, el as HTMLElement | null)" :class="$style.chapterMarker"></span>
-									<Mfm :text="chapter.text" :author="appearNote.user" :nyaize="'respect'" :emojiUrls="appearNote.emojis" class="_selectable"/>
+									<span :class="[$style.novelText, '_selectable']"><template v-for="(seg, j) in chapter.segments" :key="j"><ruby v-if="seg.type === 'ruby'" :class="decorationClass(seg)">{{ seg.base }}<rt>{{ seg.reading }}</rt></ruby><span v-else-if="seg.bold || seg.italic || seg.strike || seg.emphasis" :class="decorationClass(seg)">{{ seg.text }}</span><template v-else>{{ seg.text }}</template></template></span>
+									</template>
 								</template>
-								<div v-if="writingMode === 'horizontal' && chapters.length > 1" :class="$style.chapterNav">
+								<div v-if="writingMode === 'horizontal' && sectionCount > 1" :class="$style.chapterNav">
+									<button class="_button" :class="$style.chapterNavLink" :disabled="currentSection === 0" @click="goToSection(currentSection - 1)"><i class="ti ti-chevron-left"></i> {{ i18n.ts._juice.novelViewerPrevPage }}</button>
+									<button v-if="chapters.length > 1" class="_button" :class="$style.chapterNavLink" @click="openToc">{{ i18n.ts._juice.novelViewerToc }}</button>
+									<span v-else :class="$style.sectionCount">{{ currentSection + 1 }} / {{ sectionCount }}</span>
+									<button class="_button" :class="$style.chapterNavLink" :disabled="currentSection === sectionCount - 1" @click="goToSection(currentSection + 1)">{{ i18n.ts._juice.novelViewerNextPage }} <i class="ti ti-chevron-right"></i></button>
+								</div>
+								<div v-else-if="writingMode === 'horizontal' && chapters.length > 1" :class="$style.chapterNav">
 									<button class="_button" :class="$style.chapterNavLink" @click="jumpToChapter(chapters.length - 2)"><i class="ti ti-chevron-left"></i> {{ i18n.ts._juice.novelViewerPrevChapter }}</button>
 									<button class="_button" :class="$style.chapterNavLink" @click="openToc">{{ i18n.ts._juice.novelViewerToc }}</button>
 									<button class="_button" :class="$style.chapterNavLink" disabled>{{ i18n.ts._juice.novelViewerNextChapter }} <i class="ti ti-chevron-right"></i></button>
@@ -96,6 +129,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<button v-tooltip="i18n.ts._juice.novelViewerPrevPage" class="_button" :class="$style.pagerButton" :disabled="!canGoPrev" :aria-label="i18n.ts._juice.novelViewerPrevPage" @click="turnPage('prev')"><i class="ti ti-chevron-right"></i></button>
 				</div>
 			</div>
+			</Teleport>
 			<MkA :to="notePage(appearNote)" :class="$style.footerLink"><MkTime :time="appearNote.createdAt" mode="detail" colored/></MkA>
 		</div>
 		<MkError v-else-if="error" @retry="fetchNote()"/>
@@ -105,7 +139,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, markRaw, nextTick, onActivated, onDeactivated, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
+import { computed, markRaw, nextTick, onActivated, onDeactivated, onMounted, onUnmounted, ref, useCssModule, useTemplateRef, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import { host } from '@@/js/config.js';
 import * as os from '@/os.js';
@@ -118,6 +152,7 @@ import { store } from '@/store.js';
 import { getAppearNote } from '@/utility/get-appear-note.js';
 import { userPage } from '@/filters/user.js';
 import { notePage } from '@/filters/note.js';
+import number from '@/filters/number.js';
 import { pleaseLogin } from '@/utility/please-login.js';
 
 const props = defineProps<{
@@ -128,6 +163,8 @@ const note = ref<Misskey.entities.Note | null>(null);
 const error = ref();
 const showContent = ref(false);
 const outerEl = useTemplateRef<HTMLDivElement>('outerEl');
+const readerEl = useTemplateRef<HTMLDivElement>('readerEl');
+const $style = useCssModule();
 
 // JUICE: 縦書き見開き(2ページ分割)用。3層構造になっている:
 // .panel(常にflexの割り当て幅=100%のまま、「使える幅」の測定基準) >
@@ -186,15 +223,31 @@ const novelFileContent = ref<string | null>(null);
 const novelFileLoading = ref(false);
 const novelFileError = ref<unknown>(null);
 
+// JUICE: 日本語の文章らしさの目安。正しい文字コードで読めた文章はひらがなを多く含み、誤った文字コードで
+// 読んだ場合は置換文字(U+FFFD)や半角カナ・私用領域の文字だらけになる
+function japaneseTextScore(text: string): number {
+	let score = 0;
+	for (const ch of text) {
+		const code = ch.codePointAt(0) ?? 0;
+		if (code === 0xFFFD) score -= 20;
+		else if (code >= 0x3041 && code <= 0x309F) score += 2; // ひらがな
+		else if (code >= 0x30A0 && code <= 0x30FF) score += 1; // カタカナ
+		else if (code >= 0xFF61 && code <= 0xFF9F) score -= 2; // 半角カナ
+		else if (code >= 0xE000 && code <= 0xF8FF) score -= 5; // 私用領域
+	}
+	return score;
+}
+
 function decodeTextFile(buffer: ArrayBuffer): string {
-	// JUICE: ブラウザ標準のTextDecoderにはエンコーディング自動判定機能が無いため、
-	// 「UTF-8として厳密デコードして失敗したらShift-JISとみなす」という単純なヒューリスティックを使う。
-	// 青空文庫形式のテキストファイル等、日本語の.txtファイルの多くはUTF-8かShift-JISのいずれかで、
-	// 正しいShift-JISバイト列が同時に正しいUTF-8として解釈できることは実質無いため、この判定で十分実用に足る
+	// JUICE: ブラウザ標準のTextDecoderにはエンコーディング自動判定機能が無いため、まずUTF-8として
+	// 厳密にデコードし(正しいShift-JIS/EUC-JPのバイト列が同時に正しいUTF-8になることは実質無い)、
+	// 失敗したらShift-JISとEUC-JPの両方で読んでみて、日本語の文章らしい方を採用する
 	try {
 		return new TextDecoder('utf-8', { fatal: true }).decode(buffer);
 	} catch {
-		return new TextDecoder('shift-jis').decode(buffer);
+		const sjis = new TextDecoder('shift-jis').decode(buffer);
+		const eucjp = new TextDecoder('euc-jp').decode(buffer);
+		return japaneseTextScore(eucjp) > japaneseTextScore(sjis) ? eucjp : sjis;
 	}
 }
 
@@ -280,6 +333,45 @@ const aozoraNotation = computed({
 
 // JUICE: 青空文庫形式のテキストによくある入力者注記を解釈する。対応するのはルビと字下げブロックのみ
 // (アオゾラ形式は種類が非常に多く、全種対応はしない)。対応しきれない［＃...］注記は表示から取り除く
+// JUICE: 傍点の種類。本文中では私用領域の文字 U+E000(種類)対象U+E001 という目印で表し、
+// toNovelSegmentsで<span>(text-emphasis)に変換する
+const EMPHASIS_KINDS = {
+	傍点: 's',
+	白ゴマ傍点: 'S',
+	丸傍点: 'c',
+	白丸傍点: 'C',
+} as const;
+type EmphasisKind = typeof EMPHASIS_KINDS[keyof typeof EMPHASIS_KINDS];
+const EMPHASIS_START = '\uE000';
+const EMPHASIS_END = '\uE001';
+
+function wrapEmphasis(target: string, kind: EmphasisKind): string {
+	return `${EMPHASIS_START}${kind}${target}${EMPHASIS_END}`;
+}
+
+function convertAozoraEmphasis(text: string): string {
+	let result = text;
+	// ［＃傍点］…［＃傍点終わり］(1行の中で閉じるもの)
+	result = result.replace(/［＃(白ゴマ傍点|白丸傍点|丸傍点|傍点)］([^\n]*?)［＃\1終わり］/g, (_m, name: keyof typeof EMPHASIS_KINDS, target: string) => wrapEmphasis(target, EMPHASIS_KINDS[name]));
+	// ［＃「対象」に傍点］
+	const pattern = /［＃「([^」\n]+)」に(白ゴマ傍点|白丸傍点|丸傍点|傍点)］/;
+	for (let match = pattern.exec(result); match != null; match = pattern.exec(result)) {
+		const [annotation, target] = match;
+		const kind = EMPHASIS_KINDS[match[2] as keyof typeof EMPHASIS_KINDS];
+		const before = result.slice(0, match.index);
+		const after = result.slice(match.index + annotation.length);
+		if (before.endsWith(target)) {
+			result = before.slice(0, -target.length) + wrapEmphasis(target, kind) + after;
+		} else if (after.startsWith(target)) {
+			result = before + wrapEmphasis(target, kind) + after.slice(target.length);
+		} else {
+			// 対象が見つからない注記は、ほかの未対応の注記と同じく表示から取り除く
+			result = before + after;
+		}
+	}
+	return result;
+}
+
 function convertAozoraNotation(text: string): string {
 	let result = text;
 
@@ -289,10 +381,17 @@ function convertAozoraNotation(text: string): string {
 	// 含まれるブロックだけを対象にする
 	result = result.replace(/^-{3,}\n([\s\S]*?)\n-{3,}\n?/m, (m, inner: string) => (inner.includes('テキスト中に現れる記号について') ? '' : m));
 
-	// ルビ: ｜基底《よみ》(基底の範囲を｜で明示) → MFMのルビ関数 $[ruby 基底 よみ] に変換
-	result = result.replace(/／?｜([^｜《]+)《([^》]+)》/g, (_m, base: string, reading: string) => `$[ruby ${base} ${reading}]`);
+	// 傍点: ［＃「対象」に傍点］(対象の文字列の直後に置く。直前に置かれている場合も受け付ける)と、
+	// ［＃傍点］…［＃傍点終わり］の2つの書き方がある。ルビの変換より先に行う(対象の文字列を
+	// 本文とそのまま照合するため)。以降の処理で注記ごと消されないよう、専用の目印で包んでおく
+	result = convertAozoraEmphasis(result);
+
+	// ルビ: ｜基底《よみ》(基底の範囲を｜で明示) → pixiv小説のルビ記法 [[rb:基底 > よみ]] に変換
+	// (MFMの$[ruby]は基底に空白を含められないため、空白を含む基底も表せるこちらに揃える)。
+	// 基底の始まりの印は、青空文庫の｜のほか、半角の|や、声劇台本等で使われる＊・*も受け付ける
+	result = result.replace(/／?[｜|＊*]([^｜|＊*《\n]+)《([^》\n]+)》/g, (_m, base: string, reading: string) => `[[rb:${base} > ${reading}]]`);
 	// ｜が無い場合、直前の連続した漢字(＋一部の繰り返し記号)がルビの基底になる青空文庫の規則
-	result = result.replace(/([\u4E00-\u9FFF\u3005\u3006\u30F6]+)《([^》]+)》/g, (_m, base: string, reading: string) => `$[ruby ${base} ${reading}]`);
+	result = result.replace(/([\u4E00-\u9FFF\u3005\u3006\u30F6]+)《([^》]+)》/g, (_m, base: string, reading: string) => `[[rb:${base} > ${reading}]]`);
 
 	// ［＃ここからN字下げ］～［＃ここで字下げ終わり］ブロックは、各行の先頭に全角スペースをN個補う
 	result = result.replace(/［＃ここから(\d+)字下げ］\n?([\s\S]*?)［＃ここで字下げ終わり］\n?/g, (_m, n: string, inner: string) => {
@@ -307,22 +406,144 @@ function convertAozoraNotation(text: string): string {
 }
 
 // JUICE: 行頭に全角/半角スペースが無い行へ全角スペースを補い、段落の字下げにする。
-// 既に字下げされている行(青空文庫形式のテキスト等でよくある)はそのままにして二重字下げを避ける
+// 既に字下げされている行(青空文庫形式のテキスト等でよくある)はそのままにして二重字下げを避ける。
+// 会話文等、始め括弧(「『（〔［｛〈《【〘〖“‘等)で始まる行と、中黒・ダッシュ・傍点類や丸・四角等の
+// 記号(・―—﹅﹆●○◎◯◆◇■□★☆※、等)で始まる行(箇条書き・間・場面転換を表す行)は、
+// 小説の組版の慣例どおり字下げしない
+const PARAGRAPH_INDENT_SKIP_PATTERN = /^[\u3000 「『（(〔［[｛{〈《【〘〖｢“‘・･―—﹅﹆●○◎◯◆◇■□★☆※、。，]/;
+
+// JUICE: pixiv小説のルビ記法 [[rb:…]] で始まる行は、半角の[ではなく本文(ルビ付きの文字)で始まる行なので字下げする
+const RUBY_LINE_START_PATTERN = /^\[\[rb:/;
+
 function applyParagraphIndent(text: string): string {
-	return text.split('\n').map(line => (line.length === 0 || /^[\u3000 ]/.test(line) ? line : `\u3000${line}`)).join('\n');
+	return text.split('\n').map(line => (line.length === 0 || (PARAGRAPH_INDENT_SKIP_PATTERN.test(line) && !RUBY_LINE_START_PATTERN.test(line)) ? line : `\u3000${line}`)).join('\n');
 }
 
-// JUICE: 本文中の区切り線(独立行の---等)を章境界として扱う。1件も無ければ全文が1章になる。
-// 青空文庫記法の変換(凡例ブロックの除去含む)は章分割より前に、全文に対して1回だけ行う
-const chapters = computed(() => {
+// JUICE: 小説ビューワーではMFMを解釈せず、本文をそのまま文字として表示する(リンク・メンション・
+// カスタム絵文字・$[…]の関数等は記法のまま出す)。例外として小説で使う表現だけは反映する:
+// ・ルビ: MFMの $[ruby 基底 よみ]と、pixiv小説の [[rb:基底 > よみ]](青空文庫記法の《》もこの形に変換済み)
+// ・文字の装飾: 標準のマークダウン記法の **太字**・*斜体*・~~打ち消し線~~(装飾の中にルビを含めてもよい)
+type NovelDecoration = { bold?: boolean; italic?: boolean; strike?: boolean; emphasis?: EmphasisKind };
+type NovelSegment = ({ type: 'text'; text: string } | { type: 'ruby'; base: string; reading: string }) & NovelDecoration;
+
+function decorationClass(seg: NovelDecoration): string[] {
+	const classes: string[] = [];
+	if (seg.bold) classes.push($style.bold);
+	if (seg.italic) classes.push($style.italic);
+	if (seg.strike) classes.push($style.strike);
+	if (seg.emphasis != null) classes.push($style.emphasis, $style[`emphasis_${seg.emphasis}`]);
+	return classes;
+}
+
+const RUBY_PATTERN = /\$\[ruby ([^\s\]]+) ([^\]]+)\]|\[\[rb:\s*([^>\]]+?)\s*>\s*([^\]]+?)\s*\]\]/g;
+// JUICE: 装飾は1行の中だけで閉じるものに限る(段落をまたいで意図せず装飾されないように)。記号の直後・直前が
+// 空白の場合(「* 注」のような単独の記号)は装飾とみなさない
+// 青空文庫記法の傍点(convertAozoraEmphasisで専用の目印に変換済み)もここで扱う
+const DECORATION_PATTERN = /\*\*(?!\s)([^\n]+?)(?<!\s)\*\*|~~(?!\s)([^\n]+?)(?<!\s)~~|\*(?![\s*])([^*\n]+?)(?<!\s)\*|\uE000([sScC])([^\uE001]*)\uE001/;
+
+function toRubySegments(text: string, decoration: NovelDecoration): NovelSegment[] {
+	const segments: NovelSegment[] = [];
+	let last = 0;
+	for (const match of text.matchAll(RUBY_PATTERN)) {
+		if (match.index > last) segments.push({ type: 'text', text: text.slice(last, match.index), ...decoration });
+		segments.push({ type: 'ruby', base: match[1] ?? match[3], reading: match[2] ?? match[4], ...decoration });
+		last = match.index + match[0].length;
+	}
+	if (last < text.length) segments.push({ type: 'text', text: text.slice(last), ...decoration });
+	return segments;
+}
+
+function toNovelSegments(text: string, decoration: NovelDecoration = {}): NovelSegment[] {
+	const match = DECORATION_PATTERN.exec(text);
+	if (match == null) return toRubySegments(text, decoration);
+	const inner = match[1] ?? match[2] ?? match[3] ?? match[5];
+	const innerDecoration: NovelDecoration = {
+		...decoration,
+		...(match[1] != null ? { bold: true } : match[2] != null ? { strike: true } : match[3] != null ? { italic: true } : { emphasis: match[4] as EmphasisKind }),
+	};
+	return [
+		...toRubySegments(text.slice(0, match.index), decoration),
+		// JUICE: **太字の中の~~打ち消し~~** のような入れ子にも対応する
+		...toNovelSegments(inner, innerDecoration),
+		...toNovelSegments(text.slice(match.index + match[0].length), decoration),
+	];
+}
+
+// JUICE: pixiv小説の記法のうち、ルビ(toNovelSegmentsで処理)・改ページ・章タイトル(chaptersで処理)
+// 以外の、表示に意味を持たない記法を取り除く。[[jumpuri:表示名 > URL]] は表示名だけを残す
+// (ビューワーの本文ではリンクを張らない)。[jump:N]・[pixivimage:…] はそのまま消す
+function convertPixivNotation(text: string): string {
+	return text
+		.replace(/\[\[jumpuri:\s*([^>\]]+?)\s*>\s*[^\]]*\]\]/g, '$1')
+		.replace(/\[(?:jump|pixivimage):[^\]]*\]/g, '');
+}
+
+type NovelChapter = {
+	text: string;
+	segments: NovelSegment[];
+	// JUICE: pixiv小説の [chapter:タイトル] で付けられた章タイトル(目次に使う)
+	title: string | null;
+	// JUICE: 何ページ目([newpage]で区切られた単位、0始まり)に属するか
+	section: number;
+	// JUICE: そのページの最初の章か(=直前で改ページしている)
+	sectionStart: boolean;
+};
+
+// JUICE: pixiv小説と同じく、独立行の [newpage] を改ページとして扱う。横書きでは1ページずつ表示して
+// 前後のページへのボタンで行き来し、縦書きではそこで必ず次のページから始まるようにする。
+// ページの中はさらに区切り線(独立行の---等)で章に分ける。どちらも無ければ全文が1ページ1章になる。
+// 青空文庫記法の変換(凡例ブロックの除去含む)は分割より前に、全文に対して1回だけ行う
+const NEWPAGE_PATTERN = /^[ \t\u3000]*\[newpage\][ \t\u3000]*$/m;
+// JUICE: タイトルの中にルビ記法 [[rb:…]] を含めてもよい(途中の ] で打ち切らない)
+const CHAPTER_TITLE_PATTERN = /\[chapter:\s*((?:\[\[rb:[^\]]*\]\]|[^\]])*?)\s*\]/g;
+const PIXIV_RUBY_BASE_PATTERN = /\[\[rb:\s*([^>\]]+?)\s*>[^\]]*\]\]/g;
+
+const chapters = computed<NovelChapter[]>(() => {
 	const text = novelFileContent.value ?? appearNote.value?.text;
-	if (!text) return [{ text: '' }];
-	let normalized = text.replace(/\r\n/g, '\n');
+	if (!text) return [{ text: '', segments: [], title: null, section: 0, sectionStart: true }];
+	let normalized = convertPixivNotation(text.replace(/\r\n/g, '\n'));
 	if (aozoraNotation.value) normalized = convertAozoraNotation(normalized);
-	const parts = normalized.split(/\n{0,2}^-{3,}$\n{0,2}/m).map(t => t.trim()).filter(t => t.length > 0);
-	const chapterTexts = parts.length > 0 ? parts : [normalized];
-	return chapterTexts.map(t => ({ text: paragraphIndent.value ? applyParagraphIndent(t) : t }));
+	const sectionTexts = normalized.split(NEWPAGE_PATTERN).map(t => t.trim()).filter(t => t.length > 0);
+	const result: NovelChapter[] = [];
+	for (const [section, sectionText] of (sectionTexts.length > 0 ? sectionTexts : [normalized]).entries()) {
+		const parts = sectionText.split(/\n{0,2}^-{3,}$\n{0,2}/m).map(t => t.trim()).filter(t => t.length > 0);
+		for (const [j, part] of (parts.length > 0 ? parts : [sectionText]).entries()) {
+			// JUICE: 目次に出すタイトルは、ルビ記法を基底の文字だけにする
+			const title = [...part.matchAll(CHAPTER_TITLE_PATTERN)][0]?.[1]?.replace(PIXIV_RUBY_BASE_PATTERN, '$1') ?? null;
+			const withoutTitleSyntax = part.replace(CHAPTER_TITLE_PATTERN, '$1');
+			const chapterText = paragraphIndent.value ? applyParagraphIndent(withoutTitleSyntax) : withoutTitleSyntax;
+			result.push({ text: chapterText, segments: toNovelSegments(chapterText), title: title || null, section, sectionStart: j === 0 });
+		}
+	}
+	return result;
 });
+
+// JUICE: 表示される本文の文字数(空白・改行・字下げの全角スペースは数えない。ルビはよみを除いた
+// 基底の文字だけ数える)。サロゲートペアの文字(絵文字等)も1文字として数える
+const novelCharCount = computed(() => {
+	let count = 0;
+	for (const chapter of chapters.value) {
+		for (const seg of chapter.segments) {
+			count += [...(seg.type === 'ruby' ? seg.base : seg.text).replace(/\s/g, '')].length;
+		}
+	}
+	return count;
+});
+
+// JUICE: 日本語の小説の一般的な黙読速度(1分あたりおよそ500文字)で見積もる。1分未満でも「約1分」と出す
+const NOVEL_READING_CHARS_PER_MINUTE = 500;
+const novelReadingMinutes = computed(() => Math.max(1, Math.round(novelCharCount.value / NOVEL_READING_CHARS_PER_MINUTE)));
+
+const sectionCount = computed(() => (chapters.value.at(-1)?.section ?? 0) + 1);
+
+// JUICE: 横書きで今表示しているページ([newpage]単位、0始まり)
+const currentSection = ref(0);
+
+function goToSection(section: number): void {
+	currentSection.value = Math.min(Math.max(section, 0), sectionCount.value - 1);
+	// JUICE: ページを替えたら本文の先頭(固定ヘッダーのすぐ下)へ戻す
+	nextTick(() => outerEl.value?.scrollIntoView({ behavior: 'instant', block: 'start' }));
+}
 
 let chapterMarkerEls: (HTMLElement | null)[] = [];
 
@@ -395,15 +616,47 @@ function getRubyZones(inner: HTMLDivElement): { start: number; end: number }[] {
 	return zones;
 }
 
-function computePageOffsets(inner: HTMLDivElement, naturalPageWidth: number, rubyZones: { start: number; end: number }[]): number[] {
+// JUICE: [newpage](改ページ)の位置。縦書きでは.pageBreak(幅0のブロック)がその位置に置かれ、
+// 次の本文はその左(=次の列)から始まる。本文先頭(innerの右端)からの距離で返す
+function getForcedPageBreaks(inner: HTMLDivElement): number[] {
+	const innerRight = inner.getBoundingClientRect().right;
+	return [...inner.querySelectorAll(`.${$style.pageBreak}`)]
+		.map(el => innerRight - el.getBoundingClientRect().left)
+		.sort((a, b) => a - b);
+}
+
+// JUICE: ルビの矩形がページの境界にぴったり接しているだけでも、文字のアンチエイリアス分が
+// 境界の外へ1px程度にじみ、隣のページの端に切れ端として見えることがある。接している場合も
+// 「かかっている」とみなし、この分だけ手前で区切る
+const RUBY_BLEED_MARGIN = 2;
+
+function computePageOffsets(inner: HTMLDivElement, naturalPageWidth: number, rubyZones: { start: number; end: number }[], forcedBreaks: number[]): number[] {
 	const total = inner.scrollWidth;
-	if (naturalPageWidth <= 0 || total <= naturalPageWidth) return [0];
+	if (naturalPageWidth <= 0 || (total <= naturalPageWidth && forcedBreaks.length === 0)) return [0];
 	const offsets = [0];
 	let current = 0;
-	while (current + naturalPageWidth < total) {
+	// JUICE: 改ページはルビを避けて少し手前で区切ることがあるため、「currentより後ろか」だけでは
+	// 同じ改ページを2回拾ってしまう。使い終わった改ページは先頭から順に捨てていく
+	const pendingBreaks = forcedBreaks.filter(f => f > 1 && f < total - 1);
+	while (current + naturalPageWidth < total || pendingBreaks.length > 0) {
 		let boundary = current + naturalPageWidth;
-		const straddling = rubyZones.find(z => z.start > current && z.start < boundary && z.end > boundary);
-		if (straddling) boundary = straddling.start;
+		// JUICE: このページの範囲内に改ページがあれば、ルビの調整より優先してそこで区切る
+		// (ルビを避けて手前で区切った後は位置が数pxずれているので、その分の余裕を持たせる。そうしないと
+		// 改ページがちょうどページの端に来たとき、幅数pxの空のページが1枚増えてしまう)
+		const forced = pendingBreaks[0] != null && pendingBreaks[0] <= boundary + RUBY_BLEED_MARGIN ? pendingBreaks.shift() : undefined;
+		if (forced != null) {
+			// JUICE: 改ページ直後の列の先頭にルビがあると、ルビが列の外(前のページ側)へはみ出して
+			// 描画され、前のページの端にルビの切れ端が見えてしまう。改ページ位置にかかるルビがあれば
+			// その手前で区切る
+			const straddlingStarts = rubyZones.filter(z => z.start > current && z.start < forced + RUBY_BLEED_MARGIN && z.end > forced).map(z => z.start - RUBY_BLEED_MARGIN);
+			const cut = Math.max(current + 1, Math.min(forced, ...straddlingStarts));
+			offsets.push(cut);
+			current = cut;
+			continue;
+		}
+		if (boundary >= total) break;
+		const straddling = rubyZones.find(z => z.start > current && z.start < boundary + RUBY_BLEED_MARGIN && z.end > boundary);
+		if (straddling) boundary = straddling.start - RUBY_BLEED_MARGIN;
 		if (boundary <= current) boundary = current + naturalPageWidth;
 		offsets.push(boundary);
 		current = boundary;
@@ -431,7 +684,7 @@ function updatePageCount(): void {
 	// 内容が二重に見えていた)。同じCSS値・同じ本文なら実際の描画結果も一致するはず
 	if (isSpread.value && secondaryInner) secondaryInner.style.lineHeight = inner.style.lineHeight;
 	const naturalPageWidth = Math.max(1, Math.floor(outer.clientWidth / columnWidth)) * columnWidth;
-	primaryPageOffsets = computePageOffsets(inner, naturalPageWidth, getRubyZones(inner));
+	primaryPageOffsets = computePageOffsets(inner, naturalPageWidth, getRubyZones(inner), getForcedPageBreaks(inner));
 	pageCount.value = Math.max(1, primaryPageOffsets.length);
 }
 
@@ -463,6 +716,64 @@ function setInnerPage(inner: HTMLDivElement, viewport: HTMLDivElement, page: num
 	inner.style.transform = `translateX(${start}px)`;
 }
 
+// JUICE: 縦書きはtext-orientation: uprightで英数字も1文字ずつ正立させているが、縦書き用の字形を
+// 持たない約物(…‥―—や半角の括弧・ハイフン等)まで正立したまま横向きの形で並んでしまう。
+// これらだけtext-orientation: mixedのspanで包み、通常の縦書きと同じく90度回転させて縦向きにする。
+// 本文の描画結果(DOM)を直接書き換えるため、テンプレート側は本文をkeyにして、本文が変わったら
+// 必ず作り直させている(Vueが保持するテキストノードとずれないように)
+const VERTICAL_ROTATE_CHARS = /[…‥―—–\-~()[\]{}<>=_|]+/g;
+
+function rotateSidewaysGlyphs(root: HTMLElement): void {
+	const walker = window.document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+		acceptNode: (node) => {
+			const parent = node.parentElement;
+			if (parent == null || parent.closest(`.${$style.sideways}`) != null) return NodeFilter.FILTER_REJECT;
+			VERTICAL_ROTATE_CHARS.lastIndex = 0;
+			return VERTICAL_ROTATE_CHARS.test(node.nodeValue ?? '') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+		},
+	});
+	const targets: Text[] = [];
+	while (walker.nextNode()) targets.push(walker.currentNode as Text);
+	for (const node of targets) {
+		const text = node.nodeValue ?? '';
+		const fragment = window.document.createDocumentFragment();
+		let last = 0;
+		for (const match of text.matchAll(VERTICAL_ROTATE_CHARS)) {
+			if (match.index > last) fragment.append(text.slice(last, match.index));
+			const span = window.document.createElement('span');
+			span.className = $style.sideways;
+			span.textContent = match[0];
+			fragment.append(span);
+			last = match.index + match[0].length;
+		}
+		if (last < text.length) fragment.append(text.slice(last));
+		node.replaceWith(fragment);
+	}
+}
+
+// JUICE: 見開きの左パネルの本文は、ページ数が確定した後の再描画で初めて中身が入る(v-if)ため、
+// applyLayout時点では処理できない。描画のたびに未処理の部分だけ処理し直す(処理済みの約物は
+// .sidewaysの中にあるので二重には包まない)。左パネルは右パネルのページ位置をそのまま使うので、
+// 字形を揃えないと継ぎ目で内容がずれる。本文はPageWithHeaderのslot内(=子コンポーネント側)で
+// 描画されるためonUpdatedは発火しない。DOM更新後に走るflush: 'post'のwatchで拾う
+watch([currentPage, pageCount, isSpread, chapters], () => {
+	if (writingMode.value !== 'vertical') return;
+	const secondaryInner = panelInnerEls.value[1];
+	if (!isSpread.value || !secondaryInner) return;
+	rotateSidewaysGlyphs(secondaryInner);
+}, { flush: 'post' });
+
+// JUICE: ページ送りはtransformで行い、クリップ窓(.panelViewport, overflow: hidden)自体はスクロールさせない
+// 前提になっている。ところがブラウザのページ内検索(Ctrl+F)で見つかった箇所や、文字選択のドラッグ等では
+// overflow: hiddenの要素でもブラウザが勝手にスクロールさせてしまい、左右のページの内容がずれる。
+// スクロールされたら即座に元へ戻す
+function onViewportScroll(ev: Event): void {
+	if (writingMode.value !== 'vertical') return;
+	const el = ev.currentTarget as HTMLElement;
+	if (el.scrollLeft !== 0) el.scrollLeft = 0;
+	if (el.scrollTop !== 0) el.scrollTop = 0;
+}
+
 function syncSecondaryPanel(): void {
 	if (!isSpread.value) return;
 	const secondaryInner = panelInnerEls.value[1];
@@ -472,7 +783,50 @@ function syncSecondaryPanel(): void {
 	setInnerPage(secondaryInner, secondaryViewport, secondaryPage, primaryPageOffsets);
 }
 
-function applyLayout(targetPage: number): void {
+// JUICE: 読んでいた位置を「本文全体のうち何割目か」で表す。ウインドウ幅・文字サイズが変わると
+// ページの区切りが変わり、同じページ番号でも別の箇所を指してしまう(開き直すと読んでいた所から
+// 大きくずれる)ため、再レイアウトの前後はページ番号ではなくこの割合で位置を引き継ぐ
+function currentReadingRatio(): number {
+	const inner = primaryInnerEl();
+	const total = inner?.scrollWidth ?? 0;
+	if (total <= 0) return 0;
+	return (primaryPageOffsets[currentPage.value - 1] ?? 0) / total;
+}
+
+// JUICE: リサイズを続けて行う(狭めてから戻す等)と、毎回「いま表示しているページの先頭」から
+// 割合を取り直すせいで、ページの区切り方が変わるたびに少しずつ前へずれていく。ユーザーが自分で
+// ページをめくる/移動するまでは、最初に取った割合を使い続ける
+let readingAnchorRatio: number | null = null;
+
+function anchoredReadingPosition(): { ratio: number } {
+	readingAnchorRatio ??= currentReadingRatio();
+	return { ratio: readingAnchorRatio };
+}
+
+function pageAtRatio(ratio: number, total: number): number {
+	const distance = ratio * total;
+	let page = 1;
+	for (let p = 0; p < primaryPageOffsets.length; p++) {
+		// JUICE: 境界ちょうど(丸め誤差込み)の場合は後ろのページに寄せる
+		if (primaryPageOffsets[p] <= distance + 1) page = p + 1;
+		else break;
+	}
+	return page;
+}
+
+// JUICE: リサイズ中は連続で呼ばれるうえ、中でfonts.readyをawaitするため、先に呼んだ計測が後から
+// 終わって新しい結果を上書きすることがある。最新の呼び出し以外の結果は捨てる
+let layoutGeneration = 0;
+// JUICE: 実行中(fonts.ready待ち等)の再レイアウトの目標位置。開いた直後のしおり復元が終わる前に
+// リサイズ(ResizeObserverの初回通知等)が来ると、まだ古いページ位置から割合を取ってしまい、
+// しおり位置が上書きされていた。実行中の目標があればリサイズ側もそれを引き継ぐ
+let pendingLayoutTarget: number | { ratio: number } | null = null;
+
+function applyLayout(target: number | { ratio: number }): void {
+	const generation = ++layoutGeneration;
+	pendingLayoutTarget = target;
+	// JUICE: ページ番号を直接指定する移動(しおり・目次・表示の作り直し)は、読む位置の基準も作り直す
+	if (typeof target === 'number') readingAnchorRatio = null;
 	nextTick(() => {
 		updateSpreadMode();
 		// JUICE: isSpreadの変更はここで初めて反映されるリアクティブな状態で、実際のDOM(パネルが
@@ -482,11 +836,19 @@ function applyLayout(targetPage: number): void {
 			const inner = primaryInnerEl();
 			const viewport = primaryViewportEl();
 			if (!inner || !viewport) return;
+			// JUICE: 字形の向きを直すと字幅も変わるため、ページ幅を測る前に済ませる
+			for (const el of panelInnerEls.value) {
+				if (el) rotateSidewaysGlyphs(el);
+			}
+
 			// JUICE: Webフォントの読み込みが完了する前に幅を測ると、フォールバックフォントの
 			// 字幅で計算してしまい、後から本来のフォントに置き換わった時点でページ境界がずれる
 			// (最悪、行の途中で切れて見切れる)。document.fonts.readyを待ってから測る
 			await window.document.fonts.ready;
+			if (generation !== layoutGeneration) return;
+			if (outerEl.value) lastLayoutSize = bodySizeKey(outerEl.value);
 			updatePageCount();
+			const targetPage = typeof target === 'number' ? target : pageAtRatio(target.ratio, inner.scrollWidth);
 			let page = Math.min(Math.max(targetPage, 1), pageCount.value);
 			// JUICE: 見開きは本と同じく(1,2)(3,4)…の組で表示し、右ページは常に奇数ページにする。
 			// 目次からの移動等で偶数ページが指定されたときにそのまま右ページへ置くと、(2,3)の
@@ -495,6 +857,7 @@ function applyLayout(targetPage: number): void {
 			currentPage.value = page;
 			setInnerPage(inner, viewport, currentPage.value, primaryPageOffsets);
 			syncSecondaryPanel();
+			pendingLayoutTarget = null;
 		});
 	});
 }
@@ -519,23 +882,36 @@ function turnPage(direction: 'next' | 'prev'): void {
 	const targetPage = Math.min(Math.max(rawTarget, 1), pageCount.value);
 	if (targetPage === currentPage.value) return;
 	currentPage.value = targetPage;
+	readingAnchorRatio = null;
 	setInnerPage(inner, viewport, targetPage, primaryPageOffsets);
 	syncSecondaryPanel();
 	saveProgress();
 }
 
 function jumpToChapter(i: number): void {
-	const marker = chapterMarkerEls[i];
-	if (!marker) return;
 	// JUICE: 横書きは通常のページスクロールなので、scrollIntoViewで移動するだけでよい。
 	// ただしマーカー自体ではなく、その章の頭にある章ナビ(前の章/目次/次の章)を基準にする。
 	// マーカー基準だとページ上部の固定ヘッダーの裏に章タイトルが隠れてしまい、移動したように
-	// 見えなかった(章ナビ側はCSSのscroll-margin-topで固定ヘッダーの高さ分だけ下げて止める)
+	// 見えなかった(章ナビ側はCSSのscroll-margin-topで固定ヘッダーの高さ分だけ下げて止める)。
+	// 別のページ([newpage])にある章なら、先にそのページへ切り替えてから(描画を待って)移動する
 	if (writingMode.value === 'horizontal') {
-		const target = (marker.previousElementSibling as HTMLElement | null) ?? marker;
-		target.scrollIntoView({ behavior: 'instant', block: 'start' });
+		const chapter = chapters.value[i];
+		if (chapter == null) return;
+		if (chapter.sectionStart) {
+			goToSection(chapter.section);
+			return;
+		}
+		currentSection.value = chapter.section;
+		nextTick(() => {
+			const marker = chapterMarkerEls[i];
+			if (!marker) return;
+			const target = (marker.previousElementSibling as HTMLElement | null) ?? marker;
+			target.scrollIntoView({ behavior: 'instant', block: 'start' });
+		});
 		return;
 	}
+	const marker = chapterMarkerEls[i];
+	if (!marker) return;
 	const inner = primaryInnerEl();
 	if (!inner) return;
 	// JUICE: 縦書きはtransformでページ送りするため(scrollIntoViewが効く対象がそもそも無い)、
@@ -557,7 +933,7 @@ function jumpToChapter(i: number): void {
 
 function openToc(ev: PointerEvent): void {
 	os.popupMenu(chapters.value.map((chapter, i) => ({
-		text: i18n.tsx._juice.novelViewerChapter({ n: i + 1 }),
+		text: chapter.title ?? i18n.tsx._juice.novelViewerChapter({ n: i + 1 }),
 		action: () => jumpToChapter(i),
 	})), ev.currentTarget ?? ev.target ?? undefined);
 }
@@ -650,6 +1026,14 @@ function onWindowTouchStart(ev: TouchEvent): void {
 }
 
 function onKeydown(ev: KeyboardEvent): void {
+	// JUICE: Fullscreen API非対応の環境(CSSだけの全画面表示)でも、Escキーで全画面を抜けられるようにする。
+	// ただし設定メニュー等のポップアップを閉じるためのEsc(フォーカスはポップアップ側にある)では抜けない
+	if (ev.key === 'Escape' && isFullscreen.value && window.document.fullscreenElement == null) {
+		const target = ev.target;
+		const fromReader = target === window.document.body || target === window.document.documentElement || (target instanceof Node && readerEl.value?.contains(target) === true);
+		if (fromReader) exitFullscreen();
+		return;
+	}
 	if (writingMode.value !== 'vertical') return;
 	// JUICE: 入力欄(投稿フォームのダイアログ・検索欄等)でのカーソル移動やIME変換中の
 	// 矢印キーまでページめくりに奪わない
@@ -663,18 +1047,48 @@ function onKeydown(ev: KeyboardEvent): void {
 	}
 }
 
+// JUICE: ウインドウのリサイズ(ドラッグ中は連続で発生する)は、止まってから1回だけ再レイアウトする
+let resizeTimer: number | null = null;
+let lastLayoutSize = '';
+
 function onResize(): void {
 	if (writingMode.value !== 'vertical') return;
-	const wasSpread = isSpread.value;
-	updateSpreadMode();
-	// JUICE: 見開き⇔単ページが切り替わらない範囲のリサイズでも、幅が変わればページ数もtransform量も
-	// 変わる。毎回必ずapplyLayoutでページ境界へ位置を計算し直す
-	if (isSpread.value !== wasSpread) {
-		// JUICE: 見開き⇔単ページの切り替えはDOM構造(パネル数)も変わるため、マーカーを取り直す
-		chapterMarkerEls = [];
-	}
-	applyLayout(currentPage.value);
+	if (resizeTimer != null) window.clearTimeout(resizeTimer);
+	resizeTimer = window.setTimeout(() => {
+		resizeTimer = null;
+		if (writingMode.value !== 'vertical') return;
+		const wasSpread = isSpread.value;
+		updateSpreadMode();
+		// JUICE: 見開き⇔単ページが切り替わらない範囲のリサイズでも、幅が変わればページ数もtransform量も
+		// 変わる。毎回必ずapplyLayoutでページ境界へ位置を計算し直す
+		if (isSpread.value !== wasSpread) {
+			// JUICE: 見開き⇔単ページの切り替えはDOM構造(パネル数)も変わるため、マーカーを取り直す
+			chapterMarkerEls = [];
+		}
+		applyLayout(pendingLayoutTarget ?? anchoredReadingPosition());
+	}, 150);
 }
+
+// JUICE: window.resizeが発生しない表示領域の変化(デッキのカラム幅変更・サイドバーの開閉等)でも
+// 本文の枠の大きさが変わるため、枠そのものの大きさを監視する
+// 比較の基準は「最後にレイアウトした時点の枠の大きさ」(applyLayoutで記録)にする
+function bodySizeKey(el: HTMLElement): string {
+	return `${el.clientWidth}x${el.clientHeight}`;
+}
+
+const bodyResizeObserver = new ResizeObserver((entries) => {
+	const el = entries[0]?.target as HTMLElement | undefined;
+	// JUICE: 別ページへ遷移してKeepAliveで非表示になったときは大きさが0になる。このとき測り直すと
+	// 読んでいた位置が失われるため無視し、再表示時の本来の大きさとだけ比べる
+	if (el == null || el.clientWidth === 0 || el.clientHeight === 0) return;
+	if (bodySizeKey(el) === lastLayoutSize) return;
+	onResize();
+});
+
+watch(outerEl, (el, oldEl) => {
+	if (oldEl) bodyResizeObserver.unobserve(oldEl);
+	if (el) bodyResizeObserver.observe(el);
+}, { immediate: true });
 
 // JUICE: Chrome(Android)等の、横方向のオーバースクロールで履歴を戻る/進む挙動を
 // ビューワーを開いている間だけ無効化する(閉じたら元の値に戻す)
@@ -689,6 +1103,7 @@ function attachWindowListeners(): void {
 	window.addEventListener('keydown', onKeydown);
 	window.addEventListener('resize', onResize);
 	window.addEventListener('touchstart', onWindowTouchStart, { passive: false });
+	window.document.addEventListener('fullscreenchange', onFullscreenChange);
 	prevRootOverscrollBehaviorX = window.document.documentElement.style.overscrollBehaviorX;
 	window.document.documentElement.style.overscrollBehaviorX = 'none';
 }
@@ -699,28 +1114,40 @@ function detachWindowListeners(): void {
 	window.removeEventListener('keydown', onKeydown);
 	window.removeEventListener('resize', onResize);
 	window.removeEventListener('touchstart', onWindowTouchStart);
+	window.document.removeEventListener('fullscreenchange', onFullscreenChange);
 	window.document.documentElement.style.overscrollBehaviorX = prevRootOverscrollBehaviorX;
 }
 
 onMounted(attachWindowListeners);
 onActivated(attachWindowListeners);
 onDeactivated(() => {
+	// JUICE: 全画面のまま別のページへ移ったら全画面も解除する
+	if (isFullscreen.value) exitFullscreen();
 	detachWindowListeners();
+	// JUICE: 非表示になった後でリサイズ待ちのタイマーが発火すると、大きさ0で測って表示が崩れる
+	if (resizeTimer != null) {
+		window.clearTimeout(resizeTimer);
+		resizeTimer = null;
+	}
 	saveProgress();
 });
 onUnmounted(() => {
+	if (isFullscreen.value) exitFullscreen();
 	detachWindowListeners();
+	bodyResizeObserver.disconnect();
+	if (resizeTimer != null) window.clearTimeout(resizeTimer);
 	saveProgress();
 });
 
 watch([appearNote, writingMode, showContent, novelFileContent], () => {
 	chapterMarkerEls = [];
+	currentSection.value = 0;
 	if (writingMode.value === 'vertical') resetPager();
 });
 
-// JUICE: 文字サイズ変更時は読んでいたページ位置を保ったまま再計測する(しおり位置には戻さない)
+// JUICE: 文字サイズ等の変更時は読んでいた位置(本文全体に対する割合)を保ったまま再計測する(しおり位置には戻さない)
 watch([fontSize, fontFamily, paragraphIndent, aozoraNotation], () => {
-	if (writingMode.value === 'vertical') applyLayout(currentPage.value);
+	if (writingMode.value === 'vertical') applyLayout(anchoredReadingPosition());
 });
 
 function fetchNote(): void {
@@ -754,15 +1181,47 @@ function toggleWritingMode(): void {
 	store.set('novelViewerWritingMode', store.s.novelViewerWritingMode === 'vertical' ? 'horizontal' : 'vertical');
 }
 
+const writingModeToggleLabel = computed(() => (writingMode.value === 'vertical' ? i18n.ts._juice.novelViewerHorizontalMode : i18n.ts._juice.novelViewerVerticalMode));
+
+// JUICE: 全画面表示。本文部分をCSSで画面いっぱいに広げ(position: fixed)、ブラウザが対応していれば
+// Fullscreen APIでブラウザ自体も全画面にする。全画面にするのは<html>全体にしている(本文の要素だけを
+// 全画面にすると、設定メニュー等のポップアップ(bodyの直下に出る)が全画面の外になって見えなくなるため)。
+// iPhoneのSafariのように要素の全画面表示に対応していない環境でも、CSS側だけで画面いっぱいに表示できる
+const isFullscreen = ref(false);
+
+function enterFullscreen(): void {
+	isFullscreen.value = true;
+	const root = window.document.documentElement;
+	if (typeof root.requestFullscreen === 'function' && window.document.fullscreenElement == null) {
+		root.requestFullscreen().catch(() => { /* 対応していない・拒否された場合はCSS側の表示だけで続ける */ });
+	}
+}
+
+function exitFullscreen(): void {
+	isFullscreen.value = false;
+	if (window.document.fullscreenElement != null) {
+		window.document.exitFullscreen().catch(() => { /* 既に解除されている */ });
+	}
+}
+
+// JUICE: Escキー等でブラウザ側の全画面が解除されたら、表示も元に戻す
+function onFullscreenChange(): void {
+	if (window.document.fullscreenElement == null && isFullscreen.value) isFullscreen.value = false;
+}
+
 const headerActions = computed(() => {
 	const actions = [{
 		text: i18n.ts._juice.novelViewerSettings,
 		icon: 'ti ti-adjustments',
 		handler: openSettings,
 	}, {
-		text: writingMode.value === 'vertical' ? i18n.ts._juice.novelViewerHorizontalMode : i18n.ts._juice.novelViewerVerticalMode,
+		text: writingModeToggleLabel.value,
 		icon: 'ti ti-camera-rotate',
 		handler: toggleWritingMode,
+	}, {
+		text: i18n.ts._juice.novelViewerFullscreen,
+		icon: 'ti ti-maximize',
+		handler: enterFullscreen,
 	}];
 	if (chapters.value.length > 1) {
 		actions.unshift({
@@ -805,11 +1264,21 @@ definePage(() => ({
 	opacity: 0.7;
 }
 
+.stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 16px;
+	font-size: 0.9em;
+	opacity: 0.7;
+}
+
 .cw {
 	margin: 0 0 1em 0;
 }
 
 .body {
+	// JUICE: 横書きで[newpage]のページを替えたとき、本文の先頭を固定ヘッダーの裏に隠さない
+	scroll-margin-top: var(--MI-stickyTop, 0px);
 	line-height: 2;
 	transition: background-color 0.2s ease, color 0.2s ease;
 
@@ -937,6 +1406,50 @@ definePage(() => ({
 // 確保してしまい、本文の先頭に隙間([#ここから2字下げ]等の直後で顕著)ができる原因に
 // なっていた。display:inline-blockでサイズを明示的に0にして、位置測定の起点としての
 // 役割だけ残しつつ見た目には一切影響しないようにする
+// JUICE: MFMを通さずに本文をそのまま表示するため、改行・連続スペース(字下げの全角スペース含む)を保つ
+.novelText {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.bold {
+	font-weight: bold;
+}
+
+.italic {
+	font-style: italic;
+}
+
+.strike {
+	text-decoration: line-through;
+}
+
+// JUICE: 青空文庫記法の傍点。縦書きでは文字の右側、横書きでは上側に付く(日本語の既定の位置)
+.emphasis {
+	text-emphasis-position: over right;
+}
+
+.emphasis_s {
+	text-emphasis-style: filled sesame;
+}
+
+.emphasis_S {
+	text-emphasis-style: open sesame;
+}
+
+.emphasis_c {
+	text-emphasis-style: filled circle;
+}
+
+.emphasis_C {
+	text-emphasis-style: open circle;
+}
+
+// JUICE: 縦書き用の字形を持たない約物を、通常の縦書きと同じく90度回転させる(rotateSidewaysGlyphs参照)
+.sideways {
+	text-orientation: mixed;
+}
+
 .chapterMarker {
 	display: inline-block;
 	width: 0;
@@ -968,10 +1481,81 @@ definePage(() => ({
 	}
 }
 
+// JUICE: [newpage]の位置に置く幅0のブロック。縦書きでは次の本文をここから新しい列として始めさせ、
+// ページの区切り位置の目印にもなる(getForcedPageBreaks)。見た目には何も出さない
+.pageBreak {
+	[data-mode="vertical"] & {
+		display: block;
+		inline-size: 0;
+		block-size: 0;
+	}
+}
+
+.sectionCount {
+	opacity: 0.8;
+	font-variant-numeric: tabular-nums;
+}
+
 .chapterBreak {
 	text-align: center;
 	opacity: 0.5;
 	margin: 1.5em 0;
+}
+
+// JUICE: 全画面表示。popupMenu等のポップアップ(z-indexは500000〜)より下、アプリの通常のUIより上に重ねる
+.reader.fullscreen {
+	position: fixed;
+	inset: 0;
+	z-index: 400000;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	box-sizing: border-box;
+	padding: 8px 16px 12px;
+	overflow-y: auto;
+	background: var(--MI_THEME-bg);
+
+	> .body {
+		width: 100%;
+		max-width: 1200px;
+		margin: 0 auto;
+		box-sizing: border-box;
+
+		// JUICE: 縦書きは画面の高さいっぱいを本文に使う(通常表示の70vh・最大720pxの制限を外す)
+		&[data-mode="vertical"] {
+			flex: 1 1 0;
+			min-height: 0;
+			height: auto;
+			max-height: none;
+		}
+	}
+
+	> .pager {
+		flex-shrink: 0;
+	}
+}
+
+.fullscreenToolbar {
+	// JUICE: 横書きの全画面は本文ごとスクロールするため、ツールバーは常に上端に貼り付けておく
+	position: sticky;
+	top: -8px;
+	z-index: 1;
+	display: flex;
+	justify-content: flex-end;
+	flex-shrink: 0;
+	gap: 4px;
+	margin: -8px -16px 0;
+	padding: 8px 16px;
+	background: var(--MI_THEME-bg);
+}
+
+.fullscreenToolbarButton {
+	padding: 8px;
+	border-radius: 6px;
+
+	&:hover {
+		background: var(--MI_THEME-buttonHoverBg);
+	}
 }
 
 .pager {
