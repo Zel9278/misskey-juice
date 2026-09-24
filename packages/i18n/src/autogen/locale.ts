@@ -15027,7 +15027,7 @@ export interface Locale extends ILocale {
          */
         "novelViewerParagraphIndent": string;
         /**
-         * 行頭に全角スペースが無い段落へ自動で字下げを補います。既に字下げされている段落はそのままです。
+         * 行頭に全角スペースが無い段落へ自動で字下げを補います。既に字下げされている段落と、「」などの始め括弧や、中黒(・)・ダッシュ(―)・傍点(﹅)・●○などの記号で始まる段落はそのままです。
          */
         "novelViewerParagraphIndentCaption": string;
         /**
@@ -15082,6 +15082,22 @@ export interface Locale extends ILocale {
          * {from}-{to}
          */
         "novelViewerPageRange": ParameterizedString<"from" | "to">;
+        /**
+         * {n}文字
+         */
+        "novelViewerCharCount": ParameterizedString<"n">;
+        /**
+         * 約{n}分で読めます
+         */
+        "novelViewerReadingTime": ParameterizedString<"n">;
+        /**
+         * 全画面で読む
+         */
+        "novelViewerFullscreen": string;
+        /**
+         * 全画面を終了
+         */
+        "novelViewerExitFullscreen": string;
         /**
          * 表示するタブ
          */
