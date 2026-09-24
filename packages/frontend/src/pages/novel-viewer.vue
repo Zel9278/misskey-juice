@@ -55,10 +55,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<div :ref="(el) => setPanelViewportEl(0, el as HTMLElement | null)" :data-mode="writingMode" :class="$style.panelViewport" @scroll="onViewportScroll">
 								<div :ref="(el) => setPanelInnerEl(0, el as HTMLElement | null)" :class="$style.panelInner">
 									<template v-for="(chapter, i) in chapters" :key="`${i}:${chapter.text}`">
-										<div v-if="i > 0 && chapter.sectionStart" :class="$style.pageBreak" aria-hidden="true"></div>
+										<div v-if="i > 0 && chapter.sectionStart" :class="$style.pageBreak" data-novel-page-break aria-hidden="true"></div>
 										<div v-else-if="i > 0" :class="$style.chapterBreak" aria-hidden="true">⁂</div>
 										<span :ref="(el) => setChapterMarkerEl(i, el as HTMLElement | null)" :class="$style.chapterMarker"></span>
-										<span :class="[$style.novelText, '_selectable']"><template v-for="(seg, j) in chapter.segments" :key="j"><ruby v-if="seg.type === 'ruby'" :class="decorationClass(seg)">{{ seg.base }}<rt>{{ seg.reading }}</rt></ruby><span v-else-if="seg.bold || seg.italic || seg.strike || seg.emphasis" :class="decorationClass(seg)">{{ seg.text }}</span><template v-else>{{ seg.text }}</template></template></span>
+										<span :class="[$style.novelText, '_selectable']"><template v-for="(seg, j) in chapter.segments" :key="j"><ruby v-if="seg.type === 'ruby'" :class="{ [$style.bold]: seg.bold, [$style.italic]: seg.italic, [$style.strike]: seg.strike, [$style.emphasis]: seg.emphasis != null, [$style.emphasis_s]: seg.emphasis === 's', [$style.emphasis_S]: seg.emphasis === 'S', [$style.emphasis_c]: seg.emphasis === 'c', [$style.emphasis_C]: seg.emphasis === 'C' }">{{ seg.base }}<rt>{{ seg.reading }}</rt></ruby><span v-else-if="seg.bold || seg.italic || seg.strike || seg.emphasis" :class="{ [$style.bold]: seg.bold, [$style.italic]: seg.italic, [$style.strike]: seg.strike, [$style.emphasis]: seg.emphasis != null, [$style.emphasis_s]: seg.emphasis === 's', [$style.emphasis_S]: seg.emphasis === 'S', [$style.emphasis_c]: seg.emphasis === 'c', [$style.emphasis_C]: seg.emphasis === 'C' }">{{ seg.text }}</span><template v-else>{{ seg.text }}</template></template></span>
 									</template>
 								</div>
 							</div>
@@ -75,9 +75,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<div :ref="(el) => setPanelInnerEl(1, el as HTMLElement | null)" :class="$style.panelInner">
 									<template v-if="currentPage < pageCount">
 										<template v-for="(chapter, i) in chapters" :key="`${i}:${chapter.text}`">
-											<div v-if="i > 0 && chapter.sectionStart" :class="$style.pageBreak" aria-hidden="true"></div>
+											<div v-if="i > 0 && chapter.sectionStart" :class="$style.pageBreak" data-novel-page-break aria-hidden="true"></div>
 											<div v-else-if="i > 0" :class="$style.chapterBreak" aria-hidden="true">⁂</div>
-											<span :class="$style.novelText"><template v-for="(seg, j) in chapter.segments" :key="j"><ruby v-if="seg.type === 'ruby'" :class="decorationClass(seg)">{{ seg.base }}<rt>{{ seg.reading }}</rt></ruby><span v-else-if="seg.bold || seg.italic || seg.strike || seg.emphasis" :class="decorationClass(seg)">{{ seg.text }}</span><template v-else>{{ seg.text }}</template></template></span>
+											<span :class="$style.novelText"><template v-for="(seg, j) in chapter.segments" :key="j"><ruby v-if="seg.type === 'ruby'" :class="{ [$style.bold]: seg.bold, [$style.italic]: seg.italic, [$style.strike]: seg.strike, [$style.emphasis]: seg.emphasis != null, [$style.emphasis_s]: seg.emphasis === 's', [$style.emphasis_S]: seg.emphasis === 'S', [$style.emphasis_c]: seg.emphasis === 'c', [$style.emphasis_C]: seg.emphasis === 'C' }">{{ seg.base }}<rt>{{ seg.reading }}</rt></ruby><span v-else-if="seg.bold || seg.italic || seg.strike || seg.emphasis" :class="{ [$style.bold]: seg.bold, [$style.italic]: seg.italic, [$style.strike]: seg.strike, [$style.emphasis]: seg.emphasis != null, [$style.emphasis_s]: seg.emphasis === 's', [$style.emphasis_S]: seg.emphasis === 'S', [$style.emphasis_c]: seg.emphasis === 'c', [$style.emphasis_C]: seg.emphasis === 'C' }">{{ seg.text }}</span><template v-else>{{ seg.text }}</template></template></span>
 										</template>
 									</template>
 								</div>
@@ -102,10 +102,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 										<button class="_button" :class="$style.chapterNavLink" @click="openToc">{{ i18n.ts._juice.novelViewerToc }}</button>
 										<button class="_button" :class="$style.chapterNavLink" :disabled="i === chapters.length - 1" @click="jumpToChapter(i + 1)">{{ i18n.ts._juice.novelViewerNextChapter }} <i class="ti ti-chevron-right"></i></button>
 									</div>
-									<div v-else-if="writingMode !== 'horizontal' && i > 0 && chapter.sectionStart" :class="$style.pageBreak" aria-hidden="true"></div>
+									<div v-else-if="writingMode !== 'horizontal' && i > 0 && chapter.sectionStart" :class="$style.pageBreak" data-novel-page-break aria-hidden="true"></div>
 									<div v-else-if="writingMode !== 'horizontal' && i > 0" :class="$style.chapterBreak" aria-hidden="true">⁂</div>
 									<span :ref="(el) => setChapterMarkerEl(i, el as HTMLElement | null)" :class="$style.chapterMarker"></span>
-									<span :class="[$style.novelText, '_selectable']"><template v-for="(seg, j) in chapter.segments" :key="j"><ruby v-if="seg.type === 'ruby'" :class="decorationClass(seg)">{{ seg.base }}<rt>{{ seg.reading }}</rt></ruby><span v-else-if="seg.bold || seg.italic || seg.strike || seg.emphasis" :class="decorationClass(seg)">{{ seg.text }}</span><template v-else>{{ seg.text }}</template></template></span>
+									<span :class="[$style.novelText, '_selectable']"><template v-for="(seg, j) in chapter.segments" :key="j"><ruby v-if="seg.type === 'ruby'" :class="{ [$style.bold]: seg.bold, [$style.italic]: seg.italic, [$style.strike]: seg.strike, [$style.emphasis]: seg.emphasis != null, [$style.emphasis_s]: seg.emphasis === 's', [$style.emphasis_S]: seg.emphasis === 'S', [$style.emphasis_c]: seg.emphasis === 'c', [$style.emphasis_C]: seg.emphasis === 'C' }">{{ seg.base }}<rt>{{ seg.reading }}</rt></ruby><span v-else-if="seg.bold || seg.italic || seg.strike || seg.emphasis" :class="{ [$style.bold]: seg.bold, [$style.italic]: seg.italic, [$style.strike]: seg.strike, [$style.emphasis]: seg.emphasis != null, [$style.emphasis_s]: seg.emphasis === 's', [$style.emphasis_S]: seg.emphasis === 'S', [$style.emphasis_c]: seg.emphasis === 'c', [$style.emphasis_C]: seg.emphasis === 'C' }">{{ seg.text }}</span><template v-else>{{ seg.text }}</template></template></span>
 									</template>
 								</template>
 								<div v-if="writingMode === 'horizontal' && sectionCount > 1" :class="$style.chapterNav">
@@ -139,7 +139,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, markRaw, nextTick, onActivated, onDeactivated, onMounted, onUnmounted, ref, useCssModule, useTemplateRef, watch } from 'vue';
+import { computed, markRaw, nextTick, onActivated, onDeactivated, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import { host } from '@@/js/config.js';
 import * as os from '@/os.js';
@@ -164,7 +164,11 @@ const error = ref();
 const showContent = ref(false);
 const outerEl = useTemplateRef<HTMLDivElement>('outerEl');
 const readerEl = useTemplateRef<HTMLDivElement>('readerEl');
-const $style = useCssModule();
+// JUICE: このコンポーネントでは useCssModule() でスクリプト側から$styleを使わないこと。本番ビルドの
+// rollup-plugin-unwind-css-module-class-name は、テンプレート中の$style参照をクラス名の文字列に置き換えた後、
+// 参照が残っていなければ__cssModules自体を取り除く。<script setup>の直下で$styleを宣言すると、テンプレートは
+// その変数を参照するためプラグインから見えず、結果として本番ではCSS Modulesが丸ごと消えて表示が崩れる
+// (開発サーバーではこのプラグインが動かないため気付けない)。スクリプトで作る要素・探す要素はdata属性を使う
 
 // JUICE: 縦書き見開き(2ページ分割)用。3層構造になっている:
 // .panel(常にflexの割り当て幅=100%のまま、「使える幅」の測定基準) >
@@ -426,15 +430,6 @@ function applyParagraphIndent(text: string): string {
 type NovelDecoration = { bold?: boolean; italic?: boolean; strike?: boolean; emphasis?: EmphasisKind };
 type NovelSegment = ({ type: 'text'; text: string } | { type: 'ruby'; base: string; reading: string }) & NovelDecoration;
 
-function decorationClass(seg: NovelDecoration): string[] {
-	const classes: string[] = [];
-	if (seg.bold) classes.push($style.bold);
-	if (seg.italic) classes.push($style.italic);
-	if (seg.strike) classes.push($style.strike);
-	if (seg.emphasis != null) classes.push($style.emphasis, $style[`emphasis_${seg.emphasis}`]);
-	return classes;
-}
-
 const RUBY_PATTERN = /\$\[ruby ([^\s\]]+) ([^\]]+)\]|\[\[rb:\s*([^>\]]+?)\s*>\s*([^\]]+?)\s*\]\]/g;
 // JUICE: 装飾は1行の中だけで閉じるものに限る(段落をまたいで意図せず装飾されないように)。記号の直後・直前が
 // 空白の場合(「* 注」のような単独の記号)は装飾とみなさない
@@ -620,7 +615,7 @@ function getRubyZones(inner: HTMLDivElement): { start: number; end: number }[] {
 // 次の本文はその左(=次の列)から始まる。本文先頭(innerの右端)からの距離で返す
 function getForcedPageBreaks(inner: HTMLDivElement): number[] {
 	const innerRight = inner.getBoundingClientRect().right;
-	return [...inner.querySelectorAll(`.${$style.pageBreak}`)]
+	return [...inner.querySelectorAll('[data-novel-page-break]')]
 		.map(el => innerRight - el.getBoundingClientRect().left)
 		.sort((a, b) => a - b);
 }
@@ -727,7 +722,7 @@ function rotateSidewaysGlyphs(root: HTMLElement): void {
 	const walker = window.document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
 		acceptNode: (node) => {
 			const parent = node.parentElement;
-			if (parent == null || parent.closest(`.${$style.sideways}`) != null) return NodeFilter.FILTER_REJECT;
+			if (parent == null || parent.closest('[data-novel-sideways]') != null) return NodeFilter.FILTER_REJECT;
 			VERTICAL_ROTATE_CHARS.lastIndex = 0;
 			return VERTICAL_ROTATE_CHARS.test(node.nodeValue ?? '') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
 		},
@@ -741,7 +736,7 @@ function rotateSidewaysGlyphs(root: HTMLElement): void {
 		for (const match of text.matchAll(VERTICAL_ROTATE_CHARS)) {
 			if (match.index > last) fragment.append(text.slice(last, match.index));
 			const span = window.document.createElement('span');
-			span.className = $style.sideways;
+			span.dataset.novelSideways = '';
 			span.textContent = match[0];
 			fragment.append(span);
 			last = match.index + match[0].length;
@@ -1445,8 +1440,9 @@ definePage(() => ({
 	text-emphasis-style: open circle;
 }
 
-// JUICE: 縦書き用の字形を持たない約物を、通常の縦書きと同じく90度回転させる(rotateSidewaysGlyphs参照)
-.sideways {
+// JUICE: 縦書き用の字形を持たない約物を、通常の縦書きと同じく90度回転させる(rotateSidewaysGlyphs参照)。
+// スクリプト側で作る要素なので、CSS Modulesのクラスではなくdata属性で指定する(下記の注意を参照)
+[data-novel-sideways] {
 	text-orientation: mixed;
 }
 
