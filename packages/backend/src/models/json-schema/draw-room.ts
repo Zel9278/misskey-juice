@@ -1,0 +1,137 @@
+/*
+ * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+// JUICE: 絵チャの部屋
+export const packedDrawRoomSchema = {
+	type: 'object',
+	properties: {
+		id: {
+			type: 'string',
+			optional: false, nullable: false,
+		},
+		createdAt: {
+			type: 'string',
+			format: 'date-time',
+			optional: false, nullable: false,
+		},
+		ownerId: {
+			type: 'string',
+			optional: false, nullable: false,
+		},
+		owner: {
+			type: 'object',
+			optional: false, nullable: false,
+			ref: 'UserLite',
+		},
+		title: {
+			type: 'string',
+			optional: false, nullable: false,
+		},
+		visibility: {
+			type: 'string',
+			optional: false, nullable: false,
+			enum: ['followers', 'local'],
+		},
+		maxMembers: {
+			type: 'number',
+			optional: false, nullable: false,
+		},
+		canvasWidth: {
+			type: 'number',
+			optional: false, nullable: false,
+		},
+		canvasHeight: {
+			type: 'number',
+			optional: false, nullable: false,
+		},
+		keepAfterEnd: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
+		isEnded: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
+		endedAt: {
+			type: 'string',
+			format: 'date-time',
+			optional: false, nullable: true,
+		},
+		members: {
+			type: 'array',
+			optional: false, nullable: false,
+			items: {
+				type: 'object',
+				optional: false, nullable: false,
+				ref: 'UserLite',
+			},
+		},
+		isMember: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
+		// JUICE: モデレーターが公開範囲の外から確認のために開いている(見るだけで、チャット等はできない)
+		viewOnly: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
+	},
+} as const;
+
+// JUICE: 絵チャの線(pointsは [x, y, 筆圧, …] の平らな配列)
+export const packedDrawStrokeSchema = {
+	type: 'object',
+	properties: {
+		id: {
+			type: 'string',
+			optional: false, nullable: false,
+		},
+		tool: {
+			type: 'string',
+			optional: false, nullable: false,
+			enum: ['pen', 'eraser'],
+		},
+		color: {
+			type: 'string',
+			optional: false, nullable: false,
+		},
+		size: {
+			type: 'number',
+			optional: false, nullable: false,
+		},
+		opacity: {
+			type: 'number',
+			optional: true, nullable: false,
+		},
+		// 1点5バイト(x・yは1/8px単位のint16、筆圧は0〜255のuint8、リトルエンディアン)を並べてbase64にしたもの
+		points: {
+			type: 'string',
+			optional: false, nullable: false,
+		},
+	},
+} as const;
+
+// JUICE: 絵チャのチャット1件
+export const packedDrawRoomChatMessageSchema = {
+	type: 'object',
+	properties: {
+		id: {
+			type: 'string',
+			optional: false, nullable: false,
+		},
+		userId: {
+			type: 'string',
+			optional: false, nullable: false,
+		},
+		text: {
+			type: 'string',
+			optional: false, nullable: false,
+		},
+		createdAt: {
+			type: 'number',
+			optional: false, nullable: false,
+		},
+	},
+} as const;

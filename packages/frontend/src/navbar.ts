@@ -13,6 +13,7 @@ import { openInstanceMenu, openToolsMenu } from '@/ui/_common_/common.js';
 import { lookup } from '@/utility/lookup.js';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
+import { juicePublicSettingsCache } from '@/cache.js';
 import { unisonReload } from '@/utility/unison-reload.js';
 
 export const navbarItemDef = reactive<{
@@ -144,6 +145,13 @@ export const navbarItemDef = reactive<{
 		title: 'Misskey Games',
 		icon: 'ti ti-device-gamepad',
 		to: '/games',
+	},
+	// JUICE: 絵チャ(管理者設定で無効にされていれば出さない)
+	drawRoom: {
+		title: i18n.ts._drawRoom.title,
+		icon: 'ti ti-palette',
+		show: computed(() => $i != null && (juicePublicSettingsCache.value.value?.drawRoomEnabled ?? true)),
+		to: '/draw',
 	},
 	ui: {
 		title: i18n.ts.switchUi,

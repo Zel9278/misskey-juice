@@ -12,7 +12,20 @@ import { MiChatMessage } from './ChatMessage.js';
 export type AbuseReportResolveType = 'accept' | 'reject';
 
 // JUICE: 通報の対象コンテンツ種別(未指定=従来通りユーザーのみを対象とした通報)
-export type AbuseReportTargetType = 'note' | 'chatMessage';
+export type AbuseReportTargetType = 'note' | 'chatMessage' | 'drawRoom' | 'drawRoomChat';
+
+// JUICE: 通報した時点の絵チャの部屋(と、チャットの発言)の内容。部屋やチャットは消えることがあるので写しを残す
+export type AbuseReportDrawRoomSnapshot = {
+	title: string;
+	ownerId: string;
+	visibility: string;
+	message: {
+		id: string;
+		userId: string;
+		text: string;
+		createdAt: number;
+	} | null;
+};
 
 @Entity('abuse_user_report')
 export class MiAbuseUserReport {
@@ -95,7 +108,7 @@ export class MiAbuseUserReport {
 	// JUICE: 通報対象コンテンツの種別。null(従来通り)の場合、targetNoteId/targetChatMessageIdも常にnull
 	@Column('varchar', {
 		length: 32, nullable: true,
-		comment: 'Report target content type: note | chatMessage | null (user only) (JUICE).',
+		comment: 'Report target content type: note | chatMessage | drawRoom | drawRoomChat | null (user only) (JUICE).',
 	})
 	public targetType: AbuseReportTargetType | null;
 
@@ -124,6 +137,20 @@ export class MiAbuseUserReport {
 	})
 	@JoinColumn()
 	public targetChatMessage: MiChatMessage | null;
+
+	// JUICE: 通報対象の絵チャの部屋。部屋が削除されても通報の記録を残すため、外部キーにはしない
+	@Column('varchar', {
+		length: 32, nullable: true,
+		comment: 'Reported drawing chat room. Not a foreign key so the report is kept after the room is deleted (JUICE).',
+	})
+	public targetDrawRoomId: string | null;
+
+	// JUICE: 通報した時点の絵チャの部屋(と、チャットの発言)の写し
+	@Column('jsonb', {
+		nullable: true,
+		comment: 'Snapshot of the reported drawing chat room (and chat message) at the time of the report (JUICE).',
+	})
+	public targetDrawRoomSnapshot: AbuseReportDrawRoomSnapshot | null;
 
 	// JUICE: 通報者が記述した、どのような状況で発生したかの説明(commentとは別の自由記述欄)
 	@Column('varchar', {

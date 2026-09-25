@@ -366,6 +366,17 @@ export * as 'notes/favorites/delete' from './endpoints/notes/favorites/delete.js
 export * as 'notes/featured' from './endpoints/notes/featured.js';
 export * as 'notes/global-timeline' from './endpoints/notes/global-timeline.js';
 export * as 'notes/hybrid-timeline' from './endpoints/notes/hybrid-timeline.js';
+export * as 'draw-rooms/chat-history' from './endpoints/draw-rooms/chat-history.js';
+export * as 'draw-rooms/create' from './endpoints/draw-rooms/create.js';
+export * as 'draw-rooms/delete' from './endpoints/draw-rooms/delete.js';
+export * as 'draw-rooms/end' from './endpoints/draw-rooms/end.js';
+export * as 'draw-rooms/join' from './endpoints/draw-rooms/join.js';
+export * as 'draw-rooms/kick' from './endpoints/draw-rooms/kick.js';
+export * as 'draw-rooms/leave' from './endpoints/draw-rooms/leave.js';
+export * as 'draw-rooms/list' from './endpoints/draw-rooms/list.js';
+export * as 'draw-rooms/show' from './endpoints/draw-rooms/show.js';
+export * as 'draw-rooms/strokes' from './endpoints/draw-rooms/strokes.js';
+export * as 'draw-rooms/update' from './endpoints/draw-rooms/update.js';
 export * as 'notes/juice/update-ai-generated' from './endpoints/notes/juice/update-ai-generated.js';
 export * as 'notes/juice/update-novel' from './endpoints/notes/juice/update-novel.js';
 export * as 'notes/local-timeline' from './endpoints/notes/local-timeline.js';

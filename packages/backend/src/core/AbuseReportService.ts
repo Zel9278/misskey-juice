@@ -71,6 +71,8 @@ export class AbuseReportService {
 		targetType?: MiAbuseUserReport['targetType'],
 		targetNoteId?: MiAbuseUserReport['targetNoteId'],
 		targetChatMessageId?: MiAbuseUserReport['targetChatMessageId'],
+		targetDrawRoomId?: MiAbuseUserReport['targetDrawRoomId'],
+		targetDrawRoomSnapshot?: MiAbuseUserReport['targetDrawRoomSnapshot'],
 		situationDetail?: MiAbuseUserReport['situationDetail'],
 	}[]) {
 		const entities = params.map(param => {
@@ -86,6 +88,8 @@ export class AbuseReportService {
 				targetType: param.targetType ?? null,
 				targetNoteId: param.targetNoteId ?? null,
 				targetChatMessageId: param.targetChatMessageId ?? null,
+				targetDrawRoomId: param.targetDrawRoomId ?? null,
+				targetDrawRoomSnapshot: param.targetDrawRoomSnapshot ?? null,
 				// JUICE: 通報者が記述した状況の詳細
 				situationDetail: param.situationDetail ?? null,
 			};

@@ -1072,6 +1072,93 @@ export type Channels = {
             claimTimeIsUp: null | Record<string, never>;
         };
     };
+    drawRoom: {
+        params: {
+            roomId: string;
+        };
+        events: {
+            strokePart: (payload: {
+                userId: User['id'];
+                strokeId: string;
+                tool: DrawStroke['tool'];
+                color: string;
+                size: number;
+                opacity?: number;
+                points: string;
+            }) => void;
+            cursors: (payload: {
+                cursors: {
+                    userId: User['id'];
+                    x: number | null;
+                    y: number | null;
+                }[];
+            }) => void;
+            strokeCancel: (payload: {
+                userId: User['id'];
+                strokeId: string;
+            }) => void;
+            stroke: (payload: {
+                userId: User['id'];
+                stroke: DrawStroke;
+            }) => void;
+            undo: (payload: {
+                userId: User['id'];
+                strokeId: string;
+            }) => void;
+            clearLayer: (payload: {
+                userId: User['id'];
+            }) => void;
+            chat: (payload: {
+                message: DrawRoomChatMessage;
+                user: UserLite;
+            }) => void;
+            memberJoined: (payload: {
+                user: UserLite;
+            }) => void;
+            memberLeft: (payload: {
+                userId: User['id'];
+                kicked: boolean;
+            }) => void;
+            presence: (payload: {
+                userIds: User['id'][];
+            }) => void;
+            deleted: (payload: {
+                byModerator: boolean;
+            }) => void;
+            updated: (payload: {
+                room: DrawRoom;
+            }) => void;
+            ended: (payload: {
+                room: DrawRoom;
+            }) => void;
+        };
+        receives: {
+            strokePart: {
+                strokeId: string;
+                tool: DrawStroke['tool'];
+                color: string;
+                size: number;
+                opacity?: number;
+                points: string;
+            };
+            cursor: {
+                x: number | null;
+                y: number | null;
+            };
+            visibility: {
+                visible: boolean;
+            };
+            strokeCancel: {
+                strokeId: string;
+            };
+            stroke: DrawStroke;
+            undo: null | Record<string, never>;
+            clearLayer: null | Record<string, never>;
+            chat: {
+                text: string;
+            };
+        };
+    };
     chatUser: {
         params: {
             otherId: string;
@@ -1466,6 +1553,69 @@ type ContactFormSubmitResponse = operations['contact-form___submit']['responses'
 
 // @public (undocumented)
 type DateString = string;
+
+// @public (undocumented)
+type DrawRoom = components['schemas']['DrawRoom'];
+
+// @public (undocumented)
+type DrawRoomChatMessage = components['schemas']['DrawRoomChatMessage'];
+
+// @public (undocumented)
+type DrawRoomsChatHistoryRequest = operations['draw-rooms___chat-history']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsChatHistoryResponse = operations['draw-rooms___chat-history']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsCreateRequest = operations['draw-rooms___create']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsCreateResponse = operations['draw-rooms___create']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsDeleteRequest = operations['draw-rooms___delete']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsEndRequest = operations['draw-rooms___end']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsEndResponse = operations['draw-rooms___end']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsJoinRequest = operations['draw-rooms___join']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsKickRequest = operations['draw-rooms___kick']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsLeaveRequest = operations['draw-rooms___leave']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsListRequest = operations['draw-rooms___list']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsListResponse = operations['draw-rooms___list']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsShowRequest = operations['draw-rooms___show']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsShowResponse = operations['draw-rooms___show']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsStrokesRequest = operations['draw-rooms___strokes']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsStrokesResponse = operations['draw-rooms___strokes']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsUpdateRequest = operations['draw-rooms___update']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type DrawRoomsUpdateResponse = operations['draw-rooms___update']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type DrawStroke = components['schemas']['DrawStroke'];
 
 // @public (undocumented)
 type DriveFile = components['schemas']['DriveFile'];
@@ -2095,6 +2245,24 @@ declare namespace entities {
         ClipsUpdateResponse,
         ContactFormSubmitRequest,
         ContactFormSubmitResponse,
+        DrawRoomsChatHistoryRequest,
+        DrawRoomsChatHistoryResponse,
+        DrawRoomsCreateRequest,
+        DrawRoomsCreateResponse,
+        DrawRoomsDeleteRequest,
+        DrawRoomsEndRequest,
+        DrawRoomsEndResponse,
+        DrawRoomsJoinRequest,
+        DrawRoomsKickRequest,
+        DrawRoomsLeaveRequest,
+        DrawRoomsListRequest,
+        DrawRoomsListResponse,
+        DrawRoomsShowRequest,
+        DrawRoomsShowResponse,
+        DrawRoomsStrokesRequest,
+        DrawRoomsStrokesResponse,
+        DrawRoomsUpdateRequest,
+        DrawRoomsUpdateResponse,
         DriveResponse,
         DriveFilesRequest,
         DriveFilesResponse,
@@ -2582,7 +2750,10 @@ declare namespace entities {
         ChatMessageLiteForRoom,
         ChatRoom,
         ChatRoomInvitation,
-        ChatRoomMembership
+        ChatRoomMembership,
+        DrawRoom,
+        DrawStroke,
+        DrawRoomChatMessage
     }
 }
 export { entities }
@@ -3241,7 +3412,7 @@ type ModerationLog = {
 }[keyof ModerationLogPayloads]);
 
 // @public (undocumented)
-export const moderationLogTypes: readonly ["updateServerSettings", "suspend", "unsuspend", "updateUserNote", "addCustomEmoji", "updateCustomEmoji", "deleteCustomEmoji", "assignRole", "unassignRole", "createRole", "updateRole", "deleteRole", "clearQueue", "promoteQueue", "deleteDriveFile", "deleteNote", "createGlobalAnnouncement", "createUserAnnouncement", "updateGlobalAnnouncement", "updateUserAnnouncement", "deleteGlobalAnnouncement", "deleteUserAnnouncement", "resetPassword", "suspendRemoteInstance", "unsuspendRemoteInstance", "updateRemoteInstanceNote", "markSensitiveDriveFile", "unmarkSensitiveDriveFile", "resolveAbuseReport", "forwardAbuseReport", "updateAbuseReportNote", "createInvitation", "createAd", "updateAd", "deleteAd", "createAvatarDecoration", "updateAvatarDecoration", "deleteAvatarDecoration", "unsetMfa", "unsetUserAvatar", "unsetUserBanner", "createSystemWebhook", "updateSystemWebhook", "deleteSystemWebhook", "createAbuseReportNotificationRecipient", "updateAbuseReportNotificationRecipient", "deleteAbuseReportNotificationRecipient", "deleteAccount", "deletePage", "deleteFlash", "deleteGalleryPost", "deleteChatRoom", "updateProxyAccountDescription", "updateJuiceSettings", "approveSignup", "declineSignup", "approveEmojiRequest", "rejectEmojiRequest", "approveAvatarDecorationRequest", "rejectAvatarDecorationRequest", "cleanupOrphanedObjectStorageFiles"];
+export const moderationLogTypes: readonly ["updateServerSettings", "suspend", "unsuspend", "updateUserNote", "addCustomEmoji", "updateCustomEmoji", "deleteCustomEmoji", "assignRole", "unassignRole", "createRole", "updateRole", "deleteRole", "clearQueue", "promoteQueue", "deleteDriveFile", "deleteNote", "createGlobalAnnouncement", "createUserAnnouncement", "updateGlobalAnnouncement", "updateUserAnnouncement", "deleteGlobalAnnouncement", "deleteUserAnnouncement", "resetPassword", "suspendRemoteInstance", "unsuspendRemoteInstance", "updateRemoteInstanceNote", "markSensitiveDriveFile", "unmarkSensitiveDriveFile", "resolveAbuseReport", "forwardAbuseReport", "updateAbuseReportNote", "createInvitation", "createAd", "updateAd", "deleteAd", "createAvatarDecoration", "updateAvatarDecoration", "deleteAvatarDecoration", "unsetMfa", "unsetUserAvatar", "unsetUserBanner", "createSystemWebhook", "updateSystemWebhook", "deleteSystemWebhook", "createAbuseReportNotificationRecipient", "updateAbuseReportNotificationRecipient", "deleteAbuseReportNotificationRecipient", "deleteAccount", "deletePage", "deleteFlash", "deleteGalleryPost", "deleteChatRoom", "updateProxyAccountDescription", "updateJuiceSettings", "approveSignup", "declineSignup", "approveEmojiRequest", "rejectEmojiRequest", "approveAvatarDecorationRequest", "rejectAvatarDecorationRequest", "cleanupOrphanedObjectStorageFiles", "deleteDrawRoom"];
 
 // @public (undocumented)
 type MuteCreateRequest = operations['mute___create']['requestBody']['content']['application/json'];
@@ -3581,7 +3752,7 @@ type PartialRolePolicyOverride = Partial<{
 }>;
 
 // @public (undocumented)
-export const permissions: readonly ["read:account", "write:account", "read:blocks", "write:blocks", "read:drive", "write:drive", "read:favorites", "write:favorites", "read:following", "write:following", "read:messaging", "write:messaging", "read:mutes", "write:mutes", "write:notes", "read:notifications", "write:notifications", "read:reactions", "write:reactions", "write:votes", "read:pages", "write:pages", "write:page-likes", "read:page-likes", "read:user-groups", "write:user-groups", "read:channels", "write:channels", "read:gallery", "write:gallery", "read:gallery-likes", "write:gallery-likes", "read:flash", "write:flash", "read:flash-likes", "write:flash-likes", "read:emoji-requests", "write:emoji-requests", "read:avatar-decoration-requests", "write:avatar-decoration-requests", "read:admin:abuse-user-reports", "write:admin:delete-account", "write:admin:delete-all-files-of-a-user", "read:admin:index-stats", "read:admin:table-stats", "read:admin:user-ips", "read:admin:meta", "write:admin:reset-password", "write:admin:resolve-abuse-user-report", "write:admin:send-email", "read:admin:server-info", "read:admin:show-moderation-log", "read:admin:show-user", "write:admin:suspend-user", "write:admin:unset-mfa", "write:admin:unset-user-avatar", "write:admin:unset-user-banner", "write:admin:unsuspend-user", "write:admin:meta", "read:admin:juice-settings", "write:admin:juice-settings", "read:admin:juice-pending-signups", "read:admin:juice-signup-approval-history", "write:admin:juice-approve-signup", "write:admin:juice-decline-signup", "read:admin:emoji-requests", "write:admin:emoji-requests-approve", "write:admin:emoji-requests-reject", "read:admin:avatar-decoration-requests", "write:admin:avatar-decoration-requests-approve", "write:admin:avatar-decoration-requests-reject", "read:admin:contact-form", "write:admin:contact-form", "write:admin:user-note", "write:admin:roles", "read:admin:roles", "write:admin:relays", "read:admin:relays", "write:admin:invite-codes", "read:admin:invite-codes", "write:admin:announcements", "read:admin:announcements", "write:admin:avatar-decorations", "read:admin:avatar-decorations", "write:admin:federation", "write:admin:account", "read:admin:account", "write:admin:emoji", "read:admin:emoji", "write:admin:queue", "read:admin:queue", "write:admin:promo", "write:admin:drive", "read:admin:drive", "write:admin:ad", "read:admin:ad", "write:invite-codes", "read:invite-codes", "write:clip-favorite", "read:clip-favorite", "read:federation", "write:report-abuse", "write:chat", "read:chat"];
+export const permissions: readonly ["read:account", "write:account", "read:blocks", "write:blocks", "read:drive", "write:drive", "read:favorites", "write:favorites", "read:following", "write:following", "read:messaging", "write:messaging", "read:mutes", "write:mutes", "write:notes", "read:notifications", "write:notifications", "read:reactions", "write:reactions", "write:votes", "read:pages", "write:pages", "write:page-likes", "read:page-likes", "read:user-groups", "write:user-groups", "read:channels", "write:channels", "read:gallery", "write:gallery", "read:gallery-likes", "write:gallery-likes", "read:flash", "write:flash", "read:flash-likes", "write:flash-likes", "read:emoji-requests", "write:emoji-requests", "read:avatar-decoration-requests", "write:avatar-decoration-requests", "read:admin:abuse-user-reports", "write:admin:delete-account", "write:admin:delete-all-files-of-a-user", "read:admin:index-stats", "read:admin:table-stats", "read:admin:user-ips", "read:admin:meta", "write:admin:reset-password", "write:admin:resolve-abuse-user-report", "write:admin:send-email", "read:admin:server-info", "read:admin:show-moderation-log", "read:admin:show-user", "write:admin:suspend-user", "write:admin:unset-mfa", "write:admin:unset-user-avatar", "write:admin:unset-user-banner", "write:admin:unsuspend-user", "write:admin:meta", "read:admin:juice-settings", "write:admin:juice-settings", "read:admin:juice-pending-signups", "read:admin:juice-signup-approval-history", "write:admin:juice-approve-signup", "write:admin:juice-decline-signup", "read:admin:emoji-requests", "write:admin:emoji-requests-approve", "write:admin:emoji-requests-reject", "read:admin:avatar-decoration-requests", "write:admin:avatar-decoration-requests-approve", "write:admin:avatar-decoration-requests-reject", "read:admin:contact-form", "write:admin:contact-form", "write:admin:user-note", "write:admin:roles", "read:admin:roles", "write:admin:relays", "read:admin:relays", "write:admin:invite-codes", "read:admin:invite-codes", "write:admin:announcements", "read:admin:announcements", "write:admin:avatar-decorations", "read:admin:avatar-decorations", "write:admin:federation", "write:admin:account", "read:admin:account", "write:admin:emoji", "read:admin:emoji", "write:admin:queue", "read:admin:queue", "write:admin:promo", "write:admin:drive", "read:admin:drive", "write:admin:ad", "read:admin:ad", "write:invite-codes", "read:invite-codes", "write:clip-favorite", "read:clip-favorite", "read:federation", "write:report-abuse", "write:chat", "read:chat", "write:draw-rooms", "read:draw-rooms"];
 
 // @public (undocumented)
 type PingResponse = operations['ping']['responses']['200']['content']['application/json'];
@@ -3733,7 +3904,7 @@ type RoleLite = components['schemas']['RoleLite'];
 type RolePolicies = components['schemas']['RolePolicies'];
 
 // @public (undocumented)
-export const rolePolicies: readonly ["gtlAvailable", "ltlAvailable", "canPublicNote", "mentionLimit", "canInvite", "inviteLimit", "inviteLimitCycle", "inviteExpirationTime", "canManageCustomEmojis", "canManageAvatarDecorations", "canSearchNotes", "canSearchUsers", "canUseTranslator", "canHideAds", "canCreateChannel", "driveCapacityMb", "maxFileSizeMb", "alwaysMarkNsfw", "canUpdateBioMedia", "pinLimit", "antennaLimit", "wordMuteLimit", "webhookLimit", "clipLimit", "noteEachClipsLimit", "userListLimit", "userEachUserListsLimit", "rateLimitFactor", "avatarDecorationLimit", "canImportAntennas", "canImportBlocking", "canImportFollowing", "canImportMuting", "canImportUserLists", "chatAvailability", "uploadableFileTypes", "noteDraftLimit", "scheduledNoteLimit", "watermarkAvailable", "emojiRequestLimit", "avatarDecorationRequestLimit", "announcementReactionTypeLimit", "canApproveEmojiRequests", "canApproveAvatarDecorationRequests", "canApproveSignups"];
+export const rolePolicies: readonly ["gtlAvailable", "ltlAvailable", "canPublicNote", "mentionLimit", "canInvite", "inviteLimit", "inviteLimitCycle", "inviteExpirationTime", "canManageCustomEmojis", "canManageAvatarDecorations", "canSearchNotes", "canSearchUsers", "canUseTranslator", "canHideAds", "canCreateChannel", "driveCapacityMb", "maxFileSizeMb", "alwaysMarkNsfw", "canUpdateBioMedia", "pinLimit", "antennaLimit", "wordMuteLimit", "webhookLimit", "clipLimit", "noteEachClipsLimit", "userListLimit", "userEachUserListsLimit", "rateLimitFactor", "avatarDecorationLimit", "canImportAntennas", "canImportBlocking", "canImportFollowing", "canImportMuting", "canImportUserLists", "chatAvailability", "uploadableFileTypes", "noteDraftLimit", "scheduledNoteLimit", "watermarkAvailable", "emojiRequestLimit", "avatarDecorationRequestLimit", "announcementReactionTypeLimit", "canCreateDrawRoom", "drawRoomMaxCanvasSize", "canApproveEmojiRequests", "canApproveAvatarDecorationRequests", "canApproveSignups"];
 
 // @public (undocumented)
 type RolesListResponse = operations['roles___list']['responses']['200']['content']['application/json'];
@@ -4171,8 +4342,8 @@ type VerifyEmailRequest = operations['verify-email']['requestBody']['content']['
 // Warnings were encountered during analysis:
 //
 // src/streaming.ts:57:3 - (ae-forgotten-export) The symbol "ReconnectingWebSocket" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:271:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
-// src/streaming.types.ts:286:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
+// src/streaming.types.ts:274:4 - (ae-forgotten-export) The symbol "ReversiUpdateKey" needs to be exported by the entry point index.d.ts
+// src/streaming.types.ts:289:4 - (ae-forgotten-export) The symbol "ReversiUpdateSettings" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

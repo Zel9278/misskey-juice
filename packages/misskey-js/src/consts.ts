@@ -164,6 +164,9 @@ export const permissions = [
 	'write:report-abuse',
 	'write:chat',
 	'read:chat',
+	// JUICE: 絵チャ
+	'write:draw-rooms',
+	'read:draw-rooms',
 ] as const;
 
 export const moderationLogTypes = [
@@ -229,6 +232,7 @@ export const moderationLogTypes = [
 	'approveAvatarDecorationRequest',
 	'rejectAvatarDecorationRequest',
 	'cleanupOrphanedObjectStorageFiles',
+	'deleteDrawRoom',
 ] as const;
 
 export const rolePolicies = [
@@ -274,6 +278,8 @@ export const rolePolicies = [
 	'emojiRequestLimit',
 	'avatarDecorationRequestLimit',
 	'announcementReactionTypeLimit',
+	'canCreateDrawRoom',
+	'drawRoomMaxCanvasSize',
 	'canApproveEmojiRequests',
 	'canApproveAvatarDecorationRequests',
 	'canApproveSignups',
@@ -654,5 +660,18 @@ export type ModerationLogPayloads = {
 		deletedCount: number;
 		deletedKeys: string[];
 		failedKeys: string[];
+	};
+	// JUICE: モデレーターによる絵チャの部屋の削除
+	deleteDrawRoom: {
+		roomId: string;
+		room: {
+			id: string;
+			title: string;
+			ownerId: string;
+			ownerUsername: string;
+			ownerHost: string | null;
+			visibility: string;
+			isEnded: boolean;
+		};
 	};
 };

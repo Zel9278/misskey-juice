@@ -19,9 +19,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 			<!-- JUICE: 盆栽を育てるゲーム。専用ロゴ画像は用意していないため絵文字で代用する -->
 			<div class="_panel" :class="$style.link">
-				<MkA to="/bonsai" :class="$style.bonsaiLink">
-					<span :class="$style.bonsaiEmoji">🪴</span>
+				<MkA to="/bonsai" :class="$style.gameLink">
+					<span :class="$style.gameEmoji">🪴</span>
 					<span>{{ i18n.ts._bonsai.title }}<span class="_juice">JUICE</span></span>
+				</MkA>
+			</div>
+			<!-- JUICE: 絵チャ(お絵かきチャット)。ゲームではないが、みんなで遊ぶ場所としてここにも入口を置く -->
+			<div v-if="$i != null && drawRoomEnabled" class="_panel" :class="$style.link">
+				<MkA to="/draw" :class="$style.gameLink">
+					<span :class="$style.gameEmoji">🎨</span>
+					<span>{{ i18n.ts._drawRoom.title }}<span class="_juice">JUICE</span></span>
 				</MkA>
 			</div>
 		</div>
@@ -30,8 +37,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
+import { $i } from '@/i.js';
+import { juicePublicSettingsCache } from '@/cache.js';
+
+const drawRoomEnabled = computed(() => juicePublicSettingsCache.value.value?.drawRoomEnabled ?? true);
+juicePublicSettingsCache.fetch();
 
 definePage(() => ({
 	title: 'Misskey Games',
@@ -45,7 +58,7 @@ definePage(() => ({
 	outline-offset: -2px;
 }
 
-.bonsaiLink {
+.gameLink {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -53,7 +66,7 @@ definePage(() => ({
 	padding: 20px 0;
 }
 
-.bonsaiEmoji {
+.gameEmoji {
 	font-size: 96px;
 	line-height: 1.2;
 }

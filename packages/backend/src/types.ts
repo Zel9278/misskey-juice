@@ -163,6 +163,7 @@ export const moderationLogTypes = [
 	'rejectAvatarDecorationRequest',
 	// JUICE
 	'cleanupOrphanedObjectStorageFiles',
+	'deleteDrawRoom',
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -488,6 +489,19 @@ export type ModerationLogPayloads = {
 		deletedCount: number;
 		deletedKeys: string[];
 		failedKeys: string[];
+	};
+	// JUICE: モデレーターによる絵チャの部屋の削除
+	deleteDrawRoom: {
+		roomId: string;
+		room: {
+			id: string;
+			title: string;
+			ownerId: string;
+			ownerUsername: string;
+			ownerHost: string | null;
+			visibility: string;
+			isEnded: boolean;
+		};
 	};
 };
 

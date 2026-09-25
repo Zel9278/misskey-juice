@@ -55,7 +55,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<MkFolder v-if="report.targetType != null" :defaultOpen="true">
 			<template #icon><i class="ti ti-file-text"></i></template>
-			<template #label>{{ report.targetType === 'note' ? i18n.ts._abuseUserReport.targetNote : i18n.ts._abuseUserReport.targetChatMessage }}</template>
+			<template #label>{{ targetTypeLabel }}</template>
 			<div class="_gaps_s">
 				<template v-if="report.targetType === 'note'">
 					<MkNoteSimple :note="report.targetNote ?? null"/>
@@ -80,6 +80,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkMediaList v-if="report.targetChatMessage.file" :mediaList="[report.targetChatMessage.file]"/>
 					</div>
 					<div v-else>{{ i18n.ts._abuseUserReport.deletedChatMessage }}</div>
+				</template>
+				<!-- JUICE: 絵チャの部屋・部屋のチャットの発言(通報した時点の写し。チャットは後から消えることがある) -->
+				<template v-else-if="(report.targetType === 'drawRoom' || report.targetType === 'drawRoomChat') && report.targetDrawRoom">
+					<div :class="$style.chatMessagePreview">
+						<div :class="$style.chatMessageHeader">
+							<i class="ti ti-palette"></i>
+							<MkA v-if="report.targetDrawRoom.exists" :to="`/draw/${report.targetDrawRoom.id}`" class="_link">{{ report.targetDrawRoom.title }}</MkA>
+							<span v-else>{{ report.targetDrawRoom.title }} ({{ i18n.ts._abuseUserReport.deletedDrawRoom }})</span>
+							<span :class="$style.chatMessageTime">{{ report.targetDrawRoom.visibility === 'followers' ? i18n.ts._drawRoom.visibilityFollowers : i18n.ts._drawRoom.visibilityLocal }}</span>
+						</div>
+						<template v-if="report.targetDrawRoom.message">
+							<div :class="$style.chatMessageHeader">
+								<i class="ti ti-messages"></i>
+								<MkTime :time="report.targetDrawRoom.message.createdAt" :class="$style.chatMessageTime"/>
+							</div>
+							<div :class="$style.drawRoomChatText">{{ report.targetDrawRoom.message.text }}</div>
+						</template>
+					</div>
 				</template>
 			</div>
 		</MkFolder>
@@ -149,6 +167,16 @@ const moderationNote = ref(props.report.moderationNote ?? '');
 // JUICE: 通報カテゴリのラベル解決(設定側で削除済みのカテゴリでも生のkeyをフォールバック表示)
 const { fetchCategories, getCategoryLabel } = useAbuseReportCategories();
 const categoryLabel = computed(() => props.report.category ? getCategoryLabel(props.report.category) : '');
+// JUICE: 通報対象コンテンツの種別の見出し
+const targetTypeLabel = computed(() => {
+	switch (props.report.targetType) {
+		case 'note': return i18n.ts._abuseUserReport.targetNote;
+		case 'chatMessage': return i18n.ts._abuseUserReport.targetChatMessage;
+		case 'drawRoom': return i18n.ts._abuseUserReport.targetDrawRoom;
+		case 'drawRoomChat': return i18n.ts._abuseUserReport.targetDrawRoomChat;
+		default: return '';
+	}
+});
 
 onMounted(() => {
 	fetchCategories({ includeDisabled: true });
@@ -210,6 +238,11 @@ function showMenu(ev: PointerEvent) {
 	display: flex;
 	align-items: center;
 	gap: 6px;
+}
+
+.drawRoomChatText {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
 }
 
 .chatMessageTime {

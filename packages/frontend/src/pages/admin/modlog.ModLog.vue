@@ -49,6 +49,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					'deleteGalleryPost',
 					'deleteChatRoom',
 					// JUICE
+					'deleteDrawRoom',
 					'declineSignup',
 					'rejectEmojiRequest',
 					'rejectAvatarDecorationRequest',
@@ -102,6 +103,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="log.type === 'rejectEmojiRequest'">: {{ log.info.requestedName }}</span>
 		<span v-else-if="log.type === 'approveAvatarDecorationRequest'">: {{ log.info.avatarDecorationName }}</span>
 		<span v-else-if="log.type === 'rejectAvatarDecorationRequest'">: {{ log.info.requestedName }}</span>
+		<span v-else-if="log.type === 'deleteDrawRoom'">: {{ log.info.room.title }}</span>
 		<span v-else-if="log.type === 'cleanupOrphanedObjectStorageFiles'">: {{ log.info.deletedCount }} / {{ log.info.scanned }}{{ log.info.dryRun ? ` (${i18n.ts._moderationLogTypes.cleanupDryRunSuffix})` : '' }}</span>
 	</template>
 	<template #icon>
@@ -155,6 +157,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="log.type === 'rejectEmojiRequest'" class="ti ti-x"></i>
 		<i v-else-if="log.type === 'approveAvatarDecorationRequest'" class="ti ti-check"></i>
 		<i v-else-if="log.type === 'rejectAvatarDecorationRequest'" class="ti ti-x"></i>
+		<i v-else-if="log.type === 'deleteDrawRoom'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'updateJuiceSettings'" class="ti ti-settings"></i>
 		<i v-else-if="log.type === 'cleanupOrphanedObjectStorageFiles'" class="ti ti-trash"></i>
 	</template>
@@ -282,6 +285,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.requesterId}`" class="_link">@{{ log.info.requesterUsername }}{{ log.info.requesterHost ? '@' + log.info.requesterHost : '' }}</MkA></div>
 			<div class="_selectable">{{ i18n.ts._emojiRequestPage.rejectReason }}: {{ log.info.reason }}</div>
 		</template>
+		<template v-else-if="log.type === 'deleteDrawRoom'">
+			<div>{{ i18n.ts._drawRoom.owner }}: <MkA :to="`/admin/user/${log.info.room.ownerId}`" class="_link">@{{ log.info.room.ownerUsername }}{{ log.info.room.ownerHost ? '@' + log.info.room.ownerHost : '' }}</MkA></div>
+			<div class="_selectable">{{ i18n.ts._drawRoom.roomTitle }}: {{ log.info.room.title }}</div>
+		</template>
 		<template v-else-if="log.type === 'updateJuiceSettings'">
 			<div :class="$style.diff">
 				<CodeDiff :context="5" :hideHeader="true" :oldString="JSON5.stringify(log.info.before, null, '\t')" :newString="JSON5.stringify(log.info.after, null, '\t')" language="javascript" maxHeight="300px"/>
@@ -323,6 +330,7 @@ const juiceLogTypes: readonly string[] = [
 	'rejectAvatarDecorationRequest',
 	'updateJuiceSettings',
 	'cleanupOrphanedObjectStorageFiles',
+	'deleteDrawRoom',
 ];
 const isJuiceLogType = computed(() => juiceLogTypes.includes(props.log.type));
 </script>

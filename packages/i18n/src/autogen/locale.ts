@@ -6501,6 +6501,18 @@ export interface Locale extends ILocale {
          */
         "deletedChatMessage": string;
         /**
+         * 絵チャの部屋
+         */
+        "targetDrawRoom": string;
+        /**
+         * 絵チャのチャットの発言
+         */
+        "targetDrawRoomChat": string;
+        /**
+         * 削除済み
+         */
+        "deletedDrawRoom": string;
+        /**
          * 状況の詳細
          */
         "situationDetail": string;
@@ -8488,6 +8500,22 @@ export interface Locale extends ILocale {
              */
             "announcementReactionTypeLimit": string;
             /**
+             * 絵チャの部屋の作成
+             */
+            "canCreateDrawRoom": string;
+            /**
+             * オフにしても、ほかの人の部屋の見学・参加はできます
+             */
+            "canCreateDrawRoomCaption": string;
+            /**
+             * 絵チャで作れるキャンバスの大きさの上限
+             */
+            "drawRoomMaxCanvasSize": string;
+            /**
+             * 幅・高さそれぞれの上限です(100〜3840)。部屋を作るときと、途中で大きさを変えるときに適用されます
+             */
+            "drawRoomMaxCanvasSizeCaption": string;
+            /**
              * 絵文字申請の承認・却下
              */
             "canApproveEmojiRequests": string;
@@ -9439,6 +9467,344 @@ export interface Locale extends ILocale {
              */
             "additionalDesc": string;
         };
+    };
+    "_drawRoom": {
+        /**
+         * 絵チャを有効にする
+         */
+        "enabled": string;
+        /**
+         * オフにすると、絵チャの部屋を作ったり入ったりできなくなります(メニューからも消えます)
+         */
+        "enabledCaption": string;
+        /**
+         * 部屋主
+         */
+        "owner": string;
+        /**
+         * 絵チャ
+         */
+        "title": string;
+        /**
+         * 部屋を作って、みんなで同じキャンバスに絵を描けます
+         */
+        "description": string;
+        /**
+         * 部屋を作る
+         */
+        "createRoom": string;
+        /**
+         * 部屋の名前
+         */
+        "roomTitle": string;
+        /**
+         * 公開範囲
+         */
+        "visibility": string;
+        /**
+         * フォロワーのみ
+         */
+        "visibilityFollowers": string;
+        /**
+         * ローカル全体
+         */
+        "visibilityLocal": string;
+        /**
+         * 描ける人数の上限
+         */
+        "maxMembers": string;
+        /**
+         * 2〜512人まで設定できます。上限を超えた人も見学者として入れます(描くことはできません)
+         */
+        "maxMembersCaption": string;
+        /**
+         * キャンバスの大きさ
+         */
+        "canvasSize": string;
+        /**
+         * 横長 (1600×900)
+         */
+        "canvasLandscape": string;
+        /**
+         * 縦長 (900×1600)
+         */
+        "canvasPortrait": string;
+        /**
+         * 正方形 (1200×1200)
+         */
+        "canvasSquare": string;
+        /**
+         * 正方形・大 (2048×2048)
+         */
+        "canvasSquare2048": string;
+        /**
+         * 正方形・特大 (3840×3840、重め)
+         */
+        "canvasSquare3840": string;
+        /**
+         * あなたのロールでは絵チャの部屋を作れません(ほかの人の部屋には参加できます)
+         */
+        "cannotCreate": string;
+        /**
+         * 自由に指定
+         */
+        "canvasCustom": string;
+        /**
+         * キャンバスの幅
+         */
+        "canvasWidth": string;
+        /**
+         * キャンバスの高さ
+         */
+        "canvasHeight": string;
+        /**
+         * {min}〜{max}の間で指定できます
+         */
+        "canvasSizeRange": ParameterizedString<"min" | "max">;
+        /**
+         * 左上を基準に広げたり切り詰めたりします(はみ出した線は消えずに残り、大きくし直すとまた見えます)。{min}〜{max}の間で指定できます
+         */
+        "canvasResizeCaption": ParameterizedString<"min" | "max">;
+        /**
+         * キャンバスを小さくすると、はみ出した部分の線が見えなくなります(消えはしません)。よろしいですか?
+         */
+        "canvasShrinkConfirm": string;
+        /**
+         * 終了後もサーバーに保存する
+         */
+        "keepAfterEnd": string;
+        /**
+         * オフにすると、終了してから1時間後に絵とチャットが削除されます(それまでは画像の保存・投稿ができます)
+         */
+        "keepAfterEndCaption": string;
+        /**
+         * 開催中の部屋はありません
+         */
+        "noRooms": string;
+        /**
+         * 開催中の部屋
+         */
+        "openRooms": string;
+        /**
+         * 保存した絵チャ
+         */
+        "savedRooms": string;
+        /**
+         * {n}/{max}人
+         */
+        "membersCount": ParameterizedString<"n" | "max">;
+        /**
+         * オンライン
+         */
+        "online": string;
+        /**
+         * オフライン
+         */
+        "offline": string;
+        /**
+         * {n}人がこの部屋を開いています
+         */
+        "onlineCount": ParameterizedString<"n">;
+        /**
+         * 描く人として参加
+         */
+        "join": string;
+        /**
+         * 描くのをやめる
+         */
+        "leave": string;
+        /**
+         * 見学中
+         */
+        "spectating": string;
+        /**
+         * 満員のため見学のみできます
+         */
+        "full": string;
+        /**
+         * 描いている人
+         */
+        "members": string;
+        /**
+         * レイヤー
+         */
+        "layers": string;
+        /**
+         * 自分のレイヤーを一番上に表示
+         */
+        "myLayerOnTop": string;
+        /**
+         * ペン
+         */
+        "pen": string;
+        /**
+         * 消しゴム
+         */
+        "eraser": string;
+        /**
+         * スポイト
+         */
+        "eyedropper": string;
+        /**
+         * スポイト(I / Altを押しながらクリックでも色を拾えます)
+         */
+        "eyedropperHint": string;
+        /**
+         * 濃さ
+         */
+        "opacity": string;
+        /**
+         * 色
+         */
+        "color": string;
+        /**
+         * 太さ
+         */
+        "size": string;
+        /**
+         * 元に戻す
+         */
+        "undo": string;
+        /**
+         * 自分のレイヤーを消去
+         */
+        "clearMyLayer": string;
+        /**
+         * 自分のレイヤーの線を全て消しますか？
+         */
+        "clearMyLayerConfirm": string;
+        /**
+         * 画面に合わせる
+         */
+        "fitToScreen": string;
+        /**
+         * 全体マップ
+         */
+        "minimap": string;
+        /**
+         * 全体マップを隠す
+         */
+        "hideMinimap": string;
+        /**
+         * 全体マップを表示
+         */
+        "showMinimap": string;
+        /**
+         * チャット
+         */
+        "chat": string;
+        /**
+         * メッセージ
+         */
+        "chatPlaceholder": string;
+        /**
+         * 部屋の設定
+         */
+        "roomSettings": string;
+        /**
+         * 絵チャを終了
+         */
+        "endRoom": string;
+        /**
+         * 絵チャを終了しますか？終了すると誰も描けなくなります。
+         */
+        "endRoomConfirm": string;
+        /**
+         * この絵チャは終了しました
+         */
+        "ended": string;
+        /**
+         * この絵チャは終了しました。1時間後に削除されるので、残したい場合は画像を保存・投稿してください
+         */
+        "endedNotKept": string;
+        /**
+         * 描く人から外す
+         */
+        "kick": string;
+        /**
+         * {name}を描く人から外しますか？(見学者として残ります)
+         */
+        "kickConfirm": ParameterizedString<"name">;
+        /**
+         * 描く人から外されました
+         */
+        "kicked": string;
+        /**
+         * 画像をドライブに保存
+         */
+        "saveImage": string;
+        /**
+         * 画像をダウンロード
+         */
+        "downloadImage": string;
+        /**
+         * 画像をノートに投稿
+         */
+        "postImage": string;
+        /**
+         * ドライブに保存しました
+         */
+        "imageSaved": string;
+        /**
+         * 保存形式
+         */
+        "imageFormat": string;
+        /**
+         * PNG(無圧縮)
+         */
+        "formatPng": string;
+        /**
+         * WebP(Misskeyの圧縮)
+         */
+        "formatWebp": string;
+        /**
+         * JPEG
+         */
+        "formatJpeg": string;
+        /**
+         * 画像
+         */
+        "imageMenu": string;
+        /**
+         * 範囲を選んで保存
+         */
+        "selectArea": string;
+        /**
+         * 保存する範囲をドラッグで囲んでください
+         */
+        "selectAreaHint": string;
+        /**
+         * この部屋を削除
+         */
+        "deleteRoom": string;
+        /**
+         * 部屋を通報
+         */
+        "reportRoom": string;
+        /**
+         * 部屋を削除(モデレーター)
+         */
+        "deleteRoomAsModerator": string;
+        /**
+         * この部屋を削除しますか?開催中の場合は終了し、線もチャットもすべて消えます。モデレーションログに記録されます
+         */
+        "deleteRoomAsModeratorConfirm": string;
+        /**
+         * この部屋は削除されました
+         */
+        "roomDeleted": string;
+        /**
+         * この部屋はモデレーターによって削除されました
+         */
+        "roomDeletedByModerator": string;
+        /**
+         * モデレーターとして確認中(見るだけ。部屋の人には表示されません)
+         */
+        "viewingAsModerator": string;
+        /**
+         * この部屋を削除しますか？絵とチャットは元に戻せません。
+         */
+        "deleteRoomConfirm": string;
     };
     "_bonsai": {
         /**
@@ -10691,6 +11057,14 @@ export interface Locale extends ILocale {
          * ダイレクトメッセージを閲覧する
          */
         "read:chat": string;
+        /**
+         * 絵チャの部屋を操作する
+         */
+        "write:draw-rooms": string;
+        /**
+         * 絵チャの部屋を見る
+         */
+        "read:draw-rooms": string;
     };
     "_auth": {
         /**
@@ -12647,6 +13021,10 @@ export interface Locale extends ILocale {
          * 孤立したオブジェクトストレージファイルの整理
          */
         "cleanupOrphanedObjectStorageFiles": string;
+        /**
+         * 絵チャの部屋を削除
+         */
+        "deleteDrawRoom": string;
         /**
          * 確認のみ、実際には削除していません
          */

@@ -33,6 +33,9 @@ import { MiChatRoom } from '@/models/ChatRoom.js';
 import { MiChatRoomInvitation } from '@/models/ChatRoomInvitation.js';
 import { MiContactForm } from '@/models/ContactForm.js';
 import { MiChatRoomMembership } from '@/models/ChatRoomMembership.js';
+import { MiDrawRoom } from '@/models/DrawRoom.js';
+import { MiDrawRoomMember } from '@/models/DrawRoomMember.js';
+import { MiDrawRoomLayer } from '@/models/DrawRoomLayer.js';
 import { MiClip } from '@/models/Clip.js';
 import { MiClipFavorite } from '@/models/ClipFavorite.js';
 import { MiClipNote } from '@/models/ClipNote.js';
@@ -188,6 +191,9 @@ export {
 	MiChatRoomMembership,
 	MiChatRoomInvitation,
 	MiChatApproval,
+	MiDrawRoom,
+	MiDrawRoomMember,
+	MiDrawRoomLayer,
 	MiContactForm,
 	MiBubbleGameRecord,
 	MiReversiGame,
@@ -275,6 +281,9 @@ export type UserNicknameRepository = Repository<MiUserNickname> & MiRepository<M
 export type ChatMessagesRepository = Repository<MiChatMessage> & MiRepository<MiChatMessage>;
 export type ChatRoomsRepository = Repository<MiChatRoom> & MiRepository<MiChatRoom>;
 export type ChatRoomMembershipsRepository = Repository<MiChatRoomMembership> & MiRepository<MiChatRoomMembership>;
+export type DrawRoomsRepository = Repository<MiDrawRoom> & MiRepository<MiDrawRoom>;
+export type DrawRoomMembersRepository = Repository<MiDrawRoomMember> & MiRepository<MiDrawRoomMember>;
+export type DrawRoomLayersRepository = Repository<MiDrawRoomLayer> & MiRepository<MiDrawRoomLayer>;
 export type ChatRoomInvitationsRepository = Repository<MiChatRoomInvitation> & MiRepository<MiChatRoomInvitation>;
 export type ChatApprovalsRepository = Repository<MiChatApproval> & MiRepository<MiChatApproval>;
 export type ContactFormsRepository = Repository<MiContactForm> & MiRepository<MiContactForm>;

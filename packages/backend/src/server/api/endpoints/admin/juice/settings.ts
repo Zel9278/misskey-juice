@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings, resolveNewAccountFollowRequestSettings, resolveReportCategorySettings, resolveEmailAliasSettings, resolveAiGeneratedFallbackCwSettings, resolveNovelFallbackCwSettings, resolveOauthLoginSettings, resolveMidiPlayerSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmailSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRankingSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveCustomSplashTextSettings, resolveNewAccountFollowRequestSettings, resolveReportCategorySettings, resolveEmailAliasSettings, resolveAiGeneratedFallbackCwSettings, resolveNovelFallbackCwSettings, resolveOauthLoginSettings, resolveMidiPlayerSettings, resolveDrawRoomSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -236,6 +236,10 @@ export const meta = {
 				type: 'number',
 				optional: false, nullable: false,
 			},
+			drawRoomEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 		},
 	},
 } as const;
@@ -272,6 +276,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				...resolveNovelFallbackCwSettings(settings),
 				...resolveOauthLoginSettings(settings),
 				...resolveMidiPlayerSettings(settings),
+				...resolveDrawRoomSettings(settings),
 			};
 		});
 	}

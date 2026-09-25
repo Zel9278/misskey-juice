@@ -409,6 +409,8 @@ export class WebhookTestService {
 			targetNote: null,
 			targetChatMessageId: null,
 			targetChatMessage: null,
+			targetDrawRoomId: null,
+			targetDrawRoomSnapshot: null,
 			situationDetail: null,
 			...override,
 		};

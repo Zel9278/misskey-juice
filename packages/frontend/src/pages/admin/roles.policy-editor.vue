@@ -443,6 +443,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</template>
 		</XFolder>
 
+		<XFolder v-if="matchQuery([i18n.ts._role._options.canCreateDrawRoom, 'canCreateDrawRoom'])" v-model:policyMeta="policyMetaModel.canCreateDrawRoom" :isBaseRole="isBaseRole" :readonly="readonly">
+			<template #label>{{ i18n.ts._role._options.canCreateDrawRoom }}<span class="_juice">JUICE</span></template>
+			<template #valueText>{{ valuesModel.canCreateDrawRoom ? i18n.ts.yes : i18n.ts.no }}</template>
+			<template #default="{ disabled }">
+				<MkSwitch v-model="valuesModel.canCreateDrawRoom" :disabled="disabled">
+					<template #label>{{ i18n.ts.enable }}</template>
+					<template #caption>{{ i18n.ts._role._options.canCreateDrawRoomCaption }}</template>
+				</MkSwitch>
+			</template>
+		</XFolder>
+
+		<XFolder v-if="matchQuery([i18n.ts._role._options.drawRoomMaxCanvasSize, 'drawRoomMaxCanvasSize'])" v-model:policyMeta="policyMetaModel.drawRoomMaxCanvasSize" :isBaseRole="isBaseRole" :readonly="readonly">
+			<template #label>{{ i18n.ts._role._options.drawRoomMaxCanvasSize }}<span class="_juice">JUICE</span></template>
+			<template #valueText>{{ valuesModel.drawRoomMaxCanvasSize }}px</template>
+			<template #default="{ disabled }">
+				<MkInput v-model="valuesModel.drawRoomMaxCanvasSize" type="number" :disabled="disabled" :min="100" :max="3840">
+					<template #suffix>px</template>
+					<template #caption>{{ i18n.ts._role._options.drawRoomMaxCanvasSizeCaption }}</template>
+				</MkInput>
+			</template>
+		</XFolder>
+
 		<XFolder v-if="matchQuery([i18n.ts._role._options.canApproveEmojiRequests, 'canApproveEmojiRequests'])" v-model:policyMeta="policyMetaModel.canApproveEmojiRequests" :isBaseRole="isBaseRole" :readonly="readonly">
 			<template #label>{{ i18n.ts._role._options.canApproveEmojiRequests }}<span class="_juice">JUICE</span></template>
 			<template #valueText>{{ valuesModel.canApproveEmojiRequests ? i18n.ts.yes : i18n.ts.no }}</template>

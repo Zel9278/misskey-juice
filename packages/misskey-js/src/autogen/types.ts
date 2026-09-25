@@ -1973,6 +1973,105 @@ export type paths = {
          */
         post: operations['contact-form___submit'];
     };
+    '/draw-rooms/chat-history': {
+        /**
+         * draw-rooms/chat-history
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *read:draw-rooms*
+         */
+        post: operations['draw-rooms___chat-history'];
+    };
+    '/draw-rooms/create': {
+        /**
+         * draw-rooms/create
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:draw-rooms*
+         */
+        post: operations['draw-rooms___create'];
+    };
+    '/draw-rooms/delete': {
+        /**
+         * draw-rooms/delete
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:draw-rooms*
+         */
+        post: operations['draw-rooms___delete'];
+    };
+    '/draw-rooms/end': {
+        /**
+         * draw-rooms/end
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:draw-rooms*
+         */
+        post: operations['draw-rooms___end'];
+    };
+    '/draw-rooms/join': {
+        /**
+         * draw-rooms/join
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:draw-rooms*
+         */
+        post: operations['draw-rooms___join'];
+    };
+    '/draw-rooms/kick': {
+        /**
+         * draw-rooms/kick
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:draw-rooms*
+         */
+        post: operations['draw-rooms___kick'];
+    };
+    '/draw-rooms/leave': {
+        /**
+         * draw-rooms/leave
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:draw-rooms*
+         */
+        post: operations['draw-rooms___leave'];
+    };
+    '/draw-rooms/list': {
+        /**
+         * draw-rooms/list
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *read:draw-rooms*
+         */
+        post: operations['draw-rooms___list'];
+    };
+    '/draw-rooms/show': {
+        /**
+         * draw-rooms/show
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *read:draw-rooms*
+         */
+        post: operations['draw-rooms___show'];
+    };
+    '/draw-rooms/strokes': {
+        /**
+         * draw-rooms/strokes
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *read:draw-rooms*
+         */
+        post: operations['draw-rooms___strokes'];
+    };
+    '/draw-rooms/update': {
+        /**
+         * draw-rooms/update
+         * @description No description provided.
+         *
+         *     **Credential required**: *Yes* / **Permission**: *write:draw-rooms*
+         */
+        post: operations['draw-rooms___update'];
+    };
     '/drive': {
         /**
          * drive
@@ -6185,6 +6284,8 @@ export type components = {
             emojiRequestDailyLimit: number;
             avatarDecorationRequestDailyLimit: number;
             announcementReactionTypeLimit: number;
+            canCreateDrawRoom: boolean;
+            drawRoomMaxCanvasSize: number;
             canApproveEmojiRequests: boolean;
             canApproveAvatarDecorationRequests: boolean;
             canApproveSignups: boolean;
@@ -6519,6 +6620,41 @@ export type components = {
             user?: components['schemas']['UserLite'];
             roomId: string;
             room?: components['schemas']['ChatRoom'];
+        };
+        DrawRoom: {
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            ownerId: string;
+            owner: components['schemas']['UserLite'];
+            title: string;
+            /** @enum {string} */
+            visibility: 'followers' | 'local';
+            maxMembers: number;
+            canvasWidth: number;
+            canvasHeight: number;
+            keepAfterEnd: boolean;
+            isEnded: boolean;
+            /** Format: date-time */
+            endedAt: string | null;
+            members: components['schemas']['UserLite'][];
+            isMember: boolean;
+            viewOnly: boolean;
+        };
+        DrawStroke: {
+            id: string;
+            /** @enum {string} */
+            tool: 'pen' | 'eraser';
+            color: string;
+            size: number;
+            opacity?: number;
+            points: string;
+        };
+        DrawRoomChatMessage: {
+            id: string;
+            userId: string;
+            text: string;
+            createdAt: number;
         };
     };
     responses: never;
@@ -6995,9 +7131,27 @@ export interface operations {
                         moderationNote: string;
                         category: string | null;
                         /** @enum {string|null} */
-                        targetType: 'note' | 'chatMessage' | null;
+                        targetType: 'note' | 'chatMessage' | 'drawRoom' | 'drawRoomChat' | null;
                         targetNote: components['schemas']['Note'] | null;
                         targetChatMessage: components['schemas']['ChatMessage'] | null;
+                        targetDrawRoom: {
+                            /** Format: id */
+                            id: string;
+                            exists: boolean;
+                            title: string;
+                            /** Format: id */
+                            ownerId: string;
+                            visibility: string;
+                            message: {
+                                /** Format: id */
+                                id: string;
+                                /** Format: id */
+                                userId: string;
+                                text: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                            } | null;
+                        } | null;
                         situationDetail: string | null;
                     }[];
                 };
@@ -11418,6 +11572,7 @@ export interface operations {
                         microsoftOauthClientId: string | null;
                         microsoftOauthClientSecret: string | null;
                         midiPlayerMaxSize: number;
+                        drawRoomEnabled: boolean;
                     };
                 };
             };
@@ -11620,6 +11775,7 @@ export interface operations {
                     microsoftOauthClientId?: string | null;
                     microsoftOauthClientSecret?: string | null;
                     midiPlayerMaxSize?: number;
+                    drawRoomEnabled?: boolean;
                 };
             };
         };
@@ -22367,6 +22523,844 @@ export interface operations {
             };
         };
     };
+    'draw-rooms___chat-history': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    roomId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        message: components['schemas']['DrawRoomChatMessage'];
+                        user: components['schemas']['UserLite'];
+                    }[];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'draw-rooms___create': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    title: string;
+                    /** @enum {string} */
+                    visibility: 'followers' | 'local';
+                    maxMembers: number;
+                    /** @enum {string} */
+                    canvasPreset?: 'landscape' | 'portrait' | 'square' | 'square2048' | 'square3840';
+                    canvasWidth?: number;
+                    canvasHeight?: number;
+                    /** @default false */
+                    keepAfterEnd?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['DrawRoom'];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'draw-rooms___delete': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    roomId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'draw-rooms___end': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    roomId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['DrawRoom'];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'draw-rooms___join': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    roomId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'draw-rooms___kick': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    roomId: string;
+                    /** Format: misskey:id */
+                    userId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'draw-rooms___leave': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    roomId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'draw-rooms___list': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    userId?: string;
+                    /** @default 10 */
+                    limit?: number;
+                    /** Format: misskey:id */
+                    untilId?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['DrawRoom'][];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'draw-rooms___show': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    roomId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['DrawRoom'];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'draw-rooms___strokes': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    roomId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        userId: string;
+                        strokes: components['schemas']['DrawStroke'][];
+                    }[];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'draw-rooms___update': {
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    roomId: string;
+                    title?: string;
+                    maxMembers?: number;
+                    keepAfterEnd?: boolean;
+                    canvasWidth?: number;
+                    canvasHeight?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['DrawRoom'];
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     drive: {
         responses: {
             /** @description OK (with results) */
@@ -32626,6 +33620,7 @@ export interface operations {
                         gitlabOauthEnabled: boolean;
                         microsoftOauthEnabled: boolean;
                         midiPlayerMaxSize: number;
+                        drawRoomEnabled: boolean;
                     };
                 };
             };
@@ -41358,6 +42353,10 @@ export interface operations {
                     noteId?: string | null;
                     /** Format: misskey:id */
                     messageId?: string | null;
+                    /** Format: misskey:id */
+                    drawRoomId?: string | null;
+                    /** Format: misskey:id */
+                    drawRoomChatMessageId?: string | null;
                     situationDetail?: string | null;
                 };
             };

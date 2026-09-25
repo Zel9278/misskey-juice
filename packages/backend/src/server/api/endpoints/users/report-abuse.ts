@@ -9,8 +9,9 @@ import { GetterService } from '@/server/api/GetterService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { AbuseReportService } from '@/core/AbuseReportService.js';
 import { DI } from '@/di-symbols.js';
-import type { ChatMessagesRepository, ChatRoomMembershipsRepository, NotesRepository } from '@/models/_.js';
-import type { AbuseReportTargetType } from '@/models/AbuseUserReport.js';
+import type { ChatMessagesRepository, ChatRoomMembershipsRepository, DrawRoomsRepository, NotesRepository } from '@/models/_.js';
+import type { AbuseReportDrawRoomSnapshot, AbuseReportTargetType } from '@/models/AbuseUserReport.js';
+import { DrawRoomService } from '@/core/DrawRoomService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -64,6 +65,25 @@ export const meta = {
 			code: 'INVALID_TARGET_CHAT_MESSAGE',
 			id: '27b24002-ff8d-4090-8f26-dd0aa5ac6e7f',
 		},
+
+		// JUICE: 絵チャの部屋・部屋のチャットの発言の通報
+		cannotSpecifyMultipleTargets: {
+			message: 'You can specify only one of noteId, messageId, and drawRoomId.',
+			code: 'CANNOT_SPECIFY_MULTIPLE_TARGETS',
+			id: '95ec31d6-1511-4338-835d-e4c99827285e',
+		},
+
+		invalidTargetDrawRoom: {
+			message: 'The drawing chat room does not exist, is not owned by the target user, or you cannot see it.',
+			code: 'INVALID_TARGET_DRAW_ROOM',
+			id: '3ffcbc63-475b-4968-a7e1-e5a1bd75435e',
+		},
+
+		invalidTargetDrawRoomChat: {
+			message: 'The chat message does not exist in the drawing chat room or was not posted by the target user.',
+			code: 'INVALID_TARGET_DRAW_ROOM_CHAT',
+			id: '7dd0d1fd-786a-4684-8f3a-d2de14c23750',
+		},
 	},
 } as const;
 
@@ -76,6 +96,10 @@ export const paramDef = {
 		category: { type: 'string', maxLength: 64, nullable: true },
 		noteId: { type: 'string', format: 'misskey:id', nullable: true },
 		messageId: { type: 'string', format: 'misskey:id', nullable: true },
+		// JUICE: 絵チャの部屋を通報するとき(userIdは部屋主)。drawRoomChatMessageIdも指定すると、その部屋の
+		// チャットの発言を通報する(userIdは発言した人)
+		drawRoomId: { type: 'string', format: 'misskey:id', nullable: true },
+		drawRoomChatMessageId: { type: 'string', format: 'misskey:id', nullable: true },
 		// JUICE: 状況の詳細(任意、commentとは別の自由記述欄)
 		situationDetail: { type: 'string', maxLength: 2048, nullable: true },
 	},
@@ -94,9 +118,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.chatRoomMembershipsRepository)
 		private chatRoomMembershipsRepository: ChatRoomMembershipsRepository,
 
+		@Inject(DI.drawRoomsRepository)
+		private drawRoomsRepository: DrawRoomsRepository,
+
 		private getterService: GetterService,
 		private roleService: RoleService,
 		private abuseReportService: AbuseReportService,
+		private drawRoomService: DrawRoomService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Lookup user
@@ -128,10 +156,45 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.noteId != null && ps.messageId != null) {
 				throw new ApiError(meta.errors.cannotSpecifyBothNoteAndMessage);
 			}
+			if ([ps.noteId, ps.messageId, ps.drawRoomId].filter(x => x != null).length > 1) {
+				throw new ApiError(meta.errors.cannotSpecifyMultipleTargets);
+			}
+			if (ps.drawRoomChatMessageId != null && ps.drawRoomId == null) {
+				throw new ApiError(meta.errors.invalidTargetDrawRoomChat);
+			}
 
 			let targetType: AbuseReportTargetType | null = null;
 			let targetNoteId: string | null = null;
 			let targetChatMessageId: string | null = null;
+			let targetDrawRoomId: string | null = null;
+			let targetDrawRoomSnapshot: AbuseReportDrawRoomSnapshot | null = null;
+
+			// JUICE: 絵チャの部屋(部屋主を通報)と、部屋のチャットの発言(発言した人を通報)。
+			// 通報する人がその部屋を見られること。チャットは消えることがあるので、通報した時点の内容を写して残す
+			if (ps.drawRoomId != null) {
+				const room = await this.drawRoomsRepository.findOneBy({ id: ps.drawRoomId });
+				if (room == null || !await this.drawRoomService.canView(room, me)) {
+					throw new ApiError(meta.errors.invalidTargetDrawRoom);
+				}
+				let message: AbuseReportDrawRoomSnapshot['message'] = null;
+				if (ps.drawRoomChatMessageId != null) {
+					const found = (await this.drawRoomService.getChat(room)).find(m => m.id === ps.drawRoomChatMessageId);
+					if (found == null || found.userId !== targetUser.id) {
+						throw new ApiError(meta.errors.invalidTargetDrawRoomChat);
+					}
+					message = { id: found.id, userId: found.userId, text: found.text, createdAt: found.createdAt };
+				} else if (room.ownerId !== targetUser.id) {
+					throw new ApiError(meta.errors.invalidTargetDrawRoom);
+				}
+				targetType = message != null ? 'drawRoomChat' : 'drawRoom';
+				targetDrawRoomId = room.id;
+				targetDrawRoomSnapshot = {
+					title: room.title,
+					ownerId: room.ownerId,
+					visibility: room.visibility,
+					message,
+				};
+			}
 
 			if (ps.noteId != null) {
 				const note = await this.notesRepository.findOneBy({ id: ps.noteId });
@@ -171,6 +234,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				targetType,
 				targetNoteId,
 				targetChatMessageId,
+				targetDrawRoomId,
+				targetDrawRoomSnapshot,
 				situationDetail: ps.situationDetail ?? null,
 			}]);
 		});

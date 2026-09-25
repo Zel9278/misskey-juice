@@ -135,6 +135,11 @@ export interface JuiceSettingsValue {
 	 * 固まることを防ぐための安全装置。これを超えるファイルは再生ボタン自体を出さない
 	 */
 	midiPlayerMaxSize?: number;
+
+	/**
+	 * 絵チャ(お絵かきチャット)機能を使えるようにするか。既定は有効
+	 */
+	drawRoomEnabled?: boolean;
 }
 
 // JUICE: misskey-tempuraのコンタクトフォームを参考に追加
@@ -460,6 +465,18 @@ export function resolveMidiPlayerSettings(settings: JuiceSettingsValue): {
 } {
 	return {
 		midiPlayerMaxSize: settings.midiPlayerMaxSize ?? 500 * 1024,
+	};
+}
+
+/**
+ * jsonb には存在しないキーがありうるため、デフォルト値を解決してから返す。
+ * admin/juice/settings・admin/juice/update-settings・juice/public-settingsの3箇所で共通利用する。
+ */
+export function resolveDrawRoomSettings(settings: JuiceSettingsValue): {
+	drawRoomEnabled: boolean;
+} {
+	return {
+		drawRoomEnabled: settings.drawRoomEnabled ?? true,
 	};
 }
 

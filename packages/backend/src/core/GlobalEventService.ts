@@ -23,6 +23,7 @@ import type { MiSystemWebhook } from '@/models/SystemWebhook.js';
 import type { MiMeta } from '@/models/Meta.js';
 import type { MiJuiceSettings } from '@/models/JuiceSettings.js';
 import { MiAvatarDecoration, MiChatMessage, MiChatRoom, MiReversiGame, MiRole, MiRoleAssignment } from '@/models/_.js';
+import type { MiDrawRoom } from '@/models/DrawRoom.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -253,6 +254,70 @@ export interface ReversiGameEventTypes {
 		userId: MiUser['id'];
 	};
 }
+
+// JUICE: 絵チャの部屋ごとのストリーム
+export interface DrawRoomEventTypes {
+	// 描いている途中の線(保存しない。受信側は同じstrokeIdの点を順につなげて表示する)
+	strokePart: {
+		userId: MiUser['id'];
+		strokeId: string;
+		tool: 'pen' | 'eraser';
+		color: string;
+		size: number;
+		opacity?: number;
+		points: string;
+	};
+	// カーソルの位置(保存しない)。一定間隔でまとめて配る。x・yがnullならキャンバスの外に出た
+	cursors: {
+		cursors: {
+			userId: MiUser['id'];
+			x: number | null;
+			y: number | null;
+		}[];
+	};
+	// 描いている途中の線を取りやめた(途中まで表示していた分を消す)
+	strokeCancel: {
+		userId: MiUser['id'];
+		strokeId: string;
+	};
+	// 描き終わった線(保存済み)
+	stroke: {
+		userId: MiUser['id'];
+		stroke: Packed<'DrawStroke'>;
+	};
+	undo: {
+		userId: MiUser['id'];
+		strokeId: string;
+	};
+	clearLayer: {
+		userId: MiUser['id'];
+	};
+	chat: {
+		message: Packed<'DrawRoomChatMessage'>;
+		user: Packed<'UserLite'>;
+	};
+	memberJoined: {
+		user: Packed<'UserLite'>;
+	};
+	memberLeft: {
+		userId: MiUser['id'];
+		kicked: boolean;
+	};
+	// 部屋が削除された(モデレーターによる削除を含む)
+	deleted: {
+		byModerator: boolean;
+	};
+	// 今この部屋を開いている人(オンライン)の一覧
+	presence: {
+		userIds: MiUser['id'][];
+	};
+	updated: {
+		room: Packed<'DrawRoom'>;
+	};
+	ended: {
+		room: Packed<'DrawRoom'>;
+	};
+}
 //#endregion
 
 // 辞書(interface or type)から{ type, body }ユニオンを定義
@@ -378,6 +443,11 @@ export type GlobalEvents = {
 		name: `reversiGameStream:${MiReversiGame['id']}`;
 		payload: EventTypesToEventPayload<ReversiGameEventTypes>;
 	};
+	/** JUICE: 絵チャ */
+	drawRoom: {
+		name: `drawRoomStream:${MiDrawRoom['id']}`;
+		payload: EventTypesToEventPayload<DrawRoomEventTypes>;
+	};
 };
 
 // API event definitions
@@ -495,5 +565,11 @@ export class GlobalEventService {
 	@bindThis
 	public publishReversiGameStream<K extends keyof ReversiGameEventTypes>(gameId: MiReversiGame['id'], type: K, value?: ReversiGameEventTypes[K]): void {
 		this.publish(`reversiGameStream:${gameId}`, type, typeof value === 'undefined' ? null : value);
+	}
+
+	// JUICE: 絵チャ
+	@bindThis
+	public publishDrawRoomStream<K extends keyof DrawRoomEventTypes>(roomId: MiDrawRoom['id'], type: K, value: DrawRoomEventTypes[K]): void {
+		this.publish(`drawRoomStream:${roomId}`, type, value);
 	}
 }

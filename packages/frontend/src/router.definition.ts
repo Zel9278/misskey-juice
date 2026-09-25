@@ -683,6 +683,15 @@ export const ROUTE_DEF = [{
 	component: page(() => import('@/pages/reversi/game.vue')),
 	loginRequired: false,
 }, {
+	// JUICE: 絵チャ
+	path: '/draw',
+	component: page(() => import('@/pages/draw-room/index.vue')),
+	loginRequired: true,
+}, {
+	path: '/draw/:roomId',
+	component: page(() => import('@/pages/draw-room/room.vue')),
+	loginRequired: true,
+}, {
 	path: '/qr',
 	component: page(() => import('@/pages/qr.vue')),
 	loginRequired: true,
