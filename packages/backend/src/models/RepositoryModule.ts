@@ -90,6 +90,9 @@ import {
 	MiChatMessage,
 	MiChatRoom,
 	MiChatRoomMembership,
+	MiDrawRoom,
+	MiDrawRoomMember,
+	MiDrawRoomLayer,
 	MiChatRoomInvitation,
 	MiChatApproval,
 	MiContactForm,
@@ -584,6 +587,24 @@ const $chatRoomMembershipsRepository: Provider = {
 	inject: [DI.db],
 };
 
+const $drawRoomsRepository: Provider = {
+	provide: DI.drawRoomsRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiDrawRoom).extend(miRepository as MiRepository<MiDrawRoom>),
+	inject: [DI.db],
+};
+
+const $drawRoomMembersRepository: Provider = {
+	provide: DI.drawRoomMembersRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiDrawRoomMember).extend(miRepository as MiRepository<MiDrawRoomMember>),
+	inject: [DI.db],
+};
+
+const $drawRoomLayersRepository: Provider = {
+	provide: DI.drawRoomLayersRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiDrawRoomLayer).extend(miRepository as MiRepository<MiDrawRoomLayer>),
+	inject: [DI.db],
+};
+
 const $chatRoomInvitationsRepository: Provider = {
 	provide: DI.chatRoomInvitationsRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiChatRoomInvitation).extend(miRepository as MiRepository<MiChatRoomInvitation>),
@@ -692,6 +713,9 @@ const $reversiGamesRepository: Provider = {
 		$chatMessagesRepository,
 		$chatRoomsRepository,
 		$chatRoomMembershipsRepository,
+		$drawRoomsRepository,
+		$drawRoomMembersRepository,
+		$drawRoomLayersRepository,
 		$chatRoomInvitationsRepository,
 		$chatApprovalsRepository,
 		$bubbleGameRecordsRepository,
@@ -779,6 +803,9 @@ const $reversiGamesRepository: Provider = {
 		$chatMessagesRepository,
 		$chatRoomsRepository,
 		$chatRoomMembershipsRepository,
+		$drawRoomsRepository,
+		$drawRoomMembersRepository,
+		$drawRoomLayersRepository,
 		$chatRoomInvitationsRepository,
 		$chatApprovalsRepository,
 		$bubbleGameRecordsRepository,

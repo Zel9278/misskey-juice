@@ -57,6 +57,9 @@ const props = defineProps<{
 	// JUICE: 通報対象の構造化参照(ノート/チャットメッセージのいずれか一方、省略可)
 	noteId?: string;
 	messageId?: string;
+	// JUICE: 絵チャの部屋(部屋主を通報)と、部屋のチャットの発言(発言した人を通報)
+	drawRoomId?: string;
+	drawRoomChatMessageId?: string;
 }>();
 
 const emit = defineEmits<{
@@ -83,6 +86,8 @@ function send() {
 		category: category.value,
 		noteId: props.noteId,
 		messageId: props.messageId,
+		drawRoomId: props.drawRoomId,
+		drawRoomChatMessageId: props.drawRoomChatMessageId,
 		situationDetail: situationDetail.value.length > 0 ? situationDetail.value : undefined,
 	}, undefined).then(res => {
 		os.alert({

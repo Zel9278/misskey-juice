@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
-import type { AbuseUserReportsRepository } from '@/models/_.js';
+import type { AbuseUserReportsRepository, DrawRoomsRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
 import type { MiAbuseUserReport } from '@/models/AbuseUserReport.js';
 import { bindThis } from '@/decorators.js';
@@ -20,6 +20,9 @@ export class AbuseUserReportEntityService {
 	constructor(
 		@Inject(DI.abuseUserReportsRepository)
 		private abuseUserReportsRepository: AbuseUserReportsRepository,
+
+		@Inject(DI.drawRoomsRepository)
+		private drawRoomsRepository: DrawRoomsRepository,
 
 		private userEntityService: UserEntityService,
 		private noteEntityService: NoteEntityService,
@@ -70,9 +73,30 @@ export class AbuseUserReportEntityService {
 			targetChatMessage: report.targetChatMessageId
 				? this.chatEntityService.packMessageDetailed(report.targetChatMessage ?? report.targetChatMessageId).catch(() => null)
 				: null,
+			// JUICE: 通報された絵チャの部屋・部屋のチャットの発言(通報した時点の写しと、部屋が今も残っているか)
+			targetDrawRoom: report.targetDrawRoomId != null && report.targetDrawRoomSnapshot != null
+				? this.packTargetDrawRoom(report.targetDrawRoomId, report.targetDrawRoomSnapshot)
+				: null,
 			// JUICE: 通報者が記述した状況の詳細
 			situationDetail: report.situationDetail,
 		});
+	}
+
+	@bindThis
+	private async packTargetDrawRoom(roomId: string, snapshot: NonNullable<MiAbuseUserReport['targetDrawRoomSnapshot']>) {
+		return {
+			id: roomId,
+			exists: await this.drawRoomsRepository.existsBy({ id: roomId }),
+			title: snapshot.title,
+			ownerId: snapshot.ownerId,
+			visibility: snapshot.visibility,
+			message: snapshot.message != null ? {
+				id: snapshot.message.id,
+				userId: snapshot.message.userId,
+				text: snapshot.message.text,
+				createdAt: new Date(snapshot.message.createdAt).toISOString(),
+			} : null,
+		};
 	}
 
 	@bindThis

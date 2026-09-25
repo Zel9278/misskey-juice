@@ -15,6 +15,7 @@ import { InboxProcessorService } from './processors/InboxProcessorService.js';
 import { UserWebhookDeliverProcessorService } from './processors/UserWebhookDeliverProcessorService.js';
 import { SystemWebhookDeliverProcessorService } from './processors/SystemWebhookDeliverProcessorService.js';
 import { CheckExpiredMutingsProcessorService } from './processors/CheckExpiredMutingsProcessorService.js';
+import { CleanDrawRoomsProcessorService } from './processors/CleanDrawRoomsProcessorService.js';
 import { BakeBufferedReactionsProcessorService } from './processors/BakeBufferedReactionsProcessorService.js';
 import { CleanChartsProcessorService } from './processors/CleanChartsProcessorService.js';
 import { CleanProcessorService } from './processors/CleanProcessorService.js';
@@ -55,6 +56,7 @@ import { RelationshipProcessorService } from './processors/RelationshipProcessor
 		ResyncChartsProcessorService,
 		CleanChartsProcessorService,
 		CheckExpiredMutingsProcessorService,
+		CleanDrawRoomsProcessorService,
 		BakeBufferedReactionsProcessorService,
 		CleanProcessorService,
 		DeleteDriveFilesProcessorService,
@@ -85,6 +87,7 @@ import { RelationshipProcessorService } from './processors/RelationshipProcessor
 		InboxProcessorService,
 		AggregateRetentionProcessorService,
 		CheckExpiredMutingsProcessorService,
+		CleanDrawRoomsProcessorService,
 		CheckModeratorsActivityProcessorService,
 		CleanRemoteNotesProcessorService,
 		QueueProcessorService,

@@ -91,7 +91,8 @@ export function getUploadName(item: UploaderItem): string {
 	return item.name + (item.name.endsWith(item.suffix) ? '' : item.suffix);
 }
 
-function getCompressionSettings(level: 0 | 1 | 2 | 3) {
+// JUICE: 絵チャの画像の保存(WebP)でも同じ縮小の基準を使うので公開する
+export function getCompressionSettings(level: 0 | 1 | 2 | 3) {
 	if (level === 1) {
 		return {
 			maxWidth: 2000,

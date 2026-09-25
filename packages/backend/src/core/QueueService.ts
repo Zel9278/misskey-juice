@@ -73,6 +73,10 @@ const REPEATABLE_SYSTEM_JOB_DEF = [{
 	name: 'checkExpiredMutings',
 	pattern: '*/5 * * * *',
 }, {
+	// JUICE: 絵チャの部屋の掃除
+	name: 'cleanDrawRooms',
+	pattern: '*/5 * * * *',
+}, {
 	name: 'bakeBufferedReactions',
 	pattern: '0 0 * * *',
 }, {

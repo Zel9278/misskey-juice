@@ -100,6 +100,7 @@ export const paramDef = {
 		// JUICE: 黒MIDI等の再生によるブラウザのフリーズを防ぐ安全装置。最小値は極端に小さい値による
 		// 事実上の機能無効化を避けるため1KB、最大値は暴走防止のため50MBに制限する
 		midiPlayerMaxSize: { type: 'integer', minimum: 1024, maximum: 50 * 1024 * 1024 },
+		drawRoomEnabled: { type: 'boolean' },
 	},
 } as const;
 
@@ -164,6 +165,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.microsoftOauthClientId !== undefined) set.microsoftOauthClientId = ps.microsoftOauthClientId;
 			if (ps.microsoftOauthClientSecret !== undefined) set.microsoftOauthClientSecret = ps.microsoftOauthClientSecret;
 			if (ps.midiPlayerMaxSize !== undefined) set.midiPlayerMaxSize = ps.midiPlayerMaxSize;
+			if (ps.drawRoomEnabled !== undefined) set.drawRoomEnabled = ps.drawRoomEnabled;
 
 			const after = await this.juiceSettingsService.update(set);
 

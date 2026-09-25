@@ -323,6 +323,24 @@ import type {
 	ClipsUpdateResponse,
 	ContactFormSubmitRequest,
 	ContactFormSubmitResponse,
+	DrawRoomsChatHistoryRequest,
+	DrawRoomsChatHistoryResponse,
+	DrawRoomsCreateRequest,
+	DrawRoomsCreateResponse,
+	DrawRoomsDeleteRequest,
+	DrawRoomsEndRequest,
+	DrawRoomsEndResponse,
+	DrawRoomsJoinRequest,
+	DrawRoomsKickRequest,
+	DrawRoomsLeaveRequest,
+	DrawRoomsListRequest,
+	DrawRoomsListResponse,
+	DrawRoomsShowRequest,
+	DrawRoomsShowResponse,
+	DrawRoomsStrokesRequest,
+	DrawRoomsStrokesResponse,
+	DrawRoomsUpdateRequest,
+	DrawRoomsUpdateResponse,
 	DriveResponse,
 	DriveFilesRequest,
 	DriveFilesResponse,
@@ -957,6 +975,17 @@ export type Endpoints = {
 	'clips/unfavorite': { req: ClipsUnfavoriteRequest; res: EmptyResponse };
 	'clips/update': { req: ClipsUpdateRequest; res: ClipsUpdateResponse };
 	'contact-form/submit': { req: ContactFormSubmitRequest; res: ContactFormSubmitResponse };
+	'draw-rooms/chat-history': { req: DrawRoomsChatHistoryRequest; res: DrawRoomsChatHistoryResponse };
+	'draw-rooms/create': { req: DrawRoomsCreateRequest; res: DrawRoomsCreateResponse };
+	'draw-rooms/delete': { req: DrawRoomsDeleteRequest; res: EmptyResponse };
+	'draw-rooms/end': { req: DrawRoomsEndRequest; res: DrawRoomsEndResponse };
+	'draw-rooms/join': { req: DrawRoomsJoinRequest; res: EmptyResponse };
+	'draw-rooms/kick': { req: DrawRoomsKickRequest; res: EmptyResponse };
+	'draw-rooms/leave': { req: DrawRoomsLeaveRequest; res: EmptyResponse };
+	'draw-rooms/list': { req: DrawRoomsListRequest; res: DrawRoomsListResponse };
+	'draw-rooms/show': { req: DrawRoomsShowRequest; res: DrawRoomsShowResponse };
+	'draw-rooms/strokes': { req: DrawRoomsStrokesRequest; res: DrawRoomsStrokesResponse };
+	'draw-rooms/update': { req: DrawRoomsUpdateRequest; res: DrawRoomsUpdateResponse };
 	'drive': { req: EmptyRequest; res: DriveResponse };
 	'drive/files': { req: DriveFilesRequest; res: DriveFilesResponse };
 	'drive/files/attached-chat-messages': { req: DriveFilesAttachedChatMessagesRequest; res: DriveFilesAttachedChatMessagesResponse };

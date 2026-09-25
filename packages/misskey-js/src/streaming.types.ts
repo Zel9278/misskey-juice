@@ -11,6 +11,9 @@ import {
 	UserDetailed,
 	UserDetailedNotMe,
 	UserLite,
+	DrawRoom,
+	DrawStroke,
+	DrawRoomChatMessage,
 } from './autogen/models.js';
 import {
 	AnnouncementCreated,
@@ -286,6 +289,37 @@ export type Channels = {
 			updateSettings: ReversiUpdateSettings<ReversiUpdateKey>;
 			claimTimeIsUp: null | Record<string, never>;
 		}
+	};
+	// JUICE: 絵チャ
+	drawRoom: {
+		params: {
+			roomId: string;
+		};
+		events: {
+			strokePart: (payload: { userId: User['id']; strokeId: string; tool: DrawStroke['tool']; color: string; size: number; opacity?: number; points: string; }) => void;
+			cursors: (payload: { cursors: { userId: User['id']; x: number | null; y: number | null; }[]; }) => void;
+			strokeCancel: (payload: { userId: User['id']; strokeId: string; }) => void;
+			stroke: (payload: { userId: User['id']; stroke: DrawStroke; }) => void;
+			undo: (payload: { userId: User['id']; strokeId: string; }) => void;
+			clearLayer: (payload: { userId: User['id']; }) => void;
+			chat: (payload: { message: DrawRoomChatMessage; user: UserLite; }) => void;
+			memberJoined: (payload: { user: UserLite; }) => void;
+			memberLeft: (payload: { userId: User['id']; kicked: boolean; }) => void;
+			presence: (payload: { userIds: User['id'][]; }) => void;
+			deleted: (payload: { byModerator: boolean; }) => void;
+			updated: (payload: { room: DrawRoom; }) => void;
+			ended: (payload: { room: DrawRoom; }) => void;
+		};
+		receives: {
+			strokePart: { strokeId: string; tool: DrawStroke['tool']; color: string; size: number; opacity?: number; points: string; };
+			cursor: { x: number | null; y: number | null; };
+			visibility: { visible: boolean; };
+			strokeCancel: { strokeId: string; };
+			stroke: DrawStroke;
+			undo: null | Record<string, never>;
+			clearLayer: null | Record<string, never>;
+			chat: { text: string; };
+		};
 	};
 	chatUser: {
 		params: {

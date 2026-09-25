@@ -1584,6 +1584,7 @@ describe('Endpoints', () => {
 				microsoftOauthClientId: null,
 				microsoftOauthClientSecret: null,
 				midiPlayerMaxSize: 500 * 1024,
+				drawRoomEnabled: true,
 			});
 		});
 
@@ -2654,6 +2655,7 @@ describe('Endpoints', () => {
 				gitlabOauthEnabled: false,
 				microsoftOauthEnabled: false,
 				midiPlayerMaxSize: 500 * 1024,
+				drawRoomEnabled: true,
 			});
 		});
 

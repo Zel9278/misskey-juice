@@ -235,6 +235,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<SearchMarker v-slot="slotProps">
 					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
+						<template #label><SearchLabel>{{ i18n.ts._drawRoom.title }}</SearchLabel></template>
+
+						<div class="_gaps_m">
+							<SearchMarker>
+								<MkSwitch v-model="drawRoomEnabled">
+									<template #label><SearchLabel>{{ i18n.ts._drawRoom.enabled }}</SearchLabel></template>
+									<template #caption>{{ i18n.ts._drawRoom.enabledCaption }}</template>
+								</MkSwitch>
+							</SearchMarker>
+						</div>
+					</MkFolder>
+				</SearchMarker>
+
+				<SearchMarker v-slot="slotProps">
+					<MkFolder :defaultOpen="slotProps.isParentOfTarget">
 						<template #label><SearchLabel>{{ i18n.ts._juice.latex }}</SearchLabel></template>
 
 						<div class="_gaps_m">
@@ -446,6 +461,7 @@ const mediaTimelineEnabled = ref(settings.mediaTimelineEnabled);
 const midiPlayerMaxSizeKb = ref(settings.midiPlayerMaxSize / 1024);
 const midiPlayerMaxSize = computed(() => Math.round(midiPlayerMaxSizeKb.value * 1024));
 const latexEnabled = ref(settings.latexEnabled);
+const drawRoomEnabled = ref(settings.drawRoomEnabled);
 const reactionPiggybackOnRemoteEnabled = ref(settings.reactionPiggybackOnRemoteEnabled);
 const contactFormEnabled = ref(settings.contactFormEnabled);
 const contactFormLimit = ref(settings.contactFormLimit);
@@ -581,6 +597,7 @@ function save() {
 		mediaTimelineEnabled: mediaTimelineEnabled.value,
 		midiPlayerMaxSize: midiPlayerMaxSize.value,
 		latexEnabled: latexEnabled.value,
+		drawRoomEnabled: drawRoomEnabled.value,
 		reactionPiggybackOnRemoteEnabled: reactionPiggybackOnRemoteEnabled.value,
 		contactFormEnabled: contactFormEnabled.value,
 		contactFormLimit: contactFormLimit.value,

@@ -94,7 +94,7 @@ export const meta = {
 				targetType: {
 					type: 'string',
 					nullable: true, optional: false,
-					enum: ['note', 'chatMessage', null],
+					enum: ['note', 'chatMessage', 'drawRoom', 'drawRoomChat', null],
 				},
 				targetNote: {
 					type: 'object',
@@ -105,6 +105,28 @@ export const meta = {
 					type: 'object',
 					nullable: true, optional: false,
 					ref: 'ChatMessage',
+				},
+				// JUICE: 通報された絵チャの部屋・部屋のチャットの発言(通報した時点の写し)
+				targetDrawRoom: {
+					type: 'object',
+					nullable: true, optional: false,
+					properties: {
+						id: { type: 'string', optional: false, nullable: false, format: 'id' },
+						exists: { type: 'boolean', optional: false, nullable: false },
+						title: { type: 'string', optional: false, nullable: false },
+						ownerId: { type: 'string', optional: false, nullable: false, format: 'id' },
+						visibility: { type: 'string', optional: false, nullable: false },
+						message: {
+							type: 'object',
+							optional: false, nullable: true,
+							properties: {
+								id: { type: 'string', optional: false, nullable: false, format: 'id' },
+								userId: { type: 'string', optional: false, nullable: false, format: 'id' },
+								text: { type: 'string', optional: false, nullable: false },
+								createdAt: { type: 'string', optional: false, nullable: false, format: 'date-time' },
+							},
+						},
+					},
 				},
 				situationDetail: {
 					type: 'string',

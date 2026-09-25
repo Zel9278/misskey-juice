@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { JuiceSettingsService } from '@/core/JuiceSettingsService.js';
-import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveReportCategorySettings, resolveOauthLoginSettings, resolveMidiPlayerSettings } from '@/models/JuiceSettings.js';
+import { resolveSignupApprovalSettings, resolveExploreOtherServersSettings, resolveEmojiRequestSettings, resolveAvatarDecorationRequestSettings, resolveRelayTimelineSettings, resolveMediaTimelineSettings, resolveLatexSettings, resolveReactionPiggybackSettings, resolveContactFormSettings, resolveReportCategorySettings, resolveOauthLoginSettings, resolveMidiPlayerSettings, resolveDrawRoomSettings } from '@/models/JuiceSettings.js';
 
 export const meta = {
 	tags: ['meta'],
@@ -150,6 +150,10 @@ export const meta = {
 				type: 'number',
 				optional: false, nullable: false,
 			},
+			drawRoomEnabled: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 		},
 	},
 } as const;
@@ -191,6 +195,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				gitlabOauthEnabled,
 				microsoftOauthEnabled,
 				...resolveMidiPlayerSettings(settings),
+				...resolveDrawRoomSettings(settings),
 			};
 		});
 	}
