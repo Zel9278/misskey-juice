@@ -388,7 +388,7 @@ export class MiMeta {
 	// JUICE: 本家Misskeyのフォークなので、既定のリポジトリURLをこのフォーク自身に変更
 	@Column('varchar', {
 		length: 1024,
-		default: 'https://github.com/Zel9278/misskey-juice',
+		default: 'https://github.com/misskey-juice/misskey-juice',
 		nullable: true,
 	})
 	public repositoryUrl: string | null;
@@ -396,7 +396,7 @@ export class MiMeta {
 	// JUICE: 本家Misskeyのフォークなので、既定のフィードバックURLをこのフォーク自身に変更
 	@Column('varchar', {
 		length: 1024,
-		default: 'https://github.com/Zel9278/misskey-juice/issues/new',
+		default: 'https://github.com/misskey-juice/misskey-juice/issues/new',
 		nullable: true,
 	})
 	public feedbackUrl: string | null;

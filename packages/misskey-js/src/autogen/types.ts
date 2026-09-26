@@ -6378,9 +6378,9 @@ export type components = {
             description: string | null;
             langs: string[];
             tosUrl: string | null;
-            /** @default https://github.com/Zel9278/misskey-juice */
+            /** @default https://github.com/misskey-juice/misskey-juice */
             repositoryUrl: string | null;
-            /** @default https://github.com/Zel9278/misskey-juice/issues/new */
+            /** @default https://github.com/misskey-juice/misskey-juice/issues/new */
             feedbackUrl: string | null;
             defaultDarkTheme: string | null;
             defaultLightTheme: string | null;

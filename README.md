@@ -9,7 +9,7 @@ developed by [c30 (Zel9278)](https://github.com/Zel9278)
 
 ---
 
-[![Source Code](https://img.shields.io/badge/source-GitHub-f2841f?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Zel9278/misskey-juice)
+[![Source Code](https://img.shields.io/badge/source-GitHub-f2841f?style=for-the-badge&logo=github&logoColor=white)](https://github.com/misskey-juice/misskey-juice)
 [![diff.md](https://img.shields.io/badge/独自機能-diff.md-f2841f?style=for-the-badge&logo=git&logoColor=white)](./diff.md)
 [![CHANGELOG.md](https://img.shields.io/badge/変更履歴-CHANGELOG.md-f2841f?style=for-the-badge&logo=keepachangelog&logoColor=white)](./CHANGELOG.md)
 [![become a contributor](https://img.shields.io/badge/become_a-contributor-A371F7?style=for-the-badge&logo=git&logoColor=white)](./CONTRIBUTING.md)
@@ -46,6 +46,6 @@ Thanks to [Docker](https://hub.docker.com/) for providing the container platform
 	
 Support us with a ⭐ !
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Zel9278/misskey-juice&type=Date)](https://star-history.com/#Zel9278/misskey-juice&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=misskey-juice/misskey-juice&type=Date)](https://star-history.com/#misskey-juice/misskey-juice&Date)
 
 </div>
