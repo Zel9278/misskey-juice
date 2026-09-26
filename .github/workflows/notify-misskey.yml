@@ -85,18 +85,25 @@ jobs:
               exit 0
               ;;
           esac
+          # 区切りの文字列は毎回ランダムにする(投稿文に同じ行を含めて、出力を書き換えられないように)
+          DELIMITER="MSGEOF_$(openssl rand -hex 16)"
           {
-            echo "text<<MSGEOF"
+            echo "text<<$DELIMITER"
             echo "$TEXT"
-            echo "MSGEOF"
+            echo "$DELIMITER"
           } >> "$GITHUB_OUTPUT"
 
       - name: Post to Misskey
         if: steps.msg.outputs.text != ''
+        # 投稿文にはIssue・PRのタイトルやコミットメッセージ(誰でも書ける内容)が入るので、
+        # run: の中に ${{ }} で直接埋め込まず、環境変数から渡す(シェルに解釈させない)
+        env:
+          TEXT: ${{ steps.msg.outputs.text }}
+          MISSKEY_BOT_TOKEN: ${{ secrets.MISSKEY_BOT_TOKEN }}
         run: |
           curl -sf -X POST https://mk-juice.dev/api/notes/create \
             -H "Content-Type: application/json" \
-            -d "$(jq -n --arg text "${{ steps.msg.outputs.text }}" --arg i "${{ secrets.MISSKEY_BOT_TOKEN }}" '{i:$i, text:$text, visibility:"home"}')"
+            -d "$(jq -n --arg text "$TEXT" --arg i "$MISSKEY_BOT_TOKEN" '{i:$i, text:$text, visibility:"home"}')"
 
       - name: Dispatch changelog update to docs repo
         if: github.event_name == 'release'
