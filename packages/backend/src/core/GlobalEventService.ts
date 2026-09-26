@@ -27,6 +27,7 @@ import type { MiDrawRoom } from '@/models/DrawRoom.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
+import type { DrawStroke } from '@/models/DrawRoomLayer.js';
 import { bindThis } from '@/decorators.js';
 import { Serialized } from '@/types.js';
 import type Emitter from 'strict-event-emitter-types';
@@ -261,10 +262,12 @@ export interface DrawRoomEventTypes {
 	strokePart: {
 		userId: MiUser['id'];
 		strokeId: string;
-		tool: 'pen' | 'eraser';
+		tool: 'pen' | 'eraser' | 'fill';
 		color: string;
 		size: number;
 		opacity?: number;
+		brush?: 'soft' | 'dot';
+		clip?: string;
 		points: string;
 	};
 	// カーソルの位置(保存しない)。一定間隔でまとめて配る。x・yがnullならキャンバスの外に出た
@@ -291,6 +294,23 @@ export interface DrawRoomEventTypes {
 	};
 	clearLayer: {
 		userId: MiUser['id'];
+	};
+	// 移動ツールで線をずらした(strokeIdsがnullならレイヤー全体)
+	strokesMoved: {
+		userId: MiUser['id'];
+		strokeIds: string[] | null;
+		dx: number;
+		dy: number;
+	};
+	// 選択範囲の境目で線を切った(元の線を、切った後の線の並びに置き換える)
+	strokesSplit: {
+		userId: MiUser['id'];
+		splits: { id: string; pieces: DrawStroke[] }[];
+	};
+	// 選んだ線を消した
+	strokesDeleted: {
+		userId: MiUser['id'];
+		strokeIds: string[];
 	};
 	chat: {
 		message: Packed<'DrawRoomChatMessage'>;

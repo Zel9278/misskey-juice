@@ -296,12 +296,17 @@ export type Channels = {
 			roomId: string;
 		};
 		events: {
-			strokePart: (payload: { userId: User['id']; strokeId: string; tool: DrawStroke['tool']; color: string; size: number; opacity?: number; points: string; }) => void;
+			strokePart: (payload: { userId: User['id']; strokeId: string; tool: DrawStroke['tool']; color: string; size: number; opacity?: number; brush?: DrawStroke['brush']; clip?: string; points: string; }) => void;
 			cursors: (payload: { cursors: { userId: User['id']; x: number | null; y: number | null; }[]; }) => void;
 			strokeCancel: (payload: { userId: User['id']; strokeId: string; }) => void;
 			stroke: (payload: { userId: User['id']; stroke: DrawStroke; }) => void;
 			undo: (payload: { userId: User['id']; strokeId: string; }) => void;
 			clearLayer: (payload: { userId: User['id']; }) => void;
+			strokesMoved: (payload: { userId: User['id']; strokeIds: string[] | null; dx: number; dy: number; }) => void;
+			strokesDeleted: (payload: { userId: User['id']; strokeIds: string[]; }) => void;
+			strokesSplit: (payload: { userId: User['id']; splits: { id: string; pieces: DrawStroke[]; }[]; }) => void;
+			// JUICE: 自分が送った線の移動・削除・置き換えが断られた(本人にだけ届く。線を取り直してサーバーの状態に合わせる)
+			operationRejected: (payload: Record<string, never>) => void;
 			chat: (payload: { message: DrawRoomChatMessage; user: UserLite; }) => void;
 			memberJoined: (payload: { user: UserLite; }) => void;
 			memberLeft: (payload: { userId: User['id']; kicked: boolean; }) => void;
@@ -311,13 +316,17 @@ export type Channels = {
 			ended: (payload: { room: DrawRoom; }) => void;
 		};
 		receives: {
-			strokePart: { strokeId: string; tool: DrawStroke['tool']; color: string; size: number; opacity?: number; points: string; };
+			strokePart: { strokeId: string; tool: DrawStroke['tool']; color: string; size: number; opacity?: number; brush?: DrawStroke['brush']; clip?: string; points: string; };
 			cursor: { x: number | null; y: number | null; };
 			visibility: { visible: boolean; };
 			strokeCancel: { strokeId: string; };
 			stroke: DrawStroke;
 			undo: null | Record<string, never>;
 			clearLayer: null | Record<string, never>;
+			moveStrokes: { strokeIds: string[] | null; dx: number; dy: number; splits?: { id: string; pieces: DrawStroke[]; }[]; };
+			deleteStrokes: { strokeIds: string[]; splits?: { id: string; pieces: DrawStroke[]; }[]; };
+			replaceStrokes: { replacements: { id: string; pieces: DrawStroke[]; }[]; };
+			clearLayerOf: { userId: User['id']; };
 			chat: { text: string; };
 		};
 	};

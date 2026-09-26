@@ -9,7 +9,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DrawRoomService } from '@/core/DrawRoomService.js';
 import { drawRoomErrors, rethrowDrawRoomError } from '@/server/api/draw-room-errors.js';
 
-// JUICE: 絵チャの部屋のメンバーをやめる(見学者に戻る)。部屋主はやめられない(終了する)
+// JUICE: 絵チャの部屋のメンバーをやめる(見学者に戻る)。部屋主も抜けて観戦できる(部屋主のまま)
 export const meta = {
 	tags: ['draw-rooms'],
 
@@ -26,7 +26,6 @@ export const meta = {
 		disabled: drawRoomErrors.disabled,
 		noSuchRoom: drawRoomErrors.noSuchRoom,
 		forbidden: drawRoomErrors.forbidden,
-		ownerCannotLeave: drawRoomErrors.ownerCannotLeave,
 	},
 } as const;
 

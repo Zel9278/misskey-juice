@@ -6644,10 +6644,15 @@ export type components = {
         DrawStroke: {
             id: string;
             /** @enum {string} */
-            tool: 'pen' | 'eraser';
+            tool: 'pen' | 'eraser' | 'fill';
             color: string;
             size: number;
             opacity?: number;
+            /** @enum {string} */
+            brush?: 'soft' | 'dot';
+            clip?: string;
+            dx?: number;
+            dy?: number;
             points: string;
         };
         DrawRoomChatMessage: {

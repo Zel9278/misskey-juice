@@ -699,4 +699,79 @@ $handleSize: 8px;
 	height: $handleSize * 2;
 	cursor: nesw-resize;
 }
+
+// JUICE: 指(iPad・スマホ等)では8pxのつかむ所に触れられず大きさを変えられないので、つかむ所を広げ、
+// 右下には目に見えるつまみを出す
+$touchHandleSize: 20px;
+
+@media (pointer: coarse) {
+	.handleTop,
+	.handleBottom {
+		height: $touchHandleSize;
+	}
+
+	.handleTop {
+		top: -($touchHandleSize);
+	}
+
+	.handleBottom {
+		bottom: -($touchHandleSize);
+	}
+
+	.handleLeft,
+	.handleRight {
+		width: $touchHandleSize;
+	}
+
+	.handleLeft {
+		left: -($touchHandleSize);
+	}
+
+	.handleRight {
+		right: -($touchHandleSize);
+	}
+
+	.handleTopLeft,
+	.handleTopRight,
+	.handleBottomLeft,
+	.handleBottomRight {
+		width: $touchHandleSize * 2;
+		height: $touchHandleSize * 2;
+	}
+
+	.handleTopLeft {
+		top: -($touchHandleSize);
+		left: -($touchHandleSize);
+	}
+
+	.handleTopRight {
+		top: -($touchHandleSize);
+		right: -($touchHandleSize);
+	}
+
+	.handleBottomLeft {
+		bottom: -($touchHandleSize);
+		left: -($touchHandleSize);
+	}
+
+	.handleBottomRight {
+		bottom: -($touchHandleSize);
+		right: -($touchHandleSize);
+
+		// 右下の角に、斜めの線のつまみを見せる
+		&::after {
+			content: '';
+			position: absolute;
+			top: $touchHandleSize - 14px;
+			left: $touchHandleSize - 14px;
+			width: 18px;
+			height: 18px;
+			border-radius: 0 0 6px 0;
+			border-right: solid 3px var(--MI_THEME-accent);
+			border-bottom: solid 3px var(--MI_THEME-accent);
+			opacity: 0.8;
+			pointer-events: none;
+		}
+	}
+}
 </style>

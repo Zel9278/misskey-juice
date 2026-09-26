@@ -4,14 +4,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader :actions="headerActions">
-	<div class="_spacer" style="--MI_SPACER-w: 800px;">
-		<div v-if="appearNote" class="_margin _gaps_s">
-			<div :class="$style.author">
-				<MkAvatar :class="$style.avatar" :user="appearNote.user" link preview/>
+<PageWithHeader :actions="headerActions" :overridePageMetadata="embedded ? { title: i18n.ts._juice.novelEditorPreview, icon: 'ti ti-eye' } : undefined">
+	<!-- JUICE: 縦書きでは、ページ全体を画面(エディターに並べたときはその枠)の高さに収め、本文に残りの高さを使う -->
+	<div ref="spacerEl" class="_spacer" :class="{ [$style.fitHeight]: writingMode === 'vertical' }" style="--MI_SPACER-w: 800px;">
+		<div v-if="appearNote != null || isPreview" class="_margin _gaps_s" :class="{ [$style.fitContent]: writingMode === 'vertical' }">
+			<!-- JUICE: 小説エディターのプレビューでは、書いている下書きの題名を作者の上に出す -->
+			<div v-if="isPreview" :class="$style.previewTitle">{{ currentWork.title || i18n.ts._juice.novelEditorUntitled }}</div>
+			<div v-if="author != null" :class="$style.author">
+				<MkAvatar :class="$style.avatar" :user="author" link preview/>
 				<div :class="$style.authorText">
-					<MkA v-user-preview="appearNote.userId" :class="$style.authorName" :to="userPage(appearNote.user)"><MkUserName :user="appearNote.user"/></MkA>
-					<MkAcct :class="$style.authorAcct" :user="appearNote.user"/>
+					<MkA v-user-preview="author.id" :class="$style.authorName" :to="userPage(author)"><MkUserName :user="author"/></MkA>
+					<MkAcct :class="$style.authorAcct" :user="author"/>
 				</div>
 			</div>
 			<!-- JUICE: 本文の文字数と、読み終わるまでのおおよその時間 -->
@@ -19,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<span><i class="ti ti-letter-case"></i> {{ i18n.tsx._juice.novelViewerCharCount({ n: number(novelCharCount) }) }}</span>
 				<span><i class="ti ti-clock"></i> {{ i18n.tsx._juice.novelViewerReadingTime({ n: number(novelReadingMinutes) }) }}</span>
 			</div>
-			<p v-if="appearNote.cw != null" :class="$style.cw">
+			<p v-if="appearNote != null && appearNote.cw != null" :class="$style.cw">
 				<span v-if="appearNote.cw !== ''" :class="$style.novelText">{{ appearNote.cw }}</span>
 				<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll"/>
 			</p>
@@ -27,12 +30,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 			ページの外枠にはposition: fixedの基準になる要素(transform等)があり、その中のままでは
 			画面全体を覆えないため、全画面の間だけ<body>の直下へ移す(DOMを移すだけで作り直さない) -->
 			<Teleport to="body" :disabled="!isFullscreen">
-			<div v-show="appearNote.cw == null || showContent" ref="readerEl" :class="[$style.reader, { [$style.fullscreen]: isFullscreen }]">
+			<div v-show="appearNote == null || appearNote.cw == null || showContent" ref="readerEl" :class="[$style.reader, { [$style.fullscreen]: isFullscreen, [$style.readerFit]: writingMode === 'vertical' && !isFullscreen }]">
 				<div v-if="isFullscreen" :class="$style.fullscreenToolbar">
-					<button v-if="chapters.length > 1" v-tooltip="i18n.ts._juice.novelViewerToc" class="_button" :class="$style.fullscreenToolbarButton" :aria-label="i18n.ts._juice.novelViewerToc" @click="openToc"><i class="ti ti-list"></i></button>
-					<button v-tooltip="i18n.ts._juice.novelViewerSettings" class="_button" :class="$style.fullscreenToolbarButton" :aria-label="i18n.ts._juice.novelViewerSettings" @click="openSettings"><i class="ti ti-adjustments"></i></button>
-					<button v-tooltip="writingModeToggleLabel" class="_button" :class="$style.fullscreenToolbarButton" :aria-label="writingModeToggleLabel" @click="toggleWritingMode"><i class="ti ti-camera-rotate"></i></button>
-					<button v-tooltip="i18n.ts._juice.novelViewerExitFullscreen" class="_button" :class="$style.fullscreenToolbarButton" :aria-label="i18n.ts._juice.novelViewerExitFullscreen" @click="exitFullscreen"><i class="ti ti-minimize"></i></button>
+					<button v-if="chapters.length > 1" v-tooltip="i18n.ts._juice.novelViewerToc" class="_button" :class="$style.fullscreenToolbarButton" :aria-label="i18n.ts._juice.novelViewerToc" @click="openToc"><i class="ti ti-list"></i><span :class="$style.fullscreenToolbarLabel">{{ i18n.ts._juice.novelViewerToc }}</span></button>
+					<button v-tooltip="i18n.ts._juice.novelViewerSettings" class="_button" :class="$style.fullscreenToolbarButton" :aria-label="i18n.ts._juice.novelViewerSettings" @click="openSettings"><i class="ti ti-adjustments"></i><span :class="$style.fullscreenToolbarLabel">{{ i18n.ts._juice.novelViewerSettings }}</span></button>
+					<button v-tooltip="writingModeToggleLabel" class="_button" :class="$style.fullscreenToolbarButton" :aria-label="writingModeToggleLabel" @click="toggleWritingMode"><i class="ti ti-camera-rotate"></i><span :class="$style.fullscreenToolbarLabel">{{ writingModeToggleLabel }}</span></button>
+					<button v-tooltip="i18n.ts._juice.novelViewerExitFullscreen" class="_button" :class="$style.fullscreenToolbarButton" :aria-label="i18n.ts._juice.novelViewerExitFullscreen" @click="exitFullscreen"><i class="ti ti-minimize"></i><span :class="$style.fullscreenToolbarLabel">{{ i18n.ts._juice.novelViewerExitFullscreen }}</span></button>
 				</div>
 				<div
 					ref="outerEl"
@@ -90,17 +93,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<!-- JUICE: 「小説家になろう」等を踏まえ、横書き時は各章の境目ごとに目次・前後の章への
 								導線を置く(文書の最初と最後だけだと、読んでいる途中の章からは遠くて使えないため) -->
 								<div v-if="writingMode === 'horizontal' && sectionCount > 1" :class="$style.chapterNav">
-									<button class="_button" :class="$style.chapterNavLink" :disabled="currentSection === 0" @click="goToSection(currentSection - 1)"><i class="ti ti-chevron-left"></i> {{ i18n.ts._juice.novelViewerPrevPage }}</button>
+									<button class="_button" :class="$style.chapterNavLink" :disabled="currentSection === 0" @click="goToSection(currentSection - 1)"><i class="ti ti-chevron-left"></i> <span :class="$style.navLong">{{ i18n.ts._juice.novelViewerPrevPage }}</span><span :class="$style.navShort">{{ i18n.ts._juice.novelViewerPrevShort }}</span></button>
 									<span :class="$style.sectionCount">{{ currentSection + 1 }} / {{ sectionCount }}</span>
-									<button class="_button" :class="$style.chapterNavLink" :disabled="currentSection === sectionCount - 1" @click="goToSection(currentSection + 1)">{{ i18n.ts._juice.novelViewerNextPage }} <i class="ti ti-chevron-right"></i></button>
+									<button class="_button" :class="$style.chapterNavLink" :disabled="currentSection === sectionCount - 1" @click="goToSection(currentSection + 1)"><span :class="$style.navLong">{{ i18n.ts._juice.novelViewerNextPage }}</span><span :class="$style.navShort">{{ i18n.ts._juice.novelViewerNextShort }}</span> <i class="ti ti-chevron-right"></i></button>
 								</div>
 								<!-- JUICE: 横書きで[newpage]による改ページがある場合は、今のページに属する章だけを描画する -->
 								<template v-for="(chapter, i) in chapters" :key="`${i}:${chapter.text}`">
 									<template v-if="writingMode !== 'horizontal' || chapter.section === currentSection">
 									<div v-if="writingMode === 'horizontal' && chapters.length > 1 && !(sectionCount > 1 && chapter.sectionStart)" :class="$style.chapterNav">
-										<button class="_button" :class="$style.chapterNavLink" :disabled="i === 0" @click="jumpToChapter(i - 1)"><i class="ti ti-chevron-left"></i> {{ i18n.ts._juice.novelViewerPrevChapter }}</button>
+										<button class="_button" :class="$style.chapterNavLink" :disabled="i === 0" @click="jumpToChapter(i - 1)"><i class="ti ti-chevron-left"></i> <span :class="$style.navLong">{{ i18n.ts._juice.novelViewerPrevChapter }}</span><span :class="$style.navShort">{{ i18n.ts._juice.novelViewerPrevShort }}</span></button>
 										<button class="_button" :class="$style.chapterNavLink" @click="openToc">{{ i18n.ts._juice.novelViewerToc }}</button>
-										<button class="_button" :class="$style.chapterNavLink" :disabled="i === chapters.length - 1" @click="jumpToChapter(i + 1)">{{ i18n.ts._juice.novelViewerNextChapter }} <i class="ti ti-chevron-right"></i></button>
+										<button class="_button" :class="$style.chapterNavLink" :disabled="i === chapters.length - 1" @click="jumpToChapter(i + 1)"><span :class="$style.navLong">{{ i18n.ts._juice.novelViewerNextChapter }}</span><span :class="$style.navShort">{{ i18n.ts._juice.novelViewerNextShort }}</span> <i class="ti ti-chevron-right"></i></button>
 									</div>
 									<div v-else-if="writingMode !== 'horizontal' && i > 0 && chapter.sectionStart" :class="$style.pageBreak" data-novel-page-break aria-hidden="true"></div>
 									<div v-else-if="writingMode !== 'horizontal' && i > 0" :class="$style.chapterBreak" aria-hidden="true">⁂</div>
@@ -109,15 +112,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 									</template>
 								</template>
 								<div v-if="writingMode === 'horizontal' && sectionCount > 1" :class="$style.chapterNav">
-									<button class="_button" :class="$style.chapterNavLink" :disabled="currentSection === 0" @click="goToSection(currentSection - 1)"><i class="ti ti-chevron-left"></i> {{ i18n.ts._juice.novelViewerPrevPage }}</button>
+									<button class="_button" :class="$style.chapterNavLink" :disabled="currentSection === 0" @click="goToSection(currentSection - 1)"><i class="ti ti-chevron-left"></i> <span :class="$style.navLong">{{ i18n.ts._juice.novelViewerPrevPage }}</span><span :class="$style.navShort">{{ i18n.ts._juice.novelViewerPrevShort }}</span></button>
 									<button v-if="chapters.length > 1" class="_button" :class="$style.chapterNavLink" @click="openToc">{{ i18n.ts._juice.novelViewerToc }}</button>
 									<span v-else :class="$style.sectionCount">{{ currentSection + 1 }} / {{ sectionCount }}</span>
-									<button class="_button" :class="$style.chapterNavLink" :disabled="currentSection === sectionCount - 1" @click="goToSection(currentSection + 1)">{{ i18n.ts._juice.novelViewerNextPage }} <i class="ti ti-chevron-right"></i></button>
+									<button class="_button" :class="$style.chapterNavLink" :disabled="currentSection === sectionCount - 1" @click="goToSection(currentSection + 1)"><span :class="$style.navLong">{{ i18n.ts._juice.novelViewerNextPage }}</span><span :class="$style.navShort">{{ i18n.ts._juice.novelViewerNextShort }}</span> <i class="ti ti-chevron-right"></i></button>
 								</div>
 								<div v-else-if="writingMode === 'horizontal' && chapters.length > 1" :class="$style.chapterNav">
-									<button class="_button" :class="$style.chapterNavLink" @click="jumpToChapter(chapters.length - 2)"><i class="ti ti-chevron-left"></i> {{ i18n.ts._juice.novelViewerPrevChapter }}</button>
+									<button class="_button" :class="$style.chapterNavLink" @click="jumpToChapter(chapters.length - 2)"><i class="ti ti-chevron-left"></i> <span :class="$style.navLong">{{ i18n.ts._juice.novelViewerPrevChapter }}</span><span :class="$style.navShort">{{ i18n.ts._juice.novelViewerPrevShort }}</span></button>
 									<button class="_button" :class="$style.chapterNavLink" @click="openToc">{{ i18n.ts._juice.novelViewerToc }}</button>
-									<button class="_button" :class="$style.chapterNavLink" disabled>{{ i18n.ts._juice.novelViewerNextChapter }} <i class="ti ti-chevron-right"></i></button>
+									<button class="_button" :class="$style.chapterNavLink" disabled><span :class="$style.navLong">{{ i18n.ts._juice.novelViewerNextChapter }}</span><span :class="$style.navShort">{{ i18n.ts._juice.novelViewerNextShort }}</span> <i class="ti ti-chevron-right"></i></button>
 								</div>
 							</div>
 						</div>
@@ -130,7 +133,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</div>
 			</Teleport>
-			<MkA :to="notePage(appearNote)" :class="$style.footerLink"><MkTime :time="appearNote.createdAt" mode="detail" colored/></MkA>
+			<MkA v-if="appearNote != null" :to="notePage(appearNote)" :class="$style.footerLink"><MkTime :time="appearNote.createdAt" mode="detail" colored/></MkA>
 		</div>
 		<MkError v-else-if="error" @retry="fetchNote()"/>
 		<MkLoading v-else/>
@@ -139,7 +142,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, markRaw, nextTick, onActivated, onDeactivated, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
+import { computed, markRaw, nextTick, onActivated, onDeactivated, onMounted, onUnmounted, provide, ref, useTemplateRef, watch } from 'vue';
 import * as Misskey from 'misskey-js';
 import { host } from '@@/js/config.js';
 import * as os from '@/os.js';
@@ -154,10 +157,26 @@ import { userPage } from '@/filters/user.js';
 import { notePage } from '@/filters/note.js';
 import number from '@/filters/number.js';
 import { pleaseLogin } from '@/utility/please-login.js';
+import { $i } from '@/i.js';
+import { currentWork } from '@/utility/novel-draft.js';
+import { decodeTextFile } from '@/utility/decode-text-file.js';
+import { DI } from '@/di.js';
+import { collapseHeaderActions } from '@/utility/collapse-header-actions.js';
 
 const props = defineProps<{
-	noteId: string;
+	// JUICE: 無いときは、小説エディターの下書きのプレビューとして表示する
+	noteId?: string;
+	// JUICE: 小説エディターの中に並べて表示している(ページの題名は変えない)
+	embedded?: boolean;
 }>();
+
+const isPreview = computed(() => props.noteId == null);
+
+// JUICE: エディターの中に並べたときは、外側のページのヘッダーの高さを引き継がない(このビューワーのヘッダーが本文に重なるため)
+if (props.embedded) {
+	provide(DI.currentStickyTop, ref(0));
+	provide(DI.currentStickyBottom, ref(0));
+}
 
 const note = ref<Misskey.entities.Note | null>(null);
 const error = ref();
@@ -215,6 +234,20 @@ function updateSpreadMode(): void {
 }
 
 const appearNote = computed(() => note.value ? (getAppearNote(note.value) ?? note.value) : null);
+const author = computed(() => (isPreview.value ? $i : appearNote.value?.user) ?? null);
+
+// JUICE: プレビューでは下書きの本文を表示する。打つたびに組み直すと重いので、少し待ってから反映する
+const previewText = ref(currentWork.value.text);
+let previewTimer: number | null = null;
+watch(() => currentWork.value.text, (text) => {
+	// 小説のノートを開いているビューワー(KeepAliveで裏に残っているものも)は、下書きの変更に反応しない
+	if (!isPreview.value) return;
+	if (previewTimer != null) window.clearTimeout(previewTimer);
+	previewTimer = window.setTimeout(() => {
+		previewTimer = null;
+		previewText.value = text;
+	}, 300);
+});
 
 // JUICE: 添付された.txtファイルがあれば、本文の代わりにそちらを小説の本体として読む。
 // ノート本文だけだと文字数上限に収まらない長編を投稿できないための機能
@@ -226,34 +259,6 @@ const novelFile = computed(() => {
 const novelFileContent = ref<string | null>(null);
 const novelFileLoading = ref(false);
 const novelFileError = ref<unknown>(null);
-
-// JUICE: 日本語の文章らしさの目安。正しい文字コードで読めた文章はひらがなを多く含み、誤った文字コードで
-// 読んだ場合は置換文字(U+FFFD)や半角カナ・私用領域の文字だらけになる
-function japaneseTextScore(text: string): number {
-	let score = 0;
-	for (const ch of text) {
-		const code = ch.codePointAt(0) ?? 0;
-		if (code === 0xFFFD) score -= 20;
-		else if (code >= 0x3041 && code <= 0x309F) score += 2; // ひらがな
-		else if (code >= 0x30A0 && code <= 0x30FF) score += 1; // カタカナ
-		else if (code >= 0xFF61 && code <= 0xFF9F) score -= 2; // 半角カナ
-		else if (code >= 0xE000 && code <= 0xF8FF) score -= 5; // 私用領域
-	}
-	return score;
-}
-
-function decodeTextFile(buffer: ArrayBuffer): string {
-	// JUICE: ブラウザ標準のTextDecoderにはエンコーディング自動判定機能が無いため、まずUTF-8として
-	// 厳密にデコードし(正しいShift-JIS/EUC-JPのバイト列が同時に正しいUTF-8になることは実質無い)、
-	// 失敗したらShift-JISとEUC-JPの両方で読んでみて、日本語の文章らしい方を採用する
-	try {
-		return new TextDecoder('utf-8', { fatal: true }).decode(buffer);
-	} catch {
-		const sjis = new TextDecoder('shift-jis').decode(buffer);
-		const eucjp = new TextDecoder('euc-jp').decode(buffer);
-		return japaneseTextScore(eucjp) > japaneseTextScore(sjis) ? eucjp : sjis;
-	}
-}
 
 // JUICE: KeepAliveで同じインスタンスが別ノートに使い回されるため、前のノートのファイル取得が
 // 後から終わっても本文を上書きしないよう、最新の読み込み要求かどうかを世代番号で確認する
@@ -494,7 +499,7 @@ const CHAPTER_TITLE_PATTERN = /\[chapter:\s*((?:\[\[rb:[^\]]*\]\]|[^\]])*?)\s*\]
 const PIXIV_RUBY_BASE_PATTERN = /\[\[rb:\s*([^>\]]+?)\s*>[^\]]*\]\]/g;
 
 const chapters = computed<NovelChapter[]>(() => {
-	const text = novelFileContent.value ?? appearNote.value?.text;
+	const text = isPreview.value ? previewText.value : (novelFileContent.value ?? appearNote.value?.text);
 	if (!text) return [{ text: '', segments: [], title: null, section: 0, sectionStart: true }];
 	let normalized = convertPixivNotation(text.replace(/\r\n/g, '\n'));
 	if (aozoraNotation.value) normalized = convertAozoraNotation(normalized);
@@ -1095,10 +1100,13 @@ let listenersAttached = false;
 function attachWindowListeners(): void {
 	if (listenersAttached) return;
 	listenersAttached = true;
-	window.addEventListener('keydown', onKeydown);
 	window.addEventListener('resize', onResize);
-	window.addEventListener('touchstart', onWindowTouchStart, { passive: false });
 	window.document.addEventListener('fullscreenchange', onFullscreenChange);
+	// JUICE: エディターの中に並べたときは、キーでのページめくり・画面端のスワイプ対策をしない
+	// (エディターでの入力やボタン操作、エディター側のタッチ操作に割り込まないように)
+	if (props.embedded) return;
+	window.addEventListener('keydown', onKeydown);
+	window.addEventListener('touchstart', onWindowTouchStart, { passive: false });
 	prevRootOverscrollBehaviorX = window.document.documentElement.style.overscrollBehaviorX;
 	window.document.documentElement.style.overscrollBehaviorX = 'none';
 }
@@ -1106,10 +1114,11 @@ function attachWindowListeners(): void {
 function detachWindowListeners(): void {
 	if (!listenersAttached) return;
 	listenersAttached = false;
-	window.removeEventListener('keydown', onKeydown);
 	window.removeEventListener('resize', onResize);
-	window.removeEventListener('touchstart', onWindowTouchStart);
 	window.document.removeEventListener('fullscreenchange', onFullscreenChange);
+	if (props.embedded) return;
+	window.removeEventListener('keydown', onKeydown);
+	window.removeEventListener('touchstart', onWindowTouchStart);
 	window.document.documentElement.style.overscrollBehaviorX = prevRootOverscrollBehaviorX;
 }
 
@@ -1131,13 +1140,36 @@ onUnmounted(() => {
 	detachWindowListeners();
 	bodyResizeObserver.disconnect();
 	if (resizeTimer != null) window.clearTimeout(resizeTimer);
+	if (previewTimer != null) window.clearTimeout(previewTimer);
 	saveProgress();
 });
+
+// JUICE: プレビューはノートを読み込まない(appearNoteが変わらない)ので、開いたときに最初の組版をここで行う
+onMounted(() => {
+	if (isPreview.value && writingMode.value === 'vertical') resetPager();
+});
+
+// JUICE: プレビューで本文が変わったら、読んでいた位置を保ったまま組み直す(先頭に戻さない)
+watch(previewText, () => {
+	if (!isPreview.value) return;
+	if (writingMode.value === 'vertical') applyLayout(anchoredReadingPosition());
+});
+
+// JUICE: 縦書きのページ送りでJSから付けた位置・幅(本文のずらし・切り取る窓の幅・列の幅)は、横書きでは
+// 使わない。同じ要素が横書きでも使われるため、残っているとページを送った分だけ本文が枠の外へずれて見えなくなる
+function clearVerticalLayoutStyles(): void {
+	for (const el of panelInnerEls.value) {
+		el?.style.removeProperty('transform');
+		el?.style.removeProperty('line-height');
+	}
+	for (const el of panelViewportEls.value) el?.style.removeProperty('width');
+}
 
 watch([appearNote, writingMode, showContent, novelFileContent], () => {
 	chapterMarkerEls = [];
 	currentSection.value = 0;
 	if (writingMode.value === 'vertical') resetPager();
+	else nextTick(clearVerticalLayoutStyles);
 });
 
 // JUICE: 文字サイズ等の変更時は読んでいた位置(本文全体に対する割合)を保ったまま再計測する(しおり位置には戻さない)
@@ -1146,6 +1178,7 @@ watch([fontSize, fontFamily, paragraphIndent, aozoraNotation], () => {
 });
 
 function fetchNote(): void {
+	if (props.noteId == null) return;
 	note.value = null;
 	error.value = undefined;
 
@@ -1204,6 +1237,18 @@ function onFullscreenChange(): void {
 	if (window.document.fullscreenElement == null && isFullscreen.value) isFullscreen.value = false;
 }
 
+// JUICE: ビューワーの幅(狭いときはヘッダーのボタンを名前付きのメニューにまとめる)
+const spacerEl = useTemplateRef<HTMLDivElement>('spacerEl');
+const viewerNarrow = ref(false);
+const spacerResizeObserver = new ResizeObserver(entries => {
+	for (const entry of entries) viewerNarrow.value = entry.contentRect.width < 600;
+});
+watch(spacerEl, (el, oldEl) => {
+	if (oldEl) spacerResizeObserver.unobserve(oldEl);
+	if (el) spacerResizeObserver.observe(el);
+});
+onUnmounted(() => spacerResizeObserver.disconnect());
+
 const headerActions = computed(() => {
 	const actions = [{
 		text: i18n.ts._juice.novelViewerSettings,
@@ -1225,15 +1270,23 @@ const headerActions = computed(() => {
 			handler: openToc,
 		});
 	}
-	return actions;
+	// JUICE: 狭いときは名前付きのメニューにまとめる
+	return collapseHeaderActions(actions, viewerNarrow.value);
 });
 
-definePage(() => ({
-	title: i18n.ts._juice.novelViewer,
-}));
+if (!props.embedded) {
+	definePage(() => ({
+		title: isPreview.value ? i18n.ts._juice.novelEditorPreview : i18n.ts._juice.novelViewer,
+	}));
+}
 </script>
 
 <style lang="scss" module>
+.previewTitle {
+	font-size: 1.3em;
+	font-weight: bold;
+}
+
 .author {
 	display: flex;
 	align-items: center;
@@ -1471,9 +1524,25 @@ definePage(() => ({
 
 .chapterNavLink {
 	padding: 4px 8px;
+	white-space: nowrap;
 
 	&:disabled {
 		opacity: 0.3;
+	}
+}
+
+// JUICE: 狭い画面では「前のページ」等が折り返して見切れるので、「前へ」「次へ」と短くする
+.navShort {
+	display: none;
+}
+
+@container (max-width: 400px) {
+	.navLong {
+		display: none;
+	}
+
+	.navShort {
+		display: inline;
 	}
 }
 
@@ -1498,10 +1567,44 @@ definePage(() => ({
 	margin: 1.5em 0;
 }
 
+// JUICE: 縦書きでは、作者・文字数・ページ送りなどを含めたページ全体を、見えている高さに収める
+// (本文を70vhで決めていたときは、上下の要素の分だけ画面からはみ出していた)。
+// ごく低い画面では本文が潰れないよう、ページ全体の高さに下限を設けてスクロールさせる
+.fitHeight {
+	display: flex;
+	flex-direction: column;
+	height: calc(100cqh - var(--MI-stickyTop, 0px) - var(--MI-stickyBottom, 0px));
+	min-height: 480px;
+}
+
+.fitContent {
+	flex: 1;
+	min-height: 0;
+}
+
+.readerFit {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+
+	> .body[data-mode="vertical"] {
+		flex: 1 1 0;
+		min-height: 240px;
+		height: auto;
+	}
+
+	> .pager {
+		flex-shrink: 0;
+	}
+}
+
 // JUICE: 全画面表示。popupMenu等のポップアップ(z-indexは500000〜)より下、アプリの通常のUIより上に重ねる
 .reader.fullscreen {
 	position: fixed;
 	inset: 0;
+	// JUICE: 全画面では<body>の直下に移るため、ページ送りの「前へ」「次へ」の切り替えの基準をここにする
+	container-type: inline-size;
 	z-index: 400000;
 	display: flex;
 	flex-direction: column;
@@ -1551,6 +1654,27 @@ definePage(() => ({
 
 	&:hover {
 		background: var(--MI_THEME-buttonHoverBg);
+	}
+
+	// JUICE: 狭い画面(スマホ等)ではツールチップが出ないので、アイコンの下に小さく名前を出す
+	@media (max-width: 600px) {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1px;
+		padding: 4px 6px 2px;
+	}
+}
+
+.fullscreenToolbarLabel {
+	display: none;
+
+	@media (max-width: 600px) {
+		display: block;
+		font-size: 9px;
+		line-height: 1.2;
+		white-space: nowrap;
+		opacity: 0.8;
 	}
 }
 

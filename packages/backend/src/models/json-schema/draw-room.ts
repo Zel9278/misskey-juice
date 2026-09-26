@@ -91,7 +91,7 @@ export const packedDrawStrokeSchema = {
 		tool: {
 			type: 'string',
 			optional: false, nullable: false,
-			enum: ['pen', 'eraser'],
+			enum: ['pen', 'eraser', 'fill'],
 		},
 		color: {
 			type: 'string',
@@ -102,6 +102,26 @@ export const packedDrawStrokeSchema = {
 			optional: false, nullable: false,
 		},
 		opacity: {
+			type: 'number',
+			optional: true, nullable: false,
+		},
+		// JUICE: 筆の種類(soft: にじみ筆、dot: ドット)。無ければ普通の筆
+		brush: {
+			type: 'string',
+			optional: true, nullable: false,
+			enum: ['soft', 'dot'],
+		},
+		// JUICE: 線の中だけ塗る(はみ出し防止)で塗れる範囲の多角形(pointsと同じ形式)
+		clip: {
+			type: 'string',
+			optional: true, nullable: false,
+		},
+		// JUICE: 移動ツールでずらした量(キャンバス座標)。描くときに点の列をこの分ずらす
+		dx: {
+			type: 'number',
+			optional: true, nullable: false,
+		},
+		dy: {
 			type: 'number',
 			optional: true, nullable: false,
 		},
