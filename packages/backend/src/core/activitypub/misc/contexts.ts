@@ -531,6 +531,11 @@ const context_iris = [
 	'https://w3id.org/security/v1',
 ];
 
+// JUICE: 独自プロパティの名前空間(JSON-LDの識別子。URLとして開くためのものではない)
+export const JUICE_NAMESPACE = 'https://github.com/misskey-juice/misskey-juice#';
+// JUICE: 以前の名前空間(組織へ移す前のリポジトリ)。受け取ったときに読み替える
+export const LEGACY_JUICE_NAMESPACES = ['https://github.com/Zel9278/misskey-juice#'];
+
 const extension_context_definition = {
 	Key: 'sec:Key',
 	// as non-standards
@@ -564,8 +569,10 @@ const extension_context_definition = {
 		'@type': 'schema:text',
 	},
 	'isCat': 'misskey:isCat',
-	// JUICE (misskey-juice独自拡張。misskey-hub.netの名前空間とは別に、フォーク独自のプロパティとして分離する)
-	juice: 'https://github.com/Zel9278/misskey-juice#',
+	// JUICE (misskey-juice独自拡張。misskey-hub.netの名前空間とは別に、フォーク独自のプロパティとして分離する)。
+	// リポジトリをmisskey-juice組織へ移したのに合わせて名前空間も移した。古い名前空間で届いたものは
+	// normalizeLegacyJuiceProperties で読み替える
+	juice: JUICE_NAMESPACE,
 	'_juice_isAIGenerated': 'juice:_juice_isAIGenerated',
 	'_juice_summaryIsAIGeneratedFallback': 'juice:_juice_summaryIsAIGeneratedFallback',
 	'_juice_originalCw': 'juice:_juice_originalCw',
@@ -577,6 +584,31 @@ const extension_context_definition = {
 } satisfies Context;
 
 export const CONTEXT: (string | Context)[] = [...context_iris, extension_context_definition];
+
+/**
+ * JUICE: 古いJUICE(名前空間が https://github.com/Zel9278/misskey-juice# のもの)から、LD署名付き(リレー経由)で
+ * 届いたactivityをcompactすると、独自プロパティが今の名前空間の短い名前にならず、完全なIRIのキー
+ * (例: https://github.com/Zel9278/misskey-juice#_juice_isAIGenerated)のまま残る。
+ * これを`_juice_*`の短い名前に戻す(入れ子のオブジェクトも)。既に短い名前のキーがあればそちらを優先する。
+ * LD署名の検証が済んでから呼ぶこと(キーを書き換えると、署名の対象の内容が変わるため)
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function normalizeLegacyJuiceProperties(value: any): void {
+	if (typeof value !== 'object' || value === null) return;
+	if (Array.isArray(value)) {
+		for (const item of value) normalizeLegacyJuiceProperties(item);
+		return;
+	}
+	for (const key of Object.keys(value)) {
+		const prefix = LEGACY_JUICE_NAMESPACES.find(ns => key.startsWith(ns));
+		if (prefix != null) {
+			const name = key.slice(prefix.length);
+			if (name.startsWith('_juice_') && !(name in value)) value[name] = value[key];
+			delete value[key];
+		}
+	}
+	for (const child of Object.values(value)) normalizeLegacyJuiceProperties(child);
+}
 
 export const PRELOADED_CONTEXTS: Record<string, JsonLd> = {
 	'https://w3id.org/identity/v1': id_v1,

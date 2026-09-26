@@ -22,6 +22,7 @@ import { StatusError } from '@/misc/status-error.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
 import { JsonLdError, JsonLdService } from '@/core/activitypub/JsonLdService.js';
+import { normalizeLegacyJuiceProperties } from '@/core/activitypub/misc/contexts.js';
 import { ApInboxService } from '@/core/activitypub/ApInboxService.js';
 import { bindThis } from '@/decorators.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
@@ -203,6 +204,9 @@ export class InboxProcessorService implements OnApplicationShutdown {
 						throw error;
 					}
 				}
+
+				// JUICE: 古い名前空間のJUICEから届いた独自プロパティを、今の短い名前に戻す(署名の検証が済んでから)
+				normalizeLegacyJuiceProperties(activity);
 
 				// もう一度actorチェック
 				if (authUser.user.uri !== getApId(activity.actor)) {

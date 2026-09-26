@@ -109,5 +109,5 @@ jobs:
           curl -sf -X POST \
             -H "Authorization: token $DOCS_REPO_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/Zel9278/docs.mk-juice.dev/dispatches \
+            https://api.github.com/repos/misskey-juice/docs.mk-juice.dev/dispatches \
             -d "$(jq -n --arg tag "$TAG_NAME" --arg body "$RELEASE_BODY" --arg url "$RELEASE_URL" '{event_type:"misskey-juice-release", client_payload:{tag_name:$tag, body:$body, html_url:$url}}')"

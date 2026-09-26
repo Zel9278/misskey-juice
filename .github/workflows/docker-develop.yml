@@ -23,7 +23,7 @@ jobs:
         platform:
           - linux/amd64
           - linux/arm64
-    if: github.repository == 'Zel9278/misskey-juice'
+    if: github.repository == 'misskey-juice/misskey-juice'
     steps:
       - name: Prepare
         run: |
