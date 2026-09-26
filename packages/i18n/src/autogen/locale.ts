@@ -9614,6 +9614,10 @@ export interface Locale extends ILocale {
          */
         "leave": string;
         /**
+         * 観戦モードにする
+         */
+        "spectateAsOwner": string;
+        /**
          * 見学中
          */
         "spectating": string;
@@ -9649,6 +9653,170 @@ export interface Locale extends ILocale {
          * スポイト(I / Altを押しながらクリックでも色を拾えます)
          */
         "eyedropperHint": string;
+        /**
+         * 範囲選択(自分の線)
+         */
+        "selectRect": string;
+        /**
+         * 投げ縄選択(自分の線)
+         */
+        "selectLasso": string;
+        /**
+         * 移動
+         */
+        "moveTool": string;
+        /**
+         * 移動(選んだ線、選んでいなければ自分のレイヤー全体)
+         */
+        "moveToolHint": string;
+        /**
+         * 手のひら
+         */
+        "handTool": string;
+        /**
+         * 手のひら(線は動かさずに表示を動かす)(H)
+         */
+        "handToolHint": string;
+        /**
+         * 範囲
+         */
+        "shortSelect": string;
+        /**
+         * 投げ縄
+         */
+        "shortLasso": string;
+        /**
+         * 囲い塗り
+         */
+        "shortLassoFill": string;
+        /**
+         * バケツ
+         */
+        "shortBucket": string;
+        /**
+         * 戻す
+         */
+        "shortUndo": string;
+        /**
+         * 全消去
+         */
+        "shortClear": string;
+        /**
+         * 画像
+         */
+        "shortImage": string;
+        /**
+         * ドット
+         */
+        "shortPixel": string;
+        /**
+         * マップ
+         */
+        "shortMinimap": string;
+        /**
+         * 解除
+         */
+        "shortDeselect": string;
+        /**
+         * 線の操作がサーバーで受け付けられなかったので、元に戻しました(レイヤーの線の数・大きさの上限を超えた可能性があります)
+         */
+        "operationRejected": string;
+        /**
+         * 線に囲まれた範囲が複雑すぎるため、この線は「線の中だけ塗る」にできませんでした
+         */
+        "clipTooComplex": string;
+        /**
+         * キャンバスを読み込み中
+         */
+        "loadingCanvas": string;
+        /**
+         * 囲って塗る
+         */
+        "lassoFill": string;
+        /**
+         * 塗りつぶし(バケツ)
+         */
+        "bucketFill": string;
+        /**
+         * 形が細かすぎて塗りつぶせませんでした
+         */
+        "bucketFillTooComplex": string;
+        /**
+         * 選んだ部分を左に回転
+         */
+        "rotateSelectionLeft": string;
+        /**
+         * 選んだ部分を右に回転
+         */
+        "rotateSelectionRight": string;
+        /**
+         * {n}本の線を選択中
+         */
+        "selectedStrokes": ParameterizedString<"n">;
+        /**
+         * 選択を解除
+         */
+        "clearSelection": string;
+        /**
+         * 選んだ範囲の線を削除しますか?(元に戻せません)
+         */
+        "deleteSelectedConfirm": string;
+        /**
+         * このレイヤーを消去
+         */
+        "clearLayerOf": string;
+        /**
+         * {name}のレイヤーの線をすべて消しますか?(元に戻せません)
+         */
+        "clearLayerOfConfirm": ParameterizedString<"name">;
+        /**
+         * 拡大
+         */
+        "zoomIn": string;
+        /**
+         * 縮小
+         */
+        "zoomOut": string;
+        /**
+         * 倍率
+         */
+        "zoomLevel": string;
+        /**
+         * ホイールで拡大縮小(オフならCtrl+ホイール)
+         */
+        "wheelZoom": string;
+        /**
+         * 普通の筆
+         */
+        "brushNormal": string;
+        /**
+         * にじみ筆
+         */
+        "brushSoft": string;
+        /**
+         * ドット(くっきり)
+         */
+        "brushDot": string;
+        /**
+         * 線の中だけ塗る
+         */
+        "clipToLines": string;
+        /**
+         * 線の中だけ塗る(描き始めた所を囲む線の中にだけ塗れます)
+         */
+        "clipToLinesHint": string;
+        /**
+         * 左に回転
+         */
+        "rotateLeft": string;
+        /**
+         * 右に回転
+         */
+        "rotateRight": string;
+        /**
+         * 回転を戻す
+         */
+        "resetRotation": string;
         /**
          * 濃さ
          */
@@ -15453,6 +15621,14 @@ export interface Locale extends ILocale {
          */
         "novelViewerNextChapter": string;
         /**
+         * 前へ
+         */
+        "novelViewerPrevShort": string;
+        /**
+         * 次へ
+         */
+        "novelViewerNextShort": string;
+        /**
          * 前の章
          */
         "novelViewerPrevChapter": string;
@@ -15476,6 +15652,394 @@ export interface Locale extends ILocale {
          * 全画面を終了
          */
         "novelViewerExitFullscreen": string;
+        /**
+         * 小説エディター
+         */
+        "novelEditor": string;
+        /**
+         * 題名
+         */
+        "novelEditorTitle": string;
+        /**
+         * 無題
+         */
+        "novelEditorUntitled": string;
+        /**
+         * 本文
+         */
+        "novelEditorBody": string;
+        /**
+         * ここに本文を書きます
+         */
+        "novelEditorPlaceholder": string;
+        /**
+         * 記法
+         */
+        "novelEditorNotation": string;
+        /**
+         * ルビ
+         */
+        "novelEditorRuby": string;
+        /**
+         * 選んだ文字にルビ(よみがな)を付けます
+         */
+        "novelEditorRubyHint": string;
+        /**
+         * ルビを付ける文字
+         */
+        "novelEditorRubyBase": string;
+        /**
+         * 「{base}」のよみ
+         */
+        "novelEditorRubyReading": ParameterizedString<"base">;
+        /**
+         * 傍点
+         */
+        "novelEditorEmphasis": string;
+        /**
+         * 選んだ文字に傍点を付けます
+         */
+        "novelEditorEmphasisHint": string;
+        /**
+         * 傍点(﹅)
+         */
+        "novelEditorEmphasisSesame": string;
+        /**
+         * 白ゴマ傍点(﹆)
+         */
+        "novelEditorEmphasisWhiteSesame": string;
+        /**
+         * 丸傍点(●)
+         */
+        "novelEditorEmphasisDot": string;
+        /**
+         * 白丸傍点(○)
+         */
+        "novelEditorEmphasisWhiteDot": string;
+        /**
+         * 章タイトル
+         */
+        "novelEditorChapterTitle": string;
+        /**
+         * ここから始まる章の題名を入れます(目次に出ます)
+         */
+        "novelEditorChapterTitleHint": string;
+        /**
+         * 区切り
+         */
+        "novelEditorSectionBreak": string;
+        /**
+         * ここで章を区切ります
+         */
+        "novelEditorSectionBreakHint": string;
+        /**
+         * 改ページ
+         */
+        "novelEditorNewPage": string;
+        /**
+         * ここでページを変えます
+         */
+        "novelEditorNewPageHint": string;
+        /**
+         * 原稿用紙 約{n}枚
+         */
+        "novelEditorManuscriptPages": ParameterizedString<"n">;
+        /**
+         * プレビュー
+         */
+        "novelEditorPreview": string;
+        /**
+         * .txtで保存
+         */
+        "novelEditorDownload": string;
+        /**
+         * 投稿する
+         */
+        "novelEditorPost": string;
+        /**
+         * 下書きは作品ごとに、このブラウザへ自動で保存されます。投稿すると本文を.txtファイルにしてドライブへ上げ、小説フラグを付けて投稿フォームに添付します。
+         */
+        "novelEditorCaption": string;
+        /**
+         * 作品
+         */
+        "novelEditorWorks": string;
+        /**
+         * 新しい作品
+         */
+        "novelEditorNewWork": string;
+        /**
+         * 作品を消す
+         */
+        "novelEditorDeleteWork": string;
+        /**
+         * 「{title}」を消しますか？元に戻せません。
+         */
+        "novelEditorDeleteWorkConfirm": ParameterizedString<"title">;
+        /**
+         * ダッシュ(――)
+         */
+        "novelEditorDashHint": string;
+        /**
+         * 三点リーダー(……)
+         */
+        "novelEditorEllipsisHint": string;
+        /**
+         * 検索・置換
+         */
+        "novelEditorSearch": string;
+        /**
+         * 表示と入力の設定
+         */
+        "novelEditorSettings": string;
+        /**
+         * 集中モード
+         */
+        "novelEditorFocus": string;
+        /**
+         * 集中モードを終える
+         */
+        "novelEditorExitFocus": string;
+        /**
+         * 選択 {n}文字
+         */
+        "novelEditorSelectedChars": ParameterizedString<"n">;
+        /**
+         * 目標文字数
+         */
+        "novelEditorGoal": string;
+        /**
+         * 書き上げたい文字数を入れます。空にすると目標を外します。
+         */
+        "novelEditorGoalCaption": string;
+        /**
+         * {n} / {goal}文字
+         */
+        "novelEditorGoalProgress": ParameterizedString<"n" | "goal">;
+        /**
+         * 目標文字数
+         */
+        "novelEditorSetGoal": string;
+        /**
+         * このブラウザに下書きを保存できませんでした(保存できる容量を超えている可能性があります)。.txtで保存しておいてください。
+         */
+        "novelEditorSaveFailed": string;
+        /**
+         * 読み込む
+         */
+        "novelEditorImport": string;
+        /**
+         * .txtを新しい作品として開きました
+         */
+        "novelEditorImported": string;
+        /**
+         * .txtファイルを選んでください
+         */
+        "novelEditorImportNotText": string;
+        /**
+         * 行の高さ
+         */
+        "novelEditorLineHeight": string;
+        /**
+         * 改行したら段落の頭を字下げする
+         */
+        "novelEditorAutoIndent": string;
+        /**
+         * 括弧を自動で閉じる
+         */
+        "novelEditorAutoCloseBrackets": string;
+        /**
+         * 書いている行を画面の真ん中に保つ
+         */
+        "novelEditorTypewriter": string;
+        /**
+         * プレビューを横に並べる
+         */
+        "novelEditorSidePreview": string;
+        /**
+         * 検索
+         */
+        "novelEditorFind": string;
+        /**
+         * 置換
+         */
+        "novelEditorReplace": string;
+        /**
+         * 次
+         */
+        "novelEditorFindNext": string;
+        /**
+         * 前
+         */
+        "novelEditorFindPrevious": string;
+        /**
+         * すべて
+         */
+        "novelEditorFindAll": string;
+        /**
+         * 大文字と小文字を区別
+         */
+        "novelEditorMatchCase": string;
+        /**
+         * 正規表現
+         */
+        "novelEditorRegexp": string;
+        /**
+         * 単語単位
+         */
+        "novelEditorByWord": string;
+        /**
+         * 置換
+         */
+        "novelEditorReplaceOne": string;
+        /**
+         * すべて置換
+         */
+        "novelEditorReplaceAll": string;
+        /**
+         * はじめ
+         */
+        "novelEditorOutlineStart": string;
+        /**
+         * 装飾
+         */
+        "novelEditorDecoration": string;
+        /**
+         * 選んだ文字を太字・斜体・打ち消し線にします
+         */
+        "novelEditorDecorationHint": string;
+        /**
+         * 太字
+         */
+        "novelEditorBold": string;
+        /**
+         * 斜体
+         */
+        "novelEditorItalic": string;
+        /**
+         * 打ち消し線
+         */
+        "novelEditorStrike": string;
+        /**
+         * 字下げ
+         */
+        "novelEditorIndent": string;
+        /**
+         * 選んだ行をまとめて字下げします
+         */
+        "novelEditorIndentHint": string;
+        /**
+         * 何字下げますか？
+         */
+        "novelEditorIndentAmount": string;
+        /**
+         * 投稿前のチェック
+         */
+        "novelEditorCheck": string;
+        /**
+         * 気になるところは見つかりませんでした
+         */
+        "novelEditorCheckOk": string;
+        /**
+         * 書いている間も、そのまま結果が変わります。項目を押すと、エディターのその行へ移ります。
+         */
+        "novelEditorCheckCaption": string;
+        /**
+         * {line}行目: 《》の前に漢字が無いため、ルビが付きません(「{text}」)
+         */
+        "novelEditorCheckRubyNoBase": ParameterizedString<"line" | "text">;
+        /**
+         * {line}行目: 漢字以外を含む語へのルビは、｜で始まりを示してください(「{text}」)
+         */
+        "novelEditorCheckRubyBase": ParameterizedString<"line" | "text">;
+        /**
+         * {line}行目: 太字・打ち消し線が1行の中で閉じていません(「{text}」)
+         */
+        "novelEditorCheckDecoration": ParameterizedString<"line" | "text">;
+        /**
+         * 1章目に[chapter:…]が無いため、目次に「第1章」と表示されます
+         */
+        "novelEditorCheckFirstChapterTitle": string;
+        /**
+         * {line}行目: ルビの書き方が[[rb:基底 > よみ]]になっていないため、そのまま表示されます(「{text}」)
+         */
+        "novelEditorCheckRubySyntax": ParameterizedString<"line" | "text">;
+        /**
+         * {line}行目: 中身の無い章があります(区切りや改ページが続いていませんか？)
+         */
+        "novelEditorCheckEmptyChapter": ParameterizedString<"line">;
+        /**
+         * {line}行目: 括弧が閉じていません(「{text}」)
+         */
+        "novelEditorCheckBracketUnclosed": ParameterizedString<"line" | "text">;
+        /**
+         * {line}行目: 対応する開き括弧が無い閉じ括弧があります(「{text}」)
+         */
+        "novelEditorCheckBracketStray": ParameterizedString<"line" | "text">;
+        /**
+         * {line}行目: 三点リーダーは2つ続けて(……)使うのが一般的です(「{text}」)
+         */
+        "novelEditorCheckEllipsisSingle": ParameterizedString<"line" | "text">;
+        /**
+         * {line}行目: 「・・・」ではなく三点リーダー(……)を使うのが一般的です(「{text}」)
+         */
+        "novelEditorCheckEllipsisDots": ParameterizedString<"line" | "text">;
+        /**
+         * {line}行目: ダッシュは2つ続けて(――)使うのが一般的です(「{text}」)
+         */
+        "novelEditorCheckDashSingle": ParameterizedString<"line" | "text">;
+        /**
+         * {line}行目: ！？の後に文が続くときは、全角スペースを1つ空けるのが一般的です(「{text}」)
+         */
+        "novelEditorCheckExclamationSpace": ParameterizedString<"line" | "text">;
+        /**
+         * {line}行目: 傍点の注記が1行の中で閉じていないため、傍点が付きません(「{text}」)
+         */
+        "novelEditorCheckAnnotationUnclosed": ParameterizedString<"line" | "text">;
+        /**
+         * {line}行目: 字下げの注記が［＃ここで字下げ終わり］で閉じていません(「{text}」)
+         */
+        "novelEditorCheckIndentUnclosed": ParameterizedString<"line" | "text">;
+        /**
+         * {line}行目: 小説ビューワーが対応していない注記は、表示されません(「{text}」)
+         */
+        "novelEditorCheckAnnotationUnsupported": ParameterizedString<"line" | "text">;
+        /**
+         * {line}行目: ［＃改ページ］には対応していません。改ページには[newpage]を使ってください
+         */
+        "novelEditorCheckAnnotationNewPage": ParameterizedString<"line">;
+        /**
+         * {line}行目: [newpage]は、それだけの行にしないと改ページになりません
+         */
+        "novelEditorCheckNewpageInline": ParameterizedString<"line">;
+        /**
+         * ほか{n}件
+         */
+        "novelEditorCheckMore": ParameterizedString<"n">;
+        /**
+         * このまま投稿
+         */
+        "novelEditorPostAnyway": string;
+        /**
+         * チェック
+         */
+        "novelEditorShortCheck": string;
+        /**
+         * 設定
+         */
+        "novelEditorShortSettings": string;
+        /**
+         * 集中
+         */
+        "novelEditorShortFocus": string;
+        /**
+         * ダッシュ
+         */
+        "novelEditorShortDash": string;
+        /**
+         * 三点
+         */
+        "novelEditorShortEllipsis": string;
         /**
          * 表示するタブ
          */
@@ -15544,6 +16108,34 @@ export interface Locale extends ILocale {
          * MIDI再生エンジン(FluidSynth)が同時に鳴らせる音の数の上限を設定します。和音密度が高い曲で音が薄く感じる場合は上げると改善することがありますが、上げすぎると処理が追いつかず逆に無音になることがあります。変更は次に再生を開始した時から反映されます。
          */
         "midiMaxPolyphonyCaption": string;
+        /**
+         * {engine}で検索
+         */
+        "searchWithEngine": ParameterizedString<"engine">;
+        /**
+         * MFMの検索で使う検索エンジン
+         */
+        "mfmSearchEngine": string;
+        /**
+         * 「○○ 検索」の検索窓で、検索ボタンを押したときに開く検索エンジンです。この設定は自分の画面だけに反映されます。
+         */
+        "mfmSearchEngineCaption": string;
+        /**
+         * カスタム
+         */
+        "mfmSearchEngineCustom": string;
+        /**
+         * 検索URL
+         */
+        "mfmSearchEngineCustomUrl": string;
+        /**
+         * 検索する言葉を入れる場所に {query} と書きます。
+         */
+        "mfmSearchEngineCustomUrlCaption": ParameterizedString<"query">;
+        /**
+         * {query} を含むhttp・httpsのURLを入れてください。使えないURLのときはGoogleで検索します。
+         */
+        "mfmSearchEngineCustomUrlInvalid": ParameterizedString<"query">;
         /**
          * 装飾MFMの自動ローカル限定
          */

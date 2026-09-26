@@ -692,6 +692,19 @@ export const ROUTE_DEF = [{
 	component: page(() => import('@/pages/draw-room/room.vue')),
 	loginRequired: true,
 }, {
+	// JUICE: 小説エディターと、その下書きのプレビュー(小説ビューワーをノート無しで開く)
+	path: '/novel-editor',
+	component: page(() => import('@/pages/novel-editor.vue')),
+	loginRequired: true,
+}, {
+	path: '/novel-editor/preview',
+	component: page(() => import('@/pages/novel-viewer.vue')),
+	loginRequired: true,
+}, {
+	path: '/novel-editor/check',
+	component: page(() => import('@/pages/novel-checker.vue')),
+	loginRequired: true,
+}, {
 	path: '/qr',
 	component: page(() => import('@/pages/qr.vue')),
 	loginRequired: true,

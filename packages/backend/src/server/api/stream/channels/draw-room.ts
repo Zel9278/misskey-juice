@@ -10,6 +10,8 @@ import { bindThis } from '@/decorators.js';
 import {
 	DRAW_CHAT_MAX_LENGTH,
 	DRAW_ROOM_PRESENCE_HEARTBEAT_MS,
+	DRAW_LAYER_MAX_BYTES,
+	DRAW_LAYER_MAX_STROKES,
 	DRAW_STROKE_MAX_POINTS,
 	DRAW_STROKE_MAX_SIZE,
 	DRAW_STROKE_PART_MAX_POINTS,
@@ -141,18 +143,20 @@ export class DrawRoomChannel extends Channel {
 	 * 線の内容を検証する。座標はキャンバスの少し外側まで許す(はみ出して描いた線の端)
 	 */
 	@bindThis
-	private parseStrokeBody(body: JsonObject, maxPoints: number): Omit<DrawStroke, 'id'> | null {
+	private parseStrokeBody(body: JsonObject, maxPoints: number, margin: number = DRAW_STROKE_MAX_SIZE): Omit<DrawStroke, 'id'> | null {
 		if (this.room == null) return null;
-		const { tool, color, size, opacity, points } = body;
-		if (tool !== 'pen' && tool !== 'eraser') return null;
+		const { tool, color, size, opacity, points, brush, clip } = body;
+		if (tool !== 'pen' && tool !== 'eraser' && tool !== 'fill') return null;
 		if (typeof color !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(color)) return null;
 		if (typeof size !== 'number' || !Number.isFinite(size) || size < 0.5 || size > DRAW_STROKE_MAX_SIZE) return null;
 		// 不透明度は省略できる(省略・1なら不透明)
 		if (opacity !== undefined && (typeof opacity !== 'number' || !Number.isFinite(opacity) || opacity < 0.05 || opacity > 1)) return null;
+		// 筆の種類・線の中だけ塗る範囲は省略できる
+		if (brush !== undefined && brush !== 'soft' && brush !== 'dot') return null;
+		if (clip !== undefined && (typeof clip !== 'string' || decodeDrawPoints(clip, DRAW_STROKE_MAX_POINTS) == null)) return null;
 		if (typeof points !== 'string') return null;
 		const decoded = decodeDrawPoints(points, maxPoints);
 		if (decoded == null) return null;
-		const margin = DRAW_STROKE_MAX_SIZE;
 		for (let i = 0; i < decoded.length; i += 3) {
 			const x = decoded[i];
 			const y = decoded[i + 1];
@@ -163,8 +167,64 @@ export class DrawRoomChannel extends Channel {
 			color: color.toLowerCase(),
 			size,
 			...(opacity !== undefined && opacity < 1 ? { opacity: Math.round(opacity * 100) / 100 } : {}),
+			...(brush !== undefined ? { brush } : {}),
+			...(clip !== undefined ? { clip } : {}),
 			points,
 		};
+	}
+
+	/**
+	 * JUICE: 選択範囲の境目で切った線(元の線のidと、置き換える線の並び)を検証する。
+	 * 移動ツールで動かした線はキャンバスの外寄りにあることもあるので、座標の範囲は広めに許す。不正ならundefined
+	 */
+	@bindThis
+	private parseSplits(value: JsonValue | undefined): { id: string; pieces: DrawStroke[] }[] | undefined {
+		if (this.room == null || !Array.isArray(value) || value.length > DRAW_LAYER_MAX_STROKES) return undefined;
+		const margin = Math.max(this.room.canvasWidth, this.room.canvasHeight);
+		const splits: { id: string; pieces: DrawStroke[] }[] = [];
+		let total = 0;
+		// JUICE: 点の列の大きさの合計を、1つのレイヤーに入る大きさまでに抑える(Redisへ送る前に断り、
+		// 大きなメッセージでサーバーを止められないようにする)。置き換える線のidは重ならないこと
+		let bytes = 0;
+		const pieceIds = new Set<string>();
+		for (const split of value) {
+			if (!isJsonObject(split) || !this.isValidStrokeId(split.id) || !Array.isArray(split.pieces)) return undefined;
+			// 1本への置き換えは回転など形を変える操作、2本以上は選択範囲の境目で切る操作
+			if (split.pieces.length < 1 || split.pieces.length > 200) return undefined;
+			const pieces: DrawStroke[] = [];
+			for (const piece of split.pieces) {
+				if (!isJsonObject(piece) || !this.isValidStrokeId(piece.id) || pieceIds.has(piece.id)) return undefined;
+				bytes += (typeof piece.points === 'string' ? piece.points.length : 0) + (typeof piece.clip === 'string' ? piece.clip.length : 0);
+				if (bytes > DRAW_LAYER_MAX_BYTES) return undefined;
+				pieceIds.add(piece.id);
+				const parsed = this.parseStrokeBody(piece, DRAW_STROKE_MAX_POINTS, margin);
+				if (parsed == null) return undefined;
+				pieces.push({ ...parsed, id: piece.id });
+			}
+			total += pieces.length;
+			if (total > DRAW_LAYER_MAX_STROKES) return undefined;
+			splits.push({ id: split.id, pieces });
+		}
+		return splits;
+	}
+
+	/**
+	 * 線のidの配列を検証する(1〜レイヤーの線の上限まで)。不正ならundefined
+	 */
+	@bindThis
+	private parseStrokeIds(value: JsonValue | undefined): string[] | undefined {
+		if (!Array.isArray(value) || value.length === 0 || value.length > DRAW_LAYER_MAX_STROKES) return undefined;
+		if (!value.every(id => this.isValidStrokeId(id))) return undefined;
+		return value as string[];
+	}
+
+	/**
+	 * JUICE: 線の移動・削除・置き換えを断ったことを、送った本人にだけ知らせる。
+	 * 本人の画面では送る前に反映しているので、これを受けたら線を取り直してサーバーの状態に合わせてもらう
+	 */
+	@bindThis
+	private rejectOperation(): void {
+		this.send('operationRejected', {});
 	}
 
 	@bindThis
@@ -247,6 +307,53 @@ export class DrawRoomChannel extends Channel {
 			case 'clearLayer': {
 				if (!this.canDraw() || !await rate('other')) return;
 				this.drawRoomService.clearLayer(room.id, user.id);
+				break;
+			}
+			case 'moveStrokes': {
+				// JUICE: 移動ツール。自分のレイヤーの、選んだ線(strokeIdsがnullならレイヤー全体)をずらす
+				if (!this.canDraw() || !isJsonObject(body)) return;
+				const { strokeIds, dx, dy } = body;
+				const limit = Math.max(room.canvasWidth, room.canvasHeight) * 2;
+				if (typeof dx !== 'number' || typeof dy !== 'number' || !Number.isFinite(dx) || !Number.isFinite(dy)) return;
+				if (Math.abs(dx) > limit || Math.abs(dy) > limit) return;
+				const ids = strokeIds === null ? null : this.parseStrokeIds(strokeIds);
+				// 選択範囲の境目で切った線があれば、先に置き換えてから動かす(同じ操作の中で順に行う)
+				const splits = body.splits === undefined ? [] : this.parseSplits(body.splits);
+				if (!await rate('other')) return;
+				// 送った本人の画面では既に動かしているので、断るときは知らせて線を取り直してもらう
+				if (ids === undefined || splits === undefined) return this.rejectOperation();
+				if (splits.length > 0 && !await this.drawRoomService.splitStrokes(room.id, user.id, splits)) return this.rejectOperation();
+				// 送る形式と同じ細かさ(1/8px)にそろえる
+				const mx = Math.round(dx * 8) / 8;
+				const my = Math.round(dy * 8) / 8;
+				if ((mx !== 0 || my !== 0) && !await this.drawRoomService.moveStrokes(room.id, user.id, ids, mx, my)) return this.rejectOperation();
+				break;
+			}
+			case 'replaceStrokes': {
+				// JUICE: 選んだ線を回転するなど、線を別の線(の並び)に置き換える
+				if (!this.canDraw() || !isJsonObject(body)) return;
+				const replacements = this.parseSplits(body.replacements);
+				if (!await rate('other')) return;
+				if (replacements == null || replacements.length === 0) return this.rejectOperation();
+				if (!await this.drawRoomService.splitStrokes(room.id, user.id, replacements)) return this.rejectOperation();
+				break;
+			}
+			case 'deleteStrokes': {
+				if (!this.canDraw() || !isJsonObject(body)) return;
+				const ids = this.parseStrokeIds(body.strokeIds);
+				const splits = body.splits === undefined ? [] : this.parseSplits(body.splits);
+				if (!await rate('other')) return;
+				if (ids == null || splits === undefined) return this.rejectOperation();
+				if (splits.length > 0 && !await this.drawRoomService.splitStrokes(room.id, user.id, splits)) return this.rejectOperation();
+				await this.drawRoomService.deleteStrokes(room.id, user.id, ids);
+				break;
+			}
+			case 'clearLayerOf': {
+				// JUICE: 部屋主は、ほかの人のレイヤーも消去できる
+				if (room.isEnded || room.ownerId !== user.id || user.movedToUri != null || !isJsonObject(body)) return;
+				if (typeof body.userId !== 'string' || !/^[0-9a-zA-Z]{1,32}$/.test(body.userId)) return;
+				if (!await rate('other')) return;
+				this.drawRoomService.clearLayer(room.id, body.userId);
 				break;
 			}
 			case 'chat': {

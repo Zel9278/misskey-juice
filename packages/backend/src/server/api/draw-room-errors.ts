@@ -46,11 +46,6 @@ export const drawRoomErrors = {
 		code: 'NOT_OWNER',
 		id: '055522b8-89d0-42e2-8e70-9b60d017e87f',
 	},
-	ownerCannotLeave: {
-		message: 'The owner cannot leave the room. End the room instead.',
-		code: 'OWNER_CANNOT_LEAVE',
-		id: '59ad11ec-69dd-4452-95e7-751c970e8dfa',
-	},
 	notMember: {
 		message: 'The user is not a member of this room.',
 		code: 'NOT_MEMBER',

@@ -1084,6 +1084,8 @@ export type Channels = {
                 color: string;
                 size: number;
                 opacity?: number;
+                brush?: DrawStroke['brush'];
+                clip?: string;
                 points: string;
             }) => void;
             cursors: (payload: {
@@ -1108,6 +1110,24 @@ export type Channels = {
             clearLayer: (payload: {
                 userId: User['id'];
             }) => void;
+            strokesMoved: (payload: {
+                userId: User['id'];
+                strokeIds: string[] | null;
+                dx: number;
+                dy: number;
+            }) => void;
+            strokesDeleted: (payload: {
+                userId: User['id'];
+                strokeIds: string[];
+            }) => void;
+            strokesSplit: (payload: {
+                userId: User['id'];
+                splits: {
+                    id: string;
+                    pieces: DrawStroke[];
+                }[];
+            }) => void;
+            operationRejected: (payload: Record<string, never>) => void;
             chat: (payload: {
                 message: DrawRoomChatMessage;
                 user: UserLite;
@@ -1139,6 +1159,8 @@ export type Channels = {
                 color: string;
                 size: number;
                 opacity?: number;
+                brush?: DrawStroke['brush'];
+                clip?: string;
                 points: string;
             };
             cursor: {
@@ -1154,6 +1176,31 @@ export type Channels = {
             stroke: DrawStroke;
             undo: null | Record<string, never>;
             clearLayer: null | Record<string, never>;
+            moveStrokes: {
+                strokeIds: string[] | null;
+                dx: number;
+                dy: number;
+                splits?: {
+                    id: string;
+                    pieces: DrawStroke[];
+                }[];
+            };
+            deleteStrokes: {
+                strokeIds: string[];
+                splits?: {
+                    id: string;
+                    pieces: DrawStroke[];
+                }[];
+            };
+            replaceStrokes: {
+                replacements: {
+                    id: string;
+                    pieces: DrawStroke[];
+                }[];
+            };
+            clearLayerOf: {
+                userId: User['id'];
+            };
             chat: {
                 text: string;
             };

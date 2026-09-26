@@ -146,6 +146,13 @@ export const navbarItemDef = reactive<{
 		icon: 'ti ti-device-gamepad',
 		to: '/games',
 	},
+	// JUICE: 小説エディター
+	novelEditor: {
+		title: i18n.ts._juice.novelEditor,
+		icon: 'ti ti-writing',
+		show: computed(() => $i != null),
+		to: '/novel-editor',
+	},
 	// JUICE: 絵チャ(管理者設定で無効にされていれば出さない)
 	drawRoom: {
 		title: i18n.ts._drawRoom.title,
