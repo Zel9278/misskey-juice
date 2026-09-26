@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  REGISTRY_IMAGE: ghcr.io/zel9278/misskey-juice
+  REGISTRY_IMAGE: ghcr.io/misskey-juice/misskey-juice
 
 jobs:
   # see https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
