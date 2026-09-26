@@ -5,14 +5,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div :class="$style.root">
-	<input v-model="query" :class="$style.input" type="search" :placeholder="q">
-	<button :class="$style.button" @click="search"><i class="ti ti-search"></i> {{ i18n.ts.searchByGoogle }}</button>
+	<input v-model="query" :class="$style.input" type="search" :placeholder="q" :aria-label="i18n.ts.search">
+	<!-- JUICE: 検索エンジンはユーザーの設定で選べる(ボタンにその名前を出す) -->
+	<button :class="$style.button" @click="search"><i class="ti ti-search"></i> {{ i18n.tsx._juice.searchWithEngine({ engine: engineName }) }}</button>
 </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { i18n } from '@/i18n.js';
+import { prefer } from '@/preferences.js';
+import { buildSearchUrl, searchEngineName } from '@/utility/juice-search-engines.js';
 
 const props = defineProps<{
 	q: string;
@@ -20,10 +23,10 @@ const props = defineProps<{
 
 const query = ref(props.q);
 
+const engineName = computed(() => searchEngineName(prefer.r.mfmSearchEngine.value, prefer.r.mfmSearchEngineCustomUrl.value));
+
 const search = () => {
-	const sp = new URLSearchParams();
-	sp.append('q', query.value);
-	window.open(`https://www.google.com/search?${sp.toString()}`, '_blank', 'noopener');
+	window.open(buildSearchUrl(prefer.s.mfmSearchEngine, prefer.s.mfmSearchEngineCustomUrl, query.value), '_blank', 'noopener');
 };
 </script>
 

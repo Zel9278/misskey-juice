@@ -16109,6 +16109,34 @@ export interface Locale extends ILocale {
          */
         "midiMaxPolyphonyCaption": string;
         /**
+         * {engine}で検索
+         */
+        "searchWithEngine": ParameterizedString<"engine">;
+        /**
+         * MFMの検索で使う検索エンジン
+         */
+        "mfmSearchEngine": string;
+        /**
+         * 「○○ 検索」の検索窓で、検索ボタンを押したときに開く検索エンジンです。この設定は自分の画面だけに反映されます。
+         */
+        "mfmSearchEngineCaption": string;
+        /**
+         * カスタム
+         */
+        "mfmSearchEngineCustom": string;
+        /**
+         * 検索URL
+         */
+        "mfmSearchEngineCustomUrl": string;
+        /**
+         * 検索する言葉を入れる場所に {query} と書きます。
+         */
+        "mfmSearchEngineCustomUrlCaption": ParameterizedString<"query">;
+        /**
+         * {query} を含むhttp・httpsのURLを入れてください。使えないURLのときはGoogleで検索します。
+         */
+        "mfmSearchEngineCustomUrlInvalid": ParameterizedString<"query">;
+        /**
          * 装飾MFMの自動ローカル限定
          */
         "autoLocalOnlyForMfm": string;

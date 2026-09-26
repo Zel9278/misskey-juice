@@ -176,6 +176,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 		</SearchMarker>
 
+		<!-- JUICE: MFMの「○○ 検索」(検索窓)で使う検索エンジン -->
+		<SearchMarker :keywords="['mfm', 'search', 'engine', 'google', 'yahoo', 'bing', 'duckduckgo', 'kagi', 'brave', 'startpage', 'ecosia', 'perplexity']">
+			<MkFolder>
+				<template #label><SearchLabel>{{ i18n.ts._juice.mfmSearchEngine }}</SearchLabel></template>
+				<div class="_gaps_s">
+					<MkSelect v-model="mfmSearchEngine" :items="searchEngineItems">
+						<template #label>{{ i18n.ts._juice.mfmSearchEngine }}</template>
+						<template #caption>{{ i18n.ts._juice.mfmSearchEngineCaption }}</template>
+					</MkSelect>
+					<MkInput v-if="mfmSearchEngine === 'custom'" v-model="mfmSearchEngineCustomUrl" type="url" placeholder="https://example.com/search?q={query}" manualSave>
+						<template #label>{{ i18n.ts._juice.mfmSearchEngineCustomUrl }}</template>
+						<template #caption>{{ customSearchUrlValid || mfmSearchEngineCustomUrl === '' ? i18n.tsx._juice.mfmSearchEngineCustomUrlCaption({ query: '{query}' }) : i18n.tsx._juice.mfmSearchEngineCustomUrlInvalid({ query: '{query}' }) }}</template>
+					</MkInput>
+				</div>
+			</MkFolder>
+		</SearchMarker>
+
 		<!-- JUICE: 単体の機能(サブグループを持たない)のため、他のsettingsGroup*のような
 		     カテゴリ折りたたみで包まず、トップレベルのMkFolderとして単独で表示する -->
 		<SearchMarker :keywords="['mfm', 'local', 'only', 'markdown', 'bold', 'decoration']">
@@ -249,6 +266,7 @@ import MkRange from '@/components/MkRange.vue';
 import MkDraggable from '@/components/MkDraggable.vue';
 import MkFolder from '@/components/MkFolder.vue';
 import MkRadios from '@/components/MkRadios.vue';
+import MkInput from '@/components/MkInput.vue';
 import MkDisableSection from '@/components/MkDisableSection.vue';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import * as os from '@/os.js';
@@ -260,6 +278,7 @@ import { prefer } from '@/preferences.js';
 import { juicePublicSettingsCache, juiceRelaysCache } from '@/cache.js';
 import { availableBasicTimelines } from '@/timelines.js';
 import { pruneRelayTimelineFilter } from '@/utility/juice-relay-timeline-filter.js';
+import { SEARCH_ENGINES, SEARCH_ENGINE_IDS, isValidCustomSearchUrl } from '@/utility/juice-search-engines.js';
 
 const $i = ensureSignin();
 
@@ -372,6 +391,14 @@ const widgetsSide = prefer.model('widgetsSide');
 const midiVisualizerEnabled = prefer.model('midiVisualizerEnabled');
 const midiRollWindowSeconds = prefer.model('midiRollWindowSeconds');
 const midiMaxPolyphony = prefer.model('midiMaxPolyphony');
+const mfmSearchEngine = prefer.model('mfmSearchEngine');
+const mfmSearchEngineCustomUrl = prefer.model('mfmSearchEngineCustomUrl');
+const searchEngineItems = [
+	...SEARCH_ENGINE_IDS.map(id => ({ label: SEARCH_ENGINES[id].name, value: id })),
+	{ label: i18n.ts._juice.mfmSearchEngineCustom, value: 'custom' as const },
+];
+// カスタムのURLが使えない(空・{query}が無い等)ときは、Googleで検索する
+const customSearchUrlValid = computed(() => isValidCustomSearchUrl(mfmSearchEngineCustomUrl.value));
 
 const muteAIGeneratedNotesItems = [
 	{ label: i18n.ts.none, value: 'none' },

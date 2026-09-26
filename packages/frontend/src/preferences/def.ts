@@ -137,6 +137,16 @@ export const PREF_DEF = definePreferences({
 		default: 256,
 	},
 
+	// JUICE: MFMの「○○ 検索」(検索窓)で使う検索エンジン(utility/juice-search-engines.tsのid、または'custom')
+	mfmSearchEngine: {
+		default: 'google' as import('@/utility/juice-search-engines.js').SearchEngineId,
+	},
+
+	// JUICE: 検索エンジンを'custom'にしたときの検索URL。検索語を入れる場所に{query}を書く
+	mfmSearchEngineCustomUrl: {
+		default: '',
+	},
+
 	// JUICE: タイムラインページのタブバーから、閲覧者側の好みで個別に非表示にしたベーシックタイムライン
 	// (ホーム/ローカル/ソーシャル/グローバル)およびリレー/メディアタイムラインのタブ一覧(空 = 全て表示)
 	hiddenTimelineTabs: {
