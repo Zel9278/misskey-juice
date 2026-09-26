@@ -21,7 +21,7 @@ import { ApNoteService } from '@/core/activitypub/models/ApNoteService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { JsonLdService } from '@/core/activitypub/JsonLdService.js';
-import { CONTEXT } from '@/core/activitypub/misc/contexts.js';
+import { CONTEXT, JUICE_NAMESPACE, LEGACY_JUICE_NAMESPACES, normalizeLegacyJuiceProperties } from '@/core/activitypub/misc/contexts.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { CoreModule } from '@/core/CoreModule.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
@@ -686,6 +686,67 @@ describe('ActivityPub', () => {
 				_misskey_quote: 'https://example.com/notes/1',
 				'https://example.org/ns#unknown': 'test test bar',
 				// undefined: 'test test baz',
+			});
+		});
+
+		// JUICE: リポジトリを組織へ移したのに合わせて独自プロパティの名前空間を変えた。古い名前空間のJUICEから
+		// LD署名付き(リレー経由)で届いたactivityも、独自プロパティを読めること
+		describe('JUICE独自プロパティの名前空間', () => {
+			const legacy = LEGACY_JUICE_NAMESPACES[0];
+			const legacyContext = JSON.parse(JSON.stringify(CONTEXT).replaceAll(JUICE_NAMESPACE, legacy));
+			const juiceProperties = {
+				_juice_isAIGenerated: true,
+				_juice_isNovel: true,
+				_juice_lang: 'ja',
+				_juice_summaryIsAIGeneratedFallback: false,
+				_juice_originalCw: 'もとのCW',
+			};
+			const createActivity = (context: unknown) => ({
+				'@context': context,
+				id: 'https://remote.example/notes/1/activity',
+				type: 'Create',
+				actor: 'https://remote.example/users/1',
+				object: {
+					id: 'https://remote.example/notes/1',
+					type: 'Note',
+					attributedTo: 'https://remote.example/users/1',
+					content: 'test',
+					...juiceProperties,
+				},
+			});
+
+			test('古い名前空間のプロパティは、compactすると完全なIRIのキーになり、読み替えると短い名前と元の値に戻る', async () => {
+				const jsonLd = jsonLdService.use();
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const compacted = await jsonLd.compact(createActivity(legacyContext)) as any;
+
+				// compactしただけでは、今の名前空間の短い名前にならない
+				for (const [name, value] of Object.entries(juiceProperties)) {
+					assert.strictEqual(compacted.object[name], undefined);
+					assert.strictEqual(compacted.object[`${legacy}${name}`], value);
+				}
+
+				normalizeLegacyJuiceProperties(compacted);
+				for (const [name, value] of Object.entries(juiceProperties)) {
+					assert.strictEqual(compacted.object[name], value);
+				}
+				assert.ok(Object.keys(compacted.object).every(key => !key.startsWith(legacy)));
+				assert.strictEqual(compacted.object.content, 'test');
+			});
+
+			test('今の名前空間のプロパティは、compactしても短い名前のまま', async () => {
+				const jsonLd = jsonLdService.use();
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const compacted = await jsonLd.compact(createActivity(CONTEXT)) as any;
+				for (const [name, value] of Object.entries(juiceProperties)) {
+					assert.strictEqual(compacted.object[name], value);
+				}
+			});
+
+			test('短い名前のキーが既にあれば、古い名前空間のキーでは上書きしない', () => {
+				const object = { _juice_isNovel: false, [`${legacy}_juice_isNovel`]: true, [`${legacy}unknown`]: 'x' };
+				normalizeLegacyJuiceProperties(object);
+				assert.deepStrictEqual(object, { _juice_isNovel: false });
 			});
 		});
 	});

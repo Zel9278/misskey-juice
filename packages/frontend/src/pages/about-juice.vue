@@ -70,7 +70,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<FormSection>
 					<template #label>{{ i18n.ts._aboutJuice.sourceAndLicense }}</template>
 					<div class="_gaps_s">
-						<FormLink to="https://github.com/Zel9278/misskey-juice" external>
+						<FormLink to="https://github.com/misskey-juice/misskey-juice" external>
 							<template #icon><i class="ti ti-code"></i></template>
 							{{ i18n.ts._aboutMisskey.source }}
 							<template #suffix>GitHub</template>

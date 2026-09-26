@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  REGISTRY_IMAGE: ghcr.io/zel9278/misskey-juice
+  REGISTRY_IMAGE: ghcr.io/misskey-juice/misskey-juice
 
 jobs:
   # see https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
@@ -23,7 +23,7 @@ jobs:
         platform:
           - linux/amd64
           - linux/arm64
-    if: github.repository == 'Zel9278/misskey-juice'
+    if: github.repository == 'misskey-juice/misskey-juice'
     steps:
       - name: Prepare
         run: |

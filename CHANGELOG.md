@@ -28,6 +28,9 @@
 ### Server
 - Feat: 絵チャのストリーミングに、線の移動・削除・置き換え(`moveStrokes`・`deleteStrokes`・`replaceStrokes`)と、部屋主によるほかの人のレイヤーの消去(`clearLayerOf`)を追加(JUICE独自)。線に塗りつぶし(`tool: 'fill'`)・筆の種類(`brush`)・線の中だけ塗る範囲(`clip`)を追加。断った操作は送った本人に`operationRejected`で知らせる
 - Enhance: 絵チャで、部屋主も描く人から抜けて観戦できるように(`draw-rooms/leave`のエラー`OWNER_CANNOT_LEAVE`を削除)
+- Change: リポジトリをmisskey-juice組織へ移したのに合わせて、ActivityPubのJUICE独自プロパティ(`_juice_*`)のJSON-LDの名前空間を`https://github.com/misskey-juice/misskey-juice#`に変更(JUICE独自)。古い名前空間(`https://github.com/Zel9278/misskey-juice#`)のままのJUICEからLD署名付き(リレー経由)で届いたものも読める。古いJUICEがリレー経由で受け取ると、更新されるまで独自プロパティ(小説フラグ・AI生成物フラグ等)が読まれない
+- Chore: GitHub Actionsのリポジトリ名・ドキュメントへの通知先・Dockerイメージの公開先を、移行先(misskey-juice組織)に合わせた。Dockerイメージは`ghcr.io/misskey-juice/misskey-juice`になる
+- Change: サーバー設定のリポジトリURL・フィードバックURLの既定値を、移行先(`https://github.com/misskey-juice/misskey-juice`)に変更。旧URLのままのサーバーは書き換える(マイグレーション`1790414874298-JuiceOrgRepositoryUrl`。別のURLにしている場合はそのまま)
 
 ## 2026.9.1-juice+3.15
 
